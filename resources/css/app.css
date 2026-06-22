@@ -1,0 +1,117 @@
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Permanent+Marker&family=Roboto:ital,wght@0,100..900;1,100..900&family=Sora&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+@import 'tailwindcss';
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+
+.sora {
+    font-family: "Sora", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+}
+html {
+    scroll-behavior: smooth !important;
+    scroll-padding-block: 120px; /* Atas + bawah */
+}
+
+body {
+    scroll-padding-bottom: 140px; /* Navbar offset */
+}
+
+/* override global swiper */
+:root {
+    --swiper-theme-color: #5E0006;
+}
+
+/* bullet biasa */
+#new-music .swiper-pagination-bullet {
+    background: white !important;
+    opacity: 0.5;
+}
+
+/* bullet aktif */
+#new-music .swiper-pagination-bullet-active {
+    background: white !important; 
+    opacity: 1;
+}
+
+#new-music .swiper-button-next,
+#new-music .swiper-button-prev {
+    color: #5E0006 !important; /* warna icon panah */
+    background: white; /* background */
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important; /* rounded */
+    padding: 8px !important; /* padding */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#new-music .swiper-button-next::after,
+#new-music .swiper-button-prev::after {
+    font-size: 32px !important;
+    border-radius: 20px !important; /* rounded */
+    /* font-style: bold !important; */
+}
+
+#new-music .swiper-button-next:hover,
+#new-music .swiper-button-prev:hover {
+    background: white !important;
+    color: #5E0006;
+    transform: scale(1.1);
+    transition: 0.3s;
+}
+
+
+                        /* merchandise */
+
+#store .swiper-pagination-bullet {
+    background: black !important;
+    opacity: 0.5;
+}
+
+/* bullet aktif */
+#store .swiper-pagination-bullet-active {
+    background: black !important; 
+    opacity: 1;
+}
+
+#store .swiper-button-next,
+#store .swiper-button-prev {
+    color: white !important; /* warna icon panah */
+    background: black; /* background */
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important; /* rounded */
+    padding: 8px !important; /* padding */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#store .swiper-button-next::after,
+#store .swiper-button-prev::after {
+    font-size: 32px !important;
+    border-radius: 20px !important; /* rounded */
+    /* font-style: bold !important; */
+}
+
+#store .swiper-button-next:hover,
+#store .swiper-button-prev:hover {
+    background: black !important;
+    color: white;
+    transform: scale(1.1);
+    transition: 0.3s;
+}
