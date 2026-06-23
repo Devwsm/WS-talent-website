@@ -22,16 +22,20 @@ Route::prefix('/')->group(function(){
 Route::prefix('/dashboard')->middleware('cekLogin')->group(function(){
     Route::get('/', [dashboardController::class, 'dashboard'])->name('dashboard');
     
-    Route::get('/schedule', [dashboardController::class, 'schedule'])->name('schedule');
-    Route::post('/tambahSchedule', [dashboardController::class, 'tambahSchedule'])->name('schedule.tambah');
-    Route::delete('/hapusSchedule/{id}', [dashboardController::class, 'hapusSchedule'])->name('schedule.hapus');
-    
     Route::get('/albums', [dashboardController::class, 'albums'])->name('albums');
     Route::post('/tambahAlbums', [dashboardController::class, 'tambahAlbums'])->name('albums.tambah');
     Route::delete('/hapusAlbums/{id}', [dashboardController::class, 'hapusAlbums'])->name('albums.hapus');
     Route::put('/updateAlbums/{id}', [dashboardController::class, 'updateAlbums'])->name('albums.update');
+
+    Route::get('/schedule', [dashboardController::class, 'schedule'])->name('schedule');
+    Route::post('/tambahSchedule', [dashboardController::class, 'tambahSchedule'])->name('schedule.tambah');
+    Route::delete('/hapusSchedule/{id}', [dashboardController::class, 'hapusSchedule'])->name('schedule.hapus');
     
-    
+    Route::get('/news', [dashboardController::class, 'news'])->name('news');
+    Route::post('/tambahnews', [dashboardController::class, 'tambahnews'])->name('news.tambah');
+    Route::delete('/hapusnews/{id}', [dashboardController::class, 'hapusnews'])->name('news.hapus');
+    Route::put('/updatenews/{id}', [dashboardController::class, 'updatenews'])->name('news.update');
+
     Route::get('/merchandise', [dashboardController::class, 'merchandise'])->name('merchandise');
     Route::post('/tambahMerchandise', [dashboardController::class, 'tambahMerchandise'])->name('merchandise.tambah');
     Route::delete('/hapusMerchandise/{id}', [dashboardController::class, 'hapusMerchandise'])->name('merchandise.hapus');
