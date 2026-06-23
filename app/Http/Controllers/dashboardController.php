@@ -6,26 +6,30 @@ use App\Models\albums;
 use App\Models\heroSection;
 use App\Models\schedule;
 use App\Models\merchandise;
+use App\Models\news;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 
 class dashboardController extends Controller
 {
-    //
+    // dashboard
     public function dashboard()
     {
         $hero = heroSection::all();
         $albums = albums::all();
         $schedule = schedule::all();
+        $news = news::all();
         $merchandise = merchandise::all();
         return view('pages.dashboard', 
         compact(
             'hero', 
             'albums', 
             'schedule',
+            'news',
             'merchandise', 
         ));
     }
+    // dashboard end
 
     public function tambahHero(Request $request)
     {
@@ -58,6 +62,8 @@ class dashboardController extends Controller
         return back();
     }
     
+    
+    // albums
     public function albums()
     {
         $albums = albums::all();
@@ -72,7 +78,7 @@ class dashboardController extends Controller
             'albums_cover' => 'required|image|mimes:jpg,jpeg,png|max:2048',
         ],[
             'albums_name.required' => 'Nama Album harus diisi.',
-            'link_spotify.required' => 'link spotify harus diisi.',
+            'link_spotify.required' => 'Link Spotify harus diisi.',
             'albums_cover.required' => 'Cover Album harus diisi.',
             'albums_cover.image' => 'File harus berupa gambar.',
         ]);
@@ -103,7 +109,7 @@ class dashboardController extends Controller
             'albums_cover' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ], [
             'albums_name.required' => 'Nama Album harus diisi.',
-            'link_spotify.required' => 'Link spotify harus diisi.',
+            'link_spotify.required' => 'Link Spotify harus diisi.',
             'albums_cover.image' => 'File harus berupa gambar.',
         ]);
         
@@ -143,7 +149,117 @@ class dashboardController extends Controller
             return to_route('albums')->withErrors('Gagal hapus data');
         }
     }
+    // albums end
     
+    
+    // news
+    public function news()
+    {
+        $news = news::all();
+        return view('pages.dashboard-pages.news', compact('news'));
+    }
+    
+    public function tambahnews(Request $request)
+    {
+        $request->validate([
+            'news_title' => 'required',
+            'news_description' => 'required',
+            'news_source' => 'required',
+            'news_date' => 'required',
+            'news_cover' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+            'news_link' => 'required',
+        ],[
+            'news_title.required' => 'Judul Berita harus diisi.',
+            'news_description.required' => 'Deskripsi Berita harus diisi.',
+            'news_source.required' => 'Sumber Berita harus diisi.',
+            'news_date.required' => 'Tanggal Berita harus diisi.',
+            'news_cover.required' => 'Cover Berita harus diisi.',
+            'news_cover.image' => 'File harus berupa gambar.',
+            'news_link.required' => 'Link Berita harus diisi.',
+        ]);
+
+        // ambil file
+        $file = $request->file('news_cover');
+        // buat nama file unik
+        $filename = time() . '.' . $file->getClientOriginalExtension();
+        // pindahkan ke public/aset/news
+        $file->move(public_path('aset/news'), $filename);
+
+        // simpan data ( simple )
+        $data = new news();
+        $data->news_title = $request->news_title;
+        $data->news_description = $request->news_description;
+        $data->news_source = $request->news_source;
+        $data->news_date = $request->news_date;
+        $data->news_cover = $filename; // hanya nama file
+        $data->news_link = $request->news_link;
+        $data->save();
+
+        return redirect()->route('news')->with('success', 'inputan berhasil ditambahkan');
+    }
+    
+    
+    public function updatenews(Request $request, $id)
+    {
+        $request->validate([
+            'news_title' => 'required',
+            'news_description' => 'required',
+            'news_source' => 'required',
+            'news_date' => 'required',
+            'news_cover' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'news_link' => 'required',
+        ], [
+            'news_title.required' => 'Judul Berita harus diisi.',
+            'news_description.required' => 'Deskripsi Berita harus diisi.',
+            'news_source.required' => 'Sumber Berita harus diisi.',
+            'news_date.required' => 'Tanggal Berita harus diisi.',
+            'news_cover.image' => 'File harus berupa gambar.',
+            'news_link.required' => 'Link Berita harus diisi.',
+        ]);
+        
+        $data = news::findOrFail($id);
+        if ($request->hasFile('news_cover')) {
+            $file = $request->file('news_cover');
+            $filename = time() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('aset/news'), $filename);
+            $data->news_cover = $filename;
+        }
+
+        $data->news_title = $request->news_title;
+        $data->news_description = $request->news_description;
+        $data->news_source = $request->news_source;
+        $data->news_date = $request->news_date;
+        $data->news_link = $request->news_link;
+        $data->save();
+
+        return redirect()->back()->with('success', 'Data berhasil diupdate');
+    }    
+
+    public function hapusnews($id)
+    {
+        try {
+            // ambil data dulu
+            $data = news::where('id_news', $id)->first();
+            // cek kalau data ada
+            if ($data) {
+                // path file
+                $path = public_path('aset/news/' . $data->news_cover);
+                // cek file ada, lalu hapus
+                if (file_exists($path)) {
+                    unlink($path);
+                }
+                // hapus data dari database
+                $data->delete();
+            }
+            return to_route('news')->with('success', 'Berita berhasil dihapus');
+        } catch (\Exception $e) {
+            return to_route('news')->withErrors('Gagal hapus data');
+        }
+    }
+    // news end
+    
+    
+    // schedule
     public function schedule()
     {
         $schedule = schedule::all();
@@ -183,7 +299,10 @@ class dashboardController extends Controller
             return to_route('schedule')->withErrors('gagal hapus');
         }
     }
+    // schedule end
     
+    
+    // merchandise
     public function merchandise()
     {
         $merchandise = merchandise::all();
@@ -269,4 +388,5 @@ class dashboardController extends Controller
             return to_route('merchandise')->withErrors('Gagal hapus data');
         }
     }
+    // merchandise end
 }
