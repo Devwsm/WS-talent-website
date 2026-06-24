@@ -1,23 +1,26 @@
-<div class="news p-6 bg-white
-    grid grid-cols-1 lg:grid-cols-4 gap-4 w-full justify-center items-center">
+<div class="news p-6 bg-white 
+            flex gap-4 overflow-x-auto lg:grid lg:grid-cols-4 lg:overflow-visible hide-scrollbar w-full">
 
     @foreach ($news as $item)
-    <a href="{{ $item->news_link }}" target="_blank">
-        <div class="card flex flex-col justify-center items-center bg-gray-100 hover:bg-gray-200 gap-2 rounded-lg">
-            <div class="w-full h-8/12 flex justify-center">
-                    <img src="{{ asset('aset/news/' . $item->news_cover) }}" alt="akuharusperi"
-                    class="w-full h-full object-cover">
-            </div>
-            <div class="text-cover w-full h-4/12 flex flex-col justify-center p-4 gap-2">
-                <div class="header flex gap-8">
-                    <h1 class="font-light text-lg">{{ $item->news_date }}</h1>
+        <a href="{{ $item->news_link }}" target="_blank" class="min-w-[80%] sm:min-w-[60%] lg:min-w-0">
+
+            <div class="card flex flex-col bg-gray-100 hover:bg-gray-200 gap-2 rounded-lg overflow-hidden">
+                <div class="w-full aspect-square overflow-hidden">
+                    <img src="{{ asset('aset/news/' . $item->news_cover) }}"
+                        class="w-full h-full object-cover object-center">
                 </div>
-                <div class="description flex flex-col justify-center gap-2">
-                    <h1 class="font-bold text-xl">{{ $item->news_title }}</h1>
+
+                <div class="p-4 flex flex-col gap-2">
+                    <h1 class="font-light text-sm text-gray-500">
+                        {{ $item->news_date }}
+                    </h1>
+                    <h1 class="font-bold text-lg line-clamp-2">
+                        {{ $item->news_title }}
+                    </h1>
                 </div>
             </div>
-        </div>
-    </a>
+
+        </a>
     @endforeach
 
 </div>
