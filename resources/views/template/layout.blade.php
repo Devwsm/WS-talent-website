@@ -8,7 +8,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="icon" href="{{ asset('aset/logo/Whisnu-Santika_Logo-2025-2-White.png') }}" type="image/png">
 </head>
-<body class="bg-white flex flex-col w-full sora">
+<body class="bg-[#5E0006] flex flex-col w-full sora">
     <div class="flex flex-col justify-center items-center">
         @yield('content')
     </div>

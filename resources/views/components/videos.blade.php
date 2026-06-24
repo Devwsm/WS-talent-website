@@ -1,32 +1,33 @@
-<div id="videos" class="videos bg-black py-24 px-6 lg:px-52 flex justify-center">
-    <div class="cover bg-white w-full max-w-6xl shadow-lg flex flex-col lg:flex-row overflow-hidden">
+<div class="videos-cover w-full h-full gap-4">
+    <div class="head flex flex-col w-full p-12 gap-2 justify-center items-center">
+        <img src="{{ asset('aset/logo/Whisnu-Santika_Logo-2025-White.png') }}" alt="whisnu-santika"
+            class="object-cover w-170 rounded-lg">
+        <a href="">
+            <button class="bg-white text-black px-4 py-1 rounded-lg">Watch Video</button>
+        </a>
+    </div>
+    <div class="clip relative flex flex-col h-screen">
+        <video autoplay muted loop class="absolute w-full h-full object-cover z-0">
+            <source src="{{ asset('aset/videos/Whisnu Santika Cartel DWP.mp4') }}" type="video/mp4">
+        </video>
         
-        <div class="left-section w-full lg:w-1/3 border-r max-h-100 flex flex-col">
-            <div class="p-4 font-bold text-sm flex justify-between border-b">
-                <span>VIDEOS</span>
-                <span class="text-gray-500">3 Videos</span>
-            </div>
-            <div class="overflow-y-auto flex-1">                
-                <div class="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                    <img src="https://img.youtube.com/vi/NlTj9quIY6I/0.jpg" class="w-20 h-12 object-cover">
-                    <h1 class="text-sm">Whisnu Santika</h1>
+        <div class="content absolute inset-0 z-10 bg-black/50 
+            flex flex-col justify-center items-center text-white text-center gap-4">
+            <h1 class="text-4xl md:text-6xl font-bold tracking-wide">
+                WHISNU SANTIKA
+            </h1>
+            <div class="flex flex-col gap-2">
+                <h1 class="text-sm md:text-lg opacity-80">
+                    Official Music Experience
+                </h1>
+                <div class="direct flex gap-4">
+                    <a href="#new-music" class="px-6 py-2 bg-white text-black rounded-full font-semibold">
+                        Listen Now
+                    </a>
+                    <a href="#tour" class="px-6 py-2 border border-white rounded-full">
+                        Tour Dates
+                    </a>
                 </div>
-                <div class="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                    <img src="https://img.youtube.com/vi/NlTj9quIY6I/1.jpg" class="w-20 h-12 object-cover">
-                    <h1 class="text-sm">Whisnu Santika</h1>
-                </div>
-                <div class="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                    <img src="https://img.youtube.com/vi/NlTj9quIY6I/2.jpg" class="w-20 h-12 object-cover">
-                    <h1 class="text-sm">Whisnu Santika</h1>
-                </div>
-            </div>
-        </div>
-
-        <div class="right-section w-full lg:w-2/3">
-            <div class="aspect-video">
-                    <iframe class="w-full h-full" src="https://www.youtube.com/embed/NlTj9quIY6I?si=yJW5AaGXbMkhU69G" title="YouTube video player" frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                    referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
             </div>
         </div>
 

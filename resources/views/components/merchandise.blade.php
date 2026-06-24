@@ -1,4 +1,4 @@
-<div id="store" class="merchandise relative">
+<div id="store" class="merchandise relative bg-white">
     <div class="relative w-full px-12 py-24 lg:px-52 lg:py-32 gap-6">
         <div class="swiper merchSwiper">
             <div class="swiper-wrapper">

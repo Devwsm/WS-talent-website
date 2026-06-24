@@ -1,4 +1,4 @@
-<div class="cover flex flex-col w-full justify-center">
+<div class="cover bg-white flex flex-col w-full py-12 justify-center">
 <section class="w-full">
     <div class="max-w-6xl mx-auto">
         <script charset="utf-8" src="https://widgetv3.bandsintown.com/main.min.js"></script>

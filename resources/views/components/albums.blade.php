@@ -1,4 +1,4 @@
-<div id="new-music" class="relative overflow-hidden">    
+<div id="new-music" class="relative bg-white overflow-hidden">
     <div class="absolute top-32 bottom-1 inset-x-0 
         bg-black transform z-0">
     </div>
