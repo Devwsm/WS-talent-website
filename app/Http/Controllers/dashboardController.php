@@ -75,7 +75,7 @@ class dashboardController extends Controller
         $request->validate([
             'albums_name' => 'required',
             'link_spotify' => 'required',
-            'albums_cover' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+            'albums_cover' => 'required|image|mimes:jpg,jpeg,png|max:512',
         ],[
             'albums_name.required' => 'Nama Album harus diisi.',
             'link_spotify.required' => 'Link Spotify harus diisi.',
@@ -106,7 +106,7 @@ class dashboardController extends Controller
         $request->validate([
             'albums_name' => 'required',
             'link_spotify' => 'required',
-            'albums_cover' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'albums_cover' => 'nullable|image|mimes:jpg,jpeg,png|max:512',
         ], [
             'albums_name.required' => 'Nama Album harus diisi.',
             'link_spotify.required' => 'Link Spotify harus diisi.',
@@ -166,7 +166,7 @@ class dashboardController extends Controller
             'news_description' => 'required',
             'news_source' => 'required',
             'news_date' => 'required',
-            'news_cover' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+            'news_cover' => 'required|image|mimes:jpg,jpeg,png|max:512',
             'news_link' => 'required',
         ],[
             'news_title.required' => 'Judul Berita harus diisi.',
@@ -206,7 +206,7 @@ class dashboardController extends Controller
             'news_description' => 'required',
             'news_source' => 'required',
             'news_date' => 'required',
-            'news_cover' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'news_cover' => 'nullable|image|mimes:jpg,jpeg,png|max:512',
             'news_link' => 'required',
         ], [
             'news_title.required' => 'Judul Berita harus diisi.',
@@ -314,7 +314,7 @@ class dashboardController extends Controller
         $request->validate([
             'merchandise_name' => 'required',
             'link_merchandise' => 'required',
-            'merchandise_cover' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+            'merchandise_cover' => 'required|image|mimes:jpg,jpeg,png|max:512',
         ],[
             'merchandise_name.required' => 'Nama Merchandise harus diisi.',
             'link_merchandise.required' => 'Link Merchandise harus diisi.',
@@ -345,7 +345,7 @@ class dashboardController extends Controller
         $request->validate([
             'merchandise_name' => 'required',
             'link_merchandise' => 'required',
-            'merchandise_cover' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'merchandise_cover' => 'nullable|image|mimes:jpg,jpeg,png|max:512',
         ], [
             'merchandise_name.required' => 'Nama Merchandise harus diisi.',
             'link_merchandise.required' => 'Link Merchandise harus diisi.',
