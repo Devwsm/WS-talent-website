@@ -6,16 +6,15 @@
             <button class="bg-white text-black px-4 py-1 rounded-lg">Watch Video</button>
         </a>
     </div>
-    <div class="clip relative flex flex-col h-screen">
+    <div class="clip relative flex flex-col h-120 md:h-screen">
         <video autoplay muted loop class="absolute w-full h-full object-cover z-0">
             <source src="{{ asset('aset/videos/Whisnu Santika Cartel DWP.mp4') }}" type="video/mp4">
         </video>
         
         <div class="content absolute inset-0 z-10 bg-black/50 
             flex flex-col justify-center items-center text-white text-center gap-4">
-            <h1 class="text-4xl md:text-6xl font-bold tracking-wide">
-                WHISNU SANTIKA
-            </h1>
+            <img src="{{ asset('aset/logo/Whisnu-Santika_Logo-2025-2-White.png') }}" alt="whisnu-santika"
+                class="object-cover w-120 rounded-lg">
             <div class="flex flex-col gap-2">
                 <h1 class="text-sm md:text-lg opacity-80">
                     Official Music Experience
