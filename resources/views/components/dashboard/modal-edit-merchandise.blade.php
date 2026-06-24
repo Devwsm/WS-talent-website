@@ -14,7 +14,7 @@
                     <h3 class="font-bold text-lg">UPDATE DATA</h3>
                 </div>
                 <!-- Form -->
-                <form action="{{ route('merchandise.update', $item->id_merchandise) }}" method="POST">
+                <form action="{{ route('merchandise.update', $item->id_merchandise) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
                     <!-- Body -->

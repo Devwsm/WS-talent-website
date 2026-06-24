@@ -14,7 +14,7 @@
                     <h3 class="font-bold text-lg">UPDATE DATA</h3>
                 </div>
                 <!-- Form -->
-                <form action="{{ route('albums.update', $item->id_albums) }}" method="POST">
+                <form action="{{ route('albums.update', $item->id_albums) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
                     <!-- Body -->

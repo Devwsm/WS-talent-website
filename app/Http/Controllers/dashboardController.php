@@ -20,14 +20,16 @@ class dashboardController extends Controller
         $schedule = schedule::all();
         $news = news::all();
         $merchandise = merchandise::all();
-        return view('pages.dashboard', 
-        compact(
-            'hero', 
-            'albums', 
-            'schedule',
-            'news',
-            'merchandise', 
-        ));
+        return view(
+            'pages.dashboard',
+            compact(
+                'hero',
+                'albums',
+                'schedule',
+                'news',
+                'merchandise',
+            )
+        );
     }
     // dashboard end
 
@@ -61,26 +63,27 @@ class dashboardController extends Controller
 
         return back();
     }
-    
-    
+
+
     // albums
     public function albums()
     {
         $albums = albums::all();
         return view('pages.dashboard-pages.albums', compact('albums'));
     }
-    
+
     public function tambahAlbums(Request $request)
     {
         $request->validate([
             'albums_name' => 'required',
             'link_spotify' => 'required',
-            'albums_cover' => 'required|image|mimes:jpg,jpeg,png|max:512',
-        ],[
+            'albums_cover' => 'required|image|mimes:jpg,jpeg,png|max:1024',
+        ], [
             'albums_name.required' => 'Nama Album harus diisi.',
             'link_spotify.required' => 'Link Spotify harus diisi.',
             'albums_cover.required' => 'Cover Album harus diisi.',
             'albums_cover.image' => 'File harus berupa gambar.',
+            'albums_cover.max' => 'Cover Album tidak boleh lebih dari 1MB.',
         ]);
 
         // ambil file
@@ -99,22 +102,27 @@ class dashboardController extends Controller
 
         return redirect()->route('albums')->with('success', 'inputan berhasil ditambahkan');
     }
-    
-    
+
+
     public function updateAlbums(Request $request, $id)
     {
         $request->validate([
             'albums_name' => 'required',
             'link_spotify' => 'required',
-            'albums_cover' => 'nullable|image|mimes:jpg,jpeg,png|max:512',
+            'albums_cover' => 'nullable|image|mimes:jpg,jpeg,png|max:1024',
         ], [
             'albums_name.required' => 'Nama Album harus diisi.',
             'link_spotify.required' => 'Link Spotify harus diisi.',
             'albums_cover.image' => 'File harus berupa gambar.',
+            'albums_cover.max' => 'Cover Album tidak boleh lebih dari 1MB.',
         ]);
-        
+
         $data = albums::findOrFail($id);
         if ($request->hasFile('albums_cover')) {
+            $oldFile = public_path('aset/albums/' . $data->albums_cover);
+            if ($data->albums_cover && file_exists($oldFile)) {
+                unlink($oldFile);
+            }
             $file = $request->file('albums_cover');
             $filename = time() . '.' . $file->getClientOriginalExtension();
             $file->move(public_path('aset/albums'), $filename);
@@ -126,7 +134,7 @@ class dashboardController extends Controller
         $data->save();
 
         return redirect()->back()->with('success', 'Data berhasil diupdate');
-    }    
+    }
 
     public function hapusAlbums($id)
     {
@@ -150,15 +158,15 @@ class dashboardController extends Controller
         }
     }
     // albums end
-    
-    
+
+
     // news
     public function news()
     {
         $news = news::all();
         return view('pages.dashboard-pages.news', compact('news'));
     }
-    
+
     public function tambahnews(Request $request)
     {
         $request->validate([
@@ -166,15 +174,16 @@ class dashboardController extends Controller
             'news_description' => 'required',
             'news_source' => 'required',
             'news_date' => 'required',
-            'news_cover' => 'required|image|mimes:jpg,jpeg,png|max:512',
+            'news_cover' => 'required|image|mimes:jpg,jpeg,png|max:1024',
             'news_link' => 'required',
-        ],[
+        ], [
             'news_title.required' => 'Judul Berita harus diisi.',
             'news_description.required' => 'Deskripsi Berita harus diisi.',
             'news_source.required' => 'Sumber Berita harus diisi.',
             'news_date.required' => 'Tanggal Berita harus diisi.',
             'news_cover.required' => 'Cover Berita harus diisi.',
             'news_cover.image' => 'File harus berupa gambar.',
+            'news_cover.max' => 'Cover Berita tidak boleh lebih dari 1MB.',
             'news_link.required' => 'Link Berita harus diisi.',
         ]);
 
@@ -197,8 +206,8 @@ class dashboardController extends Controller
 
         return redirect()->route('news')->with('success', 'inputan berhasil ditambahkan');
     }
-    
-    
+
+
     public function updatenews(Request $request, $id)
     {
         $request->validate([
@@ -206,7 +215,7 @@ class dashboardController extends Controller
             'news_description' => 'required',
             'news_source' => 'required',
             'news_date' => 'required',
-            'news_cover' => 'nullable|image|mimes:jpg,jpeg,png|max:512',
+            'news_cover' => 'nullable|image|mimes:jpg,jpeg,png|max:1024',
             'news_link' => 'required',
         ], [
             'news_title.required' => 'Judul Berita harus diisi.',
@@ -214,11 +223,16 @@ class dashboardController extends Controller
             'news_source.required' => 'Sumber Berita harus diisi.',
             'news_date.required' => 'Tanggal Berita harus diisi.',
             'news_cover.image' => 'File harus berupa gambar.',
+            'news_cover.max' => 'Cover Berita tidak boleh lebih dari 1MB.',
             'news_link.required' => 'Link Berita harus diisi.',
         ]);
-        
+
         $data = news::findOrFail($id);
         if ($request->hasFile('news_cover')) {
+            $oldFile = public_path('aset/news/' . $data->news_cover);
+            if ($data->news_cover && file_exists($oldFile)) {
+                unlink($oldFile);
+            }
             $file = $request->file('news_cover');
             $filename = time() . '.' . $file->getClientOriginalExtension();
             $file->move(public_path('aset/news'), $filename);
@@ -233,7 +247,7 @@ class dashboardController extends Controller
         $data->save();
 
         return redirect()->back()->with('success', 'Data berhasil diupdate');
-    }    
+    }
 
     public function hapusnews($id)
     {
@@ -257,22 +271,22 @@ class dashboardController extends Controller
         }
     }
     // news end
-    
-    
+
+
     // schedule
     public function schedule()
     {
         $schedule = schedule::all();
         return view('pages.dashboard-pages.schedule', compact('schedule'));
     }
-    
+
     public function tambahSchedule(Request $request)
     {
         $request->validate([
             'tanggal' => 'required|date|before:9999-12-31',
             'nama_tempat' => 'required',
             'daerah' => 'required',
-        ],[
+        ], [
             'tanggal.required' => 'Tanggal harus diisi.',
             'tanggal.date' => 'Format tanggal tidak valid.',
             'tanggal.before' => 'Tanggal terlalu besar / tidak masuk akal.',
@@ -289,7 +303,7 @@ class dashboardController extends Controller
 
         return redirect()->route('schedule')->with('success', 'inputan berhasil ditambahkan');
     }
-    
+
     public function hapusSchedule($id)
     {
         try {
@@ -300,26 +314,27 @@ class dashboardController extends Controller
         }
     }
     // schedule end
-    
-    
+
+
     // merchandise
     public function merchandise()
     {
         $merchandise = merchandise::all();
         return view('pages.dashboard-pages.merchandise', compact('merchandise'));
     }
-        
+
     public function tambahmerchandise(Request $request)
     {
         $request->validate([
             'merchandise_name' => 'required',
             'link_merchandise' => 'required',
-            'merchandise_cover' => 'required|image|mimes:jpg,jpeg,png|max:512',
-        ],[
+            'merchandise_cover' => 'required|image|mimes:jpg,jpeg,png|max:1024',
+        ], [
             'merchandise_name.required' => 'Nama Merchandise harus diisi.',
             'link_merchandise.required' => 'Link Merchandise harus diisi.',
             'merchandise_cover.required' => 'Cover Merchandise harus diisi.',
             'merchandise_cover.image' => 'File harus berupa gambar.',
+            'merchandise_cover.max' => 'Cover Merchandise tidak boleh lebih dari 1MB.',
         ]);
 
         // ambil file
@@ -338,22 +353,27 @@ class dashboardController extends Controller
 
         return redirect()->route('merchandise')->with('success', 'inputan berhasil ditambahkan');
     }
-    
-    
+
+
     public function updatemerchandise(Request $request, $id)
     {
         $request->validate([
             'merchandise_name' => 'required',
             'link_merchandise' => 'required',
-            'merchandise_cover' => 'nullable|image|mimes:jpg,jpeg,png|max:512',
+            'merchandise_cover' => 'nullable|image|mimes:jpg,jpeg,png|max:1024',
         ], [
             'merchandise_name.required' => 'Nama Merchandise harus diisi.',
             'link_merchandise.required' => 'Link Merchandise harus diisi.',
             'merchandise_cover.image' => 'File harus berupa gambar.',
+            'merchandise_cover.max' => 'Cover Merchandise tidak boleh lebih dari 1MB.',
         ]);
-        
+
         $data = merchandise::findOrFail($id);
         if ($request->hasFile('merchandise_cover')) {
+            $oldFile = public_path('aset/merchandise/' . $data->merchandise_cover);
+            if ($data->merchandise_cover && file_exists($oldFile)) {
+                unlink($oldFile);
+            }
             $file = $request->file('merchandise_cover');
             $filename = time() . '.' . $file->getClientOriginalExtension();
             $file->move(public_path('aset/merchandise'), $filename);
@@ -365,7 +385,7 @@ class dashboardController extends Controller
         $data->save();
 
         return redirect()->back()->with('success', 'Data berhasil diupdate');
-    }    
+    }
 
     public function hapusmerchandise($id)
     {
