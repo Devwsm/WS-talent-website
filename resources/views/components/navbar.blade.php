@@ -2,39 +2,35 @@
     <div id="navbar" class="fixed top-0 left-0 w-full bg-[#5E0006] text-white z-50 transition-transform duration-300">
 
         <div class="flex items-center justify-between px-4 py-4">
-
             <!-- Mobile Left -->
             <div class="w-1/3 lg:hidden">
                 <button id="menuBtn" class="text-3xl">
                     <i class="bi bi-list"></i>
                 </button>
             </div>
-
             <!-- Logo -->
             <div class="w-1/3 lg:w-auto flex justify-center lg:justify-start">
-                <img src="{{ asset('aset/logo/Whisnu-Santika_Logo-2025-White.png') }}" loading="lazy" decoding="async" alt="whisnu-santika"
-                    class="object-cover w-32 md:w-40 lg:w-60 rounded-lg">
+                <img src="{{ asset('aset/logo/Whisnu-Santika_Logo-2025-White.png') }}" loading="lazy" decoding="async"
+                    alt="whisnu-santika" class="object-cover w-32 md:w-40 lg:w-60 rounded-lg">
             </div>
-
             <!-- Desktop Menu -->
             <div class="hidden lg:flex items-center gap-8 ml-12">
                 <a href="#tour">
                     <h1 class="font-bold uppercase">Tour</h1>
                 </a>
-
                 <a href="#news">
                     <h1 class="font-bold uppercase">News</h1>
                 </a>
-
                 <a href="#new-music">
                     <h1 class="font-bold uppercase">Albums</h1>
                 </a>
-
                 <a href="#store">
                     <h1 class="font-bold uppercase">Merch</h1>
                 </a>
+                <a href="{{ route('login') }}" class="menu-link">
+                    <i class="bi bi-person"></i>
+                </a>
             </div>
-
             <!-- Mobile Right -->
             <div class="w-1/3 lg:hidden flex justify-end">
                 <a href="#store">
