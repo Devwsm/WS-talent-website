@@ -10,7 +10,7 @@
                 <div class="swiper-slide">
                     <a href="{{ $item->link_spotify }}" target="_blank">
                         <img src="{{ asset('aset/albums/' . $item->albums_cover) }}" 
-                        alt="{{ $item->albums_name }}" 
+                        alt="{{ $item->albums_name }}" loading="lazy" decoding="async"
                         class="object-cover aspect-square w-full hover:scale-105 transition duration-300 rounded-lg">
                     </a>
                 </div>

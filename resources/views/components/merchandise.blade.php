@@ -6,7 +6,7 @@
                 <div class="swiper-slide">
                     <a href="{{ $item->link_merchandise }}" target="_blank">
                         <img src="{{ asset('aset/merchandise/' . $item->merchandise_cover) }}" 
-                        alt="{{ $item->merchandise_name }}" 
+                        alt="{{ $item->merchandise_name }}" loading="lazy" decoding="async"
                         class="object-cover w-full rounded-lg">
                     </a>
                 </div>

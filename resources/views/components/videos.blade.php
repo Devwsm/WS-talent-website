@@ -7,14 +7,15 @@
         </a>
     </div>
     <div class="clip relative flex flex-col h-120 md:h-screen">
-        <video autoplay muted loop class="absolute w-full h-full object-cover z-0">
-            <source src="{{ asset('aset/videos/Whisnu Santika Cartel DWP.mp4') }}" type="video/mp4">
+        <video autoplay muted loop playsinline id="bg-video" 
+            class="absolute w-full h-full object-cover z-0">
         </video>
-        
-        <div class="content absolute inset-0 z-10 bg-black/50 
+
+        <div
+            class="content absolute inset-0 z-10 bg-black/50 
             flex flex-col justify-center items-center text-white text-center gap-4">
-            <img src="{{ asset('aset/logo/Whisnu-Santika_Logo-2025-2-White.png') }}" alt="whisnu-santika"
-                class="object-cover w-120 rounded-lg">
+            <img src="{{ asset('aset/logo/Whisnu-Santika_Logo-2025-2-White.png') }}" loading="lazy" decoding="async"
+                alt="whisnu-santika" class="object-cover w-120 rounded-lg">
             <div class="flex flex-col gap-2">
                 <h1 class="text-sm md:text-lg opacity-80">
                     Official Music Experience
@@ -32,3 +33,20 @@
 
     </div>
 </div>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const video = document.getElementById("bg-video");
+
+        const source = document.createElement("source");
+        source.src = "{{ asset('aset/videos/Whisnu Santika Cartel DWP.mp4') }}";
+        source.type = "video/mp4";
+
+        video.appendChild(source);
+
+        // load hanya setelah halaman siap
+        setTimeout(() => {
+            video.load();
+            video.play();
+        }, 1500);
+    });
+</script>

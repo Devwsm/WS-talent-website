@@ -12,7 +12,7 @@
 
             <!-- Logo -->
             <div class="w-1/3 lg:w-auto flex justify-center lg:justify-start">
-                <img src="{{ asset('aset/logo/Whisnu-Santika_Logo-2025-White.png') }}" alt="whisnu-santika"
+                <img src="{{ asset('aset/logo/Whisnu-Santika_Logo-2025-White.png') }}" loading="lazy" decoding="async" alt="whisnu-santika"
                     class="object-cover w-32 md:w-40 lg:w-60 rounded-lg">
             </div>
 
