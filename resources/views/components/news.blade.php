@@ -1,4 +1,5 @@
-<div class="news p-6 bg-white 
+<div
+    class="news p-6 bg-white 
             flex gap-4 overflow-x-auto lg:grid lg:grid-cols-4 lg:overflow-visible hide-scrollbar w-full">
 
     @foreach ($news as $item)
@@ -6,8 +7,8 @@
 
             <div class="card flex flex-col bg-gray-100 hover:bg-gray-200 gap-2 rounded-lg overflow-hidden">
                 <div class="w-full aspect-square overflow-hidden">
-                    <img src="{{ asset('aset/news/' . $item->news_cover) }}" loading="lazy" decoding="async" alt="{{ $item->news_title }}"
-                        class="w-full h-full object-cover object-center">
+                    <img src="{{ Storage::url('news/' . $item->news_cover) }}" alt="{{ $item->news_title }}" loading="lazy"
+                        decoding="async" class="w-full h-full object-cover object-center">
                 </div>
 
                 <div class="p-4 flex flex-col gap-2">

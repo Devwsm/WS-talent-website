@@ -76,8 +76,8 @@
                         <!-- news cover -->
                         <div class="flex flex-col gap-2 text-center justify-center items-center">
                             <h1 class="text-xs uppercase text-white/60">news cover</h1>
-                            <img src="{{ asset('aset/news/' . $item->news_cover) }}" 
-                            alt="news_cover" 
+                            <img src="{{ Storage::url('news/' . $item->news_cover) }}" alt="{{ $item->news_title }}"
+                                loading="lazy" decoding="async"
                             class="object-cover aspect-square w-full max-w-xs transition duration-300 rounded-lg">
                         </div>
                     </div>

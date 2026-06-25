@@ -9,6 +9,9 @@ use App\Models\merchandise;
 use App\Models\news;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+
 
 class dashboardController extends Controller
 {
@@ -86,12 +89,12 @@ class dashboardController extends Controller
             'albums_cover.max' => 'Cover Album tidak boleh lebih dari 1MB.',
         ]);
 
-        // ambil file
-        $file = $request->file('albums_cover');
-        // buat nama file unik
-        $filename = time() . '.' . $file->getClientOriginalExtension();
-        // pindahkan ke public/aset/albums
-        $file->move(public_path('aset/albums'), $filename);
+        $file     = $request->file('albums_cover');
+        $filename = now()->timestamp . '_' . Str::uuid() . '.webp';
+
+        // Konversi ke WebP → simpan ke storage/app/public/albums/
+        $webpData = $this->convertToWebP($file->getRealPath(), 82);
+        Storage::disk('public')->put('albums/' . $filename, $webpData);
 
         // simpan data ( simple )
         $data = new albums();
@@ -119,13 +122,17 @@ class dashboardController extends Controller
 
         $data = albums::findOrFail($id);
         if ($request->hasFile('albums_cover')) {
-            $oldFile = public_path('aset/albums/' . $data->albums_cover);
-            if ($data->albums_cover && file_exists($oldFile)) {
-                unlink($oldFile);
+            // Hapus file lama dari storage
+            if ($data->albums_cover && Storage::disk('public')->exists('albums/' . $data->albums_cover)) {
+                Storage::disk('public')->delete('albums/' . $data->albums_cover);
             }
-            $file = $request->file('albums_cover');
-            $filename = time() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('aset/albums'), $filename);
+
+            // Konversi dan simpan file baru
+            $file     = $request->file('albums_cover');
+            $filename = now()->timestamp . '_' . Str::uuid() . '.webp';
+            $webpData = $this->convertToWebP($file->getRealPath(), 82);
+            Storage::disk('public')->put('albums/' . $filename, $webpData);
+
             $data->albums_cover = $filename;
         }
 
@@ -139,25 +146,22 @@ class dashboardController extends Controller
     public function hapusAlbums($id)
     {
         try {
-            // ambil data dulu
-            $data = albums::where('id_albums', $id)->first();
-            // cek kalau data ada
-            if ($data) {
-                // path file
-                $path = public_path('aset/albums/' . $data->albums_cover);
-                // cek file ada, lalu hapus
-                if (file_exists($path)) {
-                    unlink($path);
-                }
-                // hapus data dari database
-                $data->delete();
+            $data = albums::findOrFail($id);
+
+            // Hapus file dari storage jika ada
+            if ($data->albums_cover && Storage::disk('public')->exists('albums/' . $data->albums_cover)) {
+                Storage::disk('public')->delete('albums/' . $data->albums_cover);
             }
-            return to_route('albums')->with('success', 'Album berhasil dihapus');
+
+            $data->delete();
+
+            return to_route('albums')->with('success', 'Album berhasil dihapus.');
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return to_route('albums')->withErrors('Album tidak ditemukan.');
         } catch (\Exception $e) {
-            return to_route('albums')->withErrors('Gagal hapus data');
+            return to_route('albums')->withErrors('Gagal menghapus album.');
         }
-    }
-    // albums end
+    }    // albums end
 
 
     // news
@@ -187,12 +191,12 @@ class dashboardController extends Controller
             'news_link.required' => 'Link Berita harus diisi.',
         ]);
 
-        // ambil file
-        $file = $request->file('news_cover');
-        // buat nama file unik
-        $filename = time() . '.' . $file->getClientOriginalExtension();
-        // pindahkan ke public/aset/news
-        $file->move(public_path('aset/news'), $filename);
+        $file     = $request->file('news_cover');
+        $filename = now()->timestamp . '_' . Str::uuid() . '.webp';
+
+        // Konversi ke WebP → simpan ke storage/app/public/news/
+        $webpData = $this->convertToWebP($file->getRealPath(), 82);
+        Storage::disk('public')->put('news/' . $filename, $webpData);
 
         // simpan data ( simple )
         $data = new news();
@@ -229,13 +233,17 @@ class dashboardController extends Controller
 
         $data = news::findOrFail($id);
         if ($request->hasFile('news_cover')) {
-            $oldFile = public_path('aset/news/' . $data->news_cover);
-            if ($data->news_cover && file_exists($oldFile)) {
-                unlink($oldFile);
+            // Hapus file lama dari storage
+            if ($data->news_cover && Storage::disk('public')->exists('news/' . $data->news_cover)) {
+                Storage::disk('public')->delete('news/' . $data->news_cover);
             }
-            $file = $request->file('news_cover');
-            $filename = time() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('aset/news'), $filename);
+
+            // Konversi dan simpan file baru
+            $file     = $request->file('news_cover');
+            $filename = now()->timestamp . '_' . Str::uuid() . '.webp';
+            $webpData = $this->convertToWebP($file->getRealPath(), 82);
+            Storage::disk('public')->put('news/' . $filename, $webpData);
+
             $data->news_cover = $filename;
         }
 
@@ -252,22 +260,20 @@ class dashboardController extends Controller
     public function hapusnews($id)
     {
         try {
-            // ambil data dulu
-            $data = news::where('id_news', $id)->first();
-            // cek kalau data ada
-            if ($data) {
-                // path file
-                $path = public_path('aset/news/' . $data->news_cover);
-                // cek file ada, lalu hapus
-                if (file_exists($path)) {
-                    unlink($path);
-                }
-                // hapus data dari database
-                $data->delete();
+            $data = news::findOrFail($id);
+
+            // Hapus file dari storage jika ada
+            if ($data->news_cover && Storage::disk('public')->exists('news/' . $data->news_cover)) {
+                Storage::disk('public')->delete('news/' . $data->news_cover);
             }
-            return to_route('news')->with('success', 'Berita berhasil dihapus');
+
+            $data->delete();
+
+            return to_route('news')->with('success', 'news berhasil dihapus.');
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return to_route('news')->withErrors('news tidak ditemukan.');
         } catch (\Exception $e) {
-            return to_route('news')->withErrors('Gagal hapus data');
+            return to_route('news')->withErrors('Gagal menghapus news.');
         }
     }
     // news end
@@ -337,12 +343,12 @@ class dashboardController extends Controller
             'merchandise_cover.max' => 'Cover Merchandise tidak boleh lebih dari 1MB.',
         ]);
 
-        // ambil file
-        $file = $request->file('merchandise_cover');
-        // buat nama file unik
-        $filename = time() . '.' . $file->getClientOriginalExtension();
-        // pindahkan ke public/aset/merchandise
-        $file->move(public_path('aset/merchandise'), $filename);
+        $file     = $request->file('merchandise_cover');
+        $filename = now()->timestamp . '_' . Str::uuid() . '.webp';
+
+        // Konversi ke WebP → simpan ke storage/app/public/merchandise/
+        $webpData = $this->convertToWebP($file->getRealPath(), 82);
+        Storage::disk('public')->put('merchandise/' . $filename, $webpData);
 
         // simpan data ( simple )
         $data = new merchandise();
@@ -370,13 +376,17 @@ class dashboardController extends Controller
 
         $data = merchandise::findOrFail($id);
         if ($request->hasFile('merchandise_cover')) {
-            $oldFile = public_path('aset/merchandise/' . $data->merchandise_cover);
-            if ($data->merchandise_cover && file_exists($oldFile)) {
-                unlink($oldFile);
+            // Hapus file lama dari storage
+            if ($data->merchandise_cover && Storage::disk('public')->exists('merchandise/' . $data->merchandise_cover)) {
+                Storage::disk('public')->delete('merchandise/' . $data->merchandise_cover);
             }
-            $file = $request->file('merchandise_cover');
-            $filename = time() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('aset/merchandise'), $filename);
+
+            // Konversi dan simpan file baru
+            $file     = $request->file('merchandise_cover');
+            $filename = now()->timestamp . '_' . Str::uuid() . '.webp';
+            $webpData = $this->convertToWebP($file->getRealPath(), 82);
+            Storage::disk('public')->put('merchandise/' . $filename, $webpData);
+
             $data->merchandise_cover = $filename;
         }
 
@@ -390,23 +400,56 @@ class dashboardController extends Controller
     public function hapusmerchandise($id)
     {
         try {
-            // ambil data dulu
-            $data = merchandise::where('id_merchandise', $id)->first();
-            // cek kalau data ada
-            if ($data) {
-                // path file
-                $path = public_path('aset/merchandise/' . $data->merchandise_cover);
-                // cek file ada, lalu hapus
-                if (file_exists($path)) {
-                    unlink($path);
-                }
-                // hapus data dari database
-                $data->delete();
+            $data = merchandise::findOrFail($id);
+
+            // Hapus file dari storage jika ada
+            if ($data->merchandise_cover && Storage::disk('public')->exists('merchandise/' . $data->merchandise_cover)) {
+                Storage::disk('public')->delete('merchandise/' . $data->merchandise_cover);
             }
-            return to_route('merchandise')->with('success', 'Merchandise berhasil dihapus');
+
+            $data->delete();
+
+            return to_route('merchandise')->with('success', 'merchandise berhasil dihapus.');
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return to_route('merchandise')->withErrors('merchandise tidak ditemukan.');
         } catch (\Exception $e) {
-            return to_route('merchandise')->withErrors('Gagal hapus data');
+            return to_route('merchandise')->withErrors('Gagal menghapus merchandise.');
         }
     }
     // merchandise end
+
+
+    /**
+     * Konversi gambar (JPG/PNG) ke WebP menggunakan PHP GD.
+     * Tidak butuh library tambahan — GD sudah aktif by default di cPanel.
+     *
+     * @param  string  $sourcePath  Path file asli
+     * @param  string  $destPath    Path tujuan file .webp
+     * @param  int     $quality     Kualitas WebP: 0–100 (82 = sweet spot ukuran vs kualitas)
+     */
+    private function convertToWebP(string $sourcePath, int $quality = 82): string
+    {
+        $mime = mime_content_type($sourcePath);
+
+        $image = match ($mime) {
+            'image/jpeg' => imagecreatefromjpeg($sourcePath),
+            'image/png'  => imagecreatefrompng($sourcePath),
+            default      => throw new \RuntimeException("Format tidak didukung: {$mime}"),
+        };
+
+        if ($mime === 'image/png') {
+            imagepalettetotruecolor($image);
+            imagealphablending($image, true);
+            imagesavealpha($image, true);
+        }
+
+        ob_start();
+        imagewebp($image, null, $quality);
+        $webpData = ob_get_clean();
+
+        imagedestroy($image);
+
+        // Intelephense perlu return eksplisit di akhir — ini yang bikin warning hilang
+        return $webpData !== false ? $webpData : '';
+    }
 }
