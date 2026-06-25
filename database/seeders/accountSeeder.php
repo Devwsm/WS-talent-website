@@ -16,8 +16,8 @@ class accountSeeder extends Seeder
     {
         //
             account::create([
-            'username' => 'whisnuSantika',
-            'password' => Hash::make('goestomoon'),
+            'username' => 'staff_ws',
+            'password' => Hash::make('dashboard_ws_2026'),
         ]);
     }
 }
