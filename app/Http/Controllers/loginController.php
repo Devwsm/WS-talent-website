@@ -10,24 +10,44 @@ use Illuminate\Support\Facades\Session;
 class loginController extends Controller
 {
     //
-    public function login(){
+    public function login()
+    {
         return view('pages.login');
     }
-    
+
     public function prosesLogin(Request $request)
     {
+        $request->validate([
+            'username' => 'required|string|max:255',
+            'password' => 'required|string|min:6',
+        ], [
+            'username.required' => 'Username harus diisi.',
+            'password.required' => 'Password harus diisi.',
+            'password.min'      => 'Password minimal 6 karakter.',
+        ]);
+
         $user = account::where('username', $request->username)->first();
-        if ($user && Hash::check($request->password, $user->password)) {
-            Session::put('login', true);
-            Session::put('user', $user->username);
-            return redirect()->route('dashboard');
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            // Pesan sengaja dibuat generik — tidak bocorkan mana yang salah
+            return back()->withErrors(['login' => 'Username atau password salah.'])->onlyInput('username');
         }
-        return back()->with('error', 'Username atau Password salah');
+
+        // Regenerate session ID — cegah session fixation attack
+        $request->session()->regenerate();
+
+        $request->session()->put('login', true);
+        $request->session()->put('user', $user->username);
+
+        return redirect()->intended(route('dashboard'));
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
-        Session::forget('login');
+        // Invalidate seluruh session + regenerate token — bukan hanya forget satu key
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
         return redirect()->route('home');
     }
 }

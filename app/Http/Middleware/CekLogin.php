@@ -11,7 +11,7 @@ class CekLogin
 {
     public function handle(Request $request, Closure $next)
     {
-        if (!Session::get('login')) {
+        if (!$request->session()->get('login')) {
             return redirect()->route('login');
         }
 
