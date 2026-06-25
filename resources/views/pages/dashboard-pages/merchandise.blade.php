@@ -5,6 +5,7 @@
         <div class="bg-black/80 text-white p-6 md:p-8 w-full md:w-176 rounded-lg">
             <h1 class="text-2xl lg:text-3xl font-bold uppercase text-center mb-6">merchandise</h1>
             @include('components/errors')
+            @include('components/success')
             <form action="{{ route('merchandise.tambah') }}" method="POST" enctype="multipart/form-data" class="flex flex-col gap-2">
                 @csrf
                 <label htmlFor="merchandise_name" class="text-xl lg:text-2xl capitalize font-semibold">name</label>
