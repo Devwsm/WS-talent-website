@@ -89,7 +89,8 @@
                                     <!-- album cover -->
                                     <div class="flex flex-col gap-2 text-center justify-center items-center">
                                         <h1 class="text-xs uppercase text-white/60">album cover</h1>
-                                        <img src="{{ asset('aset/albums/' . $item->albums_cover) }}" alt="albums_cover"
+                                        <img src="{{ Storage::url('albums/' . $item->albums_cover) }}"
+                                            alt="{{ $item->albums_name }}" loading="lazy" decoding="async"
                                             class="object-cover aspect-square w-full max-w-xs transition duration-300 rounded-lg">
                                     </div>
                                 </div>
@@ -127,8 +128,8 @@
                                     <!-- merchandise cover -->
                                     <div class="flex flex-col gap-2 text-center justify-center items-center">
                                         <h1 class="text-xs uppercase text-white/60">merchandise cover</h1>
-                                        <img src="{{ asset('aset/merchandise/' . $item->merchandise_cover) }}"
-                                            alt="merchandise_cover"
+                                        <img src="{{ Storage::url('merchandise/' . $item->merchandise_cover) }}"
+                                            alt="{{ $item->merchandise_name }}" loading="lazy" decoding="async"
                                             class="object-cover aspect-square w-full max-w-xs transition duration-300 rounded-lg">
                                     </div>
                                 </div>
