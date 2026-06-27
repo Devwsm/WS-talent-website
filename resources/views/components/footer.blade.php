@@ -4,7 +4,7 @@
             class="instagram text-lg bg px-2 py-1 border-2 border-white/30 rounded-full">
             <i class="bi bi-instagram"></i>
         </a>
-        <a href="https://youtube.com/@whisnusantika" 
+        <a href="https://www.tiktok.com/@whisnusantika?is_from_webapp=1&sender_device=pc" 
             class="tiktok text-lg bg px-2 py-1 border-2 border-white/30 rounded-full">
             <i class="bi bi-tiktok"></i>
         </a>
