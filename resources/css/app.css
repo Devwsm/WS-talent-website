@@ -34,7 +34,52 @@ body {
     --swiper-theme-color: #5E0006;
 }
 
-/* bullet biasa */
+
+                        /* header */
+
+#header .swiper-pagination-bullet {
+    background: white !important;
+    opacity: 0.5;
+}
+
+/* bullet aktif */
+#header .swiper-pagination-bullet-active {
+    background: white !important; 
+    opacity: 1;
+}
+
+#header .swiper-button-next,
+#header .swiper-button-prev {
+    color: white !important; /* warna icon panah */
+    background: black; /* background */
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important; /* rounded */
+    padding: 8px !important; /* padding */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#header .swiper-button-next::after,
+#header .swiper-button-prev::after {
+    font-size: 32px !important;
+    border-radius: 20px !important; /* rounded */
+    /* font-style: bold !important; */
+}
+
+#header .swiper-button-next:hover,
+#header .swiper-button-prev:hover {
+    background: black !important;
+    color: white;
+    transform: scale(1.1);
+    transition: 0.3s;
+}
+
+
+
+                        /* new music */
+
 #new-music .swiper-pagination-bullet {
     background: white !important;
     opacity: 0.5;
@@ -73,6 +118,7 @@ body {
     transform: scale(1.1);
     transition: 0.3s;
 }
+
 
 
                         /* merchandise */
