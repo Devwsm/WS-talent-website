@@ -1,6 +1,9 @@
 @extends('template.layout')
 @section('content')
     <div class="flex flex-col w-full bg-black p-6 md:p-12 gap-8">
+        <div class="relative">
+            @include('components/navbar')
+        </div>
 
         {{-- Hero --}}
         <div class="head relative flex w-full justify-center">
