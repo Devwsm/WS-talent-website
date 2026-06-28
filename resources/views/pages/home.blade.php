@@ -10,6 +10,9 @@
             </div>
         </div>
     </div>
+    <div id="profile" class="profile flex flex-col w-full">
+        @include('components/profile/profile-teaser')
+    </div>
     <div id="tour" class="schedule flex flex-col w-full">
         @include('components/schedule')
     </div>

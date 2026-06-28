@@ -11,6 +11,7 @@ Route::get('/', function () {
 
 Route::prefix('/')->group(function(){
     Route::get('/', [homeController::class, 'index'])->name('home');
+    Route::get('/profile', [homeController::class, 'profile'])->name('profile');
 });
 
 Route::prefix('/')->group(function(){

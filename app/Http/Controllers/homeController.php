@@ -20,4 +20,8 @@ class homeController extends Controller
         $merchandise = merchandise::all();
         return view('pages/home', compact('hero', 'schedule', 'albums', 'news', 'merchandise'));
     }
+
+    public function profile(){
+        return view('components.profile.profile-full');
+    }
 }
