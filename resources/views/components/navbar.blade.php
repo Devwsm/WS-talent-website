@@ -17,11 +17,11 @@
             </div>
             <!-- Desktop Menu -->
             <div class="hidden lg:flex items-center gap-8 ml-12">
-                <a href="{{ route('home') }}#tour">
-                    <h1 class="font-bold uppercase">Tour</h1>
-                </a>
                 <a href="{{ route('profile') }}">
                     <h1 class="font-bold uppercase">Profile</h1>
+                </a>
+                <a href="{{ route('home') }}#tour">
+                    <h1 class="font-bold uppercase">Tour</h1>
                 </a>
                 <a href="{{ route('home') }}#news">
                     <h1 class="font-bold uppercase">News</h1>
@@ -55,11 +55,11 @@
         <button id="closeBtn" class="absolute top-5 left-5 text-4xl">
             <i class="bi bi-x"></i>
         </button>
-        <a href="{{ route('home') }}#tour" class="menu-link">
-            <h1 class="text-3xl font-bold uppercase">Tour</h1>
-        </a>
         <a href="{{ route('profile') }}" class="menu-link">
             <h1 class="text-3xl font-bold uppercase">Profile</h1>
+        </a>
+        <a href="{{ route('home') }}#tour" class="menu-link">
+            <h1 class="text-3xl font-bold uppercase">Tour</h1>
         </a>
         <a href="{{ route('home') }}#news" class="menu-link">
             <h1 class="text-3xl font-bold uppercase">News</h1>
