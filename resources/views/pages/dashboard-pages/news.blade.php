@@ -2,16 +2,13 @@
 @section('content')
     <div class="w-full p-8 gap-4 flex flex-col justify-center items-center">
         @include('components/dashboard/navbar')
-        {{-- Tambahkan di <head> layout utama kamu --}}
-        {{-- <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet"> --}}
-        {{-- <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script> --}}
         <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
         <div class="bg-black/80 text-white p-6 md:p-8 w-full md:w-176 rounded-lg">
             <h1 class="text-2xl lg:text-3xl font-bold uppercase text-center mb-6">news</h1>
             @include('components/errors')
             @include('components/success')
-            <form action="{{ route('news.tambah') }}" method="POST" enctype="multipart/form-data" 
-                class="flex flex-col gap-4" id="news-form">
+            <form action="{{ route('news.tambah') }}" method="POST" enctype="multipart/form-data" class="flex flex-col gap-4"
+                id="news-form">
                 @csrf
                 {{-- Row 1: Title & Source --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -46,7 +43,7 @@
                         <label for="news_link" class="text-sm font-semibold uppercase tracking-widest text-gray-300">
                             Link Berita
                         </label>
-                        <input type="url" id="news_link" name="news_link" placeholder="https://..."
+                        <input type="text" id="news_link" name="news_link" placeholder="https://..."
                             value="{{ old('news_link') }}"
                             class="bg-white/10 border border-white/20 text-white placeholder-gray-500 p-3 rounded-lg focus:outline-none focus:border-[#5E0006] focus:ring-1 focus:ring-[#5E0006] transition" />
                     </div>
@@ -102,147 +99,6 @@
             </form>
         </div>
 
-        {{-- Quill JS --}}
-        <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
-        <style>
-            /* Override Quill toolbar agar cocok dengan tema gelap */
-            #news-form .ql-toolbar.ql-snow {
-                background-color: rgba(255, 255, 255, 0.12);
-                border: none;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-                border-radius: 0;
-                padding: 8px 12px;
-            }
-
-            #news-form .ql-toolbar.ql-snow .ql-stroke {
-                stroke: #d1d5db;
-            }
-
-            #news-form .ql-toolbar.ql-snow .ql-fill {
-                fill: #d1d5db;
-            }
-
-            #news-form .ql-toolbar.ql-snow .ql-picker {
-                color: #d1d5db;
-            }
-
-            #news-form .ql-toolbar.ql-snow button:hover .ql-stroke,
-            #news-form .ql-toolbar.ql-snow button.ql-active .ql-stroke {
-                stroke: #ffffff;
-            }
-
-            #news-form .ql-toolbar.ql-snow button:hover .ql-fill,
-            #news-form .ql-toolbar.ql-snow button.ql-active .ql-fill {
-                fill: #ffffff;
-            }
-
-            #news-form .ql-toolbar.ql-snow .ql-picker-label:hover,
-            #news-form .ql-toolbar.ql-snow .ql-picker-item:hover {
-                color: #ffffff;
-            }
-
-            #news-form .ql-container.ql-snow {
-                border: none;
-                font-size: 15px;
-                font-family: inherit;
-            }
-
-            #news-form .ql-editor {
-                color: #f3f4f6;
-                caret-color: white;
-            }
-
-            #news-form .ql-editor.ql-blank::before {
-                color: #6b7280;
-                font-style: normal;
-            }
-
-            #news-form .ql-editor h1,
-            #news-form .ql-editor h2,
-            #news-form .ql-editor h3 {
-                color: #ffffff;
-            }
-
-            #news-form .ql-editor a {
-                color: #f87171;
-            }
-
-            #news-form .ql-editor blockquote {
-                border-left: 3px solid #5E0006;
-                color: #9ca3af;
-                padding-left: 12px;
-                margin: 8px 0;
-            }
-
-            /* Picker dropdown dark */
-            #news-form .ql-snow .ql-picker-options {
-                background-color: #1f2937;
-                border-color: rgba(255, 255, 255, 0.15);
-            }
-
-            #news-form .ql-snow .ql-picker-item {
-                color: #d1d5db;
-            }
-        </style>
-
-        <script>
-            // Inisialisasi Quill Editor
-            const quill = new Quill('#quill-editor', {
-                theme: 'snow',
-                placeholder: 'Tulis deskripsi berita di sini...',
-                modules: {
-                    toolbar: [
-                        [{
-                            'header': [1, 2, 3, false]
-                        }],
-                        ['bold', 'italic', 'underline', 'strike'],
-                        [{
-                            'color': []
-                        }, {
-                            'background': []
-                        }],
-                        [{
-                            'list': 'ordered'
-                        }, {
-                            'list': 'bullet'
-                        }],
-                        [{
-                            'indent': '-1'
-                        }, {
-                            'indent': '+1'
-                        }],
-                        [{
-                            'align': []
-                        }],
-                        ['blockquote', 'code-block'],
-                        ['link'],
-                        ['clean']
-                    ]
-                }
-            });
-
-            // Isi ulang konten jika ada old value (setelah validasi gagal)
-            @if (old('news_description'))
-                quill.root.innerHTML = {!! json_encode(old('news_description')) !!};
-            @endif
-
-            // Sebelum form di-submit, salin konten HTML dari Quill ke hidden input
-            document.getElementById('news-form').addEventListener('submit', function() {
-                document.getElementById('news_description_input').value = quill.root.innerHTML;
-            });
-
-            // Preview gambar cover sebelum upload
-            function previewImage(event) {
-                const file = event.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('image-preview').src = e.target.result;
-                    document.getElementById('image-preview-wrapper').classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-            }
-        </script>
 
         <div class="bg-black/80 text-white p-6 md:p-8 mb-24 w-full rounded-lg">
             <h1 class="text-2xl lg:text-3xl font-bold uppercase text-center mb-6">news list</h1>
@@ -302,4 +158,147 @@
             </div>
         </div>
     </div>
+
+    {{-- Quill JS --}}
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+
+    <style>
+        /* Override Quill toolbar agar cocok dengan tema gelap */
+        #news-form .ql-toolbar.ql-snow {
+            background-color: rgba(255, 255, 255, 0.12);
+            border: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 0;
+            padding: 8px 12px;
+        }
+
+        #news-form .ql-toolbar.ql-snow .ql-stroke {
+            stroke: #d1d5db;
+        }
+
+        #news-form .ql-toolbar.ql-snow .ql-fill {
+            fill: #d1d5db;
+        }
+
+        #news-form .ql-toolbar.ql-snow .ql-picker {
+            color: #d1d5db;
+        }
+
+        #news-form .ql-toolbar.ql-snow button:hover .ql-stroke,
+        #news-form .ql-toolbar.ql-snow button.ql-active .ql-stroke {
+            stroke: #ffffff;
+        }
+
+        #news-form .ql-toolbar.ql-snow button:hover .ql-fill,
+        #news-form .ql-toolbar.ql-snow button.ql-active .ql-fill {
+            fill: #ffffff;
+        }
+
+        #news-form .ql-toolbar.ql-snow .ql-picker-label:hover,
+        #news-form .ql-toolbar.ql-snow .ql-picker-item:hover {
+            color: #ffffff;
+        }
+
+        #news-form .ql-container.ql-snow {
+            border: none;
+            font-size: 15px;
+            font-family: inherit;
+        }
+
+        #news-form .ql-editor {
+            color: #f3f4f6;
+            caret-color: white;
+        }
+
+        #news-form .ql-editor.ql-blank::before {
+            color: #6b7280;
+            font-style: normal;
+        }
+
+        #news-form .ql-editor h1,
+        #news-form .ql-editor h2,
+        #news-form .ql-editor h3 {
+            color: #ffffff;
+        }
+
+        #news-form .ql-editor a {
+            color: #f87171;
+        }
+
+        #news-form .ql-editor blockquote {
+            border-left: 3px solid #5E0006;
+            color: #9ca3af;
+            padding-left: 12px;
+            margin: 8px 0;
+        }
+
+        /* Picker dropdown dark */
+        #news-form .ql-snow .ql-picker-options {
+            background-color: #1f2937;
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        #news-form .ql-snow .ql-picker-item {
+            color: #d1d5db;
+        }
+    </style>
+
+    <script>
+        // Inisialisasi Quill Editor
+        const quill = new Quill('#quill-editor', {
+            theme: 'snow',
+            placeholder: 'Tulis deskripsi berita di sini...',
+            modules: {
+                toolbar: [
+                    [{
+                        'header': [1, 2, 3, false]
+                    }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{
+                        'color': []
+                    }, {
+                        'background': []
+                    }],
+                    [{
+                        'list': 'ordered'
+                    }, {
+                        'list': 'bullet'
+                    }],
+                    [{
+                        'indent': '-1'
+                    }, {
+                        'indent': '+1'
+                    }],
+                    [{
+                        'align': []
+                    }],
+                    ['blockquote', 'code-block'],
+                    ['link'],
+                    ['clean']
+                ]
+            }
+        });
+
+        // Isi ulang konten jika ada old value (setelah validasi gagal)
+        @if (old('news_description'))
+            quill.root.innerHTML = {!! json_encode(old('news_description')) !!};
+        @endif
+
+        // Sebelum form di-submit, salin konten HTML dari Quill ke hidden input
+        document.getElementById('news-form').addEventListener('submit', function() {
+            document.getElementById('news_description_input').value = quill.root.innerHTML;
+        });
+
+        // Preview gambar cover sebelum upload
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('image-preview').src = e.target.result;
+                document.getElementById('image-preview-wrapper').classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+    </script>
 @endsection
