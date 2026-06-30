@@ -102,7 +102,7 @@
                         <span class="text-sm font-medium text-white">Borderland Music Festival</span>
                         <span class="text-xs text-white/40">Malaysia & Asia</span>
                     </div>
-                    <span class="text-xs text-white/20">2024</span>
+                    <span class="text-xs text-white/20">2025</span>
                 </div>
             </div>
         </div>
