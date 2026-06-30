@@ -10,10 +10,6 @@
                 <div
                     class="content absolute inset-0 z-10 bg-black/50
                     flex flex-col justify-center items-center text-white text-center gap-4">
-                    <div class="absolute flex flex-col top-0 p-5 lg:pt-4 w-full justify-center items-center">
-                        <img src="{{ asset('aset/banner/Banner.jpg') }}" loading="lazy"
-                            decoding="async" alt="whisnu-santika" class="object-cover w-[85%] md:w-[70%] lg:w-[45%] rounded-lg">
-                    </div>
                     <span
                         class="inline-flex items-center gap-2 w-fit bg-white/15 backdrop-blur border border-blue-500/60 rounded-full px-3 py-1 text-white text-xs">
                         <span class="w-2 h-2 rounded-full bg-blue-500/60 animate-pulse"></span>
@@ -44,10 +40,6 @@
                 <div
                     class="content absolute inset-0 z-10 bg-black/50
                     flex flex-col justify-center items-center text-white text-center gap-4">
-                    <div class="absolute flex flex-col top-0 p-5 lg:pt-4 w-full justify-center items-center">
-                        <img src="{{ asset('aset/banner/Banner.jpg') }}" loading="lazy"
-                            decoding="async" alt="whisnu-santika" class="object-cover w-[85%] md:w-[70%] lg:w-[45%] rounded-lg">
-                    </div>
                     <span
                         class="inline-flex items-center gap-2 w-fit bg-white/15 backdrop-blur border border-blue-500/60 rounded-full px-3 py-1 text-white text-xs">
                         <span class="w-2 h-2 rounded-full bg-blue-500/60 animate-pulse"></span>

@@ -1,9 +1,10 @@
 @extends('template.layout')
 @section('content')
     <div class="hero-sectionflex flex-col w-full justify-center items-center">
-        <div class="main-section flex flex-col gap-12">
+        <div class="main-section flex flex-col">
             <div class="relative">
                 @include('components/navbar')
+                @include('components/banner')
             </div>
             <div class="relative">
                 @include('components/videos')

@@ -120,7 +120,9 @@
         link.addEventListener("click", closeMenu);
     });
 </script>
-<script>
+
+
+{{-- <script>
     let lastScrollY = window.scrollY;
     const navbar = document.getElementById("navbar");
 
@@ -133,4 +135,4 @@
 
         lastScrollY = window.scrollY;
     });
-</script>
+</script> --}}
