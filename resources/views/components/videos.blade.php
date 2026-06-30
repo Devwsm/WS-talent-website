@@ -18,15 +18,13 @@
                     <img src="{{ asset('aset/logo/Whisnu-Santika_Logo-2025-2-White.png') }}" loading="lazy"
                         decoding="async" alt="whisnu-santika" class="object-cover w-120 rounded-lg">
                     <div class="flex flex-col gap-2">
-                        <h1 class="text-2xl font-medium text-white"><span class="font-semibold">Aku Harus Pergi</span> —
-                            New Release</h1>
-                        <h1 class="text-sm text-white/70">Aku Harus Pergi · Indonesia 2026</h1>
+                        <h1 class="text-2xl font-medium text-white"><span class="font-semibold">Aku Harus Pergi</span>
+                            (Official Lyric Video)</h1>
+                        <h1 class="text-sm text-white/70">Whisnu Santika, Ari Lesmana</h1>
                         <div class="flex gap-3 justify-center">
-                            <a href="#"
+                            <a href="https://www.youtube.com/watch?v=PqTRMsd8uRQ&list=RDPqTRMsd8uRQ&start_radio=1" target="_blank"
                                 class="px-5 py-2 bg-blue-500/60 shadow-sm font-semibold rounded-full text-sm">Watch
                                 Video</a>
-                            <a href="#tour"
-                                class="px-5 py-2 border border-white/50 text-white rounded-full text-sm">Tour Dates</a>
                         </div>
                     </div>
                 </div>
@@ -48,15 +46,13 @@
                     <img src="{{ asset('aset/logo/Whisnu-Santika_Logo-2025-2-White.png') }}" loading="lazy"
                         decoding="async" alt="whisnu-santika" class="object-cover w-120 rounded-lg">
                     <div class="flex flex-col gap-2">
-                        <h1 class="text-2xl font-medium text-white"><span class="font-semibold">Aku Harus Pergi</span> —
-                            New Release</h1>
-                        <h1 class="text-sm text-white/70">Aku Harus Pergi · Indonesia 2026</h1>
+                        <h1 class="text-2xl font-medium text-white"><span class="font-semibold">YEAR MIX</span> 2025
+                        </h1>
+                        <h1 class="text-sm text-white/70">LIVE AT DWP25 - BALI</h1>
                         <div class="flex gap-3 justify-center">
-                            <a href="#"
-                                class="px-5 py-2 bg-blue-500/60 shadow-sm font-semibold rounded-full text-sm">Watch
+                            <a href="https://www.youtube.com/watch?v=aTXY-jlYXfo" targer="_blank"
+                                class="px-5 py-2 bg-red-500/60 shadow-sm font-semibold rounded-full text-sm">Watch
                                 Video</a>
-                            <a href="#tour"
-                                class="px-5 py-2 border border-white/50 text-white rounded-full text-sm">Tour Dates</a>
                         </div>
                     </div>
                 </div>

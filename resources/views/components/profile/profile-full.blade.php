@@ -53,17 +53,17 @@
         <div class="flex flex-col gap-3">
             <h2 class="text-xs text-white/30 uppercase tracking-widest">Pencapaian</h2>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div class="flex flex-col gap-1 p-4 rounded-lg bg-white/5 border border-white/10">
-                    <span class="text-xl font-medium text-white">550K+</span>
+                <div class="flex flex-col gap-1 p-3 rounded-lg bg-white/5 border border-white/10">
+                    <span class="text-lg font-medium text-white">590K+</span>
                     <span class="text-xs text-white/50">YouTube subscribers</span>
                 </div>
-                <div class="flex flex-col gap-1 p-4 rounded-lg bg-white/5 border border-white/10">
-                    <span class="text-xl font-medium text-white">12+</span>
-                    <span class="text-xs text-white/50">Tahun berkarier</span>
+                <div class="flex flex-col gap-1 p-3 rounded-lg bg-white/5 border border-white/10">
+                    <span class="text-lg font-medium text-white">2.9M+</span>
+                    <span class="text-xs text-white/50">Spotify Montly Listeners</span>
                 </div>
-                <div class="flex flex-col gap-1 p-4 rounded-lg bg-white/5 border border-white/10">
-                    <span class="text-xl font-medium text-white">TML '24</span>
-                    <span class="text-xs text-white/50">Tomorrowland Belgium</span>
+                <div class="flex flex-col gap-1 p-3 rounded-lg bg-white/5 border border-white/10">
+                    <span class="text-lg font-medium text-white">426K+</span>
+                    <span class="text-xs text-white/50">Instagram Followers</span>
                 </div>
                 <div class="flex flex-col gap-1 p-4 rounded-lg bg-white/5 border border-white/10">
                     <span class="text-xl font-medium text-white">Global</span>
@@ -99,8 +99,8 @@
                 </div>
                 <div class="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-white/10">
                     <div class="flex flex-col gap-0.5">
-                        <span class="text-sm font-medium text-white">Afterdark World Tour</span>
-                        <span class="text-xs text-white/40">Singapore & Asia</span>
+                        <span class="text-sm font-medium text-white">Borderland Music Festival</span>
+                        <span class="text-xs text-white/40">Malaysia & Asia</span>
                     </div>
                     <span class="text-xs text-white/20">2024</span>
                 </div>
@@ -116,7 +116,7 @@
                     <span class="text-xs text-white/40">DJ / Producer</span>
                 </div>
                 <div class="flex flex-col gap-0.5 p-4 rounded-lg bg-white/5 border border-white/10">
-                    <span class="text-sm font-medium text-white">Marion Jola</span>
+                    <span class="text-sm font-medium text-white">Cinta Laura Kiehl</span>
                     <span class="text-xs text-white/40">Penyanyi</span>
                 </div>
                 <div class="flex flex-col gap-0.5 p-4 rounded-lg bg-white/5 border border-white/10">
@@ -154,23 +154,23 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
                     <div class="flex flex-col gap-1">
                         <span class="text-xs text-white/30 uppercase tracking-widest">Show & Touring</span>
-                        <a href="mailto:booking@whisnusantika.com"
+                        <a href="jeannita.kirana@gmail.com"
                             class="text-sm text-white/70 hover:text-white transition-colors">
-                            booking@whisnusantika.com
+                            jeannita.kirana@gmail.com
                         </a>
                     </div>
                     <div class="flex flex-col gap-1">
                         <span class="text-xs text-white/30 uppercase tracking-widest">Brand & Partnership</span>
-                        <a href="mailto:brand@whisnusantika.com"
+                        <a href="partnership@whisnusantika.com"
                             class="text-sm text-white/70 hover:text-white transition-colors">
-                            brand@whisnusantika.com
+                            partnership@whisnusantika.com
                         </a>
                     </div>
                     <div class="flex flex-col gap-1">
                         <span class="text-xs text-white/30 uppercase tracking-widest">Media & Press</span>
-                        <a href="mailto:press@whisnusantika.com"
+                        <a href="management@whisnusantika.com"
                             class="text-sm text-white/70 hover:text-white transition-colors">
-                            press@whisnusantika.com
+                            management@whisnusantika.com
                         </a>
                     </div>
                 </div>

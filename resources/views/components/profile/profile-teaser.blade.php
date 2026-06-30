@@ -46,16 +46,16 @@
         {{-- Stats --}}
         <div class="grid grid-cols-3 gap-3">
             <div class="flex flex-col gap-1 p-3 rounded-lg bg-white/5 border border-white/10">
-                <span class="text-lg font-medium text-white">550K+</span>
+                <span class="text-lg font-medium text-white">590K+</span>
                 <span class="text-xs text-white/50">YouTube subscribers</span>
             </div>
             <div class="flex flex-col gap-1 p-3 rounded-lg bg-white/5 border border-white/10">
-                <span class="text-lg font-medium text-white">2012</span>
-                <span class="text-xs text-white/50">Mulai berkarier</span>
+                <span class="text-lg font-medium text-white">2.9M+</span>
+                <span class="text-xs text-white/50">Spotify Montly Listeners</span>
             </div>
             <div class="flex flex-col gap-1 p-3 rounded-lg bg-white/5 border border-white/10">
-                <span class="text-lg font-medium text-white">TML '24</span>
-                <span class="text-xs text-white/50">Tomorrowland Belgium</span>
+                <span class="text-lg font-medium text-white">426K+</span>
+                <span class="text-xs text-white/50">Instagram Followers</span>
             </div>
         </div>
 

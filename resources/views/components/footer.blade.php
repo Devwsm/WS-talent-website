@@ -17,5 +17,5 @@
             <i class="bi bi-spotify"></i>
         </a>
     </div>
-    <h1 class="text-white/50 text-sm">Copyright © 2026 WS Talent. All rights reserved.</h1>
+    <h1 class="text-white/50 text-sm">Copyright © 2026 wahsudahmonday. All rights reserved.</h1>
 </div>
