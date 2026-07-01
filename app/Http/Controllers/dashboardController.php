@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\albums;
 use App\Models\banner;
+use App\Models\header;
 use App\Models\heroSection;
 use App\Models\schedule;
 use App\Models\merchandise;
@@ -12,7 +13,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-
+use Symfony\Component\Process\Process;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class dashboardController extends Controller
 {
@@ -21,6 +23,7 @@ class dashboardController extends Controller
     {
         $banner = banner::all();
         $albums = albums::all();
+        $header = header::all();
         $schedule = schedule::all();
         $news = news::all();
         $merchandise = merchandise::all();
@@ -29,6 +32,7 @@ class dashboardController extends Controller
             compact(
                 'banner',
                 'albums',
+                'header',
                 'schedule',
                 'news',
                 'merchandise',
@@ -94,6 +98,159 @@ class dashboardController extends Controller
             return to_route('banner')->withErrors('Gagal menghapus banner.');
         }
     }    // banner end
+
+    // header
+    public function headers()
+    {
+        $header = header::all();
+        return view('pages.dashboard-pages.header', compact('header'));
+    }
+
+    public function tambahHeaders(Request $request)
+    {
+        $request->validate([
+            'header_title' => 'required',
+            'header_img' => 'required|image|mimes:jpg,jpeg,png|max:1024',
+            'header_name' => 'required',
+            'header_description' => 'required',
+            'link_header' => 'required',
+            'header_background'  => 'required|file|mimes:jpg,jpeg,png,mp4,mov,avi,mkv,webm',
+        ], [
+            'header_title.required' => 'Judul Header harus diisi.',
+            'header_img.required' => 'Gambar Header harus diisi.',
+            'header_img.image' => 'File harus berupa gambar.',
+            'header_img.max' => 'Cover Header tidak boleh lebih dari 1MB.',
+
+            'header_name.required' => 'Nama Header harus diisi.',
+            'header_description.required' => 'Deskripsi Header harus diisi.',
+            'link_header.required' => 'Link Header harus diisi.',
+
+            'header_background.required' => 'Cover Header harus diisi.',
+            'header_background.mimes'    => 'File harus berupa gambar (jpg, jpeg, png) atau video (mp4, mov, avi, mkv, webm).',
+        ]);
+        // Validasi ukuran manual (beda batas untuk gambar vs video)
+        $bgFile   = $request->file('header_background');
+        $bgMime   = $bgFile->getMimeType();
+        $isVideo  = str_starts_with($bgMime, 'video/');
+
+        $maxImageSize = 1 * 1024 * 1024;   // 1MB
+        $maxVideoSize = 25 * 1024 * 1024;  // 25MB (raw, sebelum dikompres)
+
+        if (!$isVideo && $bgFile->getSize() > $maxImageSize) {
+            return back()->withErrors(['header_background' => 'Gambar Cover Header tidak boleh lebih dari 1MB.'])->withInput();
+        }
+        if ($isVideo && $bgFile->getSize() > $maxVideoSize) {
+            return back()->withErrors(['header_background' => 'Video Cover Header tidak boleh lebih dari 25MB.'])->withInput();
+        }
+
+        $file     = $request->file('header_img');
+        $filename = now()->timestamp . '_' . Str::uuid() . '.webp';
+        // Konversi ke WebP → simpan ke storage/app/public/albums/
+        $webpData = $this->convertToWebP($file->getRealPath(), 82);
+        Storage::disk('public')->put('header/img/' . $filename, $webpData);
+
+        // === header_background (gambar ATAU video) ===
+        if ($isVideo) {
+            $bgFilename = now()->timestamp . '_' . Str::uuid() . '.mp4';
+            $bgType     = 'video';
+            $this->convertVideoToMp4(
+                $bgFile->getRealPath(),
+                Storage::disk('public')->path('header/background/' . $bgFilename)
+            );
+        } else {
+            $bgFilename = now()->timestamp . '_' . Str::uuid() . '.webp';
+            $bgType     = 'image';
+            $webpData   = $this->convertToWebP($bgFile->getRealPath(), 82);
+            Storage::disk('public')->put('header/background/' . $bgFilename, $webpData);
+        }
+
+        // simpan data ( simple )
+        $data = new header();
+        $data->header_title = $request->header_title;
+        $data->header_img = $filename; // hanya nama file
+        $data->header_name = $request->header_name;
+        $data->header_description = $request->header_description;
+        $data->link_header = $request->link_header;
+        $data->header_background = $bgFilename; // hanya nama file
+        $data->save();
+
+        return redirect()->route('headers')->with('success', 'inputan berhasil ditambahkan');
+    }
+
+
+    public function updateHeaders(Request $request, $id)
+    {
+        $request->validate([
+            'header_title' => 'required',
+            'header_img' => 'required|image|mimes:jpg,jpeg,png|max:1024',
+            'header_name' => 'required',
+            'header_description' => 'required',
+            'link_header' => 'required',
+            'header_cover' => 'required|image|mimes:jpg,jpeg,png|max:1024',
+        ], [
+            'header_title.required' => 'Judul Header harus diisi.',
+            'header_img.required' => 'Gambar Header harus diisi.',
+            'header_img.image' => 'File harus berupa gambar.',
+            'header_img.max' => 'Cover Header tidak boleh lebih dari 1MB.',
+
+            'header_name.required' => 'Nama Header harus diisi.',
+            'header_description.required' => 'Deskripsi Header harus diisi.',
+            'link_header.required' => 'Link Header harus diisi.',
+
+            'header_cover.required' => 'Cover Header harus diisi.',
+            'header_cover.image' => 'File harus berupa gambar.',
+            'header_cover.max' => 'Cover Header tidak boleh lebih dari 1MB.',
+        ]);
+
+        $data = header::findOrFail($id);
+        if ($request->hasFile('header_cover')) {
+            // Hapus file lama dari storage
+            if ($data->header_cover && Storage::disk('public')->exists('header/' . $data->header_cover)) {
+                Storage::disk('public')->delete('header/' . $data->header_cover);
+            }
+
+            // Konversi dan simpan file baru
+            $file     = $request->file('header_cover');
+            $filename = now()->timestamp . '_' . Str::uuid() . '.webp';
+            $webpData = $this->convertToWebP($file->getRealPath(), 82);
+            Storage::disk('public')->put('header/' . $filename, $webpData);
+
+            $data->header_cover = $filename;
+        }
+
+        $data->header_name = $request->header_name;
+        $data->header_description = $request->header_description;
+        $data->link_header = $request->link_header;
+        $data->save();
+
+        return redirect()->back()->with('success', 'Data berhasil diupdate');
+    }
+
+    public function hapusHeaders($id)
+    {
+        try {
+            $data = header::findOrFail($id);
+
+            // Hapus file dari storage jika ada
+            if ($data->header_img && Storage::disk('public')->exists('header/img/' . $data->header_img)) {
+                Storage::disk('public')->delete('header/img/' . $data->header_img);
+            }
+            // Hapus file dari storage jika ada
+            if ($data->header_background && Storage::disk('public')->exists('header/background/' . $data->header_background)) {
+                Storage::disk('public')->delete('header/background/' . $data->header_background);
+            }
+
+            $data->delete();
+
+            return to_route('headers')->with('success', 'Header berhasil dihapus.');
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return to_route('headers')->withErrors('Header tidak ditemukan.');
+        } catch (\Exception $e) {
+            return to_route('headers')->withErrors('Gagal menghapus header.');
+        }
+    }
+    // headers end
+
 
     // albums
     public function albums()
@@ -478,5 +635,43 @@ class dashboardController extends Controller
 
         // Intelephense perlu return eksplisit di akhir — ini yang bikin warning hilang
         return $webpData !== false ? $webpData : '';
+    }
+
+    /**
+     * Convert & compress video jadi MP4 H.264 ringan, tanpa audio,
+     * cocok untuk background video (biasanya di-autoplay + loop + muted).
+     */
+    private function convertVideoToMp4(string $inputPath, string $outputPath): void
+    {
+        // pastikan folder tujuan ada
+        if (!is_dir(dirname($outputPath))) {
+            mkdir(dirname($outputPath), 0755, true);
+        }
+
+        $process = new Process([
+            'ffmpeg',
+            '-y',                       // overwrite jika ada
+            '-i',
+            $inputPath,
+            '-an',                      // hapus audio (background video biasanya muted)
+            '-vcodec',
+            'libx264',
+            '-preset',
+            'veryfast',
+            '-crf',
+            '28',               // makin besar = makin ringan (kualitas turun sedikit)
+            '-vf',
+            'scale=1280:-2',     // resize max width 1280px, height auto (kelipatan 2)
+            '-movflags',
+            '+faststart',  // biar bisa langsung play sebelum full download
+            $outputPath,
+        ]);
+
+        $process->setTimeout(300); // 5 menit, sesuaikan kalau video besar
+        $process->run();
+
+        if (!$process->isSuccessful()) {
+            throw new ProcessFailedException($process);
+        }
     }
 }

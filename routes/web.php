@@ -27,6 +27,11 @@ Route::prefix('/dashboard')->middleware('cekLogin')->group(function(){
     Route::post('/tambahBanner', [dashboardController::class, 'tambahBanner'])->name('banner.tambah')->middleware('throttle:10,1');
     Route::delete('/hapusBanner/{id}', [dashboardController::class, 'hapusBanner'])->name('banner.hapus');
     
+    Route::get('/headers', [dashboardController::class, 'headers'])->name('headers');
+    Route::post('/tambahHeaders', [dashboardController::class, 'tambahHeaders'])->name('headers.tambah')->middleware('throttle:10,1');
+    Route::delete('/hapusHeaders/{id}', [dashboardController::class, 'hapusHeaders'])->name('headers.hapus');
+    Route::put('/updateHeaders/{id}', [dashboardController::class, 'updateHeaders'])->name('headers.update');
+    
     Route::get('/albums', [dashboardController::class, 'albums'])->name('albums');
     Route::post('/tambahAlbums', [dashboardController::class, 'tambahAlbums'])->name('albums.tambah')->middleware('throttle:10,1');
     Route::delete('/hapusAlbums/{id}', [dashboardController::class, 'hapusAlbums'])->name('albums.hapus');
