@@ -23,6 +23,10 @@ Route::prefix('/')->group(function(){
 Route::prefix('/dashboard')->middleware('cekLogin')->group(function(){
     Route::get('/', [dashboardController::class, 'dashboard'])->name('dashboard');
     
+    Route::get('/banner', [dashboardController::class, 'banner'])->name('banner');
+    Route::post('/tambahBanner', [dashboardController::class, 'tambahBanner'])->name('banner.tambah')->middleware('throttle:10,1');
+    Route::delete('/hapusBanner/{id}', [dashboardController::class, 'hapusBanner'])->name('banner.hapus');
+    
     Route::get('/albums', [dashboardController::class, 'albums'])->name('albums');
     Route::post('/tambahAlbums', [dashboardController::class, 'tambahAlbums'])->name('albums.tambah')->middleware('throttle:10,1');
     Route::delete('/hapusAlbums/{id}', [dashboardController::class, 'hapusAlbums'])->name('albums.hapus');

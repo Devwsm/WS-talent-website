@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\albums;
+use App\Models\banner;
 use App\Models\heroSection;
 use App\Models\schedule;
 use App\Models\merchandise;
@@ -18,7 +19,7 @@ class dashboardController extends Controller
     // dashboard
     public function dashboard()
     {
-        $hero = heroSection::all();
+        $banner = banner::all();
         $albums = albums::all();
         $schedule = schedule::all();
         $news = news::all();
@@ -26,7 +27,7 @@ class dashboardController extends Controller
         return view(
             'pages.dashboard',
             compact(
-                'hero',
+                'banner',
                 'albums',
                 'schedule',
                 'news',
@@ -36,37 +37,63 @@ class dashboardController extends Controller
     }
     // dashboard end
 
-    public function tambahHero(Request $request)
+    // banner
+    public function banner()
     {
-        $request->validate([
-            'logo' => 'required|image',
-            'background_video' => 'required|mimes:mp4'
-        ]);
-
-        // upload
-        $logoName = time() . '_logo.' . $request->logo->extension();
-        $request->logo->move(public_path('uploads/hero'), $logoName);
-
-        $videoName = time() . '_video.' . $request->background_video->extension();
-        $request->background_video->move(public_path('uploads/hero'), $videoName);
-
-        // kalau cuma 1 data → hapus dulu yang lama
-        $old = HeroSection::first();
-        if ($old) {
-            // hapus file lama
-            File::delete(public_path('uploads/hero/' . $old->logo));
-            File::delete(public_path('uploads/hero/' . $old->background_video));
-            $old->delete();
-        }
-
-        HeroSection::create([
-            'logo' => $logoName,
-            'background_video' => $videoName
-        ]);
-
-        return back();
+        $banner = banner::all();
+        return view('pages.dashboard-pages.banner', compact('banner'));
     }
 
+    public function tambahBanner(Request $request)
+    {
+        $request->validate([
+            'banner_name' => 'required',
+            'link_banner' => 'required',
+            'banner_cover' => 'required|image|mimes:jpg,jpeg,png|max:1024',
+        ], [
+            'banner_name.required' => 'Judul Banner harus diisi.',
+            'link_banner.required' => 'Link Banner harus diisi.',
+            'banner_cover.required' => 'Gambar Banner harus diisi.',
+            'banner_cover.image' => 'File harus berupa gambar.',
+            'banner_cover.max' => 'Gambar Banner tidak boleh lebih dari 1MB.',
+        ]);
+
+        $file     = $request->file('banner_cover');
+        $filename = now()->timestamp . '_' . Str::uuid() . '.webp';
+
+        // Konversi ke WebP → simpan ke storage/app/public/banner/
+        $webpData = $this->convertToWebP($file->getRealPath(), 82);
+        Storage::disk('public')->put('banner/' . $filename, $webpData);
+
+        // simpan data ( simple )
+        $data = new banner();
+        $data->banner_name = $request->banner_name;
+        $data->link_banner = $request->link_banner;
+        $data->banner_cover = $filename; // hanya nama file
+        $data->save();
+
+        return redirect()->route('banner')->with('success', 'inputan berhasil ditambahkan');
+    }
+
+    public function hapusBanner($id)
+    {
+        try {
+            $data = banner::findOrFail($id);
+
+            // Hapus file dari storage jika ada
+            if ($data->banner_cover && Storage::disk('public')->exists('banner/' . $data->banner_cover)) {
+                Storage::disk('public')->delete('banner/' . $data->banner_cover);
+            }
+
+            $data->delete();
+
+            return to_route('banner')->with('success', 'Banner berhasil dihapus.');
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return to_route('banner')->withErrors('Banner tidak ditemukan.');
+        } catch (\Exception $e) {
+            return to_route('banner')->withErrors('Gagal menghapus banner.');
+        }
+    }    // banner end
 
     // albums
     public function albums()
