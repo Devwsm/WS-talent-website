@@ -2,275 +2,207 @@
 @section('content')
     <div class="w-full flex flex-col justify-center items-center">
         @include('components/dashboard/navbar')
-        <div class=" text-white p-6 md:p-8 w-full mb-24 rounded-2xl">
-            <div class="flex flex-col gap-4 justify-center">
+        <div class="w-full grid grid-cols-1 gap-4 mb-24 p-6 md:p-8 text-white">
 
-                <div class="flex w-full gap-4 justify-center">
-                    <div class="flex flex-col w-full p-4 bg-black/80 gap-4 rounded-xl border-2 border-[#5E0006]">
-                        <h1 class="text-xl lg:text-2xl font-bold uppercase text-center my-3">banner list</h1>
-                        <div class="grid grid-cols-1 gap-4 justify-center">
-                            @foreach ($banner as $item)
-                                <div class="grid grid-cols-1 gap-4 p-4 border-2 border-[#5E0006] items-center">
-                                    <div class="grid grid-cols-1 gap-4">
-                                        <!-- banner_name -->
-                                        <div class="text-center md:text-left">
-                                            <h1 class="text-xs uppercase text-white/60">banner name</h1>
-                                            <h1 class="text-xs md:text-md lg:text-lg font-semibold">{{ $item->banner_name }}
-                                            </h1>
-                                        </div>
-                                        <!-- link_banner -->
-                                        <div class="text-center md:text-left">
-                                            <h1 class="text-xs uppercase text-white/60">link_banner</h1>
-                                            <h1 class="text-xs md:text-md lg:text-lg font-semibold">{{ $item->link_banner }}
-                                            </h1>
-                                        </div>
-                                        <!-- banner cover -->
-                                        <div class="flex flex-col gap-2 text-center justify-center items-center">
-                                            <h1 class="text-xs uppercase text-white/60">banner cover</h1>
-                                            <img src="{{ Storage::url('banner/' . $item->banner_cover) }}"
-                                                alt="{{ $item->banner_name }}" loading="lazy" decoding="async"
-                                                class="object-cover w-full h-full transition duration-300 rounded-lg">
-                                        </div>
-                                    </div>
-                                    <div class="text-center">
-                                        <a href="{{ route('banner') }}"
-                                            class="w-full flex items-center justify-center text-white font-bold uppercase tracking-wide p-2 bg-[#5E0006] hover:bg-[#5E0006]/70 transition rounded-lg">
-                                            <i class="bi bi-calendar-check me-2"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
+            {{-- Header --}}
+            <div class="rounded-lg border border-[#5E0006] bg-black/80 gap-2 p-6">
+                <h1 class="text-2xl lg:text-3xl font-bold uppercase">
+                    Dashboard
+                </h1>
+                <h1 class="text-white/60">
+                    Kelola seluruh konten website Whisnu Santika dari satu tempat.
+                </h1>
+            </div>
+
+            {{-- Statistik --}}
+            <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+                <div class="rounded-xl border border-[#5E0006] bg-black/80 p-6">
+                    <i class="bi bi-images text-3xl text-[#5E0006]"></i>
+                    <h1 class="mt-4 text-3xl font-bold">
+                        {{ $banner->count() }}
+                    </h1>
+                    <h1 class="text-sm text-white/60 uppercase">
+                        Banner
+                    </h1>
                 </div>
 
-                <div class="flex w-full gap-4 justify-center">
-                    <div class="flex flex-col w-full p-4 bg-black/80 gap-4 rounded-xl border-2 border-[#5E0006]">
-                        <h1 class="text-xl lg:text-2xl font-bold uppercase text-center my-3">header list</h1>
-                        <div class="grid grid-cols-1 gap-4 justify-center">
-                            @foreach ($header as $item)
-                                <div class="grid grid-cols-1 gap-4 p-4 border-2 border-[#5E0006] items-center">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <!-- header_color -->
-                                        <div class="text-center md:text-left">
-                                            <h1 class="text-xs uppercase text-white/60">header color</h1>
-                                            <h1 class="text-xs md:text-lg font-semibold">
-                                                {{ $item->header_color }}</h1>
-                                        </div>
-                                        <!-- header_title -->
-                                        <div class="text-center md:text-left">
-                                            <h1 class="text-xs uppercase text-white/60">header title</h1>
-                                            <h1 class="text-xs md:text-lg font-semibold">
-                                                {{ $item->header_title }}</h1>
-                                        </div>
-                                        <!-- header_name -->
-                                        <div class="text-center md:text-left">
-                                            <h1 class="text-xs uppercase text-white/60">header name</h1>
-                                            <h1 class="text-xs md:text-lg font-semibold">{{ $item->header_name }}
-                                            </h1>
-                                        </div>
-                                        <!-- header_description -->
-                                        <div class="text-center md:text-left">
-                                            <h1 class="text-xs uppercase text-white/60">header description</h1>
-                                            <h1 class="text-xs md:text-lg font-semibold">
-                                                {{ $item->header_description }}</h1>
-                                        </div>
-                                        <!-- link_header -->
-                                        <div class="text-center md:text-left">
-                                            <h1 class="text-xs uppercase text-white/60">link header</h1>
-                                            <h1 class="text-xs md:text-lg font-semibold break-all">
-                                                {{ $item->link_header }}</h1>
-                                        </div>
-                                    </div>
-                                    <div class="grid grid-cols-1 gap-4">
-                                        <!-- header img -->
-                                        <div class="flex flex-col gap-2 text-center justify-center items-center">
-                                            <h1 class="text-xs uppercase text-white/60">header img</h1>
-                                            <img src="{{ Storage::url('header/img/' . $item->header_img) }}"
-                                                alt="{{ $item->header_name }}" loading="lazy" decoding="async"
-                                                class="object-cover w-full h-fit transition duration-300 rounded-lg">
-                                        </div>
-                                        <!-- header background -->
-                                        <div class="flex flex-col gap-2 text-center justify-center items-center">
-                                            <h1 class="text-xs uppercase text-white/60">header background</h1>
-                                            @php
-                                                $bgExtension = strtolower(
-                                                    pathinfo($item->header_background, PATHINFO_EXTENSION),
-                                                );
-                                                $videoExtensions = ['mp4', 'webm', 'mov'];
-                                                $isVideo = in_array($bgExtension, $videoExtensions);
-                                            @endphp
-                                            @if ($isVideo)
-                                                <video autoplay muted loop playsinline
-                                                    class="object-cover w-full h-full transition duration-300 rounded-lg">
-                                                    <source
-                                                        src="{{ Storage::url('header/background/' . $item->header_background) }}"
-                                                        type="video/mp4">
-                                                </video>
-                                            @else
-                                                <img src="{{ Storage::url('header/background/' . $item->header_background) }}"
-                                                    alt="{{ $item->header_name }}" loading="lazy" decoding="async"
-                                                    class="object-cover w-full h-full transition duration-300 rounded-lg">
-                                            @endif
-                                        </div>
-                                    </div>
-                                    <div class="text-center">
-                                        <a href="{{ route('headers') }}"
-                                            class="w-full flex items-center justify-center text-white font-bold uppercase tracking-wide p-2 bg-[#5E0006] hover:bg-[#5E0006]/70 transition rounded-lg">
-                                            <i class="bi bi-calendar-check me-2"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
+                <div class="rounded-xl border border-[#5E0006] bg-black/80 p-6">
+                    <i class="bi bi-window-fullscreen text-3xl text-[#5E0006]"></i>
+                    <h1 class="mt-4 text-3xl font-bold">
+                        {{ $header->count() }}
+                    </h1>
+                    <h1 class="text-sm text-white/60 uppercase">
+                        Header
+                    </h1>
                 </div>
 
-                <div class="flex w-full gap-4 justify-center">
-                    <div class="flex flex-col w-full p-4 bg-black/80 gap-4 rounded-xl border-2 border-[#5E0006]">
-                        <h1 class="text-xl lg:text-2xl font-bold uppercase text-center my-3">news list</h1>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 justify-center">
-                            @foreach ($news as $item)
-                                <div class="grid grid-cols-1 gap-4 p-4 border-2 border-[#5E0006] items-center">
-                                    <div class="grid grid-cols-1 md:grid-cols-2">
-                                        <!-- news_title -->
-                                        <div class="text-center md:text-left">
-                                            <h1 class="text-xs uppercase text-white/60">news title</h1>
-                                            <h1 class="text-xs md:text-md lg:text-lg font-semibold">{{ $item->news_title }}
-                                            </h1>
-                                        </div>
-                                        <!-- news_description -->
-                                        <div class="text-center md:text-left">
-                                            <h1 class="text-xs uppercase text-white/60">news_description</h1>
-                                            <h1 class="text-xs md:text-md lg:text-lg font-semibold">
-                                                {{ $item->news_description }}
-                                            </h1>
-                                        </div>
-                                        <!-- news_source -->
-                                        <div class="text-center md:text-left">
-                                            <h1 class="text-xs uppercase text-white/60">news_source</h1>
-                                            <h1 class="text-xs md:text-md lg:text-lg font-semibold">
-                                                {{ $item->news_source }}
-                                            </h1>
-                                        </div>
-                                        <!-- news_date -->
-                                        <div class="text-center md:text-left">
-                                            <h1 class="text-xs uppercase text-white/60">news_date</h1>
-                                            <h1 class="text-xs md:text-md lg:text-lg font-semibold">{{ $item->news_date }}
-                                            </h1>
-                                        </div>
-                                    </div>
-                                    <div class="grid grid-cols-1 gap-4">
-                                        <!-- news_link -->
-                                        <div class="text-center md:text-left">
-                                            <h1 class="text-xs uppercase text-white/60">news_link</h1>
-                                            <h1 class="text-xs md:text-md lg:text-lg font-semibold">{{ $item->news_link }}
-                                            </h1>
-                                        </div>
-                                        <!-- news cover -->
-                                        <div class="flex flex-col gap-2 text-center justify-center items-center">
-                                            <h1 class="text-xs uppercase text-white/60">news cover</h1>
-                                            <img src="{{ Storage::url('news/' . $item->news_cover) }}"
-                                                alt="{{ $item->news_title }}" loading="lazy" decoding="async"
-                                                class="object-cover aspect-square w-full max-w-xs transition duration-300 rounded-lg">
-                                        </div>
-                                    </div>
-                                    <div class="text-center">
-                                        <a href="{{ route('news') }}"
-                                            class="w-full flex items-center justify-center text-white font-bold uppercase tracking-wide p-2 bg-[#5E0006] hover:bg-[#5E0006]/70 transition rounded-lg">
-                                            <i class="bi bi-calendar-check me-2"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
+                <div class="rounded-xl border border-[#5E0006] bg-black/80 p-6">
+                    <i class="bi bi-person-badge text-3xl text-[#5E0006]"></i>
+                    <h1 class="mt-4 text-3xl font-bold">
+                        1
+                    </h1>
+                    <h1 class="text-sm text-white/60 uppercase">
+                        Profile
+                    </h1>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 justify-center">
-                    <div class="flex flex-col h-fit gap-4 p-4 bg-black/80 rounded-xl border-2 border-[#5E0006]">
-                        <h1 class="text-xl lg:text-2xl font-bold uppercase text-center my-3">albums list</h1>
-                        @foreach ($albums as $item)
-                            <div class="grid grid-cols-1 gap-4 p-4 border-2 border-[#5E0006] items-center">
-                                <div class="grid grid-cols-1 gap-4">
-                                    <div class="grid grid-cols-2 gap-4">
-                                        <!-- albums_name -->
-                                        <div class="text-center">
-                                            <h1 class="text-xs uppercase text-white/60">albums name</h1>
-                                            <h1 class="text-xs md:text-md lg:text-lg font-semibold">
-                                                {{ $item->albums_name }}
-                                            </h1>
-                                        </div>
-                                        <!-- link_spotify -->
-                                        <div class="text-center">
-                                            <h1 class="text-xs uppercase text-white/60">link spotify</h1>
-                                            <h1 class="text-xs md:text-md lg:text-lg font-semibold break-all">
-                                                {{ $item->link_spotify }}</h1>
-                                        </div>
-                                    </div>
-                                    <!-- album cover -->
-                                    <div class="flex flex-col gap-2 text-center justify-center items-center">
-                                        <h1 class="text-xs uppercase text-white/60">album cover</h1>
-                                        <img src="{{ Storage::url('albums/' . $item->albums_cover) }}"
-                                            alt="{{ $item->albums_name }}" loading="lazy" decoding="async"
-                                            class="object-cover aspect-square w-full max-w-xs transition duration-300 rounded-lg">
-                                    </div>
-                                </div>
-                                {{-- action button --}}
-                                <div class="flex flex-col w-full gap-4 mt-4 text-center">
-                                    <h1 class="text-xs uppercase text-white/60">action button</h1>
-                                    <div class="flex gap-2 justify-center items-center">
-                                        <a href="{{ route('albums') }}"
-                                            class="w-full text-white font-bold uppercase tracking-wide p-2 bg-[#5E0006] hover:bg-[#5E0006]/70 transition rounded-lg">
-                                            <i class="bi bi-disc-fill me-2"></i>
-                                        </a>
-                                    </div>
-                                </div>
+                <div class="rounded-xl border border-[#5E0006] bg-black/80 p-6">
+                    <i class="bi bi-newspaper text-3xl text-[#5E0006]"></i>
+                    <h1 class="mt-4 text-3xl font-bold">
+                        {{ $news->count() }}
+                    </h1>
+                    <h1 class="text-sm text-white/60 uppercase">
+                        News
+                    </h1>
+                </div>
+
+                <div class="rounded-xl border border-[#5E0006] bg-black/80 p-6">
+                    <i class="bi bi-disc-fill text-3xl text-[#5E0006]"></i>
+                    <h1 class="mt-4 text-3xl font-bold">
+                        {{ $albums->count() }}
+                    </h1>
+                    <h1 class="text-sm text-white/60 uppercase">
+                        Albums
+                    </h1>
+                </div>
+
+                <div class="rounded-xl border border-[#5E0006] bg-black/80 p-6">
+                    <i class="bi bi-bag-fill text-3xl text-[#5E0006]"></i>
+                    <h1 class="mt-4 text-3xl font-bold">
+                        {{ $merchandise->count() }}
+                    </h1>
+                    <h1 class="text-sm text-white/60 uppercase">
+                        Merchandise
+                    </h1>
+                </div>
+            </div>
+
+            {{-- Preview Section --}}
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                {{-- Banner --}}
+                <div class="rounded-lg border border-[#5E0006] bg-black/80 overflow-hidden">
+                    <div class="flex justify-between items-center p-6 border-b border-[#5E0006]">
+                        <h1 class="font-bold uppercase">
+                            Banner
+                        </h1>
+                        <a href="{{ route('banner') }}"
+                            class="px-4 py-2 rounded-lg bg-[#5E0006] hover:bg-[#7D0008] transition">
+                            Kelola
+                        </a>
+                    </div>
+                    <div class="p-6">
+                        @if ($banner->first())
+                            <img src="{{ Storage::url('banner/' . $banner->first()->banner_cover) }}"
+                                class="rounded-xl w-full object-cover">
+                            <h3 class="mt-4 font-bold">
+                                {{ $banner->first()->banner_name }}
+                            </h3>
+                        @endif
+                    </div>
+
+                </div>
+
+                {{-- Header --}}
+                <div class="rounded-lg border border-[#5E0006] bg-black/80 overflow-hidden">
+                    <div class="flex justify-between items-center p-6 border-b border-[#5E0006]">
+                        <h1 class="font-bold uppercase">
+                            Header
+                        </h1>
+                        <a href="{{ route('headers') }}"
+                            class="px-4 py-2 rounded-lg bg-[#5E0006] hover:bg-[#7D0008] transition">
+                            Kelola
+                        </a>
+                    </div>
+                    <div class="p-6">
+                        @if ($header->first())
+                            <img src="{{ Storage::url('header/img/' . $header->first()->header_img) }}"
+                                class="rounded-xl w-full object-cover">
+                            <h1 class="mt-4 font-bold">
+                                {{ $header->first()->header_name }}
+                            </h1>
+                            <h1 class="text-white/60 mt-1">
+                                {{ $header->first()->header_title }}
+                            </h1>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            {{-- News --}}
+            <div class="rounded-lg border border-[#5E0006] bg-black/80">
+                <div class="flex justify-between items-center p-6 border-b border-[#5E0006]">
+                    <h1 class="font-bold uppercase">
+                        Latest News
+                    </h1>
+                    <a href="{{ route('news') }}" class="px-4 py-2 rounded-lg bg-[#5E0006] hover:bg-[#7D0008] transition">
+                        Kelola
+                    </a>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-6">
+                    @foreach ($news->take(3) as $item)
+                        <div class="rounded-xl bg-black/40 overflow-hidden">
+                            <img src="{{ Storage::url('news/' . $item->news_cover) }}"
+                                class="w-full object-cover">
+                            <div class="p-4">
+                                <h1 class="font-semibold line-clamp-2">
+                                    {{ $item->news_title }}
+                                </h1>
+                                <h1 class="text-sm text-white/60 mt-2">
+                                    {{ $item->news_source }}
+                                </h1>
                             </div>
-                        @endforeach
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+
+            {{-- Album & Merchandise --}}
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                {{-- Album --}}
+                <div class="rounded-lg border border-[#5E0006] bg-black/80">
+                    <div class="flex justify-between items-center p-6 border-b border-[#5E0006]">
+                        <h1 class="font-bold uppercase">
+                            Latest Albums
+                        </h1>
+                        <a href="{{ route('albums') }}" class="px-4 py-2 rounded-lg bg-[#5E0006] hover:bg-[#7D0008]">
+                            Kelola
+                        </a>
                     </div>
-                    <div class="flex flex-col h-fit gap-4 p-4 bg-black/80 rounded-xl border-2 border-[#5E0006]">
-                        <h1 class="text-xl lg:text-2xl font-bold uppercase text-center my-3">merchandise list</h1>
-                        @foreach ($merchandise as $item)
-                            <div class="grid grid-cols-1 gap-4 p-4 border-2 border-[#5E0006] items-center">
-                                <div class="grid grid-cols-1 gap-4">
-                                    <div class="grid grid-cols-2 gap-4">
-                                        <!-- merchandise_name -->
-                                        <div class="text-center">
-                                            <h1 class="text-xs uppercase text-white/60">merchandise name</h1>
-                                            <h1 class="text-xs md:text-lg font-semibold">{{ $item->merchandise_name }}
-                                            </h1>
-                                        </div>
-                                        <!-- link_merchandise -->
-                                        <div class="text-center">
-                                            <h1 class="text-xs uppercase text-white/60">link merchandise</h1>
-                                            <h1 class="text-xs md:text-lg font-semibold break-all">
-                                                {{ $item->link_merchandise }}</h1>
-                                        </div>
-                                    </div>
-                                    <!-- merchandise cover -->
-                                    <div class="flex flex-col gap-2 text-center justify-center items-center">
-                                        <h1 class="text-xs uppercase text-white/60">merchandise cover</h1>
-                                        <img src="{{ Storage::url('merchandise/' . $item->merchandise_cover) }}"
-                                            alt="{{ $item->merchandise_name }}" loading="lazy" decoding="async"
-                                            class="object-cover aspect-square w-full max-w-xs transition duration-300 rounded-lg">
-                                    </div>
-                                </div>
-                                {{-- action button --}}
-                                <div class="flex flex-col w-full gap-4 mt-4 text-center">
-                                    <h1 class="text-xs uppercase text-white/60">action button</h1>
-                                    <div class="flex gap-2 justify-center items-center">
-                                        <a href="{{ route('merchandise') }}"
-                                            class="w-full text-white font-bold uppercase tracking-wide p-2 bg-[#5E0006] hover:bg-[#5E0006]/70 transition rounded-lg">
-                                            <i class="bi bi-basket-fill"></i>
-                                        </a>
-                                    </div>
-                                </div>
+                    <div class="grid grid-cols-2 gap-4 p-6">
+                        @foreach ($albums->take(4) as $item)
+                            <div>
+                                <img src="{{ Storage::url('albums/' . $item->albums_cover) }}"
+                                    class="rounded-lg aspect-square object-cover">
+                                <h1 class="mt-2 text-sm font-semibold text-center">
+                                    {{ $item->albums_name }}
+                                </h1>
                             </div>
                         @endforeach
                     </div>
                 </div>
 
+                {{-- Merchandise --}}
+                <div class="rounded-lg border border-[#5E0006] bg-black/80">
+                    <div class="flex justify-between items-center p-6 border-b border-[#5E0006]">
+                        <h1 class="font-bold uppercase">
+                            Merchandise
+                        </h1>
+                        <a href="{{ route('merchandise') }}" class="px-4 py-2 rounded-lg bg-[#5E0006] hover:bg-[#7D0008]">
+                            Kelola
+                        </a>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 p-6">
+                        @foreach ($merchandise->take(4) as $item)
+                            <div>
+                                <img src="{{ Storage::url('merchandise/' . $item->merchandise_cover) }}"
+                                    class="rounded-lg aspect-square object-cover">
+                                <h1 class="mt-2 text-sm font-semibold text-center">
+                                    {{ $item->merchandise_name }}
+                                </h1>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
             </div>
         </div>
     </div>
