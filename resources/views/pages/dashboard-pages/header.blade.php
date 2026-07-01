@@ -9,14 +9,44 @@
             <form action="{{ route('headers.tambah') }}" method="POST" enctype="multipart/form-data"
                 class="flex flex-col gap-2">
                 @csrf
-                <label htmlFor="header_title" class="text-sm font-semibold uppercase tracking-widest text-gray-300">
-                    header title
-                </label>
-                <input type="text" name="header_title" placeholder="Masukan judul header..."
-                    class="bg-white/10 border border-white/20 text-white placeholder-gray-500 p-3 rounded-lg focus:outline-none focus:border-[#5E0006] focus:ring-1 focus:ring-[#5E0006] transition" />
+                {{-- header_color --}}
+                <div class="flex flex-col gap-2">
+                    <label for="header_color" class="text-sm font-semibold uppercase tracking-widest text-gray-300">
+                        Header Color
+                    </label>
+
+                    <input id="header_color" type="color" name="header_color" value="#5E0006"
+                        oninput="document.getElementById('header_color_preview').style.backgroundColor = this.value"
+                        class="h-12 w-full cursor-pointer rounded-lg border border-white/20 bg-white/10 p-1" />
+
+                    <div class="flex items-center gap-3">
+                        <div id="header_color_preview" class="h-8 w-8 rounded-md border border-white/20"
+                            style="background-color: #5E0006;"></div>
+                        <span class="text-sm text-gray-300" id="header_color_value">#5E0006</span>
+                    </div>
+                </div>
+
+                <script>
+                    const colorInput = document.getElementById('header_color');
+                    const colorPreview = document.getElementById('header_color_preview');
+                    const colorValue = document.getElementById('header_color_value');
+
+                    colorInput.addEventListener('input', function() {
+                        colorPreview.style.backgroundColor = this.value;
+                        colorValue.textContent = this.value;
+                    });
+                </script>
+                {{-- header_title --}}
+                <div class="flex flex-col gap-2">
+                    <label htmlFor="header_title" class="text-sm font-semibold uppercase tracking-widest text-gray-300">
+                        header title
+                    </label>
+                    <input type="text" name="header_title" placeholder="Masukan judul header..."
+                        class="bg-white/10 border border-white/20 text-white placeholder-gray-500 p-3 rounded-lg focus:outline-none focus:border-[#5E0006] focus:ring-1 focus:ring-[#5E0006] transition" />
+                </div>
 
                 {{-- header header_img --}}
-                <div class="flex flex-col gap-1" data-media-input>
+                <div class="flex flex-col gap-2" data-media-input>
                     <label for="header_img" class="text-sm font-semibold uppercase tracking-widest text-gray-300">
                         header image
                     </label>
@@ -37,23 +67,35 @@
                     <p class="error-el hidden text-xs text-red-400 mt-1"></p>
                 </div>
                 {{-- header header_img end --}}
-                <label htmlFor="header_name" class="text-sm font-semibold uppercase tracking-widest text-gray-300">
-                    header name
-                </label>
-                <input type="text" name="header_name" placeholder="Masukan nama header..."
-                    class="bg-white/10 border border-white/20 text-white placeholder-gray-500 p-3 rounded-lg focus:outline-none focus:border-[#5E0006] focus:ring-1 focus:ring-[#5E0006] transition" />
-                <label htmlFor="header_description" class="text-sm font-semibold uppercase tracking-widest text-gray-300">
-                    header description
-                </label>
-                <input type="text" name="header_description" placeholder="Masukan deskripsi header..."
-                    class="bg-white/10 border border-white/20 text-white placeholder-gray-500 p-3 rounded-lg focus:outline-none focus:border-[#5E0006] focus:ring-1 focus:ring-[#5E0006] transition" />
-                <label htmlFor="link_header" class="text-sm font-semibold uppercase tracking-widest text-gray-300">
-                    link header
-                </label>
-                <input type="text" name="link_header" placeholder="https://..."
-                    class="bg-white/10 border border-white/20 text-white placeholder-gray-500 p-3 rounded-lg focus:outline-none focus:border-[#5E0006] focus:ring-1 focus:ring-[#5E0006] transition" />
+
+                {{-- header_name --}}
+                <div class="flex flex-col gap-2">
+                    <label htmlFor="header_name" class="text-sm font-semibold uppercase tracking-widest text-gray-300">
+                        header name
+                    </label>
+                    <input type="text" name="header_name" placeholder="Masukan nama header..."
+                        class="bg-white/10 border border-white/20 text-white placeholder-gray-500 p-3 rounded-lg focus:outline-none focus:border-[#5E0006] focus:ring-1 focus:ring-[#5E0006] transition" />
+                </div>
+                {{-- header_description --}}
+                <div class="flex flex-col gap-2">
+                    <label htmlFor="header_description"
+                        class="text-sm font-semibold uppercase tracking-widest text-gray-300">
+                        header description
+                    </label>
+                    <input type="text" name="header_description" placeholder="Masukan deskripsi header..."
+                        class="bg-white/10 border border-white/20 text-white placeholder-gray-500 p-3 rounded-lg focus:outline-none focus:border-[#5E0006] focus:ring-1 focus:ring-[#5E0006] transition" />
+                </div>
+                {{-- link_header --}}
+                <div class="flex flex-col gap-2">
+                    <label htmlFor="link_header" class="text-sm font-semibold uppercase tracking-widest text-gray-300">
+                        link header
+                    </label>
+                    <input type="text" name="link_header" placeholder="https://..."
+                        class="bg-white/10 border border-white/20 text-white placeholder-gray-500 p-3 rounded-lg focus:outline-none focus:border-[#5E0006] focus:ring-1 focus:ring-[#5E0006] transition" />
+                </div>
+
                 {{-- header header_background --}}
-                <div class="flex flex-col gap-1" data-media-input>
+                <div class="flex flex-col gap-2" data-media-input>
                     <label for="header_background" class="text-sm font-semibold uppercase tracking-widest text-gray-300">
                         header background
                     </label>
@@ -148,12 +190,19 @@
                 @foreach ($header as $item)
                     <div class="grid grid-cols-1 gap-4 p-4 border-2 border-[#5E0006] items-center rounded-lg">
                         <div class="grid grid-cols-1 gap-4">
-                            <div class="grid grid-cols-1 gap-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- header_color -->
+                                <div class="text-center md:text-left">
+                                    <h1 class="text-xs uppercase text-white/60">header color</h1>
+                                    <h1 class="text-xs md:text-lg font-semibold">{{ $item->header_color }}</h1>
+                                </div>
                                 <!-- header_title -->
                                 <div class="text-center md:text-left">
                                     <h1 class="text-xs uppercase text-white/60">header title</h1>
                                     <h1 class="text-xs md:text-lg font-semibold">{{ $item->header_title }}</h1>
                                 </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <!-- header_name -->
                                 <div class="text-center md:text-left">
                                     <h1 class="text-xs uppercase text-white/60">header name</h1>
@@ -180,9 +229,22 @@
                             <!-- header background -->
                             <div class="flex flex-col gap-2 text-center justify-center items-center">
                                 <h1 class="text-xs uppercase text-white/60">header background</h1>
-                                <img src="{{ Storage::url('header/background/' . $item->header_background) }}"
-                                    alt="{{ $item->header_name }}" loading="lazy" decoding="async"
-                                    class="object-cover w-full h-full transition duration-300 rounded-lg">
+                                @php
+                                    $bgExtension = strtolower(pathinfo($item->header_background, PATHINFO_EXTENSION));
+                                    $videoExtensions = ['mp4', 'webm', 'mov'];
+                                    $isVideo = in_array($bgExtension, $videoExtensions);
+                                @endphp
+                                @if ($isVideo)
+                                    <video autoplay muted loop playsinline
+                                        class="object-cover w-full h-full transition duration-300 rounded-lg">
+                                        <source src="{{ Storage::url('header/background/' . $item->header_background) }}"
+                                            type="video/mp4">
+                                    </video>
+                                @else
+                                    <img src="{{ Storage::url('header/background/' . $item->header_background) }}"
+                                        alt="{{ $item->header_name }}" loading="lazy" decoding="async"
+                                        class="object-cover w-full h-full transition duration-300 rounded-lg">
+                                @endif
                             </div>
                         </div>
                         {{-- action button --}}
@@ -190,6 +252,7 @@
                             <h1 class="text-xs uppercase text-white/60">action button</h1>
                             <div class="flex gap-2 justify-center items-center">
                                 @include('components.dashboard.btn-hapus-header')
+                                @include('components.dashboard.btn-edit-header')
                             </div>
                         </div>
                     </div>

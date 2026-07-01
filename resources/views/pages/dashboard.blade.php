@@ -51,6 +51,12 @@
                             @foreach ($header as $item)
                                 <div class="grid grid-cols-1 gap-4 p-4 border-2 border-[#5E0006] items-center">
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <!-- header_color -->
+                                        <div class="text-center md:text-left">
+                                            <h1 class="text-xs uppercase text-white/60">header color</h1>
+                                            <h1 class="text-xs md:text-lg font-semibold">
+                                                {{ $item->header_color }}</h1>
+                                        </div>
                                         <!-- header_title -->
                                         <div class="text-center md:text-left">
                                             <h1 class="text-xs uppercase text-white/60">header title</h1>
@@ -87,9 +93,25 @@
                                         <!-- header background -->
                                         <div class="flex flex-col gap-2 text-center justify-center items-center">
                                             <h1 class="text-xs uppercase text-white/60">header background</h1>
-                                            <img src="{{ Storage::url('header/background/' . $item->header_background) }}"
-                                                alt="{{ $item->header_name }}" loading="lazy" decoding="async"
-                                                class="object-cover w-full h-fit transition duration-300 rounded-lg">
+                                            @php
+                                                $bgExtension = strtolower(
+                                                    pathinfo($item->header_background, PATHINFO_EXTENSION),
+                                                );
+                                                $videoExtensions = ['mp4', 'webm', 'mov'];
+                                                $isVideo = in_array($bgExtension, $videoExtensions);
+                                            @endphp
+                                            @if ($isVideo)
+                                                <video autoplay muted loop playsinline
+                                                    class="object-cover w-full h-full transition duration-300 rounded-lg">
+                                                    <source
+                                                        src="{{ Storage::url('header/background/' . $item->header_background) }}"
+                                                        type="video/mp4">
+                                                </video>
+                                            @else
+                                                <img src="{{ Storage::url('header/background/' . $item->header_background) }}"
+                                                    alt="{{ $item->header_name }}" loading="lazy" decoding="async"
+                                                    class="object-cover w-full h-full transition duration-300 rounded-lg">
+                                            @endif
                                         </div>
                                     </div>
                                     <div class="text-center">

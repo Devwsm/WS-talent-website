@@ -14,6 +14,7 @@ return new class extends Migration
         //
         Schema::create('headers', function (Blueprint $table) {
             $table->id("id_header");
+            $table->string('header_color');
             $table->string('header_title');
             $table->string('header_img');
             $table->string('header_name');

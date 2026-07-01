@@ -109,6 +109,7 @@ class dashboardController extends Controller
     public function tambahHeaders(Request $request)
     {
         $request->validate([
+            'header_color' => 'required',
             'header_title' => 'required',
             'header_img' => 'required|image|mimes:jpg,jpeg,png|max:1024',
             'header_name' => 'required',
@@ -116,6 +117,7 @@ class dashboardController extends Controller
             'link_header' => 'required',
             'header_background'  => 'required|file|mimes:jpg,jpeg,png,mp4,mov,avi,mkv,webm',
         ], [
+            'header_color.required' => 'Warna Header harus diisi.',
             'header_title.required' => 'Judul Header harus diisi.',
             'header_img.required' => 'Gambar Header harus diisi.',
             'header_img.image' => 'File harus berupa gambar.',
@@ -166,6 +168,7 @@ class dashboardController extends Controller
 
         // simpan data ( simple )
         $data = new header();
+        $data->header_color = $request->header_color;
         $data->header_title = $request->header_title;
         $data->header_img = $filename; // hanya nama file
         $data->header_name = $request->header_name;
@@ -177,55 +180,98 @@ class dashboardController extends Controller
         return redirect()->route('headers')->with('success', 'inputan berhasil ditambahkan');
     }
 
-
-    public function updateHeaders(Request $request, $id)
+    public function updateHeaders(Request $request, $id_header)
     {
+        $data = header::findOrFail($id_header);
+
         $request->validate([
-            'header_title' => 'required',
-            'header_img' => 'required|image|mimes:jpg,jpeg,png|max:1024',
-            'header_name' => 'required',
+            'header_color'       => 'required',
+            'header_title'       => 'required',
+            'header_img'         => 'nullable|image|mimes:jpg,jpeg,png|max:1024',
+            'header_name'        => 'required',
             'header_description' => 'required',
-            'link_header' => 'required',
-            'header_cover' => 'required|image|mimes:jpg,jpeg,png|max:1024',
+            'link_header'        => 'required',
+            'header_background'  => 'nullable|file|mimes:jpg,jpeg,png,mp4,mov,avi,mkv,webm',
         ], [
+            'header_color.required' => 'Warna Header harus diisi.',
             'header_title.required' => 'Judul Header harus diisi.',
-            'header_img.required' => 'Gambar Header harus diisi.',
-            'header_img.image' => 'File harus berupa gambar.',
-            'header_img.max' => 'Cover Header tidak boleh lebih dari 1MB.',
+            'header_img.image'      => 'File harus berupa gambar.',
+            'header_img.max'        => 'Cover Header tidak boleh lebih dari 1MB.',
 
-            'header_name.required' => 'Nama Header harus diisi.',
+            'header_name.required'        => 'Nama Header harus diisi.',
             'header_description.required' => 'Deskripsi Header harus diisi.',
-            'link_header.required' => 'Link Header harus diisi.',
+            'link_header.required'        => 'Link Header harus diisi.',
 
-            'header_cover.required' => 'Cover Header harus diisi.',
-            'header_cover.image' => 'File harus berupa gambar.',
-            'header_cover.max' => 'Cover Header tidak boleh lebih dari 1MB.',
+            'header_background.mimes' => 'File harus berupa gambar (jpg, jpeg, png) atau video (mp4, mov, avi, mkv, webm).',
         ]);
 
-        $data = header::findOrFail($id);
-        if ($request->hasFile('header_cover')) {
-            // Hapus file lama dari storage
-            if ($data->header_cover && Storage::disk('public')->exists('header/' . $data->header_cover)) {
-                Storage::disk('public')->delete('header/' . $data->header_cover);
+        // === update header_img (kalau ada file baru) ===
+        if ($request->hasFile('header_img')) {
+            $file = $request->file('header_img');
+
+            if ($file->getSize() > 1 * 1024 * 1024) {
+                return back()->withErrors(['header_img' => 'Gambar Header tidak boleh lebih dari 1MB.'])->withInput();
             }
 
-            // Konversi dan simpan file baru
-            $file     = $request->file('header_cover');
+            // hapus file lama
+            if ($data->header_img && Storage::disk('public')->exists('header/img/' . $data->header_img)) {
+                Storage::disk('public')->delete('header/img/' . $data->header_img);
+            }
+
             $filename = now()->timestamp . '_' . Str::uuid() . '.webp';
             $webpData = $this->convertToWebP($file->getRealPath(), 82);
-            Storage::disk('public')->put('header/' . $filename, $webpData);
+            Storage::disk('public')->put('header/img/' . $filename, $webpData);
 
-            $data->header_cover = $filename;
+            $data->header_img = $filename;
         }
 
-        $data->header_name = $request->header_name;
+        // === update header_background (kalau ada file baru, gambar ATAU video) ===
+        if ($request->hasFile('header_background')) {
+            $bgFile  = $request->file('header_background');
+            $bgMime  = $bgFile->getMimeType();
+            $isVideo = str_starts_with($bgMime, 'video/');
+
+            $maxImageSize = 1 * 1024 * 1024;   // 1MB
+            $maxVideoSize = 25 * 1024 * 1024;  // 25MB
+
+            if (!$isVideo && $bgFile->getSize() > $maxImageSize) {
+                return back()->withErrors(['header_background' => 'Gambar Cover Header tidak boleh lebih dari 1MB.'])->withInput();
+            }
+            if ($isVideo && $bgFile->getSize() > $maxVideoSize) {
+                return back()->withErrors(['header_background' => 'Video Cover Header tidak boleh lebih dari 25MB.'])->withInput();
+            }
+
+            // hapus file lama
+            if ($data->header_background && Storage::disk('public')->exists('header/background/' . $data->header_background)) {
+                Storage::disk('public')->delete('header/background/' . $data->header_background);
+            }
+
+            if ($isVideo) {
+                $bgFilename = now()->timestamp . '_' . Str::uuid() . '.mp4';
+                $this->convertVideoToMp4(
+                    $bgFile->getRealPath(),
+                    Storage::disk('public')->path('header/background/' . $bgFilename)
+                );
+            } else {
+                $bgFilename = now()->timestamp . '_' . Str::uuid() . '.webp';
+                $webpData   = $this->convertToWebP($bgFile->getRealPath(), 82);
+                Storage::disk('public')->put('header/background/' . $bgFilename, $webpData);
+            }
+
+            $data->header_background = $bgFilename;
+        }
+
+        // update field text (selalu diupdate)
+        $data->header_color       = $request->header_color;
+        $data->header_title       = $request->header_title;
+        $data->header_name        = $request->header_name;
         $data->header_description = $request->header_description;
-        $data->link_header = $request->link_header;
+        $data->link_header        = $request->link_header;
         $data->save();
 
-        return redirect()->back()->with('success', 'Data berhasil diupdate');
+        return redirect()->route('headers')->with('success', 'Data berhasil diupdate');
     }
-
+    
     public function hapusHeaders($id)
     {
         try {
@@ -650,20 +696,22 @@ class dashboardController extends Controller
 
         $process = new Process([
             'ffmpeg',
-            '-y',                       // overwrite jika ada
+            '-y',
             '-i',
             $inputPath,
-            '-an',                      // hapus audio (background video biasanya muted)
+            '-t',
+            '12',                    // potong ke 12 detik pertama
+            '-an',                         // hapus audio
             '-vcodec',
             'libx264',
             '-preset',
-            'veryfast',
+            'slow',             // kompresi lebih efisien (proses convert sedikit lebih lama)
             '-crf',
-            '28',               // makin besar = makin ringan (kualitas turun sedikit)
+            '30',                  // kompresi lebih agresif dari sebelumnya
             '-vf',
-            'scale=1280:-2',     // resize max width 1280px, height auto (kelipatan 2)
+            'scale=1280:-2,fps=24', // resize + batasi frame rate
             '-movflags',
-            '+faststart',  // biar bisa langsung play sebelum full download
+            '+faststart',
             $outputPath,
         ]);
 
