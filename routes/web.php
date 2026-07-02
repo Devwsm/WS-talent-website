@@ -26,11 +26,11 @@ Route::prefix('/dashboard')->middleware('cekLogin')->group(function () {
 
     Route::prefix('/profile')->group(function () {
         Route::get('/', [profileController::class, 'profile'])->name('dashboard.profile');
-        
+
         Route::post('/tambahStatistik', [profileController::class, 'tambahStatistik'])->name('statistik.tambah')->middleware('throttle:10,1');
         Route::delete('/hapusStatistik/{id}', [profileController::class, 'hapusStatistik'])->name('statistik.hapus');
         Route::put('/updateStatistik/{id}', [profileController::class, 'updateStatistik'])->name('statistik.update');
-        
+
         Route::post('/tambahHighlight', [profileController::class, 'tambahHighlight'])->name('highlight.tambah')->middleware('throttle:10,1');
         Route::delete('/hapusHighlight/{id}', [profileController::class, 'hapusHighlight'])->name('highlight.hapus');
         Route::put('/updateHighlight/{id}', [profileController::class, 'updateHighlight'])->name('highlight.update');
@@ -40,6 +40,7 @@ Route::prefix('/dashboard')->middleware('cekLogin')->group(function () {
         Route::get('/', [dashboardController::class, 'banner'])->name('banner');
         Route::post('/tambahBanner', [dashboardController::class, 'tambahBanner'])->name('banner.tambah')->middleware('throttle:10,1');
         Route::delete('/hapusBanner/{id}', [dashboardController::class, 'hapusBanner'])->name('banner.hapus');
+        Route::put('/updateBanner/{id}', [dashboardController::class, 'updateBanner'])->name('banner.update');
     });
 
     Route::prefix('/headers')->group(function () {

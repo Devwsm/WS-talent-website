@@ -15,7 +15,7 @@
             </div>
 
             {{-- Statistik --}}
-            <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+            <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
                 <div class="rounded-xl border border-[#5E0006] bg-black/80 p-6">
                     <i class="bi bi-images text-3xl text-[#5E0006]"></i>
                     <h1 class="mt-4 text-3xl font-bold">
@@ -33,16 +33,6 @@
                     </h1>
                     <h1 class="text-sm text-white/60 uppercase">
                         Header
-                    </h1>
-                </div>
-
-                <div class="rounded-xl border border-[#5E0006] bg-black/80 p-6">
-                    <i class="bi bi-person-badge text-3xl text-[#5E0006]"></i>
-                    <h1 class="mt-4 text-3xl font-bold">
-                        1
-                    </h1>
-                    <h1 class="text-sm text-white/60 uppercase">
-                        Profile
                     </h1>
                 </div>
 

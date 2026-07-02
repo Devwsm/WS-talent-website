@@ -96,6 +96,7 @@
                             <h1 class="text-xs uppercase text-white/60">action button</h1>
                             <div class="flex gap-2 justify-center items-center">
                                 @include('components.dashboard.btn-hapus-banner')
+                                @include('components.dashboard.modal-edit-banner')
                             </div>
                         </div>
                     </div>

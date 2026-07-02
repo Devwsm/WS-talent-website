@@ -79,6 +79,41 @@ class dashboardController extends Controller
         return redirect()->route('banner')->with('success', 'inputan berhasil ditambahkan');
     }
 
+    public function updateBanner(Request $request, $id)
+    {
+        $request->validate([
+            'banner_name' => 'required',
+            'link_banner' => 'required',
+            'banner_cover' => 'image|mimes:jpg,jpeg,png|max:1024',
+        ], [
+            'banner_name.required' => 'Judul Banner harus diisi.',
+            'link_banner.required' => 'Link Banner harus diisi.',
+            'banner_cover.image' => 'File harus berupa gambar.',
+            'banner_cover.max' => 'Gambar Banner tidak boleh lebih dari 1MB.',
+        ]);
+
+        $data = banner::findOrFail($id);
+        if ($request->hasFile('banner_cover')) {
+            // Hapus file lama dari storage
+            if ($data->banner_cover && Storage::disk('public')->exists('banner/' . $data->banner_cover)) {
+                Storage::disk('public')->delete('banner/' . $data->banner_cover);
+            }
+
+            // Konversi dan simpan file baru
+            $file     = $request->file('banner_cover');
+            $filename = now()->timestamp . '_' . Str::uuid() . '.webp';
+            $webpData = $this->convertToWebP($file->getRealPath(), 82);
+            Storage::disk('public')->put('banner/' . $filename, $webpData);
+
+            $data->banner_cover = $filename;
+        }
+        $data->banner_name = $request->banner_name;
+        $data->link_banner = $request->link_banner;
+        $data->save();
+
+        return redirect()->route('banner')->with('success', 'inputan berhasil ditambahkan');
+    }
+
     public function hapusBanner($id)
     {
         try {
