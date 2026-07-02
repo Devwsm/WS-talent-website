@@ -26,12 +26,10 @@ Route::prefix('/dashboard')->middleware('cekLogin')->group(function () {
 
     Route::prefix('/profile')->group(function () {
         Route::get('/', [profileController::class, 'profile'])->name('dashboard.profile');
-        Route::post('/updateProfile_card', [profileController::class, 'updateProfile_card'])->name('Profile_card.update')->middleware('throttle:10,1');
-        Route::delete('/hapusProfile_card/{id}', [profileController::class, 'hapusProfile_card'])->name('Profile_card.hapus');
-
-        Route::post('/tambahGenre', [profileController::class, 'tambahGenre'])->name('Genre.tambah')->middleware('throttle:10,1');
-        Route::delete('/hapusGenre/{id}', [profileController::class, 'hapusGenre'])->name('Genre.hapus');
-        Route::put('/updateGenre/{id}', [profileController::class, 'updateGenre'])->name('Genre.update');
+        
+        Route::post('/tambahStatistik', [profileController::class, 'tambahStatistik'])->name('statistik.tambah')->middleware('throttle:10,1');
+        Route::delete('/hapusStatistik/{id}', [profileController::class, 'hapusStatistik'])->name('statistik.hapus');
+        Route::put('/updateStatistik/{id}', [profileController::class, 'updateStatistik'])->name('statistik.update');
     });
 
     Route::prefix('/banner')->group(function () {
