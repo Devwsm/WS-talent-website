@@ -11,6 +11,9 @@
         <a href="{{ route('headers') }}" class="text-[#F5F1E6] hover:text-[#d5ccb3] text-[1.2rem] md:text-[2rem] ">
             <i class="bi bi-card-image"></i>
         </a>
+        <a href="{{ route('dashboard.profile') }}" class="text-[#F5F1E6] hover:text-[#d5ccb3] text-[1.2rem] md:text-[2rem] ">
+            <i class="bi bi-person-fill"></i>
+        </a>
         <a href="{{ route('albums') }}" class="text-[#B71C1C] hover:text-[#891212] text-[1.2rem] md:text-[2rem] ">
             <i class="bi bi-disc-fill"></i>
         </a>
