@@ -48,7 +48,7 @@
                 </button>
             </form>
         </div>
-        
+
         {{-- Preview gambar cover sebelum upload --}}
         <script>
             // Preview gambar cover sebelum upload
@@ -68,7 +68,7 @@
         <div class="bg-black/80 text-white p-6 md:p-8 mb-24 w-full rounded-lg">
             <h1 class="text-2xl lg:text-3xl font-bold uppercase text-center mb-6">albums list</h1>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-                @foreach ($albums as $item)
+                @forelse ($albums as $item)
                     <div class="grid grid-cols-1 gap-4 p-4 border-2 border-[#5E0006] items-center rounded-lg">
                         <div class="grid grid-cols-1 gap-4">
                             <div class="grid grid-cols-2 gap-4">
@@ -100,7 +100,9 @@
                             </div>
                         </div>
                     </div>
-                @endforeach
+                @empty
+                    <p class="col-span-full text-center text-white/50 py-6">Belum ada data albums.</p>
+                @endforelse
             </div>
         </div>
     </div>
