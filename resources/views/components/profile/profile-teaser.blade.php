@@ -45,18 +45,12 @@
 
         {{-- Stats --}}
         <div class="grid grid-cols-3 gap-3">
+            @foreach ($statistik as $item)
             <div class="flex flex-col gap-1 p-3 rounded-lg bg-white/5 border border-white/10">
-                <span class="text-lg font-medium text-white">590K+</span>
-                <span class="text-xs text-white/50">YouTube subscribers</span>
+                <span class="text-lg font-medium text-white">{{ $item->total }}</span>
+                <span class="text-xs text-white/50">{{ $item->platform }}</span>
             </div>
-            <div class="flex flex-col gap-1 p-3 rounded-lg bg-white/5 border border-white/10">
-                <span class="text-lg font-medium text-white">2.9M+</span>
-                <span class="text-xs text-white/50">Spotify Montly Listeners</span>
-            </div>
-            <div class="flex flex-col gap-1 p-3 rounded-lg bg-white/5 border border-white/10">
-                <span class="text-lg font-medium text-white">426K+</span>
-                <span class="text-xs text-white/50">Instagram Followers</span>
-            </div>
+            @endforeach
         </div>
 
         {{-- CTA --}}

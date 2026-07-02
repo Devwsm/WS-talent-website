@@ -53,22 +53,12 @@
         <div class="flex flex-col gap-3">
             <h2 class="text-xs text-white/30 uppercase tracking-widest">Pencapaian</h2>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div class="flex flex-col gap-1 p-3 rounded-lg bg-white/5 border border-white/10">
-                    <span class="text-lg font-medium text-white">590K+</span>
-                    <span class="text-xs text-white/50">YouTube subscribers</span>
-                </div>
-                <div class="flex flex-col gap-1 p-3 rounded-lg bg-white/5 border border-white/10">
-                    <span class="text-lg font-medium text-white">2.9M+</span>
-                    <span class="text-xs text-white/50">Spotify Montly Listeners</span>
-                </div>
-                <div class="flex flex-col gap-1 p-3 rounded-lg bg-white/5 border border-white/10">
-                    <span class="text-lg font-medium text-white">426K+</span>
-                    <span class="text-xs text-white/50">Instagram Followers</span>
-                </div>
-                <div class="flex flex-col gap-1 p-4 rounded-lg bg-white/5 border border-white/10">
-                    <span class="text-xl font-medium text-white">Global</span>
-                    <span class="text-xs text-white/50">Festival internasional</span>
-                </div>
+                @foreach ($statistik as $item)
+                    <div class="flex flex-col gap-1 p-3 rounded-lg bg-white/5 border border-white/10">
+                        <span class="text-lg font-medium text-white">{{ $item->total }}</span>
+                        <span class="text-xs text-white/50">{{ $item->platform }}</span>
+                    </div>
+                @endforeach
             </div>
         </div>
 
@@ -76,34 +66,15 @@
         <div class="flex flex-col gap-3">
             <h2 class="text-xs text-white/30 uppercase tracking-widest">Highlight Penampilan</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div class="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-white/10">
-                    <div class="flex flex-col gap-0.5">
-                        <span class="text-sm font-medium text-white">Tomorrowland 2024</span>
-                        <span class="text-xs text-white/40">Boom, Belgium</span>
+                @foreach ($highlight as $item)
+                    <div class="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-white/10">
+                        <div class="flex flex-col gap-0.5">
+                            <span class="text-sm font-medium text-white">{{ $item->place }}</span>
+                            <span class="text-xs text-white/40">{{ $item->description }}</span>
+                        </div>
+                        <span class="text-xs text-white/20">{{ $item->year }}</span>
                     </div>
-                    <span class="text-xs text-white/20">2024</span>
-                </div>
-                <div class="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-white/10">
-                    <div class="flex flex-col gap-0.5">
-                        <span class="text-sm font-medium text-white">Djakarta Warehouse Project</span>
-                        <span class="text-xs text-white/40">Jakarta, Indonesia</span>
-                    </div>
-                    <span class="text-xs text-white/20">2024</span>
-                </div>
-                <div class="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-white/10">
-                    <div class="flex flex-col gap-0.5">
-                        <span class="text-sm font-medium text-white">Sahara 1st Anniversary Tour</span>
-                        <span class="text-xs text-white/40">Multishow, Indonesia</span>
-                    </div>
-                    <span class="text-xs text-white/20">2023</span>
-                </div>
-                <div class="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-white/10">
-                    <div class="flex flex-col gap-0.5">
-                        <span class="text-sm font-medium text-white">Borderland Music Festival</span>
-                        <span class="text-xs text-white/40">Malaysia & Asia</span>
-                    </div>
-                    <span class="text-xs text-white/20">2025</span>
-                </div>
+                @endforeach
             </div>
         </div>
 
