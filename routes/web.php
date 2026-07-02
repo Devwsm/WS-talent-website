@@ -30,6 +30,10 @@ Route::prefix('/dashboard')->middleware('cekLogin')->group(function () {
         Route::post('/tambahStatistik', [profileController::class, 'tambahStatistik'])->name('statistik.tambah')->middleware('throttle:10,1');
         Route::delete('/hapusStatistik/{id}', [profileController::class, 'hapusStatistik'])->name('statistik.hapus');
         Route::put('/updateStatistik/{id}', [profileController::class, 'updateStatistik'])->name('statistik.update');
+        
+        Route::post('/tambahHighlight', [profileController::class, 'tambahHighlight'])->name('highlight.tambah')->middleware('throttle:10,1');
+        Route::delete('/hapusHighlight/{id}', [profileController::class, 'hapusHighlight'])->name('highlight.hapus');
+        Route::put('/updateHighlight/{id}', [profileController::class, 'updateHighlight'])->name('highlight.update');
     });
 
     Route::prefix('/banner')->group(function () {

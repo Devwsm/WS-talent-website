@@ -1,9 +1,9 @@
-<button command="show-modal" commandfor="updateStatistikDialog{{ $item->id_statistik }}"
+<button command="show-modal" commandfor="updateHighlightDialog{{ $item->id_highlight }}"
     class="w-full text-white font-bold uppercase tracking-wide p-2 bg-blue-950 hover:bg-blue-950/70 transition rounded-lg">
     <i class="bi bi-pencil-fill"></i>
 </button>
 <el-dialog>
-    <dialog id="updateStatistikDialog{{ $item->id_statistik }}"
+    <dialog id="updateHighlightDialog{{ $item->id_highlight }}"
         class="fixed inset-0 w-full h-full bg-black/50 backdrop:bg-transparent p-0 overflow-y-auto">
         <!-- Centering -->
         <div class="flex min-h-full items-center justify-center p-4">
@@ -14,27 +14,33 @@
                     <h3 class="font-bold text-lg">UPDATE DATA</h3>
                 </div>
                 <!-- Form -->
-                <form action="{{ route('statistik.update', $item->id_statistik) }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('highlight.update', $item->id_highlight) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
                     <!-- Body -->
                     <div class="p-6 flex flex-col gap-4">
                         <div class="flex flex-col gap-2">
-                            <label class="text-sm uppercase font-semibold">total</label>
-                            <input type="text" name="total"
-                                value="{{ $item->total }}"
+                            <label class="text-sm uppercase font-semibold">place</label>
+                            <input type="text" name="place"
+                                value="{{ $item->place }}"
                                 class="w-full border p-2 rounded-lg focus:ring-2 focus:ring-blue-800 outline-none">
                         </div>
                         <div class="flex flex-col gap-2">
-                            <label class="text-sm uppercase font-semibold">platform</label>
-                            <input type="text" name="platform"
-                                value="{{ $item->platform }}"
+                            <label class="text-sm uppercase font-semibold">description</label>
+                            <input type="text" name="description"
+                                value="{{ $item->description }}"
+                                class="w-full border p-2 rounded-lg focus:ring-2 focus:ring-blue-800 outline-none">
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-sm uppercase font-semibold">year</label>
+                            <input type="text" name="year"
+                                value="{{ $item->year }}"
                                 class="w-full border p-2 rounded-lg focus:ring-2 focus:ring-blue-800 outline-none">
                         </div>
                     </div>
                     <!-- Footer -->
                     <div class="flex justify-end gap-2 px-6 py-4 bg-gray-100">
-                        <button type="button" command="close" commandfor="updateStatistikDialog{{ $item->id_statistik }}"
+                        <button type="button" command="close" commandfor="updateHighlightDialog{{ $item->id_highlight }}"
                             class="px-4 py-2 bg-gray-400 text-white rounded-lg">
                             Batal
                         </button>
