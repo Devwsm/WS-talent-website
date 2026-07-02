@@ -18,7 +18,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             accountSeeder::class,
             // scheduleSeeder::class,
-            profileSeeder::class,
+            // profileSeeder::class,
         ]);
     }
 }
