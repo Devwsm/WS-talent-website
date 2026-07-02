@@ -14,12 +14,40 @@
                     <h3 class="font-bold text-lg">UPDATE HEADER</h3>
                 </div>
                 <!-- Form -->
-                <form action="{{ route('headers.update', $item->id_header) }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('headers.update', $item->id_header) }}" method="POST"
+                    enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
                     <!-- Body -->
                     <div class="p-6 flex flex-col gap-4 max-h-[70vh] overflow-y-auto">
 
+                        <div class="flex flex-col gap-2">
+                            <label for="header_color-{{ $item->id_highlight }}" class="text-sm uppercase font-semibold">
+                                header color
+                            </label>
+
+                            <input id="header_color-{{ $item->id_highlight }}" type="color" name="header_color"
+                                value="{{ $item->header_color }}"
+                                class="h-12 w-full cursor-pointer rounded-lg border border-white/20 bg-white/10 p-1" />
+
+                            <div class="flex items-center gap-3">
+                                <div id="header_color_preview-{{ $item->id_highlight }}"
+                                    class="h-8 w-8 rounded-md border border-white/20"
+                                    style="background-color: {{ $item->header_color }};"></div>
+                                <span class="text-sm text-gray-300" id="header_color_value-{{ $item->id_highlight }}">
+                                    {{ $item->header_color }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <script>
+                            document.getElementById('header_color-{{ $item->id_highlight }}').addEventListener('input', function() {
+                                document.getElementById('header_color_preview-{{ $item->id_highlight }}').style.backgroundColor = this
+                                    .value;
+                                document.getElementById('header_color_value-{{ $item->id_highlight }}').textContent = this.value;
+                            });
+                        </script>
+                        
                         <div class="flex flex-col gap-2">
                             <label class="text-sm uppercase font-semibold">header title</label>
                             <input type="text" name="header_title" value="{{ $item->header_title }}"
