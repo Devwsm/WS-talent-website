@@ -23,7 +23,12 @@ Route::prefix('/')->group(function () {
 
 Route::prefix('/dashboard')->middleware('cekLogin')->group(function () {
     Route::get('/', [dashboardController::class, 'dashboard'])->name('dashboard');
-
+    
+    Route::prefix('/color_pages')->group(function () {
+        Route::get('/', [dashboardController::class, 'colorPages'])->name('color_pages.index');
+        Route::post('/', [dashboardController::class, 'updateColorPages'])->name('color_pages.update');
+    });
+    
     Route::prefix('/profile')->group(function () {
         Route::get('/', [profileController::class, 'profile'])->name('dashboard.profile');
 

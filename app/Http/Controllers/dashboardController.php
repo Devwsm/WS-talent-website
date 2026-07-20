@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\albums;
 use App\Models\banner;
+use App\Models\color_pages;
 use App\Models\header;
 use App\Models\heroSection;
 use App\Models\schedule;
@@ -40,6 +41,23 @@ class dashboardController extends Controller
         );
     }
     // dashboard end
+
+    // color_pages
+    public function ColorPages()
+    {
+        $color_pages = color_pages::first();
+        return view('pages.dashboard-pages.color_pages', compact('color_pages'));
+    }
+
+    public function updateColorPages(Request $request)
+    {
+        $request->validate([
+            'color' => 'required|regex:/^#([0-9A-F]{3}){1,2}$/i',
+        ]);
+        color_pages::updateOrCreate([], ['color' => $request->color]);
+        return back()->with('success', 'Warna berhasil diperbarui.');
+    }
+    // color_pages end
 
     // banner
     public function banner()
@@ -306,7 +324,7 @@ class dashboardController extends Controller
 
         return redirect()->route('headers')->with('success', 'Data berhasil diupdate');
     }
-    
+
     public function hapusHeaders($id)
     {
         try {
@@ -475,7 +493,6 @@ class dashboardController extends Controller
 
         return redirect()->route('news')->with('success', 'inputan berhasil ditambahkan');
     }
-
 
     public function updatenews(Request $request, $id)
     {
