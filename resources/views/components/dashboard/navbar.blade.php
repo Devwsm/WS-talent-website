@@ -22,6 +22,9 @@
             <a href="{{ route('dashboard.profile') }}"
                 class="flex items-center gap-3 px-3 py-2 rounded-md text-[#F5F1E6] hover:bg-white/10"><i
                     class="bi bi-person-fill text-lg"></i><span>Profile</span></a>
+            <a href="{{ route('color_pages.index') }}"
+                class="flex items-center gap-3 px-3 py-2 rounded-md text-[#F5F1E6] hover:bg-white/10"><i
+                    class="bi bi-palette-fill text-lg"></i><span>Warna Web</span></a>
             <div class="h-px bg-white/10 my-1"></div>
             <a href="{{ route('albums') }}"
                 class="flex items-center gap-3 px-3 py-2 rounded-md text-[#B71C1C] hover:bg-white/10"><i
@@ -69,6 +72,10 @@
     <a href="{{ route('dashboard.profile') }}" class="menu-link flex items-center gap-3"><i
             class="bi bi-person-fill text-3xl"></i>
         <h1 class="text-2xl font-bold uppercase">Profile</h1>
+    </a>
+    <a href="{{ route('color_pages.index') }}" class="menu-link flex items-center gap-3"><i
+            class="bi bi-palette-fill text-3xl"></i>
+        <h1 class="text-2xl font-bold uppercase">Warna Web</h1>
     </a>
     <a href="{{ route('albums') }}" class="menu-link flex items-center gap-3"><i class="bi bi-disc-fill text-3xl"></i>
         <h1 class="text-2xl font-bold uppercase">Albums</h1>

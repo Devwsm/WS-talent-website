@@ -1,6 +1,6 @@
 <div class="navbar-cover">
-    <div id="navbar" class="fixed top-0 left-0 w-full bg-[#5E0006] text-white z-50 transition-transform duration-300">
-
+    <div id="navbar" style="background-color: {{ $color }};"
+        class="fixed top-0 left-0 w-full text-white z-50 transition-transform duration-300">
         <div class="flex items-center justify-between px-4 py-4">
             <!-- Mobile Left -->
             <div class="w-1/3 lg:hidden">
@@ -48,8 +48,8 @@
 
 
     <!-- Mobile Fullscreen Menu -->
-    <div id="mobileMenu"
-        class="fixed inset-0 bg-[#5E0006] text-white z-60
+    <div id="mobileMenu" style="background-color: {{ $color }};"
+        class="fixed inset-0 text-white z-60
         flex flex-col items-center justify-center gap-10
         -translate-x-full transition-transform duration-300">
         <button id="closeBtn" class="absolute top-5 left-5 text-4xl">
