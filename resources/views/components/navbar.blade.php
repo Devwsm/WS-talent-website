@@ -32,7 +32,7 @@
                 <a href="{{ route('home') }}#store">
                     <h1 class="font-bold uppercase">Merch</h1>
                 </a>
-                <a href="{{ route('login') }}" class="menu-link">
+                <a href="{{ route('dashboard') }}" class="menu-link">
                     <i class="bi bi-person"></i>
                 </a>
             </div>
@@ -70,7 +70,7 @@
         <a href="{{ route('home') }}#store" class="menu-link">
             <h1 class="text-3xl font-bold uppercase">Merch</h1>
         </a>
-        <a href="{{ route('login') }}" class="menu-link">
+        <a href="{{ route('dashboard') }}" class="menu-link">
             <i class="bi bi-person text-4xl"></i>
         </a>
     </div>

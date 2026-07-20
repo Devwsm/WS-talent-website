@@ -5,27 +5,42 @@
             <i class="bi bi-house-door-fill"></i>
         </a>
     </div>
-    <div class="nav-links flex justify-center items-center gap-4 p-6 rounded-lg bg-[#1A1A1B] shrink-0">
-        <a href="{{ route('banner') }}" class="text-[#F5F1E6] hover:text-[#d5ccb3] text-[2rem]"><i
-                class="bi bi-images"></i></a>
-        <a href="{{ route('headers') }}" class="text-[#F5F1E6] hover:text-[#d5ccb3] text-[2rem]"><i
-                class="bi bi-card-image"></i></a>
-        <a href="{{ route('dashboard.profile') }}" class="text-[#F5F1E6] hover:text-[#d5ccb3] text-[2rem]"><i
-                class="bi bi-person-fill"></i></a>
-        <a href="{{ route('albums') }}" class="text-[#B71C1C] hover:text-[#891212] text-[2rem]"><i
-                class="bi bi-disc-fill"></i></a>
-        <a href="{{ route('news') }}" class="text-[#B71C1C] hover:text-[#891212] text-[2rem]"><i
-                class="bi bi-newspaper"></i></a>
-        <a href="{{ route('merchandise') }}" class="text-[#B71C1C] hover:text-[#891212] text-[2rem]"><i
-                class="bi bi-basket-fill"></i></a>
+
+    <div class="relative shrink-0">
+        <button id="contentBtn"
+            class="nav-links flex justify-center items-center p-6 rounded-lg bg-[#1A1A1B] text-[#F5F1E6] hover:text-[#d5ccb3] text-[2rem]">
+            <i class="bi bi-grid-fill"></i>
+        </button>
+        <div id="contentMenu"
+            class="hidden absolute bottom-full mb-3 left-1/2 -translate-x-1/2 bg-[#1A1A1B] rounded-lg p-3 flex-col gap-1 w-52 shadow-xl">
+            <a href="{{ route('banner') }}"
+                class="flex items-center gap-3 px-3 py-2 rounded-md text-[#F5F1E6] hover:bg-white/10"><i
+                    class="bi bi-images text-lg"></i><span>Banner</span></a>
+            <a href="{{ route('headers') }}"
+                class="flex items-center gap-3 px-3 py-2 rounded-md text-[#F5F1E6] hover:bg-white/10"><i
+                    class="bi bi-card-image text-lg"></i><span>Headers</span></a>
+            <a href="{{ route('dashboard.profile') }}"
+                class="flex items-center gap-3 px-3 py-2 rounded-md text-[#F5F1E6] hover:bg-white/10"><i
+                    class="bi bi-person-fill text-lg"></i><span>Profile</span></a>
+            <div class="h-px bg-white/10 my-1"></div>
+            <a href="{{ route('albums') }}"
+                class="flex items-center gap-3 px-3 py-2 rounded-md text-[#B71C1C] hover:bg-white/10"><i
+                    class="bi bi-disc-fill text-lg"></i><span>Albums</span></a>
+            <a href="{{ route('news') }}"
+                class="flex items-center gap-3 px-3 py-2 rounded-md text-[#B71C1C] hover:bg-white/10"><i
+                    class="bi bi-newspaper text-lg"></i><span>News</span></a>
+            <a href="{{ route('merchandise') }}"
+                class="flex items-center gap-3 px-3 py-2 rounded-md text-[#B71C1C] hover:bg-white/10"><i
+                    class="bi bi-basket-fill text-lg"></i><span>Merchandise</span></a>
+        </div>
     </div>
+
     <div class="nav-links flex justify-center items-center p-6 rounded-lg bg-[#1A1A1B] shrink-0">
-        <a href="{{ route('logout') }}" class="text-[#B71C1C] hover:text-[#891212] text-[2rem]"><i
-                class="bi bi-box-arrow-right"></i></a>
+        <a href="{{ route('logout') }}" class="text-[#B71C1C] hover:text-[#891212] text-[2rem]">
+            <i class="bi bi-box-arrow-right"></i>
+        </a>
     </div>
 </div>
-{{-- ↑ DESKTOP DITUTUP DI SINI, sebelum blok mobile dimulai --}}
-
 
 {{-- Mobile trigger --}}
 <button id="dashOpenBtn"
@@ -35,40 +50,39 @@
 
 {{-- Mobile Fullscreen --}}
 <div id="dashMobileMenu"
-    class="fixed inset-0 bg-[#5E0006] text-white z-60
-    flex flex-col items-center justify-center gap-8
-    translate-x-full transition-transform duration-300 md:hidden">
+    class="fixed inset-0 bg-[#5E0006] text-white z-60 flex flex-col items-center justify-center gap-5
+    translate-x-full transition-transform duration-300 md:hidden overflow-y-auto py-10">
 
-    <a href="{{ route('dashboard') }}" class="menu-link flex items-center gap-3">
-        <i class="bi bi-house-door-fill text-3xl"></i>
+    <a href="{{ route('dashboard') }}" class="menu-link flex items-center gap-3"><i
+            class="bi bi-house-door-fill text-3xl"></i>
         <h1 class="text-2xl font-bold uppercase">Dashboard</h1>
     </a>
-    <a href="{{ route('banner') }}" class="menu-link flex items-center gap-3">
-        <i class="bi bi-images text-3xl"></i>
+
+    <span class="text-xs tracking-widest uppercase text-white/50 mt-2">Konten</span>
+    <a href="{{ route('banner') }}" class="menu-link flex items-center gap-3"><i class="bi bi-images text-3xl"></i>
         <h1 class="text-2xl font-bold uppercase">Banner</h1>
     </a>
-    <a href="{{ route('headers') }}" class="menu-link flex items-center gap-3">
-        <i class="bi bi-card-image text-3xl"></i>
+    <a href="{{ route('headers') }}" class="menu-link flex items-center gap-3"><i
+            class="bi bi-card-image text-3xl"></i>
         <h1 class="text-2xl font-bold uppercase">Headers</h1>
     </a>
-    <a href="{{ route('dashboard.profile') }}" class="menu-link flex items-center gap-3">
-        <i class="bi bi-person-fill text-3xl"></i>
+    <a href="{{ route('dashboard.profile') }}" class="menu-link flex items-center gap-3"><i
+            class="bi bi-person-fill text-3xl"></i>
         <h1 class="text-2xl font-bold uppercase">Profile</h1>
     </a>
-    <a href="{{ route('albums') }}" class="menu-link flex items-center gap-3">
-        <i class="bi bi-disc-fill text-3xl"></i>
+    <a href="{{ route('albums') }}" class="menu-link flex items-center gap-3"><i class="bi bi-disc-fill text-3xl"></i>
         <h1 class="text-2xl font-bold uppercase">Albums</h1>
     </a>
-    <a href="{{ route('news') }}" class="menu-link flex items-center gap-3">
-        <i class="bi bi-newspaper text-3xl"></i>
+    <a href="{{ route('news') }}" class="menu-link flex items-center gap-3"><i class="bi bi-newspaper text-3xl"></i>
         <h1 class="text-2xl font-bold uppercase">News</h1>
     </a>
-    <a href="{{ route('merchandise') }}" class="menu-link flex items-center gap-3">
-        <i class="bi bi-basket-fill text-3xl"></i>
+    <a href="{{ route('merchandise') }}" class="menu-link flex items-center gap-3"><i
+            class="bi bi-basket-fill text-3xl"></i>
         <h1 class="text-2xl font-bold uppercase">Merchandise</h1>
     </a>
-    <a href="{{ route('logout') }}" class="menu-link flex items-center gap-3 mt-4 text-[#F5B5B5]">
-        <i class="bi bi-box-arrow-right text-3xl"></i>
+
+    <a href="{{ route('logout') }}" class="menu-link flex items-center gap-3 mt-4 text-[#F5B5B5]"><i
+            class="bi bi-box-arrow-right text-3xl"></i>
         <h1 class="text-2xl font-bold uppercase">Logout</h1>
     </a>
 
@@ -79,15 +93,25 @@
 </div>
 
 <script>
-    const dashOpenBtn = document.getElementById('dashOpenBtn');
-    const dashCloseBtn = document.getElementById('dashCloseBtn');
-    const dashMobileMenu = document.getElementById('dashMobileMenu');
+    document.getElementById('dashOpenBtn').addEventListener('click', () =>
+        document.getElementById('dashMobileMenu').classList.remove('translate-x-full'));
 
-    dashOpenBtn.addEventListener('click', () => {
-        dashMobileMenu.classList.remove('translate-x-full');
+    document.getElementById('dashCloseBtn').addEventListener('click', () =>
+        document.getElementById('dashMobileMenu').classList.add('translate-x-full'));
+
+    const contentBtn = document.getElementById('contentBtn');
+    const contentMenu = document.getElementById('contentMenu');
+
+    contentBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        contentMenu.classList.toggle('hidden');
+        contentMenu.classList.toggle('flex');
     });
 
-    dashCloseBtn.addEventListener('click', () => {
-        dashMobileMenu.classList.add('translate-x-full');
+    document.addEventListener('click', (e) => {
+        if (!contentMenu.contains(e.target) && !contentBtn.contains(e.target)) {
+            contentMenu.classList.add('hidden');
+            contentMenu.classList.remove('flex');
+        }
     });
 </script>
