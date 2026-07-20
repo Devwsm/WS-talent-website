@@ -1,6 +1,6 @@
 @extends('template/dashboardLayout')
 @section('content')
-    <div class="w-full p-8 gap-4 flex flex-col justify-center items-center">
+    <div class="w-full h-screen p-8 gap-4 flex flex-col justify-center items-center">
         @include('components/dashboard/navbar')
         <div class="bg-black/80 text-white p-6 md:p-8 w-full md:w-176 rounded-lg">
             <h1 class="text-2xl lg:text-3xl font-bold uppercase text-center mb-6">Warna Universal</h1>
