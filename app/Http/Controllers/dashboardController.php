@@ -71,15 +71,14 @@ class dashboardController extends Controller
         $request->validate([
             'banner_name' => 'required',
             'link_banner' => 'required',
-            'banner_cover' => 'required|image|mimes:jpg,jpeg,png|max:1024',
+            'banner_cover' => 'required|image|mimes:jpg,jpeg,png',
         ], [
             'banner_name.required' => 'Judul Banner harus diisi.',
             'link_banner.required' => 'Link Banner harus diisi.',
             'banner_cover.required' => 'Gambar Banner harus diisi.',
             'banner_cover.image' => 'File harus berupa gambar.',
-            'banner_cover.max' => 'Gambar Banner tidak boleh lebih dari 1MB.',
         ]);
-
+        
         $file     = $request->file('banner_cover');
         $filename = now()->timestamp . '_' . Str::uuid() . '.webp';
 
@@ -102,12 +101,12 @@ class dashboardController extends Controller
         $request->validate([
             'banner_name' => 'required',
             'link_banner' => 'required',
-            'banner_cover' => 'image|mimes:jpg,jpeg,png|max:1024',
+            'banner_cover' => 'required|image|mimes:jpg,jpeg,png',
         ], [
             'banner_name.required' => 'Judul Banner harus diisi.',
             'link_banner.required' => 'Link Banner harus diisi.',
+            'banner_cover.required' => 'Gambar Banner harus diisi.',
             'banner_cover.image' => 'File harus berupa gambar.',
-            'banner_cover.max' => 'Gambar Banner tidak boleh lebih dari 1MB.',
         ]);
 
         $data = banner::findOrFail($id);
