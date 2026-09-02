@@ -17,8 +17,13 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             accountSeeder::class,
-            // scheduleSeeder::class,
-            // profileSeeder::class,
+            colorPagesSeeder::class,
+            profileSeeder::class,
+            bannerSeeder::class,
+            headerSeeder::class,
+            albumsSeeder::class,
+            merchandiseSeeder::class,
+            // scheduleSeeder::class, // data dummy, tour asli ditampilkan lewat widget Bandsintown di homepage
         ]);
     }
 }
