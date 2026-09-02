@@ -6,7 +6,6 @@ use App\Models\albums;
 use App\Models\banner;
 use App\Models\color_pages;
 use App\Models\header;
-use App\Models\heroSection;
 use App\Models\highlight;
 use App\Models\merchandise;
 use App\Models\news;
