@@ -6,8 +6,6 @@ use App\Models\albums;
 use App\Models\banner;
 use App\Models\color_pages;
 use App\Models\header;
-use App\Models\heroSection;
-use App\Models\schedule;
 use App\Models\merchandise;
 use App\Models\news;
 use Illuminate\Http\Request;
@@ -25,7 +23,6 @@ class dashboardController extends Controller
         $banner = banner::all();
         $albums = albums::all();
         $header = header::all();
-        $schedule = schedule::all();
         $news = news::all();
         $merchandise = merchandise::all();
         return view(
@@ -34,7 +31,6 @@ class dashboardController extends Controller
                 'banner',
                 'albums',
                 'header',
-                'schedule',
                 'news',
                 'merchandise',
             )
@@ -78,7 +74,7 @@ class dashboardController extends Controller
             'banner_cover.required' => 'Gambar Banner harus diisi.',
             'banner_cover.image' => 'File harus berupa gambar.',
         ]);
-        
+
         $file     = $request->file('banner_cover');
         $filename = now()->timestamp . '_' . Str::uuid() . '.webp';
 
@@ -558,49 +554,6 @@ class dashboardController extends Controller
         }
     }
     // news end
-
-
-    // schedule
-    public function schedule()
-    {
-        $schedule = schedule::all();
-        return view('pages.dashboard-pages.schedule', compact('schedule'));
-    }
-
-    public function tambahSchedule(Request $request)
-    {
-        $request->validate([
-            'tanggal' => 'required|date|before:9999-12-31',
-            'nama_tempat' => 'required',
-            'daerah' => 'required',
-        ], [
-            'tanggal.required' => 'Tanggal harus diisi.',
-            'tanggal.date' => 'Format tanggal tidak valid.',
-            'tanggal.before' => 'Tanggal terlalu besar / tidak masuk akal.',
-            'nama_tempat.required' => 'Nama Tempat harus diisi.',
-            'daerah.required' => 'Daerah harus diisi.',
-        ]);
-
-        // simpan data ( simple )
-        $data = new schedule();
-        $data->tanggal = $request->tanggal;
-        $data->nama_tempat = $request->nama_tempat;
-        $data->daerah = $request->daerah;
-        $data->save();
-
-        return redirect()->route('schedule')->with('success', 'inputan berhasil ditambahkan');
-    }
-
-    public function hapusSchedule($id)
-    {
-        try {
-            schedule::where('id_schedule', $id)->delete();
-            return to_route('schedule')->with('success', 'jadwal berhasil dihapus');
-        } catch (\Exception $e) {
-            return to_route('schedule')->withErrors('gagal hapus');
-        }
-    }
-    // schedule end
 
 
     // merchandise

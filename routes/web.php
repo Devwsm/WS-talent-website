@@ -58,12 +58,6 @@ Route::prefix('/dashboard')->middleware('cekLogin')->group(function () {
         Route::put('/updateAlbums/{id}', [dashboardController::class, 'updateAlbums'])->name('albums.update');
     });
 
-    Route::prefix('/schedule')->group(function () {
-        Route::get('/', [dashboardController::class, 'schedule'])->name('schedule');
-        Route::post('/tambahSchedule', [dashboardController::class, 'tambahSchedule'])->name('schedule.tambah')->middleware('throttle:10,1');
-        Route::delete('/hapusSchedule/{id}', [dashboardController::class, 'hapusSchedule'])->name('schedule.hapus');
-    });
-
     Route::prefix('/news')->group(function () {
         Route::get('/', [dashboardController::class, 'news'])->name('news');
         Route::post('/tambahnews', [dashboardController::class, 'tambahnews'])->name('news.tambah')->middleware('throttle:10,1');

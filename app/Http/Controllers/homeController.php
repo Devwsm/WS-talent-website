@@ -9,7 +9,6 @@ use App\Models\header;
 use App\Models\highlight;
 use App\Models\merchandise;
 use App\Models\news;
-use App\Models\schedule;
 use App\Models\statistik;
 use Illuminate\Http\Request;
 
@@ -23,7 +22,6 @@ class homeController extends Controller
         $banner = banner::all();
         $headers = header::all();
         $statistik = statistik::all();
-        $schedule = schedule::all();
         $news = news::all();
         $merchandise = merchandise::all();
         return view(
@@ -34,7 +32,6 @@ class homeController extends Controller
                 'banner',
                 'headers',
                 'statistik',
-                'schedule',
                 'news',
                 'merchandise',
             )

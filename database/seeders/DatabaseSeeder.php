@@ -23,7 +23,6 @@ class DatabaseSeeder extends Seeder
             headerSeeder::class,
             albumsSeeder::class,
             merchandiseSeeder::class,
-            // scheduleSeeder::class, // data dummy, tour asli ditampilkan lewat widget Bandsintown di homepage
         ]);
     }
 }

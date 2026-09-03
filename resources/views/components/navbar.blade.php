@@ -1,5 +1,5 @@
 <div class="navbar-cover">
-    <div id="navbar" style="background-color: {{ $color ?? '#5E0006' }};"
+    <div id="navbar" style="background-color: {{ $color }};"
         class="fixed top-0 left-0 w-full text-white z-50 transition-transform duration-300">
         <div class="flex items-center justify-between px-4 py-4">
             <!-- Mobile Left -->
@@ -19,9 +19,6 @@
             <div class="hidden lg:flex items-center gap-8 ml-12">
                 <a href="{{ route('profile') }}">
                     <h1 class="font-bold uppercase">Profile</h1>
-                </a>
-                <a href="{{ route('home') }}#tour">
-                    <h1 class="font-bold uppercase">Tour</h1>
                 </a>
                 <a href="{{ route('home') }}#news">
                     <h1 class="font-bold uppercase">News</h1>
@@ -57,9 +54,6 @@
         </button>
         <a href="{{ route('profile') }}" class="menu-link">
             <h1 class="text-3xl font-bold uppercase">Profile</h1>
-        </a>
-        <a href="{{ route('home') }}#tour" class="menu-link">
-            <h1 class="text-3xl font-bold uppercase">Tour</h1>
         </a>
         <a href="{{ route('home') }}#news" class="menu-link">
             <h1 class="text-3xl font-bold uppercase">News</h1>
