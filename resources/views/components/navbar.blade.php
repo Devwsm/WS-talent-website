@@ -1,5 +1,5 @@
 <div class="navbar-cover">
-    <div id="navbar" style="background-color: {{ $color }};"
+    <div id="navbar" style="background-color: {{ $color ?? '#5E0006' }};"
         class="fixed top-0 left-0 w-full text-white z-50 transition-transform duration-300">
         <div class="flex items-center justify-between px-4 py-4">
             <!-- Mobile Left -->
