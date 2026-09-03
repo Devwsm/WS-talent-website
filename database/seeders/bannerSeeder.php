@@ -13,9 +13,9 @@ class bannerSeeder extends Seeder
     public function run(): void
     {
         banner::create([
-            'banner_name'  => 'Official Merchandise - Indonesian Bounce',
+            'banner_name'  => 'Map of Feelings',
             'link_banner'  => 'https://mapoffeelings.com/',
-            'banner_cover' => 'Banner.jpg',
+            'banner_cover' => 'Banner-mof.jpeg',
         ]);
     }
 }
