@@ -7,7 +7,7 @@
     <title>Whisnu Santika</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-[#5E0006] flex flex-col w-full sora">
+<body class="bg-black text-white flex flex-col w-full sora">
     <div class="flex flex-col justify-center items-center">
         @yield('content')
     </div>
