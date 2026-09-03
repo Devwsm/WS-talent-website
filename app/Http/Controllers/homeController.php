@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\albums;
 use App\Models\banner;
-use App\Models\color_pages;
 use App\Models\header;
 use App\Models\highlight;
 use App\Models\merchandise;
@@ -17,7 +16,6 @@ class homeController extends Controller
     //
     public function index()
     {
-        $color_pages = color_pages::first();
         $albums = albums::all();
         $banner = banner::all();
         $headers = header::all();
@@ -27,7 +25,6 @@ class homeController extends Controller
         return view(
             'pages/home',
             compact(
-                'color_pages',
                 'albums',
                 'banner',
                 'headers',

@@ -3,12 +3,13 @@
             flex gap-4 overflow-x-auto lg:grid lg:grid-cols-4 lg:overflow-visible hide-scrollbar w-full">
 
     @foreach ($news as $item)
-        <a href="{{ $item->news_link }}" target="_blank" class="min-w-[80%] sm:min-w-[60%] lg:min-w-0">
+        <a href="{{ $item->news_link }}" target="_blank" rel="noopener noreferrer"
+            aria-label="Baca berita: {{ $item->news_title }}" class="group min-w-[80%] sm:min-w-[60%] lg:min-w-0">
 
             <div class="card flex flex-col bg-gray-100 hover:bg-gray-200 gap-2 rounded-lg overflow-hidden">
                 <div class="w-full aspect-square overflow-hidden">
-                    <img src="{{ Storage::url('news/' . $item->news_cover) }}" alt="{{ $item->news_title }}" loading="lazy"
-                        decoding="async" class="w-full h-full object-cover object-center">
+                    <img src="{{ Storage::url('news/' . $item->news_cover) }}" alt="{{ $item->news_title }}"
+                        loading="lazy" decoding="async" class="w-full h-full object-cover object-center">
                 </div>
 
                 <div class="flex flex-col p-4 gap-2">
@@ -27,10 +28,10 @@
                         <h1 class="font-light text-sm text-gray-600 line-clamp-3">
                             {!! $item->news_description !!}
                         </h1>
-                        <button
-                            class="w-full text-white font-bold uppercase tracking-widest p-3 mt-2 bg-[#5E0006] hover:bg-[#5E0006]/70 active:scale-95 transition rounded-lg">
+                        <span aria-hidden="true"
+                            class="w-full text-center text-white font-bold uppercase tracking-widest p-3 mt-2 bg-[#5E0006] group-hover:bg-[#5E0006]/70 transition rounded-lg">
                             Read more
-                        </button>
+                        </span>
                     </div>
                 </div>
             </div>

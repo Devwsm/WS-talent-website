@@ -3,10 +3,10 @@
     {{-- desktop --}}
     <div class="head relative hidden lg:flex w-full justify-start items-center gap-4">
         <img src="{{ asset('aset/logo/whisnuSantika.jpg') }}" loading="lazy" decoding="async" alt="whisnu-santika"
-            class="object-cover object-center w-42 rounded-full">
+            class="object-cover object-center w-42 aspect-square rounded-full">
 
         <div class="flex flex-col">
-            <h1 class="text-sm text-white/40">DJ & Producer</h1>
+            <h1 class="text-sm text-white/60">DJ & Producer</h1>
             <h1 class="text-2xl font-medium text-white">Whisnu Santika</h1>
             <h1 class="text-sm text-white/60 leading-relaxed">Pionir Indonesian Bounce — </h1>
         </div>
@@ -18,9 +18,9 @@
 
         <div class="absolute inset-0 rounded-lg bg-linear-to-t from-black/75 via-black/25 to-transparent"></div>
         <div class="absolute bottom-4 left-4 text-left">
-            <h1 class="text-sm text-white/40">DJ & Producer</h1>
+            <h1 class="text-sm text-white/60">DJ & Producer</h1>
             <h1 class="text-2xl font-medium text-white">Whisnu Santika</h1>
-                <h1 class="text-sm text-white/60 leading-relaxed">Pionir Indonesian Bounce — </h1>
+            <h1 class="text-sm text-white/60 leading-relaxed">Pionir Indonesian Bounce — </h1>
         </div>
     </div>
 
@@ -46,10 +46,10 @@
         {{-- Stats --}}
         <div class="grid grid-cols-3 gap-3">
             @foreach ($statistik as $item)
-            <div class="flex flex-col gap-1 p-3 rounded-lg bg-white/5 border border-white/10">
-                <span class="text-lg font-medium text-white">{{ $item->total }}</span>
-                <span class="text-xs text-white/50">{{ $item->platform }}</span>
-            </div>
+                <div class="flex flex-col gap-1 p-3 rounded-lg bg-white/5 border border-white/10">
+                    <span class="text-lg font-medium text-white">{{ $item->total }}</span>
+                    <span class="text-xs text-white/50">{{ $item->platform }}</span>
+                </div>
             @endforeach
         </div>
 

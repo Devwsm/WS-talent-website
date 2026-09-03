@@ -3,14 +3,14 @@
         bg-black transform z-0">
     </div>
     <div class="albums relative mt-24 
-        w-full py-24 px-6 lg:px-52 gap-6">
+        w-full py-24 px-6 md:px-16 lg:px-52 gap-6">
         <div class="swiper musicSwiper">
             <div class="swiper-wrapper">
                 @foreach ($albums as $item)
                     <div class="swiper-slide">
-                        <a href="{{ $item->link_spotify }}" target="_blank">
-                            <img src="{{ Storage::url('albums/' . $item->albums_cover) }}" alt="{{ $item->albums_name }}"
-                                loading="lazy" decoding="async"
+                        <a href="{{ $item->link_spotify }}" target="_blank" rel="noopener noreferrer">
+                            <img src="{{ Storage::url('albums/' . $item->albums_cover) }}"
+                                alt="{{ $item->albums_name }}" loading="lazy" decoding="async"
                                 class="object-cover aspect-square w-full hover:scale-105 transition duration-300 rounded-lg">
                         </a>
                     </div>
