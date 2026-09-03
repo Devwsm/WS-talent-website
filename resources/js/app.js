@@ -1,99 +1,79 @@
-import './bootstrap';
-import Swiper from 'swiper';
-import { Navigation, Pagination, Autoplay } from 'swiper/modules';
+import "./bootstrap";
+import Swiper from "swiper";
+import {
+    Navigation,
+    Pagination,
+    Autoplay,
+    A11y,
+    Keyboard,
+} from "swiper/modules";
 
 // CSS
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
-import 'swiper/css/autoplay';
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import "swiper/css/autoplay";
 
-const videosEl = document.querySelector(".videosSwiper");
-new Swiper(videosEl, {
-    modules: [Navigation, Pagination, Autoplay],
+/**
+ * Bikin instance Swiper dengan config dasar yang sama (navigation, pagination,
+ * autoplay, a11y) supaya gak diulang-ulang di tiap section. Otomatis di-skip
+ * kalau elemennya gak ada di halaman ini (mis. .musicSwiper gak ada di
+ * halaman /profile) — sebelumnya ini nyebabin error di console.
+ */
+function initSwiper(selector, scopeSelector, extraOptions = {}) {
+    const el = document.querySelector(selector);
+    if (!el) return null;
 
-    slidesPerView: 1,
-    spaceBetween: 20,
-    loop: true,
-    watchOverflow: false,
+    return new Swiper(el, {
+        modules: [Navigation, Pagination, Autoplay, A11y, Keyboard],
 
-    // breakpoints: {
-    //     640: { slidesPerView: 2 },
-    //     1024: { slidesPerView: 4 },
-    // },
+        slidesPerView: 1,
+        spaceBetween: 20,
+        loop: true,
+        watchOverflow: false,
 
-    autoplay: {
-        delay: 3000, // ⏱️ 3 detik
-        disableOnInteraction: false, // tetap jalan walau di klik
-    },
+        autoplay: {
+            delay: 3000,
+            disableOnInteraction: false,
+            pauseOnMouseEnter: true,
+        },
 
-    navigation: {
-        nextEl: "#header .swiper-button-next",
-        prevEl: "#header .swiper-button-prev",
-    },
+        keyboard: {
+            enabled: true,
+        },
 
-    pagination: {
-        el: "#header .swiper-pagination",
-        clickable: true,
-    },
-});
+        a11y: {
+            prevSlideMessage: "Slide sebelumnya",
+            nextSlideMessage: "Slide berikutnya",
+            paginationBulletMessage: "Ke slide {{index}}",
+        },
 
-const musichEl = document.querySelector(".musicSwiper");
-new Swiper(musichEl, {
-    modules: [Navigation, Pagination, Autoplay],
+        navigation: {
+            nextEl: `${scopeSelector} .swiper-button-next`,
+            prevEl: `${scopeSelector} .swiper-button-prev`,
+        },
 
-    slidesPerView: 1,
-    spaceBetween: 20,
-    loop: true,
-    watchOverflow: false,
+        pagination: {
+            el: `${scopeSelector} .swiper-pagination`,
+            clickable: true,
+        },
 
+        ...extraOptions,
+    });
+}
+
+initSwiper(".videosSwiper", "#header");
+
+initSwiper(".musicSwiper", "#new-music", {
     breakpoints: {
         640: { slidesPerView: 2 },
         1024: { slidesPerView: 4 },
     },
-
-    autoplay: {
-        delay: 3000, // ⏱️ 3 detik
-        disableOnInteraction: false, // tetap jalan walau di klik
-    },
-
-    navigation: {
-        nextEl: "#new-music .swiper-button-next",
-        prevEl: "#new-music .swiper-button-prev",
-    },
-
-    pagination: {
-        el: "#new-music .swiper-pagination",
-        clickable: true,
-    },
 });
 
-const merchEl = document.querySelector(".merchSwiper");
-new Swiper(merchEl, {
-    modules: [Navigation, Pagination, Autoplay],
-
-    slidesPerView: 1,
-    spaceBetween: 20,
-    loop: true,
-    watchOverflow: false,
-
+initSwiper(".merchSwiper", "#store", {
     breakpoints: {
         640: { slidesPerView: 2 },
         1024: { slidesPerView: 4 },
-    },
-
-    autoplay: {
-        delay: 3000, // ⏱️ 3 detik
-        disableOnInteraction: false, // tetap jalan walau di klik
-    },
-
-    navigation: {
-        nextEl: "#store .swiper-button-next",
-        prevEl: "#store .swiper-button-prev",
-    },
-
-    pagination: {
-        el: "#store .swiper-pagination",
-        clickable: true,
     },
 });
