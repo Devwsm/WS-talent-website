@@ -1,5 +1,5 @@
 <div id="header" class="videos-cover w-full h-full">
-    <div class="swiper videosSwiper h-screen">
+    <div class="swiper videosSwiper h-dvh">
         <div class="swiper-wrapper">
 
             @foreach ($headers as $item)
@@ -10,32 +10,39 @@
 
                 <div class="swiper-slide relative flex flex-col">
                     @if ($isVideo)
-                        <video muted loop playsinline data-video="{{ $loop->iteration }}" preload="auto"
-                            class="bg-video absolute w-full h-full object-cover z-0">
+                        <video muted loop playsinline data-video="{{ $loop->iteration }}"
+                            preload="{{ $loop->first ? 'auto' : 'none' }}"
+                            class="bg-video absolute w-full h-full object-cover z-0 bg-black">
                         </video>
                     @else
                         <img src="{{ Storage::url('header/background/' . $item->header_background) }}"
-                            alt="{{ $item->header_name }}" loading="lazy" decoding="async"
-                            class="absolute w-full h-full object-cover z-0">
+                            alt="{{ $item->header_name }}" loading="{{ $loop->first ? 'eager' : 'lazy' }}"
+                            @if ($loop->first) fetchpriority="high" @endif decoding="async"
+                            class="absolute w-full h-full object-cover z-0 bg-black">
                     @endif
 
-                    <div class="content absolute inset-0 z-10 bg-black/50
-                        flex flex-col justify-center items-center text-white text-center gap-4">
+                    <div
+                        class="content absolute inset-0 z-10 bg-black/50
+                        flex flex-col justify-center items-center text-white text-center gap-4 px-4">
                         <span style="border-color: {{ $item->header_color }}99;"
                             class="inline-flex items-center gap-2 w-fit bg-white/15 backdrop-blur border rounded-full px-3 py-1 text-white text-xs">
-                            <span style="background-color: {{ $item->header_color }}99;" 
-                                class="w-2 h-2 rounded-full bg-[ {{ $item->header_color }} ]/60 animate-pulse"></span>
+                            <span style="background-color: {{ $item->header_color }}99;" aria-hidden="true"
+                                class="w-2 h-2 rounded-full animate-pulse"></span>
                             {{ $item->header_title }}
                         </span>
-                        <img src="{{ Storage::url('header/img/' . $item->header_img) }}" loading="lazy" decoding="async"
-                            alt="{{ $item->header_name }}" class="object-cover w-120 rounded-lg">
+                        <img src="{{ Storage::url('header/img/' . $item->header_img) }}"
+                            loading="{{ $loop->first ? 'eager' : 'lazy' }}"
+                            @if ($loop->first) fetchpriority="high" @endif decoding="async"
+                            alt="{{ $item->header_name }}"
+                            class="object-cover w-32 sm:w-48 md:w-64 lg:w-80 xl:w-96 rounded-lg">
                         <div class="flex flex-col gap-2">
                             <h1 class="text-2xl font-semibold text-white">
                                 {{ $item->header_name }}
                             </h1>
                             <h1 class="text-sm text-white/70">{{ $item->header_description }}</h1>
                             <div class="flex gap-3 justify-center">
-                                <a href="{{ $item->link_header }}" target="_blank" style="background-color: {{ $item->header_color }}99;"
+                                <a href="{{ $item->link_header }}" target="_blank" rel="noopener noreferrer"
+                                    style="background-color: {{ $item->header_color }}99;"
                                     class="px-5 py-2 shadow-sm font-semibold rounded-full text-sm">Watch
                                     Video</a>
                             </div>
@@ -54,6 +61,9 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", () => {
+        const videosEl = document.querySelector(".videosSwiper");
+        if (!videosEl) return;
+
         const videoSources = {
             @foreach ($headers as $item)
                 @php
@@ -66,7 +76,7 @@
             @endforeach
         };
 
-        const videos = document.querySelectorAll(".bg-video");
+        const videos = videosEl.querySelectorAll(".bg-video");
 
         function playVideo(index) {
             videos.forEach(video => {
@@ -76,7 +86,7 @@
                 }
             });
 
-            const activeVideo = document.querySelector(`[data-video="${index}"]`);
+            const activeVideo = videosEl.querySelector(`[data-video="${index}"]`);
             if (!activeVideo) return;
             if (!activeVideo.dataset.loaded && videoSources[index]) {
                 const source = document.createElement("source");
@@ -93,7 +103,7 @@
             playVideo(1);
         }
 
-        const swiper = document.querySelector(".videosSwiper")?.swiper;
+        const swiper = videosEl.swiper;
         if (!swiper) return;
         swiper.on("slideChange", function() {
             playVideo(swiper.realIndex + 1);
