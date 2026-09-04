@@ -8,112 +8,183 @@
         ['route' => 'news', 'icon' => 'bi-newspaper', 'label' => 'News'],
         ['route' => 'merchandise', 'icon' => 'bi-basket-fill', 'label' => 'Merchandise'],
     ];
+    $isKontenActive = request()->routeIs([
+        'banner',
+        'headers',
+        'dashboard.profile',
+        'color_pages.index',
+        'albums',
+        'news',
+        'merchandise',
+    ]);
 @endphp
 
-{{-- desktop --}}
-<div class="nav z-50 fixed bottom-5 left-1/2 -translate-x-1/2 hidden md:flex gap-2">
+{{-- ============== DESKTOP: dock bawah-tengah, tema gelap, beda dari background halaman ============== --}}
+<div
+    class="hidden lg:flex fixed bottom-5 left-1/2 -translate-x-1/2 z-50 items-center
+    rounded-2xl bg-neutral-900 border border-white/10 ring-1 ring-red-950/50
+    p-1.5 shadow-2xl shadow-black/70">
+
     <a href="{{ route('dashboard') }}" aria-label="Dashboard"
-        class="nav-links flex justify-center items-center p-6 rounded-lg border border-white/15 shrink-0 text-2xl
-        {{ request()->routeIs('dashboard') ? 'bg-white text-black' : 'bg-white/5 text-white hover:bg-white/10' }} transition-colors">
+        class="flex justify-center items-center h-12 w-12 rounded-xl shrink-0 text-xl transition-colors
+        {{ request()->routeIs('dashboard') ? 'bg-white text-black' : 'text-white/60 hover:bg-white/10 hover:text-white' }}">
         <i class="bi bi-house-door-fill" aria-hidden="true"></i>
     </a>
 
-    <div class="relative shrink-0">
-        <button id="contentBtn" type="button" aria-label="Menu konten" aria-expanded="false" aria-controls="contentMenu"
-            class="nav-links flex justify-center items-center p-6 rounded-lg border border-white/15 bg-white/5 text-white hover:bg-white/10 text-2xl transition-colors">
-            <i class="bi bi-grid-fill" aria-hidden="true"></i>
-        </button>
-        <div id="contentMenu"
-            class="hidden absolute bottom-full mb-3 left-1/2 -translate-x-1/2 bg-black border border-white/15 rounded-lg p-3 flex-col gap-1 w-56 shadow-xl">
-            @foreach ($navLinks as $link)
-                <a href="{{ route($link['route']) }}"
-                    class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors
-                    {{ request()->routeIs($link['route']) ? 'bg-white text-black font-semibold' : 'text-white/80 hover:bg-white/10 hover:text-white' }}">
-                    <i class="bi {{ $link['icon'] }} text-lg" aria-hidden="true"></i>
-                    <span>{{ $link['label'] }}</span>
-                </a>
-            @endforeach
-        </div>
+    <button id="contentBtn" type="button" aria-label="Menu konten" aria-expanded="false" aria-controls="contentMenu"
+        class="flex justify-center items-center h-12 w-12 rounded-xl shrink-0 text-xl transition-colors
+        {{ $isKontenActive ? 'bg-white text-black' : 'text-white/60 hover:bg-white/10 hover:text-white' }}">
+        <i class="bi bi-grid-fill" aria-hidden="true"></i>
+    </button>
+
+    {{-- Kategori: nyatu dalam dock yang sama, munculnya fade + scale dari sisi tombol menu --}}
+    <div id="contentMenu"
+        class="hidden items-center gap-1 pl-1 pr-1 opacity-0 scale-x-95 origin-left transition-all duration-200 ease-out">
+        @foreach ($navLinks as $link)
+            <a href="{{ route($link['route']) }}"
+                class="flex items-center gap-2 h-12 px-3.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-colors
+                {{ request()->routeIs($link['route']) ? 'bg-white text-black' : 'text-white/60 hover:bg-white/10 hover:text-white' }}">
+                <i class="bi {{ $link['icon'] }} text-base" aria-hidden="true"></i>
+                {{ $link['label'] }}
+            </a>
+        @endforeach
+
+        <div class="w-px h-8 bg-white/10 mx-1 shrink-0"></div>
     </div>
 
-    <div class="nav-links flex justify-center items-center p-6 rounded-lg border border-white/15 bg-white/5 shrink-0">
-        <a href="{{ route('logout') }}" aria-label="Logout"
-            class="text-red-500 hover:text-red-400 text-2xl transition-colors">
-            <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
-        </a>
-    </div>
+    <a href="{{ route('logout') }}" aria-label="Logout"
+        class="flex justify-center items-center h-12 w-12 rounded-xl shrink-0 text-xl text-red-500 hover:bg-red-500/10 transition-colors">
+        <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+    </a>
 </div>
 
-{{-- Mobile trigger --}}
+{{-- ============== MOBILE & TABLET: burger + bottom sheet setengah layar ============== --}}
 <button id="dashOpenBtn" type="button" aria-label="Buka menu dashboard" aria-expanded="false"
     aria-controls="dashMobileMenu"
-    class="fixed z-50 bottom-5 right-5 md:hidden flex justify-center items-center h-14 w-14 rounded-full bg-white text-black text-2xl shadow-lg">
+    class="fixed z-50 bottom-5 right-5 lg:hidden flex justify-center items-center h-14 w-14 rounded-full bg-white text-black text-2xl shadow-lg shadow-black/40">
     <i class="bi bi-list" aria-hidden="true"></i>
 </button>
 
-{{-- Mobile Fullscreen --}}
+<div id="dashSheetOverlay" aria-hidden="true"
+    class="fixed inset-0 bg-black/60 z-40 opacity-0 invisible transition-opacity duration-300 lg:hidden"></div>
+
 <nav id="dashMobileMenu" aria-label="Navigasi dashboard"
-    class="fixed inset-0 bg-black text-white z-60 flex flex-col items-center justify-center gap-5
-    translate-x-full transition-transform duration-300 md:hidden overflow-y-auto py-10">
+    class="fixed inset-x-0 bottom-0 z-50 lg:hidden bg-black border-t border-white/10 rounded-t-3xl
+    h-3/5 overflow-y-auto translate-y-full transition-transform duration-300 pb-8">
 
-    <a href="{{ route('dashboard') }}"
-        class="menu-link flex items-center gap-3
-        {{ request()->routeIs('dashboard') ? 'text-white' : 'text-white/70' }}">
-        <i class="bi bi-house-door-fill text-3xl" aria-hidden="true"></i>
-        <h1 class="text-2xl font-bold uppercase">Dashboard</h1>
-    </a>
+    {{-- drag handle --}}
+    <div class="flex justify-center pt-3 pb-1 sticky top-0 bg-black">
+        <span class="w-10 h-1.5 rounded-full bg-white/20"></span>
+    </div>
 
-    <span class="text-xs tracking-widest uppercase text-white/40 mt-2">Konten</span>
+    <div class="flex items-center justify-between px-5 pt-2 pb-4">
+        <h1 class="text-lg font-bold uppercase">Menu Dashboard</h1>
+        <button id="dashCloseBtn" type="button" aria-label="Tutup menu dashboard"
+            class="flex justify-center items-center h-9 w-9 rounded-full bg-white/10 text-white text-xl">
+            <i class="bi bi-x" aria-hidden="true"></i>
+        </button>
+    </div>
 
-    @foreach ($navLinks as $link)
-        <a href="{{ route($link['route']) }}"
-            class="menu-link flex items-center gap-3
-            {{ request()->routeIs($link['route']) ? 'text-white' : 'text-white/70' }}">
-            <i class="bi {{ $link['icon'] }} text-3xl" aria-hidden="true"></i>
-            <h1 class="text-2xl font-bold uppercase">{{ $link['label'] }}</h1>
+    <div class="grid grid-cols-3 gap-3 px-5">
+        <a href="{{ route('dashboard') }}"
+            class="menu-link flex flex-col items-center justify-center gap-2 rounded-xl border border-white/10 py-4
+            {{ request()->routeIs('dashboard') ? 'bg-white text-black' : 'text-white/70' }}">
+            <i class="bi bi-house-door-fill text-2xl" aria-hidden="true"></i>
+            <span class="text-xs font-semibold uppercase text-center">Dashboard</span>
         </a>
-    @endforeach
 
-    <a href="{{ route('logout') }}" class="menu-link flex items-center gap-3 mt-4 text-red-500">
-        <i class="bi bi-box-arrow-right text-3xl" aria-hidden="true"></i>
-        <h1 class="text-2xl font-bold uppercase">Logout</h1>
-    </a>
+        @foreach ($navLinks as $link)
+            <a href="{{ route($link['route']) }}"
+                class="menu-link flex flex-col items-center justify-center gap-2 rounded-xl border border-white/10 py-4
+                {{ request()->routeIs($link['route']) ? 'bg-white text-black' : 'text-white/70' }}">
+                <i class="bi {{ $link['icon'] }} text-2xl" aria-hidden="true"></i>
+                <span class="text-xs font-semibold uppercase text-center">{{ $link['label'] }}</span>
+            </a>
+        @endforeach
 
-    <button id="dashCloseBtn" type="button" aria-label="Tutup menu dashboard"
-        class="fixed bottom-5 right-5 flex justify-center items-center h-14 w-14 rounded-full bg-white/10 border border-white/20 text-white text-3xl">
-        <i class="bi bi-x" aria-hidden="true"></i>
-    </button>
+        <a href="{{ route('logout') }}"
+            class="menu-link flex flex-col items-center justify-center gap-2 rounded-xl border border-red-500/20 py-4 text-red-500">
+            <i class="bi bi-box-arrow-right text-2xl" aria-hidden="true"></i>
+            <span class="text-xs font-semibold uppercase text-center">Logout</span>
+        </a>
+    </div>
 </nav>
 
 <script>
-    const dashOpenBtn = document.getElementById('dashOpenBtn');
-    const dashCloseBtn = document.getElementById('dashCloseBtn');
-    const dashMobileMenu = document.getElementById('dashMobileMenu');
+    // ---- Desktop: dock + kategori fade/scale dari tombol menu ----
     const contentBtn = document.getElementById('contentBtn');
     const contentMenu = document.getElementById('contentMenu');
+    let closeTimeout = null;
 
-    dashOpenBtn?.addEventListener('click', () => {
-        dashMobileMenu.classList.remove('translate-x-full');
-        dashOpenBtn.setAttribute('aria-expanded', 'true');
-    });
+    function openContentMenu() {
+        clearTimeout(closeTimeout);
+        contentMenu.classList.remove('hidden');
+        contentMenu.classList.add('flex');
+        // paksa reflow dulu sebelum transisi, biar browser sempat render state awal (opacity-0)
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                contentMenu.classList.remove('opacity-0', 'scale-x-95');
+                contentMenu.classList.add('opacity-100', 'scale-x-100');
+            });
+        });
+        contentBtn.setAttribute('aria-expanded', 'true');
+    }
 
-    dashCloseBtn?.addEventListener('click', () => {
-        dashMobileMenu.classList.add('translate-x-full');
-        dashOpenBtn.setAttribute('aria-expanded', 'false');
-    });
+    function closeContentMenu() {
+        contentMenu.classList.remove('opacity-100', 'scale-x-100');
+        contentMenu.classList.add('opacity-0', 'scale-x-95');
+        contentBtn.setAttribute('aria-expanded', 'false');
+        closeTimeout = setTimeout(() => {
+            contentMenu.classList.add('hidden');
+            contentMenu.classList.remove('flex');
+        }, 200);
+    }
 
     contentBtn?.addEventListener('click', (e) => {
         e.stopPropagation();
-        const isOpen = contentMenu.classList.toggle('hidden') === false;
-        contentMenu.classList.toggle('flex', isOpen);
-        contentBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        const isOpen = contentBtn.getAttribute('aria-expanded') === 'true';
+        isOpen ? closeContentMenu() : openContentMenu();
     });
 
     document.addEventListener('click', (e) => {
         if (contentMenu && !contentMenu.contains(e.target) && !contentBtn.contains(e.target)) {
-            contentMenu.classList.add('hidden');
-            contentMenu.classList.remove('flex');
-            contentBtn.setAttribute('aria-expanded', 'false');
+            closeContentMenu();
         }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeContentMenu();
+    });
+
+    // ---- Mobile: burger + bottom sheet ----
+    const dashOpenBtn = document.getElementById('dashOpenBtn');
+    const dashCloseBtn = document.getElementById('dashCloseBtn');
+    const dashMobileMenu = document.getElementById('dashMobileMenu');
+    const dashSheetOverlay = document.getElementById('dashSheetOverlay');
+
+    function openDashSheet() {
+        dashMobileMenu.classList.remove('translate-y-full');
+        dashSheetOverlay.classList.remove('opacity-0', 'invisible');
+        dashOpenBtn.setAttribute('aria-expanded', 'true');
+        document.body.classList.add('overflow-hidden');
+    }
+
+    function closeDashSheet() {
+        dashMobileMenu.classList.add('translate-y-full');
+        dashSheetOverlay.classList.add('opacity-0', 'invisible');
+        dashOpenBtn.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('overflow-hidden');
+    }
+
+    dashOpenBtn?.addEventListener('click', openDashSheet);
+    dashCloseBtn?.addEventListener('click', closeDashSheet);
+    dashSheetOverlay?.addEventListener('click', closeDashSheet);
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeDashSheet();
+    });
+
+    document.querySelectorAll('#dashMobileMenu .menu-link').forEach((link) => {
+        link.addEventListener('click', closeDashSheet);
     });
 </script>

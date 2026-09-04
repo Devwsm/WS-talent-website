@@ -6,8 +6,10 @@ use App\Models\albums;
 use App\Models\banner;
 use App\Models\color_pages;
 use App\Models\header;
+use App\Models\highlight;
 use App\Models\merchandise;
 use App\Models\news;
+use App\Models\statistik;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
@@ -25,6 +27,10 @@ class dashboardController extends Controller
         $header = header::all();
         $news = news::all();
         $merchandise = merchandise::all();
+        $color_pages = color_pages::first();
+        $highlightCount = highlight::count();
+        $statistikCount = statistik::count();
+
         return view(
             'pages.dashboard',
             compact(
@@ -33,6 +39,9 @@ class dashboardController extends Controller
                 'header',
                 'news',
                 'merchandise',
+                'color_pages',
+                'highlightCount',
+                'statistikCount',
             )
         );
     }
