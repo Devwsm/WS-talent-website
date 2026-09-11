@@ -105,14 +105,22 @@ ada contohnya di `banner.blade.php`, tinggal direplikasi & diperbaiki.
       `optimize:clear` juga sudah dijalankan. **Manual E2E masih belum
       bisa** karena UI-nya belum ada (baru backend/API-level, endpoint
       cuma bisa dites lewat request langsung, belum ada form).
-2. **UI dashboard** _(BELUM — langkah selanjutnya)_: bongkar section yang
-   di-comment di `profile.blade.php`, bangun form kiri / preview kanan
-   buat tiap section, preview niru
-   `components/profile/profile-full.blade.php` per bagian (Hero, Genre,
-   Bio, Stats, Highlight, Kolaborasi, Media Coverage, Booking, Social).
-3. Pastikan `profile-teaser.blade.php` (versi ringkas di homepage) ikut
-   konsisten kalau ada field yang dipakai bareng (foto, tagline, genre,
-   bio singkat, stats).
+2. ✅ **UI dashboard (SELESAI)**: semua section di `profile.blade.php`
+   sudah dibongkar dari comment dan dibangun — Hero (`profile-card`),
+   Genre, Bio, Statistik, Highlight, Kolaborasi (`collab`), Media
+   Coverage, Booking & Kontak, Media Sosial — masing-masing dengan
+   komponen dashboard + modal edit + tombol hapus sendiri
+   (`components/profile/dashboard/*.blade.php`,
+   `components/dashboard/profile/modal-edit-*.blade.php`,
+   `btn-hapus-*.blade.php`). Statistik & Highlight yang sebelumnya
+   sudah ada UI-nya ikut dirapikan ulang biar konsisten sama pola
+   section baru.
+3. **Sinkronisasi `profile-teaser.blade.php`** _(BELUM — langkah
+   selanjutnya)_: versi ringkas di homepage belum disentuh sejak Fase
+   6 langkah 1 & 2 (masih pakai commit lama), padahal field yang
+   dipakai bareng Hero (foto, tagline, genre, bio singkat, stats)
+   sekarang sumbernya sudah dari tabel baru, bukan hardcode lagi —
+   perlu dicek match atau enggak.
 
 ### Fase 7 — Polish & QA
 
@@ -134,7 +142,7 @@ ada contohnya di `banner.blade.php`, tinggal direplikasi & diperbaiki.
 - [x] Fase 4 — Merchandise (redesign + preview di background putih) ✅
 - [x] Fase 5 — News (redesign + preview Quill HTML live) ✅
 - [x] Fase 6 langkah 1 — Profile: migration + model + controller + route + seeder ✅
-- [ ] Fase 6 langkah 2 — Profile: UI dashboard (form kiri/preview kanan per section)
+- [x] Fase 6 langkah 2 — Profile: UI dashboard (form kiri/preview kanan per section) ✅
 - [ ] Fase 6 langkah 3 — Profile: sinkronisasi `profile-teaser.blade.php`
 - [ ] Fase 7 — Polish & QA
 
