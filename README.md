@@ -128,17 +128,22 @@ ada contohnya di `banner.blade.php`, tinggal direplikasi & diperbaiki.
       nama + deskripsi), bukan list mentah lagi.
 - File yang diubah: `resources/views/pages/dashboard-pages/header.blade.php`
 
-### Fase 3 — Albums
+### ✅ Fase 3 — Album (SELESAI)
 
-- Redesign ke pola form-kiri/preview-kanan.
-- Preview niru `components/albums.blade.php` (cover kotak 1:1, hover
-  scale, link Spotify).
-- List data pakai card grid (mirip pola Album/Merchandise di Home dashboard
-  yang sudah ada).
+- [x] Redesign ke pola form-kiri/preview-kanan, konsisten sama Banner & Header.
+- [x] Preview niru `components/albums.blade.php` — cover kotak (aspect-square)
+      di atas **background putih** (bukan hitam), karena section Album di
+      homepage memang berlatar putih. Ini detail akurasi yang sebelumnya
+      kelewat.
+- [x] List data pakai card grid (mirip pola Album di Home dashboard).
+- File yang diubah: `resources/views/pages/dashboard-pages/albums.blade.php`
 
-### Fase 4 — Merchandise
+### ✅ Fase 4 — Merchandise (SELESAI)
 
-- Sama seperti Albums (paling mirip & paling cepat dikerjakan).
+- [x] Sama seperti Album — pola form-kiri/preview-kanan, preview niru
+      `components/merchandise.blade.php` (cover kotak di atas background putih).
+- [x] List data pakai card grid.
+- File yang diubah: `resources/views/pages/dashboard-pages/merchandise.blade.php`
 
 ### Fase 5 — News
 
@@ -184,8 +189,8 @@ ada contohnya di `banner.blade.php`, tinggal direplikasi & diperbaiki.
 
 - [x] Fase 1 — Banner (swap posisi + preview akurat) ✅
 - [x] Fase 2 — Header (redesign + preview hero live) ✅
-- [ ] Fase 3 — Albums
-- [ ] Fase 4 — Merchandise
+- [x] Fase 3 — Album (redesign + preview di background putih) ✅
+- [x] Fase 4 — Merchandise (redesign + preview di background putih) ✅
 - [ ] Fase 5 — News
 - [ ] Fase 6 — Profile (backend + UI)
 - [ ] Fase 7 — Polish & QA
