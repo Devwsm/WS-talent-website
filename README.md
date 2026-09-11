@@ -159,24 +159,18 @@ ada contohnya di `banner.blade.php`, tinggal direplikasi & diperbaiki.
       dipanggil di view.
 - [x] **Audit "preview = tampilan asli" di CMS Profile** (fokus permintaan
       user) — ditemukan & diperbaiki 3 preview yang MELENCENG dari tampilan
-      publik:
-    - **Statistik** & **Highlight**: preview-nya sebelumnya di-desain ulang
+      publik: - **Statistik** & **Highlight**: preview-nya sebelumnya di-desain ulang
       jadi gaya "pill" (comment kode bilang "biar 1 tipe sama
       Genre/Media Coverage/Media Sosial"), padahal tampilan asli di
-      `profile-full.blade.php` pakai **grid card** (Statistik: angka besar
-        - label platform; Highlight: baris place/description di kiri, year
-          di kanan). Preview sekarang diganti jadi replika markup card asli,
-          termasuk live-draft JS-nya.
-    - **Kolaborasi**: sama, preview pill diganti jadi grid card 2 kolom
-      (nama bold + role) persis section Kolaborasi di halaman publik.
-    - Genre, Media Coverage, Booking & Kontak, Media Sosial, Hero, Bio —
+      `profile-full.blade.php` pakai **grid card** (Statistik: angka besar - label platform; Highlight: baris place/description di kiri, year
+      di kanan). Preview sekarang diganti jadi replika markup card asli,
+      termasuk live-draft JS-nya. - **Kolaborasi**: sama, preview pill diganti jadi grid card 2 kolom
+      (nama bold + role) persis section Kolaborasi di halaman publik. - Genre, Media Coverage, Booking & Kontak, Media Sosial, Hero, Bio —
       dicek juga, semuanya sudah akurat (cuma Bio yang di-samain
-      spacing-nya, `gap-2` → `gap-3`, biar match persis).
-    - Catatan: "List data tersimpan" (bagian manajemen di bawah tiap
+      spacing-nya, `gap-2` → `gap-3`, biar match persis). - Catatan: "List data tersimpan" (bagian manajemen di bawah tiap
       form, dengan tombol edit/hapus) sengaja TETAP pakai gaya pill —
       itu bukan preview tampilan publik, itu UI manajemen data yang
-      konsisten dipakai di semua modul.
-    - File yang diubah: `resources/views/components/profile/dashboard/
+      konsisten dipakai di semua modul. - File yang diubah: `resources/views/components/profile/dashboard/
 statistik.blade.php`, `highlight.blade.php`, `collab.blade.php`,
       `bio.blade.php`.
 - [x] Test end-to-end manual di browser: tambah/edit/hapus data di tiap
@@ -219,9 +213,9 @@ statistik.blade.php`, `highlight.blade.php`, `collab.blade.php`,
       picker — bikin preview warna cuma jalan bener kalau baru ada 1
       header, rusak begitu ada 2+.
     - File yang diubah (12): `resources/views/components/dashboard/
-    modal-edit-{banner,header,merchandise,albums,news}.blade.php` dan
+modal-edit-{banner,header,merchandise,albums,news}.blade.php` dan
       `resources/views/components/dashboard/profile/modal-edit-
-    {genre,statistik,highlight,collab,media-coverage,booking,media-sosial}.blade.php`.
+{genre,statistik,highlight,collab,media-coverage,booking,media-sosial}.blade.php`.
       **Belum dites manual di browser** — perlu dicoba buka tiap modal edit
       (termasuk di layar HP) buat pastikan tampilan & scroll-nya sesuai.
 
@@ -240,3 +234,54 @@ statistik.blade.php`, `highlight.blade.php`, `collab.blade.php`,
 - [x] Fase 7 — Polish & QA: konsistensi, audit preview, dan reskin semua modal edit selesai; E2E manual & cek mobile sudah dites user ✅
 
 _Login sudah oke, tidak masuk scope revamp ini._
+
+---
+
+## Fase 8 — SweetAlert2 (SELESAI)
+
+### Tujuan
+
+Mengganti browser-native `alert()`/`confirm()` dan flash message dashboard yang
+sebelumnya berupa banner HTML menjadi feedback UI yang konsisten dengan tema
+dashboard.
+
+### Implementasi
+
+- SweetAlert2 digunakan sebagai dependency frontend melalui Vite/NPM.
+- Helper global dibuat di `resources/js/sweetalert.js`.
+- `window.Swal` dipakai untuk dialog dan `window.Toast` untuk notifikasi ringan.
+- Tema SweetAlert disamakan dengan dashboard: background gelap, border putih
+  transparan, dan accent merah `#5E0006`.
+- Flash `session('success')` sekarang tampil sebagai success toast.
+- Validation errors Laravel (`$errors`) tampil sebagai dialog error.
+- Flash `error`, `warning`, dan `info` juga didukung secara global.
+- Semua tombol hapus dashboard menggunakan `data-swal-confirm` sehingga
+  konfirmasi delete tidak lagi bergantung pada browser `confirm()`.
+- Setelah user mengonfirmasi delete, muncul loading state `Menghapus...` sebelum
+  form DELETE dikirim.
+- Route, controller, validation, database operation, dan HTTP method CRUD tidak
+  diubah; perubahan ini fokus pada feedback UI di sisi frontend.
+
+### File utama
+
+- `package.json`
+- `resources/js/app.js`
+- `resources/js/sweetalert.js`
+- `resources/views/components/success.blade.php`
+- `resources/views/components/errors.blade.php`
+- `resources/views/components/dashboard/btn-hapus-*.blade.php`
+- `resources/views/components/dashboard/profile/btn-hapus-*.blade.php`
+
+### Catatan dependency
+
+SweetAlert2 dipasang dengan `npm install sweetalert2`. Dependency ini tidak
+memiliki dependency runtime tambahan dan digunakan melalui bundle Vite.
+
+### QA
+
+- Pastikan `npm install` sudah dijalankan setelah perubahan dependency.
+- Jalankan `npm run dev` untuk development atau `npm run build` untuk production.
+- Uji create/update: success toast muncul setelah redirect.
+- Uji validation: error validation muncul sebagai dialog.
+- Uji delete: confirmation SweetAlert muncul, tombol Batal tidak mengirim form,
+  tombol Ya, hapus mengirim DELETE request dan menampilkan loading state.

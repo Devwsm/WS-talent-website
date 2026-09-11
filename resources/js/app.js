@@ -1,4 +1,6 @@
 import "./bootstrap";
+import "./sweetalert";
+
 import Swiper from "swiper";
 import {
     Navigation,
@@ -15,13 +17,11 @@ import "swiper/css/pagination";
 import "swiper/css/autoplay";
 
 /**
- * Bikin instance Swiper dengan config dasar yang sama (navigation, pagination,
- * autoplay, a11y) supaya gak diulang-ulang di tiap section. Otomatis di-skip
- * kalau elemennya gak ada di halaman ini (mis. .musicSwiper gak ada di
- * halaman /profile) — sebelumnya ini nyebabin error di console.
+ * Initialize a Swiper instance only when its target exists.
  */
 function initSwiper(selector, scopeSelector, extraOptions = {}) {
     const el = document.querySelector(selector);
+
     if (!el) return null;
 
     return new Swiper(el, {
@@ -62,18 +62,29 @@ function initSwiper(selector, scopeSelector, extraOptions = {}) {
     });
 }
 
+// Header / Videos
 initSwiper(".videosSwiper", "#header");
 
+// New Music
 initSwiper(".musicSwiper", "#new-music", {
     breakpoints: {
-        640: { slidesPerView: 2 },
-        1024: { slidesPerView: 4 },
+        640: {
+            slidesPerView: 2,
+        },
+        1024: {
+            slidesPerView: 4,
+        },
     },
 });
 
+// Merchandise
 initSwiper(".merchSwiper", "#store", {
     breakpoints: {
-        640: { slidesPerView: 2 },
-        1024: { slidesPerView: 4 },
+        640: {
+            slidesPerView: 2,
+        },
+        1024: {
+            slidesPerView: 4,
+        },
     },
 });
