@@ -179,12 +179,51 @@ ada contohnya di `banner.blade.php`, tinggal direplikasi & diperbaiki.
     - File yang diubah: `resources/views/components/profile/dashboard/
 statistik.blade.php`, `highlight.blade.php`, `collab.blade.php`,
       `bio.blade.php`.
-- [ ] Test end-to-end manual di browser: tambah/edit/hapus data di tiap
-      modul (terutama 7 modul baru Fase 6 + 3 preview yang baru diperbaiki),
-      cek foto Hero ke-upload & tampil benar di kedua halaman publik.
-- [ ] Cek responsif mobile langsung di device/emulator (pola
-      `grid-cols-1 lg:grid-cols-2` sudah dipakai konsisten di semua halaman,
-      tapi belum pernah dicek visual di layar kecil).
+- [x] Test end-to-end manual di browser: tambah/edit/hapus data di tiap
+      modul — sudah dites user, aman.
+- [x] Cek responsif mobile — pola `grid-cols-1 lg:grid-cols-2` sudah
+      dites user, aman.
+- [x] **Reskin semua modal "Edit"** (permintaan user): seluruh 11
+      file `modal-edit-*.blade.php` (5 modul lama: Banner, Header,
+      Merchandise, Album, News; 7 modul Profile: Genre, Statistik,
+      Highlight, Kolaborasi, Media Coverage, Booking, Media Sosial) masih
+      pakai tema lama peninggalan sebelum revamp — modal putih terang
+      (`bg-white`, header `bg-blue-950`, input `border` abu-abu, tombol
+      `bg-blue-800`/`bg-gray-400`) yang kontras banget sama tampilan dashboard
+      sekarang yang serba gelap. Semua digantI jadi 1 tema gelap yang
+      konsisten:
+    - Panel: `rounded-3xl border border-white/10 bg-black`, header &
+      footer beda lapisan (`bg-white/3 border-white/10`), ditambah
+      tombol close (×) di header biar ada cara tutup lain selain
+      "Batal".
+    - Input/textarea: `bg-white/5 border-white/15 text-white`, focus
+      state `border-red-900 ring-red-900` (brand accent, bukan biru
+      lagi).
+    - Input file: gaya dashed dengan tombol upload merah (`file:bg-red-950`),
+      konsisten sama pola upload di Hero/Banner dashboard.
+    - Tombol submit: `bg-red-950 hover:bg-red-900` (sebelumnya biru),
+      tombol batal: outline putih transparan.
+    - Tombol trigger "Edit" di Banner/Header/Merchandise/Album/News
+      (sebelumnya `bg-blue-950`) disamain jadi `bg-[#5E0006]`, match
+      sama tombol Hapus di sebelahnya yang emang udah pakai warna brand.
+    - **Responsif**: panel modal sekarang `max-h-[90vh] flex flex-col`
+      dengan body form `overflow-y-auto` — header & footer tetap
+      nempel di atas/bawah, isi form (terutama modal Header yang
+      isinya banyak: color picker + 4 field + 2 upload gambar/video)
+      auto-scroll di dalam modal kalau kepanjangan buat layar pendek,
+      gak bikin modal kepotong/overflow keluar viewport.
+    - Nemu & sekalian dibenerin 2 bug kecil pas reskin: (1) modal edit
+      Statistik ada karakter `\` nyasar sebelum tag `<button>` (bakal
+      nongol sebagai teks aneh di halaman), (2) modal edit Header pakai
+      `$item->id_highlight` (bukan `id_header`) buat semua DOM id color
+      picker — bikin preview warna cuma jalan bener kalau baru ada 1
+      header, rusak begitu ada 2+.
+    - File yang diubah (12): `resources/views/components/dashboard/
+    modal-edit-{banner,header,merchandise,albums,news}.blade.php` dan
+      `resources/views/components/dashboard/profile/modal-edit-
+    {genre,statistik,highlight,collab,media-coverage,booking,media-sosial}.blade.php`.
+      **Belum dites manual di browser** — perlu dicoba buka tiap modal edit
+      (termasuk di layar HP) buat pastikan tampilan & scroll-nya sesuai.
 
 ---
 
@@ -198,6 +237,6 @@ statistik.blade.php`, `highlight.blade.php`, `collab.blade.php`,
 - [x] Fase 6 langkah 1 — Profile: migration + model + controller + route + seeder ✅
 - [x] Fase 6 langkah 2 — Profile: UI dashboard (form kiri/preview kanan per section) ✅
 - [x] Fase 6 langkah 3 — Profile: sinkronisasi publik (teaser + halaman full) ✅
-- [~] Fase 7 — Polish & QA: konsistensi & audit preview selesai (3 bug preview Profile diperbaiki); E2E manual & cek mobile masih perlu dilakukan user
+- [x] Fase 7 — Polish & QA: konsistensi, audit preview, dan reskin semua modal edit selesai; E2E manual & cek mobile sudah dites user ✅
 
 _Login sudah oke, tidak masuk scope revamp ini._
