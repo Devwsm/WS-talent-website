@@ -35,6 +35,31 @@ Route::prefix('/dashboard')->middleware('cekLogin')->group(function () {
         Route::post('/tambahHighlight', [profileController::class, 'tambahHighlight'])->name('highlight.tambah')->middleware('throttle:10,1');
         Route::delete('/hapusHighlight/{id}', [profileController::class, 'hapusHighlight'])->name('highlight.hapus');
         Route::put('/updateHighlight/{id}', [profileController::class, 'updateHighlight'])->name('highlight.update');
+
+        // Fase 6 — Profile (backend). UI form kiri/preview kanan menyusul di langkah 2.
+        Route::post('/hero', [profileController::class, 'simpanHero'])->name('hero.simpan')->middleware('throttle:10,1');
+
+        Route::post('/bio', [profileController::class, 'simpanBio'])->name('bio.simpan')->middleware('throttle:10,1');
+
+        Route::post('/tambahGenre', [profileController::class, 'tambahGenre'])->name('genre.tambah')->middleware('throttle:10,1');
+        Route::delete('/hapusGenre/{id}', [profileController::class, 'hapusGenre'])->name('genre.hapus');
+        Route::put('/updateGenre/{id}', [profileController::class, 'updateGenre'])->name('genre.update');
+
+        Route::post('/tambahCollab', [profileController::class, 'tambahCollab'])->name('collab.tambah')->middleware('throttle:10,1');
+        Route::delete('/hapusCollab/{id}', [profileController::class, 'hapusCollab'])->name('collab.hapus');
+        Route::put('/updateCollab/{id}', [profileController::class, 'updateCollab'])->name('collab.update');
+
+        Route::post('/tambahMediaCoverage', [profileController::class, 'tambahMediaCoverage'])->name('media_coverage.tambah')->middleware('throttle:10,1');
+        Route::delete('/hapusMediaCoverage/{id}', [profileController::class, 'hapusMediaCoverage'])->name('media_coverage.hapus');
+        Route::put('/updateMediaCoverage/{id}', [profileController::class, 'updateMediaCoverage'])->name('media_coverage.update');
+
+        Route::post('/tambahBooking', [profileController::class, 'tambahBooking'])->name('booking.tambah')->middleware('throttle:10,1');
+        Route::delete('/hapusBooking/{id}', [profileController::class, 'hapusBooking'])->name('booking.hapus');
+        Route::put('/updateBooking/{id}', [profileController::class, 'updateBooking'])->name('booking.update');
+
+        Route::post('/tambahMediaSosial', [profileController::class, 'tambahMediaSosial'])->name('media_sosial.tambah')->middleware('throttle:10,1');
+        Route::delete('/hapusMediaSosial/{id}', [profileController::class, 'hapusMediaSosial'])->name('media_sosial.hapus');
+        Route::put('/updateMediaSosial/{id}', [profileController::class, 'updateMediaSosial'])->name('media_sosial.update');
     });
 
     Route::prefix('/banner')->group(function () {

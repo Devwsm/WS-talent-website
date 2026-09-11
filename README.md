@@ -1,97 +1,3 @@
-# WS Talent Website — CMS Revamp
-
-Website & CMS internal untuk Whisnu Santika (Laravel). Dokumen ini berisi
-hasil audit kondisi CMS saat ini dan rencana revamp dashboard sampai selesai.
-
----
-
-## 1. Tujuan Revamp
-
-1. **Konsistensi tampilan** — semua halaman CMS pakai 1 pola visual yang sama
-   (dashboard home & Banner udah lebih rapi, sisanya masih gaya lama).
-2. **Form kiri, Preview kanan** — setiap halaman tambah/edit data nampilin
-   preview real-time di kanan, dan preview-nya harus **niru tampilan asli**
-   di halaman utama (bukan mockup kasar), supaya staff langsung tahu hasil
-   akhirnya kayak gimana sebelum submit.
-3. **Selesaikan modul Profile** — bagian yang paling belum lengkap, banyak
-   section masih di-comment dan datanya hardcode di blade, bukan dari CMS.
-
----
-
-## 2. Audit Kondisi Saat Ini
-
-### Pola desain yang sudah ada (jadi acuan/basis)
-
-- `pages/dashboard.blade.php` (Home dashboard) & `components/dashboard/card/card.blade.php`
-  — sudah pakai bahasa desain baru: `rounded-3xl border border-white/10 bg-white/3`,
-  dekorasi blob blur, komponen `card` reusable dengan tombol "Kelola", empty-state komponen.
-- `pages/dashboard-pages/banner.blade.php` — satu-satunya halaman CRUD yang
-  sudah punya panel **preview**, tapi ada 2 masalah:
-    1. **Posisi kebalik** — preview ada di **kiri** (sticky), form di **kanan**.
-       Maunya form di kiri, preview di kanan.
-    2. **Preview-nya "sakah"/nggak akurat** — dibuat mockup palsu (browser chrome
-        - tiruan navbar), padahal tampilan asli banner di homepage cuma gambar
-          full-width `rounded-lg` polos di atas video header
-          (`components/banner.blade.php`). Jadi preview yang ada sekarang
-          **menyesatkan**, bukan representasi asli.
-
-### Halaman yang MASIH gaya lama (belum ada preview sama sekali)
-
-Semua di bawah ini masih pakai `bg-black/80 ... rounded-lg` dan list data
-mentah tanpa card/preview:
-
-| Halaman                               | Controller            | Komponen publik yang harus ditiru                                                             | Catatan                                                            |
-| ------------------------------------- | --------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Header (`header.blade.php`)           | `dashboardController` | `components/videos.blade.php` (hero full-screen swiper + overlay teks + tombol "Watch Video") | Paling kompleks: ada color picker, image, & background image/video |
-| Albums (`albums.blade.php`)           | `dashboardController` | `components/albums.blade.php` (swiper cover kotak, link ke Spotify)                           | Simple                                                             |
-| News (`news.blade.php`)               | `dashboardController` | `components/news.blade.php` (card gambar 1:1 + judul besar + tombol "Read more")              | Pakai Quill editor buat deskripsi, perlu preview render HTML       |
-| Merchandise (`merchandise.blade.php`) | `dashboardController` | `components/merchandise.blade.php` (swiper cover kotak, link ke marketplace)                  | Simple, mirip Albums                                               |
-
-### Halaman Profile — paling belum selesai
-
-`pages/dashboard-pages/profile.blade.php` cuma aktif untuk **Statistik** dan
-**Highlight**. Section lain ada di file tapi **di-comment semua**:
-`profile-card`, `genre`, `bio`, `collab`, `media-coverage`, `booking`,
-`media-sosial`.
-
-Setelah dicek ke `components/profile/profile-full.blade.php` (halaman publik
-`/profile`), ternyata semua section itu **memang tampil di web**, tapi
-kontennya **hardcode langsung di blade**, bukan dari database:
-
-- Hero (foto, judul "DJ & Producer", nama, tagline)
-- Genre tags (Indonesian Bounce, EDM, dst)
-- Bio (3 paragraf)
-- Kolaborasi (Dipha Barus, Cinta Laura, dst)
-- Media coverage (Suara.com, iNews, dst)
-- Booking & kontak (3 email)
-- Social links (Instagram, TikTok, YouTube, Spotify)
-
-Dicek juga ke `database/migrations/` — **memang belum ada tabel** untuk
-genre/bio/kolaborasi/media coverage/booking/social links. Cuma ada tabel
-`statistik` dan `highlight`. Jadi ini bukan cuma soal UI CMS yang belum
-jadi, tapi datanya sendiri belum punya model/migration/controller.
-
----
-
-## 3. Pola Baru yang Dipakai di Semua Halaman CRUD
-
-Supaya konsisten, dari Banner sampai Profile pakai kerangka yang sama:
-
-```
-┌─────────────────────────────────────────────────────┐
-│  Judul halaman + deskripsi singkat                   │
-├───────────────────────────┬───────────────────────────┤
-│  FORM (kiri)               │  PREVIEW (kanan, sticky)  │
-│  - input sesuai field      │  - render ulang komponen  │
-│  - validasi & error inline │    publik asli (bukan     │
-│                             │    mockup baru), diisi    │
-│                             │    dari nilai form secara │
-│                             │    real-time via JS       │
-├───────────────────────────┴───────────────────────────┤
-│  List data tersimpan (card grid, pakai card.blade.php) │
-└─────────────────────────────────────────────────────┘
-```
-
 Prinsip preview: **pakai ulang markup & class dari komponen publik yang
 sudah ada** (`components/banner.blade.php`, `components/videos.blade.php`,
 `components/albums.blade.php`, dst), cuma dibungkus kecil (mis. di dalam
@@ -161,18 +67,47 @@ ada contohnya di `banner.blade.php`, tinggal direplikasi & diperbaiki.
 
 ### Fase 6 — Profile (paling besar, dipecah jadi sub-fase)
 
-1. **Data & backend dulu**: bikin migration + model + controller (atau
-   extend `profileController`) untuk field yang masih hardcode:
-    - Hero: foto, judul singkat, nama, tagline
-    - Genre tags (bisa multi, simpan sebagai list)
-    - Bio (rich text, bisa multi paragraf)
-    - Kolaborasi (nama, role/deskripsi)
-    - Media coverage (nama media)
-    - Booking & kontak (label + email, per kategori)
-    - Social links (platform + URL)
-    - _(Statistik & Highlight sudah ada, tinggal dirapikan UI-nya)_
-2. **UI dashboard**: bongkar section yang di-comment, bangun form kiri /
-   preview kanan buat tiap section, preview niru
+1. ✅ **Data & backend (SELESAI)**: migration + model + extend
+   `profileController` untuk field yang masih hardcode. 7 tabel baru,
+   ngikutin pola project ini (custom PK `id_<nama_tabel>`, model =
+   nama tabel, tanpa Form Request class, validasi inline kayak
+   statistik/highlight):
+    - `profile_hero` (singleton — foto, judul_singkat, nama, tagline).
+      Upload foto pakai pola WebP yang sama kayak Banner
+      (`convertToWebP` di-duplicate ke `profileController`, bukan
+      di-extract ke trait, biar konsisten sama pola tiap controller
+      berdiri sendiri di project ini).
+    - `genre` (multi — nama_genre)
+    - `bio` (singleton — konten, longText buat rich text Quill)
+    - `collab` (multi — nama, role)
+    - `media_coverage` (multi — nama_media)
+    - `booking` (multi — label, email)
+    - `media_sosial` (multi — platform, url)
+    - _(Statistik & Highlight sudah ada duluan, tinggal dirapikan UI-nya)_
+    - Route baru semua di-throttle `10,1` di request `tambah`, ngikutin
+      pola statistik/highlight/banner.
+    - `database/seeders/profileSeeder.php` di-extend: 7 tabel baru
+      di-seed dari konten yang **saat ini hardcode** di
+      `profile-full.blade.php`, supaya begitu UI Fase 6 langkah 2 jadi,
+      datanya langsung ada isinya (bukan kosong).
+    - Hero & Bio sengaja dibikin **singleton** (query pakai `::first()`,
+      controller pakai `updateOrCreate`-style: ambil baris pertama atau
+      bikin baru) — beda dari tabel lain yang emang multi-row. Alasannya:
+      cuma ada 1 artis/1 bio, jadi nggak perlu tambah/hapus, cukup 1
+      endpoint simpan (`hero.simpan`, `bio.simpan`).
+    - File yang diubah/ditambah: 7 file migration baru di
+      `database/migrations/`, 7 model baru di `app/Models/`,
+      `app/Http/Controllers/profileController.php` (tambah import +
+      method baru), `routes/web.php` (tambah route group Profile),
+      `database/seeders/profileSeeder.php` (tambah seed data).
+    - **Sudah dijalankan** via `migrate:fresh --seed` — aman, 7 tabel baru
+      kebentuk dan ke-seed sesuai isi hardcode `profile-full.blade.php`.
+      `optimize:clear` juga sudah dijalankan. **Manual E2E masih belum
+      bisa** karena UI-nya belum ada (baru backend/API-level, endpoint
+      cuma bisa dites lewat request langsung, belum ada form).
+2. **UI dashboard** _(BELUM — langkah selanjutnya)_: bongkar section yang
+   di-comment di `profile.blade.php`, bangun form kiri / preview kanan
+   buat tiap section, preview niru
    `components/profile/profile-full.blade.php` per bagian (Hero, Genre,
    Bio, Stats, Highlight, Kolaborasi, Media Coverage, Booking, Social).
 3. Pastikan `profile-teaser.blade.php` (versi ringkas di homepage) ikut
@@ -198,7 +133,9 @@ ada contohnya di `banner.blade.php`, tinggal direplikasi & diperbaiki.
 - [x] Fase 3 — Album (redesign + preview di background putih) ✅
 - [x] Fase 4 — Merchandise (redesign + preview di background putih) ✅
 - [x] Fase 5 — News (redesign + preview Quill HTML live) ✅
-- [ ] Fase 6 — Profile (backend + UI)
+- [x] Fase 6 langkah 1 — Profile: migration + model + controller + route + seeder ✅
+- [ ] Fase 6 langkah 2 — Profile: UI dashboard (form kiri/preview kanan per section)
+- [ ] Fase 6 langkah 3 — Profile: sinkronisasi `profile-teaser.blade.php`
 - [ ] Fase 7 — Polish & QA
 
 _Login sudah oke, tidak masuk scope revamp ini._
