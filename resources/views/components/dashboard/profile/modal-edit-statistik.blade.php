@@ -1,5 +1,5 @@
-<button command="show-modal" commandfor="updateStatistikDialog{{ $item->id_statistik }}"
-    class="w-full text-white font-bold uppercase tracking-wide p-2 bg-blue-950 hover:bg-blue-950/70 transition rounded-lg">
+\<button command="show-modal" commandfor="updateStatistikDialog{{ $item->id_statistik }}"
+    class="text-white/40 hover:text-white transition text-xs leading-none">
     <i class="bi bi-pencil-fill"></i>
 </button>
 <el-dialog>
@@ -14,27 +14,26 @@
                     <h3 class="font-bold text-lg">UPDATE DATA</h3>
                 </div>
                 <!-- Form -->
-                <form action="{{ route('statistik.update', $item->id_statistik) }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('statistik.update', $item->id_statistik) }}" method="POST">
                     @csrf
                     @method('PUT')
                     <!-- Body -->
                     <div class="p-6 flex flex-col gap-4">
                         <div class="flex flex-col gap-2">
                             <label class="text-sm uppercase font-semibold">total</label>
-                            <input type="text" name="total"
-                                value="{{ $item->total }}"
+                            <input type="text" name="total" value="{{ $item->total }}"
                                 class="w-full border p-2 rounded-lg focus:ring-2 focus:ring-blue-800 outline-none">
                         </div>
                         <div class="flex flex-col gap-2">
                             <label class="text-sm uppercase font-semibold">platform</label>
-                            <input type="text" name="platform"
-                                value="{{ $item->platform }}"
+                            <input type="text" name="platform" value="{{ $item->platform }}"
                                 class="w-full border p-2 rounded-lg focus:ring-2 focus:ring-blue-800 outline-none">
                         </div>
                     </div>
                     <!-- Footer -->
                     <div class="flex justify-end gap-2 px-6 py-4 bg-gray-100">
-                        <button type="button" command="close" commandfor="updateStatistikDialog{{ $item->id_statistik }}"
+                        <button type="button" command="close"
+                            commandfor="updateStatistikDialog{{ $item->id_statistik }}"
                             class="px-4 py-2 bg-gray-400 text-white rounded-lg">
                             Batal
                         </button>

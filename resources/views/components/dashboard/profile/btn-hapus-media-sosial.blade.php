@@ -1,5 +1,5 @@
-<form action="{{ route('highlight.hapus', $item->id_highlight) }}" method="POST" class="inline-flex"
-    onsubmit="return confirm('Apakah Anda yakin ingin menghapus highlight ini?');">
+<form action="{{ route('media_sosial.hapus', $item->id_media_sosial) }}" method="POST" class="inline-flex"
+    onsubmit="return confirm('Apakah Anda yakin ingin menghapus media sosial ini?');">
     @csrf
     @method('DELETE')
     <button type="submit" class="text-white/40 hover:text-red-400 transition text-xs leading-none">
