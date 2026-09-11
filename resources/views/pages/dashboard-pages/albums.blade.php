@@ -115,18 +115,19 @@
                         'message' => 'Belum ada album yang ditambahkan.',
                     ])
                 @else
-                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                         @foreach ($albums as $item)
-                            <div class="rounded-2xl border border-white/10 bg-white/3 overflow-hidden flex flex-col">
+                            <div
+                                class="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/3 p-3 transition-colors hover:border-white/20 min-w-0">
                                 <img src="{{ Storage::url('albums/' . $item->albums_cover) }}"
                                     alt="{{ $item->albums_name }}" loading="lazy" decoding="async"
-                                    class="w-full aspect-square object-cover">
-                                <div class="p-3 flex flex-col gap-1 flex-1">
-                                    <p class="font-semibold text-xs line-clamp-1">{{ $item->albums_name }}</p>
-                                    <p class="text-[11px] text-white/40 break-all line-clamp-1">{{ $item->link_spotify }}
+                                    class="w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-xl object-cover border border-white/10">
+                                <div class="min-w-0 flex-1">
+                                    <p class="font-semibold text-sm text-white truncate">{{ $item->albums_name }}</p>
+                                    <p class="text-xs text-white/40 break-all line-clamp-2 mt-0.5">{{ $item->link_spotify }}
                                     </p>
                                 </div>
-                                <div class="flex gap-2 p-3 pt-0">
+                                <div class="flex items-center gap-2 shrink-0">
                                     @include('components.dashboard.modal-edit-albums')
                                     @include('components.dashboard.btn-hapus-albums')
                                 </div>

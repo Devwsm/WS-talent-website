@@ -114,17 +114,19 @@
                         'message' => 'Belum ada banner yang ditambahkan.',
                     ])
                 @else
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                         @foreach ($banner as $item)
-                            <div class="rounded-2xl border border-white/10 bg-white/3 overflow-hidden flex flex-col">
+                            <div
+                                class="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/3 p-3 transition-colors hover:border-white/20 min-w-0">
                                 <img src="{{ Storage::url('banner/' . $item->banner_cover) }}"
                                     alt="{{ $item->banner_name }}" loading="lazy" decoding="async"
-                                    class="w-full aspect-video object-cover">
-                                <div class="p-4 flex flex-col gap-1 flex-1">
-                                    <p class="font-semibold text-sm line-clamp-1">{{ $item->banner_name }}</p>
-                                    <p class="text-xs text-white/40 break-all line-clamp-1">{{ $item->link_banner }}</p>
+                                    class="w-20 h-14 sm:w-24 sm:h-16 shrink-0 rounded-xl object-cover border border-white/10">
+                                <div class="min-w-0 flex-1">
+                                    <p class="font-semibold text-sm text-white truncate">{{ $item->banner_name }}</p>
+                                    <p class="text-xs text-white/40 break-all line-clamp-2 mt-0.5">{{ $item->link_banner }}
+                                    </p>
                                 </div>
-                                <div class="flex gap-2 p-4 pt-0">
+                                <div class="flex items-center gap-2 shrink-0">
                                     @include('components.dashboard.modal-edit-banner')
                                     @include('components.dashboard.btn-hapus-banner')
                                 </div>

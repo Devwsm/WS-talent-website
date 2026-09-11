@@ -185,14 +185,16 @@
                         'message' => 'Belum ada header yang diupload.',
                     ])
                 @else
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                         @foreach ($header as $item)
                             @php
                                 $bgExtension = strtolower(pathinfo($item->header_background, PATHINFO_EXTENSION));
                                 $isVideo = in_array($bgExtension, ['mp4', 'webm', 'mov']);
                             @endphp
-                            <div class="rounded-2xl border border-white/10 bg-white/3 overflow-hidden flex flex-col">
-                                <div class="relative w-full aspect-video bg-black">
+                            <div
+                                class="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/3 p-3 transition-colors hover:border-white/20 min-w-0">
+                                <div
+                                    class="relative w-24 h-16 sm:w-28 sm:h-18 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-black">
                                     @if ($isVideo)
                                         <video autoplay muted loop playsinline
                                             class="absolute inset-0 w-full h-full object-cover opacity-60">
@@ -205,23 +207,25 @@
                                             alt="{{ $item->header_name }}" loading="lazy" decoding="async"
                                             class="absolute inset-0 w-full h-full object-cover opacity-60">
                                     @endif
-                                    <div class="absolute inset-0 bg-linear-to-t from-black via-black/30 to-transparent">
+                                    <div class="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent">
                                     </div>
-                                    <div class="relative z-10 h-full flex flex-col justify-end gap-1 p-3">
+                                    <div class="absolute inset-x-2 bottom-1.5 z-10">
                                         <span style="border-color: {{ $item->header_color }}99;"
-                                            class="inline-flex items-center gap-1.5 w-fit bg-white/10 backdrop-blur border rounded-full px-2 py-0.5 text-[10px]">
+                                            class="inline-flex items-center gap-1 w-fit max-w-full bg-white/10 backdrop-blur border rounded-full px-1.5 py-0.5 text-[9px] truncate">
                                             <span style="background-color: {{ $item->header_color }};"
-                                                class="w-1.5 h-1.5 rounded-full"></span>
-                                            {{ $item->header_title }}
+                                                class="w-1.5 h-1.5 shrink-0 rounded-full"></span>
+                                            <span class="truncate">{{ $item->header_title }}</span>
                                         </span>
-                                        <p class="font-semibold text-sm line-clamp-1">{{ $item->header_name }}</p>
                                     </div>
                                 </div>
-                                <div class="p-4 flex flex-col gap-1 flex-1">
-                                    <p class="text-xs text-white/50 line-clamp-2">{{ $item->header_description }}</p>
-                                    <p class="text-xs text-white/30 break-all line-clamp-1">{{ $item->link_header }}</p>
+                                <div class="min-w-0 flex-1">
+                                    <p class="font-semibold text-sm text-white truncate">{{ $item->header_name }}</p>
+                                    <p class="text-xs text-white/50 line-clamp-2 mt-0.5">{{ $item->header_description }}
+                                    </p>
+                                    <p class="text-xs text-white/30 break-all line-clamp-1 mt-0.5">
+                                        {{ $item->link_header }}</p>
                                 </div>
-                                <div class="flex gap-2 p-4 pt-0">
+                                <div class="flex items-center gap-2 shrink-0">
                                     @include('components.dashboard.modal-edit-header')
                                     @include('components.dashboard.btn-hapus-header')
                                 </div>

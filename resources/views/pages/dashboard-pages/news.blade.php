@@ -175,20 +175,23 @@
                         'message' => 'Belum ada berita yang ditambahkan.',
                     ])
                 @else
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                         @foreach ($news as $item)
-                            <div class="rounded-2xl border border-white/10 bg-white/3 overflow-hidden flex flex-col">
+                            <div
+                                class="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/3 p-3 transition-colors hover:border-white/20 min-w-0">
                                 <img src="{{ Storage::url('news/' . $item->news_cover) }}" alt="{{ $item->news_title }}"
-                                    loading="lazy" decoding="async" class="w-full aspect-video object-cover">
-                                <div class="p-4 flex flex-col gap-1 flex-1">
-                                    <div class="flex items-center gap-2 text-xs">
-                                        <span class="text-white/50 line-clamp-1">{{ $item->news_source }}</span>
-                                        <span class="text-red-400">{{ $item->news_date }}</span>
+                                    loading="lazy" decoding="async"
+                                    class="w-20 h-14 sm:w-24 sm:h-16 shrink-0 rounded-xl object-cover border border-white/10">
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-center gap-2 text-[11px] mb-0.5">
+                                        <span class="text-white/50 truncate">{{ $item->news_source }}</span>
+                                        <span class="text-red-400 shrink-0">{{ $item->news_date }}</span>
                                     </div>
-                                    <p class="font-semibold text-sm line-clamp-2">{{ $item->news_title }}</p>
-                                    <p class="text-xs text-white/40 break-all line-clamp-1">{{ $item->news_link }}</p>
+                                    <p class="font-semibold text-sm text-white line-clamp-2">{{ $item->news_title }}</p>
+                                    <p class="text-xs text-white/40 break-all line-clamp-1 mt-0.5">{{ $item->news_link }}
+                                    </p>
                                 </div>
-                                <div class="flex gap-2 p-4 pt-0">
+                                <div class="flex items-center gap-2 shrink-0">
                                     @include('components.dashboard.modal-edit-news')
                                     @include('components.dashboard.btn-hapus-news')
                                 </div>

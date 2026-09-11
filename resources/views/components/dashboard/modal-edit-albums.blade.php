@@ -1,5 +1,5 @@
 <button type="button" onclick="document.getElementById('updateDialog{{ $item->id_albums }}').showModal()"
-    class="w-full text-white font-bold uppercase tracking-wide p-2 bg-[#5E0006] hover:bg-[#5E0006]/70 transition rounded-lg">
+    class="text-white/40 hover:text-white transition text-xs leading-none">
     <i class="bi bi-pencil-fill"></i>
 </button>
 <dialog id="updateDialog{{ $item->id_albums }}"
@@ -45,11 +45,11 @@
 
                         @if ($item->albums_cover)
                             <img src="{{ Storage::url('albums/' . $item->albums_cover) }}"
-                                class="w-full max-h-32 rounded-lg border border-white/10 object-cover mb-1">
+                                class="max-h-32 rounded-lg border border-white/10 object-cover mb-1">
                         @endif
 
                         <input type="file" name="albums_cover"
-                            class="w-full min-w-0 bg-white/5 border border-white/15 border-dashed text-white/50 p-3 rounded-lg cursor-pointer
+                            class="w-full bg-white/5 border border-white/15 border-dashed text-white/50 p-3 rounded-lg cursor-pointer
                                 file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0
                                 file:text-sm file:font-semibold file:bg-red-950 file:text-white
                                 hover:file:bg-red-900 transition">
@@ -58,7 +58,7 @@
                 </div>
                 <!-- Footer -->
                 <div
-                    class="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 px-6 py-4 border-t border-white/10 bg-white/5 shrink-0">
+                    class="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 px-6 py-4 border-t border-white/10 bg-white/3 shrink-0">
                     <button type="button"
                         onclick="document.getElementById('updateDialog{{ $item->id_albums }}').close()"
                         class="w-full sm:w-auto px-4 py-2 rounded-lg border border-white/15 text-white/70 hover:bg-white/5 transition font-semibold">

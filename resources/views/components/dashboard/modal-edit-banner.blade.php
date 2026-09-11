@@ -1,5 +1,5 @@
 <button type="button" onclick="document.getElementById('updateDialog{{ $item->id_banner }}').showModal()"
-    class="w-full text-white font-bold uppercase tracking-wide p-2 bg-[#5E0006] hover:bg-[#5E0006]/70 transition rounded-lg">
+    class="text-white/40 hover:text-white transition text-xs leading-none">
     <i class="bi bi-pencil-fill"></i>
 </button>
 <dialog id="updateDialog{{ $item->id_banner }}"
