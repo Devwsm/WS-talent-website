@@ -1,58 +1,189 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# WS Talent Website — CMS Revamp
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Website & CMS internal untuk Whisnu Santika (Laravel). Dokumen ini berisi
+hasil audit kondisi CMS saat ini dan rencana revamp dashboard sampai selesai.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 1. Tujuan Revamp
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+1. **Konsistensi tampilan** — semua halaman CMS pakai 1 pola visual yang sama
+   (dashboard home & Banner udah lebih rapi, sisanya masih gaya lama).
+2. **Form kiri, Preview kanan** — setiap halaman tambah/edit data nampilin
+   preview real-time di kanan, dan preview-nya harus **niru tampilan asli**
+   di halaman utama (bukan mockup kasar), supaya staff langsung tahu hasil
+   akhirnya kayak gimana sebelum submit.
+3. **Selesaikan modul Profile** — bagian yang paling belum lengkap, banyak
+   section masih di-comment dan datanya hardcode di blade, bukan dari CMS.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## 2. Audit Kondisi Saat Ini
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Pola desain yang sudah ada (jadi acuan/basis)
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- `pages/dashboard.blade.php` (Home dashboard) & `components/dashboard/card/card.blade.php`
+  — sudah pakai bahasa desain baru: `rounded-3xl border border-white/10 bg-white/3`,
+  dekorasi blob blur, komponen `card` reusable dengan tombol "Kelola", empty-state komponen.
+- `pages/dashboard-pages/banner.blade.php` — satu-satunya halaman CRUD yang
+  sudah punya panel **preview**, tapi ada 2 masalah:
+    1. **Posisi kebalik** — preview ada di **kiri** (sticky), form di **kanan**.
+       Maunya form di kiri, preview di kanan.
+    2. **Preview-nya "sakah"/nggak akurat** — dibuat mockup palsu (browser chrome
+        - tiruan navbar), padahal tampilan asli banner di homepage cuma gambar
+          full-width `rounded-lg` polos di atas video header
+          (`components/banner.blade.php`). Jadi preview yang ada sekarang
+          **menyesatkan**, bukan representasi asli.
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+### Halaman yang MASIH gaya lama (belum ada preview sama sekali)
 
-## Agentic Development
+Semua di bawah ini masih pakai `bg-black/80 ... rounded-lg` dan list data
+mentah tanpa card/preview:
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+| Halaman                               | Controller            | Komponen publik yang harus ditiru                                                             | Catatan                                                            |
+| ------------------------------------- | --------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Header (`header.blade.php`)           | `dashboardController` | `components/videos.blade.php` (hero full-screen swiper + overlay teks + tombol "Watch Video") | Paling kompleks: ada color picker, image, & background image/video |
+| Albums (`albums.blade.php`)           | `dashboardController` | `components/albums.blade.php` (swiper cover kotak, link ke Spotify)                           | Simple                                                             |
+| News (`news.blade.php`)               | `dashboardController` | `components/news.blade.php` (card gambar 1:1 + judul besar + tombol "Read more")              | Pakai Quill editor buat deskripsi, perlu preview render HTML       |
+| Merchandise (`merchandise.blade.php`) | `dashboardController` | `components/merchandise.blade.php` (swiper cover kotak, link ke marketplace)                  | Simple, mirip Albums                                               |
 
-```bash
-composer require laravel/boost --dev
+### Halaman Profile — paling belum selesai
 
-php artisan boost:install
+`pages/dashboard-pages/profile.blade.php` cuma aktif untuk **Statistik** dan
+**Highlight**. Section lain ada di file tapi **di-comment semua**:
+`profile-card`, `genre`, `bio`, `collab`, `media-coverage`, `booking`,
+`media-sosial`.
+
+Setelah dicek ke `components/profile/profile-full.blade.php` (halaman publik
+`/profile`), ternyata semua section itu **memang tampil di web**, tapi
+kontennya **hardcode langsung di blade**, bukan dari database:
+
+- Hero (foto, judul "DJ & Producer", nama, tagline)
+- Genre tags (Indonesian Bounce, EDM, dst)
+- Bio (3 paragraf)
+- Kolaborasi (Dipha Barus, Cinta Laura, dst)
+- Media coverage (Suara.com, iNews, dst)
+- Booking & kontak (3 email)
+- Social links (Instagram, TikTok, YouTube, Spotify)
+
+Dicek juga ke `database/migrations/` — **memang belum ada tabel** untuk
+genre/bio/kolaborasi/media coverage/booking/social links. Cuma ada tabel
+`statistik` dan `highlight`. Jadi ini bukan cuma soal UI CMS yang belum
+jadi, tapi datanya sendiri belum punya model/migration/controller.
+
+---
+
+## 3. Pola Baru yang Dipakai di Semua Halaman CRUD
+
+Supaya konsisten, dari Banner sampai Profile pakai kerangka yang sama:
+
+```
+┌─────────────────────────────────────────────────────┐
+│  Judul halaman + deskripsi singkat                   │
+├───────────────────────────┬───────────────────────────┤
+│  FORM (kiri)               │  PREVIEW (kanan, sticky)  │
+│  - input sesuai field      │  - render ulang komponen  │
+│  - validasi & error inline │    publik asli (bukan     │
+│                             │    mockup baru), diisi    │
+│                             │    dari nilai form secara │
+│                             │    real-time via JS       │
+├───────────────────────────┴───────────────────────────┤
+│  List data tersimpan (card grid, pakai card.blade.php) │
+└─────────────────────────────────────────────────────┘
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Prinsip preview: **pakai ulang markup & class dari komponen publik yang
+sudah ada** (`components/banner.blade.php`, `components/videos.blade.php`,
+`components/albums.blade.php`, dst), cuma dibungkus kecil (mis. di dalam
+"frame" browser mini kalau perlu konteks), lalu di-update via JS
+(`input`/`change` listener + `FileReader` buat gambar) — pola JS-nya udah
+ada contohnya di `banner.blade.php`, tinggal direplikasi & diperbaiki.
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## 4. Rencana Eksekusi (Fase)
 
-## Code of Conduct
+### ✅ Fase 1 — Perbaiki Banner (SELESAI)
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- [x] Tukar posisi: form ke kiri, preview ke kanan.
+- [x] Ganti isi panel preview dari mockup "browser chrome" jadi render ulang
+      markup asli `components/banner.blade.php` (gambar full-width rounded,
+      tanpa overlay teks/navbar palsu), supaya 1:1 sama kayak yang tampil di
+      homepage. Nama & link banner sekarang ditandai jelas sebagai metadata
+      admin (tidak ikut tayang di web).
+- File yang diubah: `resources/views/pages/dashboard-pages/banner.blade.php`
 
-## Security Vulnerabilities
+### Fase 2 — Header
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- Redesign halaman ke pola card `rounded-3xl border-white/10 bg-white/3`.
+- Preview kanan niru `components/videos.blade.php`: badge warna + judul,
+  gambar header di tengah, nama, deskripsi, tombol "Watch Video" dengan
+  warna sesuai `header_color` — update live saat color picker/input diubah.
+- Preview background (image/video) ikut berubah saat file dipilih (pakai
+  ulang logic `MediaPreview` yang sudah ada di file ini, tinggal disambung
+  ke panel preview, bukan cuma preview file mentah).
+- List data di bawah dirapikan pakai card grid, bukan list mentah.
 
-## License
+### Fase 3 — Albums
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- Redesign ke pola form-kiri/preview-kanan.
+- Preview niru `components/albums.blade.php` (cover kotak 1:1, hover
+  scale, link Spotify).
+- List data pakai card grid (mirip pola Album/Merchandise di Home dashboard
+  yang sudah ada).
+
+### Fase 4 — Merchandise
+
+- Sama seperti Albums (paling mirip & paling cepat dikerjakan).
+
+### Fase 5 — News
+
+- Redesign ke pola form-kiri/preview-kanan.
+- Preview niru `components/news.blade.php` (card gambar 1:1 + sumber +
+  tanggal + judul besar + deskripsi + tombol "Read more").
+- Karena deskripsi pakai Quill (rich text), preview harus render HTML-nya
+  (bukan teks mentah) supaya representatif.
+
+### Fase 6 — Profile (paling besar, dipecah jadi sub-fase)
+
+1. **Data & backend dulu**: bikin migration + model + controller (atau
+   extend `profileController`) untuk field yang masih hardcode:
+    - Hero: foto, judul singkat, nama, tagline
+    - Genre tags (bisa multi, simpan sebagai list)
+    - Bio (rich text, bisa multi paragraf)
+    - Kolaborasi (nama, role/deskripsi)
+    - Media coverage (nama media)
+    - Booking & kontak (label + email, per kategori)
+    - Social links (platform + URL)
+    - _(Statistik & Highlight sudah ada, tinggal dirapikan UI-nya)_
+2. **UI dashboard**: bongkar section yang di-comment, bangun form kiri /
+   preview kanan buat tiap section, preview niru
+   `components/profile/profile-full.blade.php` per bagian (Hero, Genre,
+   Bio, Stats, Highlight, Kolaborasi, Media Coverage, Booking, Social).
+3. Pastikan `profile-teaser.blade.php` (versi ringkas di homepage) ikut
+   konsisten kalau ada field yang dipakai bareng (foto, tagline, genre,
+   bio singkat, stats).
+
+### Fase 7 — Polish & QA
+
+- Review ulang semua halaman CMS biar konsisten (spacing, warna, ukuran
+  card, empty-state).
+- Test end-to-end: tambah/edit/hapus data di tiap modul, cek preview
+  match dengan tampilan asli di homepage/`/profile`.
+- Cek responsif mobile buat layout form-kiri/preview-kanan (kemungkinan
+  preview pindah ke bawah form di layar kecil, sama seperti pola Banner
+  sekarang: `grid-cols-1 lg:grid-cols-2`).
+
+---
+
+## 5. Status
+
+- [x] Fase 1 — Banner (swap posisi + preview akurat) ✅
+- [ ] Fase 2 — Header
+- [ ] Fase 3 — Albums
+- [ ] Fase 4 — Merchandise
+- [ ] Fase 5 — News
+- [ ] Fase 6 — Profile (backend + UI)
+- [ ] Fase 7 — Polish & QA
+
+_Login sudah oke, tidak masuk scope revamp ini._
