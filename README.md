@@ -145,13 +145,19 @@ ada contohnya di `banner.blade.php`, tinggal direplikasi & diperbaiki.
 - [x] List data pakai card grid.
 - File yang diubah: `resources/views/pages/dashboard-pages/merchandise.blade.php`
 
-### Fase 5 — News
+### ✅ Fase 5 — News (SELESAI)
 
-- Redesign ke pola form-kiri/preview-kanan.
-- Preview niru `components/news.blade.php` (card gambar 1:1 + sumber +
-  tanggal + judul besar + deskripsi + tombol "Read more").
-- Karena deskripsi pakai Quill (rich text), preview harus render HTML-nya
-  (bukan teks mentah) supaya representatif.
+- [x] Redesign ke pola form-kiri/preview-kanan, konsisten sama modul lain.
+- [x] Preview niru `components/news.blade.php` — 1 kartu berita persis
+      (cover kotak, baris sumber+tanggal, judul besar, deskripsi, tombol
+      "Read more"), di atas background putih/abu terang sesuai section asli.
+- [x] Karena deskripsi pakai Quill (rich text), preview render **HTML asli**
+      dari editor secara live (event `text-change`), bukan teks mentah — jadi
+      bold/italic/list/dll ikut kelihatan di preview persis kayak yang bakal
+      tayang.
+- [x] List data di bawah dirapikan pakai card grid (thumbnail + sumber +
+      tanggal + judul), bukan list mentah lagi.
+- File yang diubah: `resources/views/pages/dashboard-pages/news.blade.php`
 
 ### Fase 6 — Profile (paling besar, dipecah jadi sub-fase)
 
@@ -191,7 +197,7 @@ ada contohnya di `banner.blade.php`, tinggal direplikasi & diperbaiki.
 - [x] Fase 2 — Header (redesign + preview hero live) ✅
 - [x] Fase 3 — Album (redesign + preview di background putih) ✅
 - [x] Fase 4 — Merchandise (redesign + preview di background putih) ✅
-- [ ] Fase 5 — News
+- [x] Fase 5 — News (redesign + preview Quill HTML live) ✅
 - [ ] Fase 6 — Profile (backend + UI)
 - [ ] Fase 7 — Polish & QA
 
