@@ -113,16 +113,20 @@ ada contohnya di `banner.blade.php`, tinggal direplikasi & diperbaiki.
       admin (tidak ikut tayang di web).
 - File yang diubah: `resources/views/pages/dashboard-pages/banner.blade.php`
 
-### Fase 2 — Header
+### ✅ Fase 2 — Header (SELESAI)
 
-- Redesign halaman ke pola card `rounded-3xl border-white/10 bg-white/3`.
-- Preview kanan niru `components/videos.blade.php`: badge warna + judul,
-  gambar header di tengah, nama, deskripsi, tombol "Watch Video" dengan
-  warna sesuai `header_color` — update live saat color picker/input diubah.
-- Preview background (image/video) ikut berubah saat file dipilih (pakai
-  ulang logic `MediaPreview` yang sudah ada di file ini, tinggal disambung
-  ke panel preview, bukan cuma preview file mentah).
-- List data di bawah dirapikan pakai card grid, bukan list mentah.
+- [x] Redesign halaman ke pola card `rounded-3xl border-white/10 bg-white/3`,
+      form kiri / preview kanan (sticky), konsisten sama Banner.
+- [x] Preview kanan niru `components/videos.blade.php`: badge warna + judul,
+      gambar header di tengah, nama, deskripsi, tombol "Watch Video" dengan
+      warna sesuai `header_color` — update live saat color picker/input diubah.
+- [x] Preview background (image/video) ikut berubah saat file dipilih —
+      diganti dari `MediaPreview` class lama (preview file mentah terpisah)
+      jadi langsung nge-update panel preview utama, dengan validasi ukuran
+      file tetap jalan (1MB gambar / 25MB video).
+- [x] List data di bawah dirapikan pakai card grid (thumbnail + badge +
+      nama + deskripsi), bukan list mentah lagi.
+- File yang diubah: `resources/views/pages/dashboard-pages/header.blade.php`
 
 ### Fase 3 — Albums
 
@@ -179,7 +183,7 @@ ada contohnya di `banner.blade.php`, tinggal direplikasi & diperbaiki.
 ## 5. Status
 
 - [x] Fase 1 — Banner (swap posisi + preview akurat) ✅
-- [ ] Fase 2 — Header
+- [x] Fase 2 — Header (redesign + preview hero live) ✅
 - [ ] Fase 3 — Albums
 - [ ] Fase 4 — Merchandise
 - [ ] Fase 5 — News
