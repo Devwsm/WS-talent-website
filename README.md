@@ -115,12 +115,36 @@ ada contohnya di `banner.blade.php`, tinggal direplikasi & diperbaiki.
    `btn-hapus-*.blade.php`). Statistik & Highlight yang sebelumnya
    sudah ada UI-nya ikut dirapikan ulang biar konsisten sama pola
    section baru.
-3. **Sinkronisasi `profile-teaser.blade.php`** _(BELUM — langkah
-   selanjutnya)_: versi ringkas di homepage belum disentuh sejak Fase
-   6 langkah 1 & 2 (masih pakai commit lama), padahal field yang
-   dipakai bareng Hero (foto, tagline, genre, bio singkat, stats)
-   sekarang sumbernya sudah dari tabel baru, bukan hardcode lagi —
-   perlu dicek match atau enggak.
+3. ✅ **Sinkronisasi publik (SELESAI)**: pas dicek, bukan cuma
+   `profile-teaser.blade.php` yang masih hardcode — `profile-full.blade.php`
+   (halaman `/profile` itu sendiri) juga **belum tersambung sama sekali**
+   ke 7 tabel baru Fase 6, padahal ini justru halaman yang jadi acuan
+   preview dashboard. Yang dikerjakan:
+    - `homeController@index` & `homeController@profile` di-extend supaya
+      fetch `profile_hero`, `genre`, `bio`, `collab`, `media_coverage`,
+      `booking`, `media_sosial` dan dioper ke view (sebelumnya cuma
+      `statistik`/`highlight`).
+    - `profile-teaser.blade.php` (homepage): foto/judul/nama/tagline dari
+      `profile_hero`, genre tags dari `genre`, bio singkat dipotong
+      (`Str::limit` + `strip_tags`, 220 char) dari `bio.konten` biar tetap
+      ringkas — bio lengkap (rich text Quill) sengaja nggak ditampilkan
+      utuh di teaser.
+    - `profile-full.blade.php` (halaman `/profile`): Hero, Genre, Bio
+      (render HTML asli dari Quill), Kolaborasi, Media Coverage, Booking &
+      Kontak (email jadi `mailto:`), dan Social links semua diganti dari
+      hardcode ke data dinamis. Tiap list pakai `@forelse`/`@empty` dengan
+      pesan "Belum ada data ..." kalau tabelnya kosong.
+    - Foto Hero dipakai lewat `Storage::url('profile-hero/' . $hero->foto)`,
+      konsisten sama pola yang dipakai Banner; ada fallback ke logo lama
+      kalau `profile_hero` belum ada baris data.
+    - File yang diubah: `app/Http/Controllers/homeController.php`,
+      `resources/views/components/profile/profile-teaser.blade.php`,
+      `resources/views/components/profile/profile-full.blade.php`.
+    - Seeder (`profileSeeder.php`) sudah ngisi ketujuh tabel dari konten
+      hardcode lama, jadi secara data harusnya tampil identik dengan
+      sebelum revamp — fallback hardcode di Blade cuma jaga-jaga kalau
+      tabel kosong. **Belum dites manual di browser**, cuma dicek lewat
+      kode & seeder.
 
 ### Fase 7 — Polish & QA
 
@@ -143,7 +167,7 @@ ada contohnya di `banner.blade.php`, tinggal direplikasi & diperbaiki.
 - [x] Fase 5 — News (redesign + preview Quill HTML live) ✅
 - [x] Fase 6 langkah 1 — Profile: migration + model + controller + route + seeder ✅
 - [x] Fase 6 langkah 2 — Profile: UI dashboard (form kiri/preview kanan per section) ✅
-- [ ] Fase 6 langkah 3 — Profile: sinkronisasi `profile-teaser.blade.php`
+- [x] Fase 6 langkah 3 — Profile: sinkronisasi publik (teaser + halaman full) ✅
 - [ ] Fase 7 — Polish & QA
 
 _Login sudah oke, tidak masuk scope revamp ini._

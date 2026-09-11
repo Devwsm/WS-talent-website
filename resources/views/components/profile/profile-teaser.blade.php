@@ -1,26 +1,33 @@
 <div class="flex flex-col w-full bg-black p-6 md:p-12 gap-4">
 
+    @php
+        $heroFoto =
+            $hero->foto ?? null
+                ? \Illuminate\Support\Facades\Storage::url('profile-hero/' . $hero->foto)
+                : asset('aset/logo/whisnuSantika.jpg');
+    @endphp
+
     {{-- desktop --}}
     <div class="head relative hidden lg:flex w-full justify-start items-center gap-4">
-        <img src="{{ asset('aset/logo/whisnuSantika.jpg') }}" loading="lazy" decoding="async" alt="whisnu-santika"
+        <img src="{{ $heroFoto }}" loading="lazy" decoding="async" alt="{{ $hero->nama ?? 'whisnu-santika' }}"
             class="object-cover object-center w-42 aspect-square rounded-full">
 
         <div class="flex flex-col">
-            <h1 class="text-sm text-white/60">DJ & Producer</h1>
-            <h1 class="text-2xl font-medium text-white">Whisnu Santika</h1>
-            <h1 class="text-sm text-white/60 leading-relaxed">Pionir Indonesian Bounce — </h1>
+            <h1 class="text-sm text-white/60">{{ $hero->judul_singkat ?? 'DJ & Producer' }}</h1>
+            <h1 class="text-2xl font-medium text-white">{{ $hero->nama ?? 'Whisnu Santika' }}</h1>
+            <h1 class="text-sm text-white/60 leading-relaxed">{{ $hero->tagline ?? 'Pionir Indonesian Bounce — ' }}</h1>
         </div>
     </div>
     {{-- mobile --}}
     <div class="head relative flex lg:hidden w-full justify-center">
-        <img src="{{ asset('aset/logo/whisnuSantika.jpg') }}" loading="lazy" decoding="async" alt="whisnu-santika"
+        <img src="{{ $heroFoto }}" loading="lazy" decoding="async" alt="{{ $hero->nama ?? 'whisnu-santika' }}"
             class="object-cover object-center w-full rounded-lg">
 
         <div class="absolute inset-0 rounded-lg bg-linear-to-t from-black/75 via-black/25 to-transparent"></div>
         <div class="absolute bottom-4 left-4 text-left">
-            <h1 class="text-sm text-white/60">DJ & Producer</h1>
-            <h1 class="text-2xl font-medium text-white">Whisnu Santika</h1>
-            <h1 class="text-sm text-white/60 leading-relaxed">Pionir Indonesian Bounce — </h1>
+            <h1 class="text-sm text-white/60">{{ $hero->judul_singkat ?? 'DJ & Producer' }}</h1>
+            <h1 class="text-2xl font-medium text-white">{{ $hero->nama ?? 'Whisnu Santika' }}</h1>
+            <h1 class="text-sm text-white/60 leading-relaxed">{{ $hero->tagline ?? 'Pionir Indonesian Bounce — ' }}</h1>
         </div>
     </div>
 
@@ -29,18 +36,18 @@
 
         {{-- Genre tags --}}
         <div class="flex flex-wrap gap-2 px-1">
-            <span class="text-xs px-3 py-1 rounded-full border border-white/20 text-white/60">Indonesian Bounce</span>
-            <span class="text-xs px-3 py-1 rounded-full border border-white/20 text-white/60">EDM</span>
-            <span class="text-xs px-3 py-1 rounded-full border border-white/20 text-white/60">Dancehall</span>
-            <span class="text-xs px-3 py-1 rounded-full border border-white/20 text-white/60">Afrobeat</span>
+            @forelse ($genre as $item)
+                <span
+                    class="text-xs px-3 py-1 rounded-full border border-white/20 text-white/60">{{ $item->nama_genre }}</span>
+            @empty
+                <span class="text-xs px-3 py-1 rounded-full border border-white/20 text-white/60">Indonesian
+                    Bounce</span>
+            @endforelse
         </div>
 
-        {{-- Bio singkat --}}
+        {{-- Bio singkat: potongan plain-text dari Bio lengkap, biar teaser tetap ringkas --}}
         <h1 class="text-sm text-white/70 leading-relaxed px-1">
-            Pionir <span class="text-white font-medium">Indonesian Bounce</span> — memadukan EDM, dancehall, hip hop,
-            dan afrobeat dalam satu identitas bunyi yang khas. Tampil di Tomorrowland Belgium 2024 dan
-            Djakarta Warehouse Project, menjadikan Whisnu Santika salah satu DJ Indonesia
-            dengan jangkauan global.
+            {{ $bio->konten ?? null ? \Illuminate\Support\Str::limit(strip_tags($bio->konten), 220) : 'Pionir Indonesian Bounce — memadukan EDM, dancehall, hip hop, dan afrobeat dalam satu identitas bunyi yang khas. Tampil di Tomorrowland Belgium 2024 dan Djakarta Warehouse Project, menjadikan Whisnu Santika salah satu DJ Indonesia dengan jangkauan global.' }}
         </h1>
 
         {{-- Stats --}}

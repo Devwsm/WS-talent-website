@@ -4,10 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\albums;
 use App\Models\banner;
+use App\Models\bio;
+use App\Models\booking;
+use App\Models\collab;
+use App\Models\genre;
 use App\Models\header;
 use App\Models\highlight;
+use App\Models\media_coverage;
+use App\Models\media_sosial;
 use App\Models\merchandise;
 use App\Models\news;
+use App\Models\profile_hero;
 use App\Models\statistik;
 use Illuminate\Http\Request;
 
@@ -22,6 +29,12 @@ class homeController extends Controller
         $statistik = statistik::all();
         $news = news::all();
         $merchandise = merchandise::all();
+
+        // Fase 6 langkah 3 — data Profile buat teaser di homepage
+        $hero = profile_hero::first();
+        $genre = genre::all();
+        $bio = bio::first();
+
         return view(
             'pages/home',
             compact(
@@ -31,6 +44,9 @@ class homeController extends Controller
                 'statistik',
                 'news',
                 'merchandise',
+                'hero',
+                'genre',
+                'bio',
             )
         );
     }
@@ -39,6 +55,26 @@ class homeController extends Controller
     {
         $statistik = statistik::all();
         $highlight = highlight::all();
-        return view('components.profile.profile-full', compact('statistik', 'highlight'));
+
+        // Fase 6 langkah 3 — data Profile lengkap buat halaman /profile
+        $hero = profile_hero::first();
+        $genre = genre::all();
+        $bio = bio::first();
+        $collab = collab::all();
+        $mediaCoverage = media_coverage::all();
+        $booking = booking::all();
+        $mediaSosial = media_sosial::all();
+
+        return view('components.profile.profile-full', compact(
+            'statistik',
+            'highlight',
+            'hero',
+            'genre',
+            'bio',
+            'collab',
+            'mediaCoverage',
+            'booking',
+            'mediaSosial',
+        ));
     }
 }
