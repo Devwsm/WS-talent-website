@@ -1,7 +1,6 @@
 {{--
-    HIGHLIGHT (multi). Distyle ulang biar 1 tipe sama Genre/Media Coverage/Media Sosial:
-    form kiri, preview kanan berupa pill + draft pill live, list tersimpan pill dengan
-    edit/hapus inline.
+    HIGHLIGHT (multi). Preview niru PERSIS markup grid highlight di
+    resources/views/components/profile/profile-full.blade.php (baris ~55-69).
     Expects: $highlight (Illuminate\Support\Collection dari App\Models\highlight)
 --}}
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
@@ -54,19 +53,21 @@
         </div>
 
         <div class="p-5">
-            <div id="highlightPreviewList" class="flex flex-wrap gap-2">
+            <div id="highlightPreviewList" class="flex flex-col gap-3">
                 @forelse ($highlight as $item)
-                    <span class="text-xs px-3 py-1 rounded-full border border-white/20 text-white/60">
-                        <strong class="text-white">{{ $item->place }}</strong> · {{ $item->description }} ·
-                        {{ $item->year }}
-                    </span>
+                    <div class="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-white/10">
+                        <div class="flex flex-col gap-0.5">
+                            <span class="text-sm font-medium text-white">{{ $item->place }}</span>
+                            <span class="text-xs text-white/40">{{ $item->description }}</span>
+                        </div>
+                        <span class="text-xs text-white/20">{{ $item->year }}</span>
+                    </div>
                 @empty
                 @endforelse
-                <span id="highlightPreviewEmpty"
-                    class="text-xs text-white/30 {{ $highlight->isNotEmpty() ? 'hidden' : '' }}">
-                    Belum ada highlight.
-                </span>
             </div>
+            <p id="highlightPreviewEmpty" class="text-xs text-white/30 {{ $highlight->isNotEmpty() ? 'hidden' : '' }}">
+                Belum ada highlight.
+            </p>
         </div>
     </div>
 </div>
@@ -115,19 +116,19 @@
             if (!placeVal && !descVal && !yearVal) {
                 draft?.remove();
                 draft = null;
-                if (list.children.length <= 1) emptyEl?.classList.remove('hidden');
+                if (list.children.length === 0) emptyEl?.classList.remove('hidden');
                 return;
             }
 
             if (!draft) {
-                draft = document.createElement('span');
+                draft = document.createElement('div');
                 draft.className =
-                    'text-xs px-3 py-1 rounded-full border border-dashed border-white/30 text-white/40';
+                    'flex items-center justify-between p-4 rounded-lg bg-white/5 border border-dashed border-white/30 opacity-60';
                 list.appendChild(draft);
             }
 
             draft.innerHTML =
-                `<strong class="text-white/60">${placeVal || '—'}</strong> · ${descVal || '—'} · ${yearVal || '—'}`;
+                `<div class="flex flex-col gap-0.5"><span class="text-sm font-medium text-white">${placeVal || '—'}</span><span class="text-xs text-white/40">${descVal || '—'}</span></div><span class="text-xs text-white/20">${yearVal || '—'}</span>`;
             emptyEl?.classList.add('hidden');
         };
 

@@ -1,7 +1,6 @@
 {{--
-    STATISTIK (multi). Distyle ulang biar 1 tipe sama Genre/Media Coverage/Media Sosial:
-    form kiri, preview kanan berupa pill + draft pill live, list tersimpan pill dengan
-    edit/hapus inline.
+    STATISTIK (multi). Preview niru PERSIS markup grid statistik di
+    resources/views/components/profile/profile-full.blade.php (baris ~42-53).
     Expects: $statistik (Illuminate\Support\Collection dari App\Models\statistik)
 --}}
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
@@ -45,18 +44,18 @@
         </div>
 
         <div class="p-5">
-            <div id="statistikPreviewList" class="flex flex-wrap gap-2">
+            <div id="statistikPreviewList" class="grid grid-cols-2 gap-3">
                 @forelse ($statistik as $item)
-                    <span class="text-xs px-3 py-1 rounded-full border border-white/20 text-white/60">
-                        <strong class="text-white">{{ $item->total }}</strong> · {{ $item->platform }}
-                    </span>
+                    <div class="flex flex-col gap-1 p-3 rounded-lg bg-white/5 border border-white/10">
+                        <span class="text-lg font-medium text-white">{{ $item->total }}</span>
+                        <span class="text-xs text-white/50">{{ $item->platform }}</span>
+                    </div>
                 @empty
                 @endforelse
-                <span id="statistikPreviewEmpty"
-                    class="text-xs text-white/30 {{ $statistik->isNotEmpty() ? 'hidden' : '' }}">
-                    Belum ada statistik.
-                </span>
             </div>
+            <p id="statistikPreviewEmpty" class="text-xs text-white/30 {{ $statistik->isNotEmpty() ? 'hidden' : '' }}">
+                Belum ada statistik.
+            </p>
         </div>
     </div>
 </div>
@@ -102,19 +101,19 @@
             if (!totalVal && !platformVal) {
                 draft?.remove();
                 draft = null;
-                if (list.children.length <= 1) emptyEl?.classList.remove('hidden');
+                if (list.children.length === 0) emptyEl?.classList.remove('hidden');
                 return;
             }
 
             if (!draft) {
-                draft = document.createElement('span');
+                draft = document.createElement('div');
                 draft.className =
-                    'text-xs px-3 py-1 rounded-full border border-dashed border-white/30 text-white/40';
+                    'flex flex-col gap-1 p-3 rounded-lg bg-white/5 border border-dashed border-white/30 opacity-60';
                 list.appendChild(draft);
             }
 
             draft.innerHTML =
-                `<strong class="text-white/60">${totalVal || '—'}</strong> · ${platformVal || '—'}`;
+                `<span class="text-lg font-medium text-white">${totalVal || '—'}</span><span class="text-xs text-white/50">${platformVal || '—'}</span>`;
             emptyEl?.classList.add('hidden');
         };
 

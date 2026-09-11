@@ -148,13 +148,43 @@ ada contohnya di `banner.blade.php`, tinggal direplikasi & diperbaiki.
 
 ### Fase 7 — Polish & QA
 
-- Review ulang semua halaman CMS biar konsisten (spacing, warna, ukuran
-  card, empty-state).
-- Test end-to-end: tambah/edit/hapus data di tiap modul, cek preview
-  match dengan tampilan asli di homepage/`/profile`.
-- Cek responsif mobile buat layout form-kiri/preview-kanan (kemungkinan
-  preview pindah ke bawah form di layar kecil, sama seperti pola Banner
-  sekarang: `grid-cols-1 lg:grid-cols-2`).
+- [x] Review konsistensi pola card (`rounded-3xl border-white/10 bg-white/3`,
+      form kiri/preview kanan sticky, `grid-cols-1 lg:grid-cols-2`) di semua
+      halaman CMS (Banner, Header, Album, Merchandise, News, tiap section
+      Profile) — semua sudah konsisten, tidak ada penyimpangan.
+- [x] Review validasi & flash message di `profileController` (7 modul baru
+      Fase 6 + Statistik/Highlight lama) — pola `validate → save/update`,
+      try/catch di delete, dan pesan sukses/error semuanya konsisten. Semua
+      route sudah `throttle:10,1` di aksi tambah, nama route match sama yang
+      dipanggil di view.
+- [x] **Audit "preview = tampilan asli" di CMS Profile** (fokus permintaan
+      user) — ditemukan & diperbaiki 3 preview yang MELENCENG dari tampilan
+      publik:
+    - **Statistik** & **Highlight**: preview-nya sebelumnya di-desain ulang
+      jadi gaya "pill" (comment kode bilang "biar 1 tipe sama
+      Genre/Media Coverage/Media Sosial"), padahal tampilan asli di
+      `profile-full.blade.php` pakai **grid card** (Statistik: angka besar
+        - label platform; Highlight: baris place/description di kiri, year
+          di kanan). Preview sekarang diganti jadi replika markup card asli,
+          termasuk live-draft JS-nya.
+    - **Kolaborasi**: sama, preview pill diganti jadi grid card 2 kolom
+      (nama bold + role) persis section Kolaborasi di halaman publik.
+    - Genre, Media Coverage, Booking & Kontak, Media Sosial, Hero, Bio —
+      dicek juga, semuanya sudah akurat (cuma Bio yang di-samain
+      spacing-nya, `gap-2` → `gap-3`, biar match persis).
+    - Catatan: "List data tersimpan" (bagian manajemen di bawah tiap
+      form, dengan tombol edit/hapus) sengaja TETAP pakai gaya pill —
+      itu bukan preview tampilan publik, itu UI manajemen data yang
+      konsisten dipakai di semua modul.
+    - File yang diubah: `resources/views/components/profile/dashboard/
+statistik.blade.php`, `highlight.blade.php`, `collab.blade.php`,
+      `bio.blade.php`.
+- [ ] Test end-to-end manual di browser: tambah/edit/hapus data di tiap
+      modul (terutama 7 modul baru Fase 6 + 3 preview yang baru diperbaiki),
+      cek foto Hero ke-upload & tampil benar di kedua halaman publik.
+- [ ] Cek responsif mobile langsung di device/emulator (pola
+      `grid-cols-1 lg:grid-cols-2` sudah dipakai konsisten di semua halaman,
+      tapi belum pernah dicek visual di layar kecil).
 
 ---
 
@@ -168,6 +198,6 @@ ada contohnya di `banner.blade.php`, tinggal direplikasi & diperbaiki.
 - [x] Fase 6 langkah 1 — Profile: migration + model + controller + route + seeder ✅
 - [x] Fase 6 langkah 2 — Profile: UI dashboard (form kiri/preview kanan per section) ✅
 - [x] Fase 6 langkah 3 — Profile: sinkronisasi publik (teaser + halaman full) ✅
-- [ ] Fase 7 — Polish & QA
+- [~] Fase 7 — Polish & QA: konsistensi & audit preview selesai (3 bug preview Profile diperbaiki); E2E manual & cek mobile masih perlu dilakukan user
 
 _Login sudah oke, tidak masuk scope revamp ini._

@@ -44,17 +44,18 @@
         </div>
 
         <div class="p-5">
-            <div id="collabPreviewList" class="flex flex-wrap gap-2">
+            <div id="collabPreviewList" class="grid grid-cols-2 gap-3">
                 @forelse ($collab as $item)
-                    <span class="text-xs px-3 py-1 rounded-full border border-white/20 text-white/60">
-                        <strong class="text-white">{{ $item->nama }}</strong> · {{ $item->role }}
-                    </span>
+                    <div class="flex flex-col gap-0.5 p-4 rounded-lg bg-white/5 border border-white/10">
+                        <span class="text-sm font-medium text-white">{{ $item->nama }}</span>
+                        <span class="text-xs text-white/40">{{ $item->role }}</span>
+                    </div>
                 @empty
                 @endforelse
-                <span id="collabPreviewEmpty" class="text-xs text-white/30 {{ $collab->isNotEmpty() ? 'hidden' : '' }}">
-                    Belum ada kolaborasi.
-                </span>
             </div>
+            <p id="collabPreviewEmpty" class="text-xs text-white/30 {{ $collab->isNotEmpty() ? 'hidden' : '' }}">
+                Belum ada kolaborasi.
+            </p>
         </div>
     </div>
 </div>
@@ -100,18 +101,19 @@
             if (!namaVal && !roleVal) {
                 draft?.remove();
                 draft = null;
-                if (list.children.length <= 1) emptyEl?.classList.remove('hidden');
+                if (list.children.length === 0) emptyEl?.classList.remove('hidden');
                 return;
             }
 
             if (!draft) {
-                draft = document.createElement('span');
+                draft = document.createElement('div');
                 draft.className =
-                    'text-xs px-3 py-1 rounded-full border border-dashed border-white/30 text-white/40';
+                    'flex flex-col gap-0.5 p-4 rounded-lg bg-white/5 border border-dashed border-white/30 opacity-60';
                 list.appendChild(draft);
             }
 
-            draft.innerHTML = `<strong class="text-white/60">${namaVal || '—'}</strong> · ${roleVal || '—'}`;
+            draft.innerHTML =
+                `<span class="text-sm font-medium text-white">${namaVal || '—'}</span><span class="text-xs text-white/40">${roleVal || '—'}</span>`;
             emptyEl?.classList.add('hidden');
         };
 

@@ -51,7 +51,7 @@
         {{-- Replika PERSIS markup section Bio --}}
         <div class="p-5 flex flex-col gap-3">
             <h2 class="text-xs text-white/30 uppercase tracking-widest">Bio</h2>
-            <div id="bioPreviewContent" class="text-sm text-white/70 leading-relaxed flex flex-col gap-2">
+            <div id="bioPreviewContent" class="text-sm text-white/70 leading-relaxed flex flex-col gap-3">
                 {!! $bio->konten ?? null ? $bio->konten : '<span class="text-white/30">—</span>' !!}
             </div>
         </div>
