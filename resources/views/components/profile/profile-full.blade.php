@@ -1,4 +1,28 @@
 @extends('template.layout')
+
+@section('title', ($hero->nama ?? 'Whisnu Santika') . ' — Profile | Whisnu Santika')
+@section('meta_description', $hero->tagline ?? null ?: 'Profile lengkap Whisnu Santika — genre, highlight, kolaborasi,
+    media coverage, dan kontak booking.')
+@section('og_image', $hero->foto ?? null ? \Illuminate\Support\Facades\Storage::url('profile-hero/' . $hero->foto) :
+    asset('aset/logo/whisnuSantika.jpg'))
+
+    @push('schema')
+        <script type="application/ld+json">
+        {!! json_encode([
+            '@context' => 'https://schema.org',
+            '@type' => 'Person',
+            'name' => $hero->nama ?? 'Whisnu Santika',
+            'url' => url('/profile'),
+            'image' => ($hero->foto ?? null)
+                ? \Illuminate\Support\Facades\Storage::url('profile-hero/' . $hero->foto)
+                : asset('aset/logo/whisnuSantika.jpg'),
+            'jobTitle' => 'DJ & Produser Musik',
+            'description' => isset($bio->konten) ? trim(strip_tags($bio->konten)) : null,
+            'sameAs' => $mediaSosial->pluck('url')->values(),
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+    </script>
+    @endpush
+
 @section('content')
     <div class="flex flex-col w-full bg-black p-6 md:p-12 gap-8">
         @php
@@ -12,10 +36,10 @@
             @include('components/navbar')
         </div>
 
-        {{-- Hero --}}
+        {{-- Hero — ini elemen LCP di halaman profile, jangan di-lazy-load --}}
         <div class="head relative flex w-full justify-center">
-            <img src="{{ $heroFoto }}" loading="lazy" decoding="async" alt="{{ $hero->nama ?? 'whisnu-santika' }}"
-                class="object-cover object-center w-full rounded-lg">
+            <img src="{{ $heroFoto }}" loading="eager" fetchpriority="high" decoding="async"
+                alt="{{ $hero->nama ?? 'whisnu-santika' }}" class="object-cover object-center w-full rounded-lg">
 
             <div class="absolute inset-0 rounded-lg bg-linear-to-t from-black/80 via-black/30 to-transparent"></div>
             <div class="absolute bottom-4 left-4 text-left max-w-lg">

@@ -107,7 +107,7 @@
             {{-- List data album yang udah ditambahkan --}}
             <div>
                 <h2 class="font-bold uppercase tracking-wide text-sm mb-4 flex items-center gap-2">
-                    <i class="bi bi-disc-fill text-white/50"></i> Album Tersimpan ({{ $albums->count() }})
+                    <i class="bi bi-disc-fill text-white/50"></i> Album Tersimpan ({{ $albums->total() }})
                 </h2>
 
                 @if ($albums->isEmpty())
@@ -134,6 +134,7 @@
                             </div>
                         @endforeach
                     </div>
+                    @include('components.dashboard.pagination', ['paginator' => $albums])
                 @endif
             </div>
         </div>

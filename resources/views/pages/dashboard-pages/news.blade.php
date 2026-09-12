@@ -167,7 +167,7 @@
             {{-- List data berita yang udah ditambahkan --}}
             <div>
                 <h2 class="font-bold uppercase tracking-wide text-sm mb-4 flex items-center gap-2">
-                    <i class="bi bi-newspaper text-white/50"></i> Berita Tersimpan ({{ $news->count() }})
+                    <i class="bi bi-newspaper text-white/50"></i> Berita Tersimpan ({{ $news->total() }})
                 </h2>
 
                 @if ($news->isEmpty())
@@ -198,6 +198,7 @@
                             </div>
                         @endforeach
                     </div>
+                    @include('components.dashboard.pagination', ['paginator' => $news])
                 @endif
             </div>
         </div>

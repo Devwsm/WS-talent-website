@@ -358,7 +358,7 @@ class dashboardController extends Controller
     // albums
     public function albums()
     {
-        $albums = albums::all();
+        $albums = albums::latest()->paginate(9)->withQueryString();
         return view('pages.dashboard-pages.albums', compact('albums'));
     }
 
@@ -454,7 +454,7 @@ class dashboardController extends Controller
     // news
     public function news()
     {
-        $news = news::all();
+        $news = news::latest()->paginate(9)->withQueryString();
         return view('pages.dashboard-pages.news', compact('news'));
     }
 
@@ -568,7 +568,7 @@ class dashboardController extends Controller
     // merchandise
     public function merchandise()
     {
-        $merchandise = merchandise::all();
+        $merchandise = merchandise::latest()->paginate(9)->withQueryString();
         return view('pages.dashboard-pages.merchandise', compact('merchandise'));
     }
 

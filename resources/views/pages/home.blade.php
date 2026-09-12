@@ -1,4 +1,35 @@
 @extends('template.layout')
+
+@section('title', 'Whisnu Santika — DJ & Produser Musik Indonesia | Pionir Indonesian Bounce')
+@section('meta_description', 'Whisnu Santika — DJ & produser asal Jakarta, pionir Indonesian Bounce. Info tur, rilisan
+    musik, merchandise, dan berita terbaru.')
+@section('og_image', $hero->foto ?? null ? \Illuminate\Support\Facades\Storage::url('profile-hero/' . $hero->foto) :
+    asset('aset/logo/Whisnu-Santika_Logo-2025-White.png'))
+
+    @push('schema')
+        <script type="application/ld+json">
+        {!! json_encode([
+            '@context' => 'https://schema.org',
+            '@type' => 'MusicGroup',
+            'name' => 'Whisnu Santika',
+            'url' => url('/'),
+            'image' => ($hero->foto ?? null)
+                ? \Illuminate\Support\Facades\Storage::url('profile-hero/' . $hero->foto)
+                : asset('aset/logo/Whisnu-Santika_Logo-2025-White.png'),
+            'description' => isset($bio->konten)
+                ? trim(strip_tags($bio->konten))
+                : 'Whisnu Santika — DJ & produser asal Jakarta, pionir Indonesian Bounce.',
+            'genre' => $genre->pluck('nama_genre')->values(),
+            'sameAs' => [
+                'https://www.instagram.com/whisnusantika',
+                'https://www.tiktok.com/@whisnusantika',
+                'https://youtube.com/@whisnusantika',
+                'https://open.spotify.com/artist/6gvsmDZKW5wRvjKCPnbHDh',
+            ],
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+    </script>
+    @endpush
+
 @section('content')
     <div>
         <div class="grid grid-cols-1 w-full justify-center items-center">

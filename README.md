@@ -185,34 +185,26 @@ statistik.blade.php`, `highlight.blade.php`, `collab.blade.php`,
       (`bg-white`, header `bg-blue-950`, input `border` abu-abu, tombol
       `bg-blue-800`/`bg-gray-400`) yang kontras banget sama tampilan dashboard
       sekarang yang serba gelap. Semua digantI jadi 1 tema gelap yang
-      konsisten:
-    - Panel: `rounded-3xl border border-white/10 bg-black`, header &
+      konsisten: - Panel: `rounded-3xl border border-white/10 bg-black`, header &
       footer beda lapisan (`bg-white/3 border-white/10`), ditambah
       tombol close (×) di header biar ada cara tutup lain selain
-      "Batal".
-    - Input/textarea: `bg-white/5 border-white/15 text-white`, focus
+      "Batal". - Input/textarea: `bg-white/5 border-white/15 text-white`, focus
       state `border-red-900 ring-red-900` (brand accent, bukan biru
-      lagi).
-    - Input file: gaya dashed dengan tombol upload merah (`file:bg-red-950`),
-      konsisten sama pola upload di Hero/Banner dashboard.
-    - Tombol submit: `bg-red-950 hover:bg-red-900` (sebelumnya biru),
-      tombol batal: outline putih transparan.
-    - Tombol trigger "Edit" di Banner/Header/Merchandise/Album/News
+      lagi). - Input file: gaya dashed dengan tombol upload merah (`file:bg-red-950`),
+      konsisten sama pola upload di Hero/Banner dashboard. - Tombol submit: `bg-red-950 hover:bg-red-900` (sebelumnya biru),
+      tombol batal: outline putih transparan. - Tombol trigger "Edit" di Banner/Header/Merchandise/Album/News
       (sebelumnya `bg-blue-950`) disamain jadi `bg-[#5E0006]`, match
-      sama tombol Hapus di sebelahnya yang emang udah pakai warna brand.
-    - **Responsif**: panel modal sekarang `max-h-[90vh] flex flex-col`
+      sama tombol Hapus di sebelahnya yang emang udah pakai warna brand. - **Responsif**: panel modal sekarang `max-h-[90vh] flex flex-col`
       dengan body form `overflow-y-auto` — header & footer tetap
       nempel di atas/bawah, isi form (terutama modal Header yang
       isinya banyak: color picker + 4 field + 2 upload gambar/video)
       auto-scroll di dalam modal kalau kepanjangan buat layar pendek,
-      gak bikin modal kepotong/overflow keluar viewport.
-    - Nemu & sekalian dibenerin 2 bug kecil pas reskin: (1) modal edit
+      gak bikin modal kepotong/overflow keluar viewport. - Nemu & sekalian dibenerin 2 bug kecil pas reskin: (1) modal edit
       Statistik ada karakter `\` nyasar sebelum tag `<button>` (bakal
       nongol sebagai teks aneh di halaman), (2) modal edit Header pakai
       `$item->id_highlight` (bukan `id_header`) buat semua DOM id color
       picker — bikin preview warna cuma jalan bener kalau baru ada 1
-      header, rusak begitu ada 2+.
-    - File yang diubah (12): `resources/views/components/dashboard/
+      header, rusak begitu ada 2+. - File yang diubah (12): `resources/views/components/dashboard/
 modal-edit-{banner,header,merchandise,albums,news}.blade.php` dan
       `resources/views/components/dashboard/profile/modal-edit-
 {genre,statistik,highlight,collab,media-coverage,booking,media-sosial}.blade.php`.
@@ -232,6 +224,10 @@ modal-edit-{banner,header,merchandise,albums,news}.blade.php` dan
 - [x] Fase 6 langkah 2 — Profile: UI dashboard (form kiri/preview kanan per section) ✅
 - [x] Fase 6 langkah 3 — Profile: sinkronisasi publik (teaser + halaman full) ✅
 - [x] Fase 7 — Polish & QA: konsistensi, audit preview, dan reskin semua modal edit selesai; E2E manual & cek mobile sudah dites user ✅
+- [x] Fase 8 — SweetAlert2 ✅
+- [x] Fase 9 — SEO (title/OG/Twitter/canonical/JSON-LD/sitemap dinamis) &
+      Performance (LCP hero image, pagination dashboard, limit query News
+      homepage) ✅ — belum dites manual, lihat checklist QA di Fase 9
 
 _Login sudah oke, tidak masuk scope revamp ini._
 
@@ -285,3 +281,103 @@ memiliki dependency runtime tambahan dan digunakan melalui bundle Vite.
 - Uji validation: error validation muncul sebagai dialog.
 - Uji delete: confirmation SweetAlert muncul, tombol Batal tidak mengirim form,
   tombol Ya, hapus mengirim DELETE request dan menampilkan loading state.
+
+---
+
+## Fase 9 — SEO & Performance Improvements (SELESAI)
+
+### Tujuan
+
+Menindaklanjuti hasil review teknis (Lighthouse-style audit) di dua area:
+SEO (meta tags, sitemap, structured data) dan Performance (LCP hero image,
+query yang nggak dibatasi).
+
+### A. SEO
+
+- **Title & meta description dinamis per halaman.** Sebelumnya
+  `<title>` hardcode "Whisnu Santika" di semua halaman termasuk `/profile`.
+  Sekarang `template/layout.blade.php` punya default SEO (title, meta
+  description, og:image) yang bisa di-override tiap halaman lewat
+  `@section('title', ...)`, `@section('meta_description', ...)`,
+  `@section('og_image', ...)`. Home & Profile sudah diisi masing-masing.
+- **Open Graph & Twitter Card.** Ditambahkan di `<head>` layout
+  (`og:title`, `og:description`, `og:image`, `og:url`, `og:site_name`,
+  `twitter:card`, dst) — supaya link yang di-share ke WA/IG/Twitter
+  nampilin preview card yang benar, bukan kosong/generic.
+- **Canonical URL** (`<link rel="canonical">`) ditambahkan di layout,
+  pakai `url()->current()`.
+- **Structured data (JSON-LD).** Layout punya `@stack('schema')`; Home
+  push schema `MusicGroup` (nama, genre, image, sameAs ke media sosial),
+  Profile push schema `Person` (nama, jobTitle, deskripsi dari `bio.konten`
+  yang di-`strip_tags` dulu, sameAs dari tabel `media_sosial`).
+- **`robots.txt` & `sitemap.xml` jadi dinamis**, sebelumnya `robots.txt`
+  cuma file statis kosong tanpa referensi sitemap. Sekarang keduanya
+  digenerate lewat `SeoController` (routes `GET /robots.txt` dan
+  `GET /sitemap.xml`), jadi otomatis ikut domain aktif (`APP_URL`) dan
+  `lastmod` di sitemap ambil dari data yang paling baru diubah di tiap
+  halaman. File statis lama `public/robots.txt` dihapus (kalau nggak,
+  Apache bakal serve file statisnya duluan dan route baru nggak kepanggil
+  — lihat `RewriteCond %{REQUEST_FILENAME} !-f` di `public/.htaccess`).
+- **`APP_NAME`** diganti dari default `Laravel` jadi `Whisnu Santika` di
+  `.env.example` (mempengaruhi antara lain `MAIL_FROM_NAME`). **Perlu
+  disamain manual di `.env` asli di server** — file `.env` nggak ikut
+  dikirim di batch ini karena isinya kredensial database, tinggal ubah
+  1 baris: `APP_NAME=Laravel` → `APP_NAME="Whisnu Santika"`.
+
+### B. Performance
+
+- **Hero image `/profile` diganti dari `loading="lazy"` jadi
+  `loading="eager" fetchpriority="high"`** — ini elemen LCP (Largest
+  Contentful Paint) halaman itu, lazy-load malah nunda render elemen
+  paling penting.
+- **Homepage News dibatasi ke 8 item terbaru** (`news::latest()->take(8)`),
+  sebelumnya `news::all()`. Section News di homepage render sebagai grid
+  statis (bukan carousel kayak Album/Merchandise), jadi kalau dibiarkan
+  `::all()` bakal makin berat seiring jumlah berita nambah. Album &
+  Merchandise homepage TETAP `::all()` karena render-nya lewat Swiper
+  carousel, jadi nggak masalah walau datanya banyak.
+- **Pagination di dashboard admin** untuk 3 modul yang datanya paling
+  cepat bertambah — News, Album, Merchandise — diganti dari `::all()`
+  jadi `::latest()->paginate(9)->withQueryString()`. Komponen pagination
+  baru: `components/dashboard/pagination.blade.php` (gaya konsisten sama
+  card list lain, ada info "Halaman X dari Y" + tombol Sebelumnya/
+  Selanjutnya). Badge jumlah data (`Berita Tersimpan (n)`, dst) diganti
+  dari `->count()` (cuma hitung item di halaman aktif) jadi `->total()`
+  (total keseluruhan data).
+- **Belum dikerjakan** (di luar scope batch ini, butuh tooling
+  kompresi video/ffmpeg yang nggak tersedia di shared hosting tanpa akses
+  terminal): kompresi/adaptive bitrate untuk video header. Video sudah
+  cukup dioptimasi dari sisi lazy-load per-slide (`preload="none"` untuk
+  slide non-aktif), tapi ukuran file mentahnya sendiri belum dikompres —
+  disarankan kompres manual sebelum upload (target di bawah ~5–8MB per
+  video) pakai tool lokal (HandBrake/ffmpeg) sebelum upload ke dashboard.
+
+### File yang diubah/ditambah
+
+- **Baru**: `app/Http/Controllers/SeoController.php`,
+  `resources/views/sitemap.blade.php`,
+  `resources/views/components/dashboard/pagination.blade.php`
+- **Diubah**: `resources/views/template/layout.blade.php`,
+  `resources/views/pages/home.blade.php`,
+  `resources/views/components/profile/profile-full.blade.php`,
+  `app/Http/Controllers/homeController.php`,
+  `app/Http/Controllers/dashboardController.php`,
+  `resources/views/pages/dashboard-pages/{news,albums,merchandise}.blade.php`,
+  `routes/web.php`, `.env.example`
+- **Dihapus**: `public/robots.txt` (digantikan route dinamis)
+
+### QA / yang masih perlu dites manual
+
+- [ ] Buka `/robots.txt` dan `/sitemap.xml` di browser, pastikan XML/text-nya
+      valid dan `Sitemap:` di robots.txt nunjuk ke URL yang bener (cek
+      `APP_URL` di `.env` production sudah diisi domain asli, bukan
+      `http://localhost`).
+- [ ] Cek preview link share (paste URL home/profile ke chat WA/kolom
+      compose Twitter) buat mastiin og:image & title muncul benar.
+- [ ] Paste `/` dan `/profile` ke
+      [Rich Results Test](https://search.google.com/test/rich-results)
+      buat validasi JSON-LD.
+- [ ] Dashboard News/Album/Merchandise: tambah data lebih dari 9 biar
+      tombol pagination "Selanjutnya" muncul, cek tombol page berfungsi.
+- [ ] Update `.env` production: `APP_NAME="Whisnu Santika"` dan pastikan
+      `APP_URL` sudah domain asli (dipakai di canonical/OG/sitemap).

@@ -111,7 +111,7 @@
             {{-- List data merchandise yang udah ditambahkan --}}
             <div>
                 <h2 class="font-bold uppercase tracking-wide text-sm mb-4 flex items-center gap-2">
-                    <i class="bi bi-basket-fill text-white/50"></i> Merchandise Tersimpan ({{ $merchandise->count() }})
+                    <i class="bi bi-basket-fill text-white/50"></i> Merchandise Tersimpan ({{ $merchandise->total() }})
                 </h2>
 
                 @if ($merchandise->isEmpty())
@@ -138,6 +138,7 @@
                             </div>
                         @endforeach
                     </div>
+                    @include('components.dashboard.pagination', ['paginator' => $merchandise])
                 @endif
             </div>
         </div>

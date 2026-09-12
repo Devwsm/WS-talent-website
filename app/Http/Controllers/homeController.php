@@ -27,7 +27,10 @@ class homeController extends Controller
         $banner = banner::all();
         $headers = header::all();
         $statistik = statistik::all();
-        $news = news::all();
+        // News ditampilin sebagai grid statis (bukan carousel) di homepage,
+        // jadi dibatasi ke 8 terbaru aja biar nggak makin berat seiring
+        // jumlah berita nambah. List lengkap tetep ada di dashboard admin.
+        $news = news::latest()->take(8)->get();
         $merchandise = merchandise::all();
 
         // Fase 6 langkah 3 — data Profile buat teaser di homepage
