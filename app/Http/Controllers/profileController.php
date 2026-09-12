@@ -11,6 +11,7 @@ use App\Models\media_coverage;
 use App\Models\media_sosial;
 use App\Models\profile_hero;
 use App\Models\statistik;
+use App\Support\HtmlSanitizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -210,7 +211,9 @@ class profileController extends Controller
         ]);
 
         $data = bio::first() ?? new bio();
-        $data->konten = $request->konten;
+        // Konten dari Quill disanitasi dulu (allowlist tag/atribut) sebelum
+        // disimpan — jaga-jaga kalau ke depannya ada lebih dari 1 admin.
+        $data->konten = HtmlSanitizer::clean($request->konten);
         $data->save();
 
         return redirect()->route('dashboard.profile')->with('success', 'Bio berhasil disimpan');

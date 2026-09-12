@@ -10,6 +10,7 @@ use App\Models\highlight;
 use App\Models\merchandise;
 use App\Models\news;
 use App\Models\statistik;
+use App\Support\HtmlSanitizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
@@ -488,7 +489,9 @@ class dashboardController extends Controller
         // simpan data ( simple )
         $data = new news();
         $data->news_title = $request->news_title;
-        $data->news_description = $request->news_description;
+        // Deskripsi dari Quill disanitasi dulu (allowlist tag/atribut) sebelum
+        // disimpan — jaga-jaga kalau ke depannya ada lebih dari 1 admin.
+        $data->news_description = HtmlSanitizer::clean($request->news_description);
         $data->news_source = $request->news_source;
         $data->news_date = $request->news_date;
         $data->news_cover = $filename; // hanya nama file
@@ -534,7 +537,7 @@ class dashboardController extends Controller
         }
 
         $data->news_title = $request->news_title;
-        $data->news_description = $request->news_description;
+        $data->news_description = HtmlSanitizer::clean($request->news_description);
         $data->news_source = $request->news_source;
         $data->news_date = $request->news_date;
         $data->news_link = $request->news_link;

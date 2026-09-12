@@ -228,6 +228,9 @@ modal-edit-{banner,header,merchandise,albums,news}.blade.php` dan
 - [x] Fase 9 — SEO (title/OG/Twitter/canonical/JSON-LD/sitemap dinamis) &
       Performance (LCP hero image, pagination dashboard, limit query News
       homepage) ✅ — belum dites manual, lihat checklist QA di Fase 9
+- [x] Fase 10 — Sanitasi HTML Quill (`HtmlSanitizer`) & throttle semua
+      route hapus/update dashboard ✅ — belum dites manual, lihat checklist
+      QA di Fase 10
 
 _Login sudah oke, tidak masuk scope revamp ini._
 
@@ -381,3 +384,74 @@ query yang nggak dibatasi).
       tombol pagination "Selanjutnya" muncul, cek tombol page berfungsi.
 - [ ] Update `.env` production: `APP_NAME="Whisnu Santika"` dan pastikan
       `APP_URL` sudah domain asli (dipakai di canonical/OG/sitemap).
+
+---
+
+## Fase 10 — Sanitasi HTML Quill & Throttle hapus/update (SELESAI)
+
+### Tujuan
+
+Dua hardening kecil dari sisa hasil review teknis: konten rich-text dari Quill
+disanitasi sebelum disimpan, dan semua route hapus/update di dashboard yang
+sebelumnya belum di-throttle sekarang konsisten dilindungi.
+
+### A. Sanitasi HTML (`news_description` & `bio.konten`)
+
+- Dibikin `App\Support\HtmlSanitizer` — allowlist sanitizer berbasis
+  `DOMDocument` (bawaan PHP, **bukan** package composer baru kayak
+  `ezyang/htmlpurifier`). Alasan: hosting Rumahweb shared tanpa akses
+  terminal, jadi `composer require` + `composer install` nggak bisa
+  dijalankan langsung di server — kalau maksa pakai package baru,
+  `vendor/` harus di-generate lokal terus di-upload manual, ribet buat 1
+  fitur kecil. Kalau nanti proyek ini pindah ke hosting yang ada akses
+  composer dan mau upgrade ke HTMLPurifier beneran, tinggal ganti isi
+  `HtmlSanitizer::clean()`, pemanggilan di controller nggak perlu berubah.
+- Strategi: **default-deny**. Cuma tag & atribut yang eksplisit
+  di-allowlist yang lolos — `<script>`, `<iframe>`, atribut `onclick=`,
+  `href="javascript:..."`, dll otomatis kebuang karena bukan bagian
+  allowlist (bukan di-blok satu-satu).
+- Allowlist tag disesuaikan sama toolbar Quill yang dipakai di project ini:
+  `bold/italic/underline/strike`, `header` (h1-h3), `list`, `indent`,
+  `align`, `color`/`background` (lewat `style` di `<span>`, cuma properti
+  `color`/`background-color` yang lolos), `blockquote`, `code-block`,
+  `link` (`href` divalidasi cuma boleh `http:`, `https:`, `mailto:`; kalau
+  `target="_blank"` otomatis ditambahin `rel="noopener noreferrer"`).
+- Dipanggil di titik simpan:
+    - `profileController::simpanBio()` → `bio.konten`
+    - `dashboardController::tambahnews()` & `updatenews()` →
+      `news_description`
+- Data yang **sudah** tersimpan sebelum Fase 10 nggak otomatis ke-bersihin
+  (sanitasi cuma jalan pas save baru) — kalau mau dibersihin juga, tinggal
+  buka & simpan ulang Bio/News lewat dashboard.
+
+### B. Throttle route hapus/update
+
+- Sebelumnya cuma route `tambah*` (create) yang di-`throttle:10,1`; route
+  `hapus*` (delete) dan `update*` dibiarin tanpa limit.
+- Sekarang **semua** route delete/put di bawah `/dashboard` (Statistik,
+  Highlight, Genre, Collab, Media Coverage, Booking, Media Sosial, Banner,
+  Headers, Album, News, Merchandise, `color_pages.update`) konsisten pakai
+  `throttle:10,1` (maks 10 request/menit per user), sama kayak yang udah
+  dipasang di route `tambah*`.
+- Semua route ini juga tetap di bawah middleware `cekLogin` (grup
+  `/dashboard`), jadi throttle ini lapisan tambahan, bukan pengganti auth.
+
+### File yang diubah/ditambah
+
+- **Baru**: `app/Support/HtmlSanitizer.php`
+- **Diubah**: `app/Http/Controllers/profileController.php`,
+  `app/Http/Controllers/dashboardController.php`, `routes/web.php`
+
+### QA / yang masih perlu dites manual
+
+- [ ] Tulis Bio/News pakai semua fitur toolbar Quill (bold, italic, list,
+      warna, align, link, dll), simpan, cek tampilan di `/profile` &
+      homepage masih sama persis kayak sebelum Fase 10 (formatting nggak
+      hilang).
+- [ ] Coba tempel (paste) HTML mentah yang ada `<script>alert(1)</script>`
+      atau `<img onerror="alert(1)">` ke editor Quill lalu simpan — cek di
+      halaman publik script/handler itu nggak jalan (nggak ada alert
+      muncul).
+- [ ] Spam klik tombol hapus/edit di salah satu modul dashboard >10x dalam
+      1 menit — pastikan muncul response "Too Many Requests" (429), bukan
+      error lain.
