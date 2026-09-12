@@ -13,21 +13,21 @@
             class="object-cover object-center w-42 aspect-square rounded-full">
 
         <div class="flex flex-col">
-            <h1 class="text-sm text-white/60">{{ $hero->judul_singkat ?? 'DJ & Producer' }}</h1>
-            <h1 class="text-2xl font-medium text-white">{{ $hero->nama ?? 'Whisnu Santika' }}</h1>
-            <h1 class="text-sm text-white/60 leading-relaxed">{{ $hero->tagline ?? 'Pionir Indonesian Bounce — ' }}</h1>
+            <p class="text-sm text-white/60">{{ $hero->judul_singkat ?? 'DJ & Producer' }}</p>
+            <p class="text-2xl font-medium text-white">{{ $hero->nama ?? 'Whisnu Santika' }}</p>
+            <p class="text-sm text-white/60 leading-relaxed">{{ $hero->tagline ?? 'Pionir Indonesian Bounce — ' }}</p>
         </div>
     </div>
     {{-- mobile --}}
     <div class="head relative flex lg:hidden w-full justify-center">
         <img src="{{ $heroFoto }}" loading="lazy" decoding="async" alt="{{ $hero->nama ?? 'whisnu-santika' }}"
-            class="object-cover object-center w-full rounded-lg">
+            class="object-cover object-center w-full aspect-4/5 rounded-lg">
 
         <div class="absolute inset-0 rounded-lg bg-linear-to-t from-black/75 via-black/25 to-transparent"></div>
         <div class="absolute bottom-4 left-4 text-left">
-            <h1 class="text-sm text-white/60">{{ $hero->judul_singkat ?? 'DJ & Producer' }}</h1>
-            <h1 class="text-2xl font-medium text-white">{{ $hero->nama ?? 'Whisnu Santika' }}</h1>
-            <h1 class="text-sm text-white/60 leading-relaxed">{{ $hero->tagline ?? 'Pionir Indonesian Bounce — ' }}</h1>
+            <p class="text-sm text-white/60">{{ $hero->judul_singkat ?? 'DJ & Producer' }}</p>
+            <p class="text-2xl font-medium text-white">{{ $hero->nama ?? 'Whisnu Santika' }}</p>
+            <p class="text-sm text-white/60 leading-relaxed">{{ $hero->tagline ?? 'Pionir Indonesian Bounce — ' }}</p>
         </div>
     </div>
 
@@ -46,9 +46,9 @@
         </div>
 
         {{-- Bio singkat: potongan plain-text dari Bio lengkap, biar teaser tetap ringkas --}}
-        <h1 class="text-sm text-white/70 leading-relaxed px-1">
+        <p class="text-sm text-white/70 leading-relaxed px-1">
             {{ $bio->konten ?? null ? \Illuminate\Support\Str::limit(strip_tags($bio->konten), 220) : 'Pionir Indonesian Bounce — memadukan EDM, dancehall, hip hop, dan afrobeat dalam satu identitas bunyi yang khas. Tampil di Tomorrowland Belgium 2024 dan Djakarta Warehouse Project, menjadikan Whisnu Santika salah satu DJ Indonesia dengan jangkauan global.' }}
-        </h1>
+        </p>
 
         {{-- Stats --}}
         <div class="grid grid-cols-3 gap-3">

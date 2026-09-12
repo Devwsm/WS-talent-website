@@ -21,5 +21,5 @@
             <i class="bi bi-spotify" aria-hidden="true"></i>
         </a>
     </nav>
-    <h1 class="text-white/50 text-sm">Copyright &copy; {{ date('Y') }} wahsudahmonday. All rights reserved.</h1>
+    <p class="text-white/50 text-sm">Copyright &copy; {{ date('Y') }} wahsudahmonday. All rights reserved.</p>
 </div>

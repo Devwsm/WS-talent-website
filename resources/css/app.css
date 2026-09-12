@@ -50,10 +50,10 @@ body {
 #header .swiper-button-prev {
     color: white !important; /* warna icon panah */
     background: black; /* background */
-    width: 32px !important;
-    height: 32px !important;
+    width: 44px !important;
+    height: 44px !important;
     border-radius: 50% !important; /* rounded */
-    padding: 8px !important; /* padding */
+    padding: 10px !important; /* padding */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -61,7 +61,7 @@ body {
 
 #header .swiper-button-next::after,
 #header .swiper-button-prev::after {
-    font-size: 32px !important;
+    font-size: 20px !important;
     border-radius: 20px !important; /* rounded */
     /* font-style: bold !important; */
 }
@@ -91,10 +91,10 @@ body {
 #new-music .swiper-button-prev {
     color: #5e0006 !important; /* warna icon panah */
     background: white; /* background */
-    width: 32px !important;
-    height: 32px !important;
+    width: 44px !important;
+    height: 44px !important;
     border-radius: 50% !important; /* rounded */
-    padding: 8px !important; /* padding */
+    padding: 10px !important; /* padding */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -102,7 +102,7 @@ body {
 
 #new-music .swiper-button-next::after,
 #new-music .swiper-button-prev::after {
-    font-size: 32px !important;
+    font-size: 20px !important;
     border-radius: 20px !important; /* rounded */
     /* font-style: bold !important; */
 }
@@ -132,10 +132,10 @@ body {
 #store .swiper-button-prev {
     color: white !important; /* warna icon panah */
     background: black; /* background */
-    width: 32px !important;
-    height: 32px !important;
+    width: 44px !important;
+    height: 44px !important;
     border-radius: 50% !important; /* rounded */
-    padding: 8px !important; /* padding */
+    padding: 10px !important; /* padding */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -143,7 +143,7 @@ body {
 
 #store .swiper-button-next::after,
 #store .swiper-button-prev::after {
-    font-size: 32px !important;
+    font-size: 20px !important;
     border-radius: 20px !important; /* rounded */
     /* font-style: bold !important; */
 }
@@ -163,4 +163,23 @@ body {
 .hide-scrollbar {
     -ms-overflow-style: none; /* IE / Edge lama */
     scrollbar-width: none; /* Firefox */
+}
+
+/* Hormatin setting "reduce motion" di OS/browser user (biasanya dinyalain
+karena vertigo/motion sensitivity) — matiin animasi, transisi, dan smooth
+scroll buat mereka. Autoplay carousel sendiri udah dimatiin lewat JS
+(lihat app.js), ini jaring pengaman buat animasi CSS lain: animate-pulse
+   di dot header, hover scale di tombol panah, dll. */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    html {
+        scroll-behavior: auto !important;
+    }
 }

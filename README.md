@@ -455,3 +455,127 @@ sebelumnya belum di-throttle sekarang konsisten dilindungi.
 - [ ] Spam klik tombol hapus/edit di salah satu modul dashboard >10x dalam
       1 menit — pastikan muncul response "Too Many Requests" (429), bukan
       error lain.
+
+---
+
+## Fase 11 — QA Audit: Bug, a11y, & performance homepage/profile (SELESAI)
+
+### Tujuan
+
+Perbaiki 6 temuan dari audit manual halaman publik (homepage & `/profile`):
+1 bug fungsional nyata, 1 masalah struktur heading, 1 layout shift, 2 masalah
+motion/touch, dan 2 masalah aksesibilitas (kontras & touch target).
+
+### A. Tombol "follow whisnu santika" mati (bug nyata)
+
+- Sebelumnya `<button>` kosong tanpa `href`/`onclick`/form apapun di section
+  "Get notified..." homepage — diklik nggak kejadian apa-apa.
+- Diganti jadi `<a>` yang ambil link dari tabel `media_sosial`: prioritas
+  Instagram kalau ada (`str_contains` platform, case-insensitive), fallback
+  ke link sosmed pertama yang tersimpan, fallback terakhir ke
+  `route('profile')#ikuti` kalau `media_sosial` masih kosong.
+- `homeController@index` di-extend fetch `media_sosial::all()` (sebelumnya
+  cuma di-fetch di `@profile`).
+- Anchor `id="ikuti"` ditambahin ke section "Ikuti" (social links) di
+  `profile-full.blade.php` buat jadi target fallback link di atas.
+
+### B. Heading `<h1>` dipakai berkali-kali
+
+- Sebelumnya bisa 15+ `<h1>` dalam 1 halaman (dipakai buat styling besar,
+  bukan struktur semantik) — bikin SEO bingung & navigasi screen reader
+  (yang jalan lewat daftar heading) jadi flat/nggak masuk akal.
+- Sekarang tiap halaman cuma 1 `<h1>` asli:
+    - **Homepage**: `<h1 class="sr-only">` nama artis (nggak ngubah visual,
+      cuma nambahin heading utama yang valid di DOM buat SEO/AT). Turunannya:
+      `<h2>` per section (judul slide hero, "Berita Terbaru" — sr-only, CTA
+      follow), `<h3>` buat judul tiap kartu berita.
+    - **`/profile`**: nama artis tetap `<h1>` (udah bener), 7 section lain
+      (Bio, Pencapaian, Highlight, Kolaborasi, Media Coverage, Booking,
+      Ikuti) disamain jadi `<h2>` (sebelumnya campur h1/h2). Teks yang
+      bukan heading (job title, tagline, deskripsi, blurb booking) diturunin
+      ke `<p>`.
+    - Duplikasi mobile/desktop di `profile-teaser.blade.php` (nama/tagline
+      dirender 2x buat 2 breakpoint) diturunin semua jadi `<p>`, karena
+      satu-satunya `<h1>` halaman udah ada di `home.blade.php`.
+
+### C. Cumulative Layout Shift di hero image `/profile`
+
+- Hero image di `profile-full.blade.php` (dan versi mobile di
+  `profile-teaser.blade.php`) nggak punya `aspect-ratio`/tinggi tetap —
+  sebelum gambar kebuka tingginya 0, konten di bawah ke-dorong turun pas
+  gambar muncul.
+- Ditambahin `aspect-[4/5] sm:aspect-video` (portrait di HP, landscape di
+  layar lebih lebar) + tetap `object-cover object-center` biar foto nggak
+  gepeng. **Catatan**: nilai rasio ini tebakan yang aman secara CLS, kalau
+  mau presisi sama foto asli tinggal disesuaikan.
+
+### D. Motion & kenyamanan baca
+
+- `resources/js/app.js` (`initSwiper`, dipakai 3 carousel: header, new
+  music, merchandise):
+    - Autoplay sekarang di-`stop()` pas `touchstart` dan `start()` lagi pas
+      `touchend` — sebelumnya `pauseOnMouseEnter` cuma jalan di desktop,
+      di HP carousel tetap auto-geser walau lagi disentuh/dibaca.
+    - Dicek `matchMedia("(prefers-reduced-motion: reduce)")` sekali di awal
+      — kalau aktif, autoplay dimatiin total (`autoplay: false`) dan
+      transition speed di-set `0`, bukan cuma diperlambat.
+- `resources/css/app.css`: nambahin `@media (prefers-reduced-motion: reduce)`
+  global (reset `animation-duration`/`transition-duration` ke `0.01ms`,
+  `scroll-behavior: auto`) sebagai jaring pengaman buat animasi CSS lain di
+  luar carousel (dot pulsing di hero, hover scale tombol panah, dll).
+
+### E. Kontras teks (readability)
+
+- Ada 137 pemakaian `text-white/30`/`text-white/40` di seluruh project;
+  fokus perbaikan di **halaman publik aja** (`profile-full.blade.php`) —
+  dashboard admin sengaja dilewatin karena internal-only, scope-nya beda.
+- Teks yang bawa informasi (label section: Bio/Pencapaian/Kolaborasi/dst,
+  job title, deskripsi highlight, role kolaborator, label booking, blurb
+  booking) dinaikin dari `/30` → `/50` dan `/40` → `/60`
+  (perkiraan: alpha 0.5 di atas background hitam ≈ kontras 5.3:1, lolos
+  WCAG AA 4.5:1 buat teks biasa). Placeholder "Belum ada data ..." sengaja
+  dibiarin `/30` karena cuma muncul di edge-case (data kosong), bukan
+  konten utama.
+
+### F. Touch target tombol panah carousel
+
+- Tombol next/prev Swiper (`#header`, `#new-music`, `#store` di
+  `app.css`) di-hardcode `32×32px`, di bawah rekomendasi minimum `44×44px`
+  buat jempol di HP.
+- Dinaikin ke `44×44px`, ikon panah di dalamnya diperkecil dari `32px` jadi
+  `20px` (sebelumnya ikonnya malah lebih gede dari tombolnya sendiri,
+  ketutup/overflow).
+
+### File yang diubah/ditambah
+
+- **Diubah**: `app/Http/Controllers/homeController.php`,
+  `resources/views/pages/home.blade.php`,
+  `resources/views/components/profile/profile-full.blade.php`,
+  `resources/views/components/profile/profile-teaser.blade.php`,
+  `resources/views/components/news.blade.php`,
+  `resources/views/components/videos.blade.php`,
+  `resources/views/components/footer.blade.php`,
+  `resources/js/app.js`, `resources/css/app.css`
+
+### QA / yang masih perlu dites manual
+
+- [ ] Klik tombol "follow whisnu santika" di homepage — pastikan kebuka tab
+      baru ke link Instagram/sosmed yang bener (isi dulu data di dashboard
+      Media Sosial kalau masih kosong, cek juga fallback ke `/profile#ikuti`
+      jalan kalau `media_sosial` sengaja dikosongin).
+- [ ] Cek visual homepage & `/profile` di browser — pastikan nggak ada yang
+      keliatan beda (semua perubahan heading cuma ganti tag, class visual
+      dipertahankan).
+- [ ] Jalanin Lighthouse/PageSpeed di `/profile` — cek CLS score membaik &
+      di structure/Accessibility audit heading udah nggak ada "duplicate
+      H1" warning lagi.
+- [ ] Buka homepage di HP beneran (bukan cuma resize browser), sentuh &
+      tahan salah satu carousel — pastikan slide nggak lanjut geser
+      sendiri.
+- [ ] Nyalain "Reduce motion" di Setting HP/laptop, reload halaman — cek
+      carousel nggak autoplay & animasi (dot pulsing, hover scale) berhenti.
+- [ ] Cek kontras teks section label di `/profile` (Bio, Pencapaian, dst)
+      di layar terang/outdoor — pastikan lebih gampang dibaca dibanding
+      sebelumnya tapi masih terasa "subtle" sesuai desain.
+- [ ] Coba tap tombol panah carousel di HP — pastikan lebih gampang kena
+      jempol dibanding sebelumnya.

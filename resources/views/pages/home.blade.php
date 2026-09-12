@@ -1,7 +1,8 @@
 @extends('template.layout')
 
 @section('title', 'Whisnu Santika — DJ & Produser Musik Indonesia | Pionir Indonesian Bounce')
-@section('meta_description', 'Whisnu Santika — DJ & produser asal Jakarta, pionir Indonesian Bounce. Info tur, rilisan
+@section('meta_description',
+    'Whisnu Santika — DJ & produser asal Jakarta, pionir Indonesian Bounce. Info tur, rilisan
     musik, merchandise, dan berita terbaru.')
 @section('og_image', $hero->foto ?? null ? \Illuminate\Support\Facades\Storage::url('profile-hero/' . $hero->foto) :
     asset('aset/logo/Whisnu-Santika_Logo-2025-White.png'))
@@ -32,6 +33,12 @@
 
 @section('content')
     <div>
+        {{-- Satu-satunya <h1> di halaman ini — bagian lain (hero carousel, teaser, dst)
+             pakai heading level di bawahnya biar struktur halaman nggak flat buat
+             screen reader & SEO. Disembunyikan visual (sr-only) karena nama artis
+             sudah tampil besar di profile-teaser, cuma perlu ada di DOM. --}}
+        <h1 class="sr-only">{{ $hero->nama ?? 'Whisnu Santika' }}</h1>
+
         <div class="grid grid-cols-1 w-full justify-center items-center">
             <div class="main-section flex flex-col">
                 <div class="relative">
@@ -47,12 +54,27 @@
             @include('components/profile/profile-teaser')
         </div>
         <div id="news" class="news flex flex-col w-full">
+            <h2 class="sr-only">Berita Terbaru</h2>
             @include('components/news')
         </div>
         <div class="follow bg-white flex flex-col w-full py-12 gap-2 justify-center items-center">
-            <h1 class="capitalize text-md font-bold text-center">Get notified when new events are announced in your area
-            </h1>
-            <button class="bg-white w-fit border-2 border-black px-10 py-4 text-xs uppercase">follow whisnu santika</button>
+            <h2 class="capitalize text-md font-bold text-center">Get notified when new events are announced in your area
+            </h2>
+            @php
+                // Prioritaskan Instagram kalau ada, kalau nggak pakai link sosmed pertama yang tersimpan
+                $followLink =
+                    $mediaSosial->first(fn($item) => str_contains(strtolower($item->platform), 'instagram'))?->url ??
+                    $mediaSosial->first()?->url;
+            @endphp
+            @if ($followLink)
+                <a href="{{ $followLink }}" target="_blank" rel="noopener"
+                    class="bg-white w-fit border-2 border-black px-10 py-4 text-xs uppercase text-center hover:bg-black hover:text-white transition-colors">follow
+                    whisnu santika</a>
+            @else
+                <a href="{{ route('profile') }}#ikuti"
+                    class="bg-white w-fit border-2 border-black px-10 py-4 text-xs uppercase text-center hover:bg-black hover:text-white transition-colors">follow
+                    whisnu santika</a>
+            @endif
         </div>
         <div class="product flex flex-col w-full">
             @include('components/albums')

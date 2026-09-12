@@ -36,10 +36,10 @@
                             alt="{{ $item->header_name }}"
                             class="object-cover w-32 sm:w-48 md:w-64 lg:w-80 xl:w-96 rounded-lg">
                         <div class="flex flex-col gap-2">
-                            <h1 class="text-2xl font-semibold text-white">
+                            <h2 class="text-2xl font-semibold text-white">
                                 {{ $item->header_name }}
-                            </h1>
-                            <h1 class="text-sm text-white/70">{{ $item->header_description }}</h1>
+                            </h2>
+                            <p class="text-sm text-white/70">{{ $item->header_description }}</p>
                             <div class="flex gap-3 justify-center">
                                 <a href="{{ $item->link_header }}" target="_blank" rel="noopener noreferrer"
                                     style="background-color: {{ $item->header_color }}99;"
