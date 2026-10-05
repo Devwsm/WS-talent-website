@@ -13,10 +13,10 @@
                     Warna
                 </label>
                 <div class="flex items-center gap-3">
-                    <input type="color" id="colorPicker" value="{{ $color_pages->color ?? '#5E0006' }}"
+                    <input type="color" id="colorPicker" value="{{ $color_pages->color ?? '#000000' }}"
                         class="h-12 w-16 shrink-0 bg-white/10 border border-white/20 rounded-lg cursor-pointer" />
-                    <input type="text" name="color" id="colorHex" maxlength="7" placeholder="#5E0006"
-                        value="{{ $color_pages->color ?? '#5E0006' }}"
+                    <input type="text" name="color" id="colorHex" maxlength="7" placeholder="#000000"
+                        value="{{ $color_pages->color ?? '#000000' }}"
                         class="flex-1 bg-white/10 border border-white/20 text-white p-3 rounded-lg focus:outline-none focus:border-[#5E0006] focus:ring-1 focus:ring-[#5E0006] transition" />
                 </div>
 

@@ -4,11 +4,12 @@
     </div>
     <div class="albums relative mt-24 
         w-full py-24 px-6 md:px-16 lg:px-52 gap-6">
-        <div class="swiper musicSwiper">
+        <div class="swiper musicSwiper" data-motion="fade-up">
             <div class="swiper-wrapper">
                 @foreach ($albums as $item)
                     <div class="swiper-slide">
-                        <a href="{{ $item->link_spotify }}" target="_blank" rel="noopener noreferrer">
+                        <a href="{{ $item->link_spotify }}" target="_blank" rel="noopener noreferrer" class="block"
+                            data-tilt="6">
                             <img src="{{ Storage::url('albums/' . $item->albums_cover) }}"
                                 alt="{{ $item->albums_name }}" loading="lazy" decoding="async"
                                 class="object-cover aspect-square w-full hover:scale-105 transition duration-300 rounded-lg">

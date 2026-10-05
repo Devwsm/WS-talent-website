@@ -13,7 +13,7 @@ class colorPagesSeeder extends Seeder
     public function run(): void
     {
         color_pages::create([
-            'color' => '#5E0006',
+            'color' => '#000000',
         ]);
     }
 }

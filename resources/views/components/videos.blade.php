@@ -8,26 +8,27 @@
                     $isVideo = in_array($bgExtension, ['mp4', 'webm', 'mov']);
                 @endphp
 
-                <div class="swiper-slide relative flex flex-col">
+                <div class="swiper-slide relative flex flex-col overflow-hidden">
                     @if ($isVideo)
                         <video muted loop playsinline data-video="{{ $loop->iteration }}"
                             preload="{{ $loop->first ? 'auto' : 'none' }}"
-                            class="bg-video absolute w-full h-full object-cover z-0 bg-black">
+                            class="bg-video hero-bg absolute w-full h-full object-cover z-0 bg-black">
                         </video>
                     @else
                         <img src="{{ Storage::url('header/background/' . $item->header_background) }}"
                             alt="{{ $item->header_name }}" loading="{{ $loop->first ? 'eager' : 'lazy' }}"
                             @if ($loop->first) fetchpriority="high" @endif decoding="async"
-                            class="absolute w-full h-full object-cover z-0 bg-black">
+                            class="hero-bg absolute w-full h-full object-cover z-0 bg-black">
                     @endif
 
                     <div
                         class="content absolute inset-0 z-10 bg-black/50
-                        flex flex-col justify-center items-center text-white text-center gap-4 px-4">
+                        flex flex-col justify-center items-center text-white text-center gap-4 px-4 md:px-12">
                         <span style="border-color: {{ $item->header_color }}99;"
                             class="inline-flex items-center gap-2 w-fit bg-white/15 backdrop-blur border rounded-full px-3 py-1 text-white text-xs">
                             <span style="background-color: {{ $item->header_color }}99;" aria-hidden="true"
                                 class="w-2 h-2 rounded-full animate-pulse"></span>
+                            <span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
                             {{ $item->header_title }}
                         </span>
                         <img src="{{ Storage::url('header/img/' . $item->header_img) }}"
@@ -36,14 +37,15 @@
                             alt="{{ $item->header_name }}"
                             class="object-cover w-32 sm:w-48 md:w-64 lg:w-80 xl:w-96 rounded-lg">
                         <div class="flex flex-col gap-2">
-                            <h2 class="text-2xl font-semibold text-white">
+                            <h2 class="text-2xl md:text-4xl lg:text-5xl font-semibold text-white tracking-tight">
                                 {{ $item->header_name }}
                             </h2>
-                            <p class="text-sm text-white/70">{{ $item->header_description }}</p>
+                            <p class="text-sm md:text-base text-white/70 max-w-xl mx-auto">
+                                {{ $item->header_description }}</p>
                             <div class="flex gap-3 justify-center">
                                 <a href="{{ $item->link_header }}" target="_blank" rel="noopener noreferrer"
-                                    style="background-color: {{ $item->header_color }}99;"
-                                    class="px-5 py-2 shadow-sm font-semibold rounded-full text-sm">Watch
+                                    style="background-color: {{ $item->header_color }}99;" data-magnetic
+                                    class="px-5 py-2 md:px-7 md:py-3 shadow-sm font-semibold rounded-full text-sm md:text-base transition duration-300 hover:scale-105 active:scale-95">Watch
                                     Video</a>
                             </div>
                         </div>

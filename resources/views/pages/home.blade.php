@@ -53,12 +53,36 @@
         <div id="profile" class="profile flex flex-col w-full">
             @include('components/profile/profile-teaser')
         </div>
+
+        {{-- Marquee genre — pita teks berjalan, dekoratif (disembunyikan dari screen reader) --}}
+        @php
+            $marqueeWords = $genre->count()
+                ? $genre->pluck('nama_genre')->all()
+                : ['Indonesian Bounce', 'DJ & Producer'];
+            // Cukup ±6 kata per grup — lebih panjang dari itu cuma bikin layer animasi raksasa & berat di HP.
+            $reps = max(1, (int) ceil(6 / max(1, count($marqueeWords))));
+        @endphp
+        <div class="marquee bg-black border-y border-white/10 py-5 md:py-8" aria-hidden="true">
+            <div class="marquee-track">
+                @for ($g = 0; $g < 2; $g++)
+                    <div class="marquee-group">
+                        @for ($r = 0; $r < $reps; $r++)
+                            @foreach ($marqueeWords as $word)
+                                <span class="marquee-word">{{ $word }}</span>
+                                <span class="marquee-dot">✦</span>
+                            @endforeach
+                        @endfor
+                    </div>
+                @endfor
+            </div>
+        </div>
         <div id="news" class="news flex flex-col w-full">
             <h2 class="sr-only">Berita Terbaru</h2>
             @include('components/news')
         </div>
         <div class="follow bg-white flex flex-col w-full py-12 gap-2 justify-center items-center">
-            <h2 class="capitalize text-md font-bold text-center">Get notified when new events are announced in your area
+            <h2 data-split class="capitalize text-lg md:text-2xl font-bold text-center px-6">Get notified when new events
+                are announced in your area
             </h2>
             @php
                 // Prioritaskan Instagram kalau ada, kalau nggak pakai link sosmed pertama yang tersimpan
@@ -67,11 +91,11 @@
                     $mediaSosial->first()?->url;
             @endphp
             @if ($followLink)
-                <a href="{{ $followLink }}" target="_blank" rel="noopener"
+                <a href="{{ $followLink }}" target="_blank" rel="noopener" data-magnetic
                     class="bg-white w-fit border-2 border-black px-10 py-4 text-xs uppercase text-center hover:bg-black hover:text-white transition-colors">follow
                     whisnu santika</a>
             @else
-                <a href="{{ route('profile') }}#ikuti"
+                <a href="{{ route('profile') }}#ikuti" data-magnetic
                     class="bg-white w-fit border-2 border-black px-10 py-4 text-xs uppercase text-center hover:bg-black hover:text-white transition-colors">follow
                     whisnu santika</a>
             @endif

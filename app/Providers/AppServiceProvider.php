@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\View\Composers\FooterProfileComposer;
 use App\View\Composers\ThemeColorComposer;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -22,8 +23,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         View::composer(
-            ['components.navbar', 'components.footer'],
+            ['template.layout', 'components.navbar', 'components.footer'],
             ThemeColorComposer::class
         );
+
+        View::composer('components.footer', FooterProfileComposer::class);
     }
 }

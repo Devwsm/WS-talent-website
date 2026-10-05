@@ -30,7 +30,7 @@ body {
 
 /* override global swiper */
 :root {
-    --swiper-theme-color: #5e0006;
+    --swiper-theme-color: var(--theme-color, #000000);
 }
 
 /* header */
@@ -89,7 +89,7 @@ body {
 
 #new-music .swiper-button-next,
 #new-music .swiper-button-prev {
-    color: #5e0006 !important; /* warna icon panah */
+    color: var(--theme-color, #000000) !important; /* warna icon panah */
     background: white; /* background */
     width: 44px !important;
     height: 44px !important;
@@ -110,7 +110,7 @@ body {
 #new-music .swiper-button-next:hover,
 #new-music .swiper-button-prev:hover {
     background: white !important;
-    color: #5e0006;
+    color: var(--theme-color, #000000);
     transform: scale(1.1);
     transition: 0.3s;
 }
@@ -181,5 +181,329 @@ scroll buat mereka. Autoplay carousel sendiri udah dimatiin lewat JS
 
     html {
         scroll-behavior: auto !important;
+    }
+}
+
+/* ==========================================================================
+   FASE 2 — MOTION
+   Catatan: TIDAK ada CSS yang menyembunyikan konten. Animasi reveal di-handle
+   penuh oleh components/motion-script.blade.php (elemen disembunyikan lewat
+   JS tepat sebelum dianimasikan), jadi kalau JS gagal halaman tetap tampil.
+   ========================================================================== */
+
+/* ---- Judul kata-per-kata ---- */
+.split-word {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+    padding-bottom: 0.14em;
+    margin-bottom: -0.14em;
+}
+
+.split-inner {
+    display: inline-block;
+}
+
+/* ---- Progress bar scroll ---- */
+.scroll-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    z-index: 60;
+    background: linear-gradient(90deg, #ffffff, rgba(255, 255, 255, 0.55));
+    transform: scaleX(0);
+    transform-origin: left center;
+    pointer-events: none;
+}
+
+/* ---- Navbar ---- */
+#navbar {
+    transition:
+        transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.3s ease;
+}
+
+#navbar.is-scrolled {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+#navbar nav > a.uppercase {
+    position: relative;
+}
+
+#navbar nav > a.uppercase::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -4px;
+    height: 2px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#navbar nav > a.uppercase:hover::after,
+#navbar nav > a.uppercase:focus-visible::after {
+    transform: scaleX(1);
+}
+
+/* Drawer mobile/tablet: link muncul berurutan */
+#mobileMenu .menu-link {
+    opacity: 0;
+    translate: -18px 0;
+    transition:
+        opacity 0.3s ease,
+        translate 0.3s ease;
+}
+
+#mobileMenu:not(.-translate-x-full) .menu-link {
+    opacity: 1;
+    translate: 0 0;
+    transition:
+        opacity 0.5s ease,
+        translate 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#mobileMenu:not(.-translate-x-full) .menu-link:nth-child(2) {
+    transition-delay: 0.12s;
+}
+#mobileMenu:not(.-translate-x-full) .menu-link:nth-child(3) {
+    transition-delay: 0.18s;
+}
+#mobileMenu:not(.-translate-x-full) .menu-link:nth-child(4) {
+    transition-delay: 0.24s;
+}
+#mobileMenu:not(.-translate-x-full) .menu-link:nth-child(5) {
+    transition-delay: 0.3s;
+}
+#mobileMenu:not(.-translate-x-full) .menu-link:nth-child(6) {
+    transition-delay: 0.36s;
+}
+
+/* ---- Hero: parallax + zoom pelan ---- */
+.hero-bg {
+    transform: scale(1.08);
+}
+
+/* Animasi masuk hero: murni CSS, jalan di first paint (nggak nunggu JS apa pun). */
+@keyframes heroIn {
+    from {
+        opacity: 0;
+        transform: translate3d(0, 26px, 0);
+        filter: blur(8px);
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .videosSwiper .content > *,
+    .hero-in {
+        animation: heroIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    }
+
+    .videosSwiper .content > *:nth-child(1) {
+        animation-delay: 0.05s;
+    }
+    .videosSwiper .content > *:nth-child(2) {
+        animation-delay: 0.15s;
+    }
+    .videosSwiper .content > *:nth-child(3) {
+        animation-delay: 0.27s;
+    }
+    .hero-in {
+        animation-delay: 0.12s;
+    }
+}
+
+/* ---- Equalizer kecil (badge hero) ---- */
+.eq {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 12px;
+}
+
+.eq i {
+    display: block;
+    width: 2px;
+    height: 100%;
+    border-radius: 1px;
+    background: currentColor;
+    transform-origin: bottom center;
+    animation: eq 1s ease-in-out infinite;
+}
+
+.eq i:nth-child(2) {
+    animation-delay: -0.4s;
+}
+.eq i:nth-child(3) {
+    animation-delay: -0.2s;
+}
+.eq i:nth-child(4) {
+    animation-delay: -0.7s;
+}
+
+@keyframes eq {
+    0%,
+    100% {
+        transform: scaleY(0.25);
+    }
+    50% {
+        transform: scaleY(1);
+    }
+}
+
+/* ---- Marquee genre ---- */
+.marquee {
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.marquee-track {
+    display: inline-flex;
+    width: max-content;
+    animation: marquee 40s linear infinite;
+}
+
+.marquee:hover .marquee-track {
+    animation-play-state: paused;
+}
+
+.marquee-group {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 1.5rem;
+    padding-right: 1.5rem;
+}
+
+.marquee-word {
+    font-size: clamp(2rem, 6vw, 4.75rem);
+    font-weight: 800;
+    line-height: 1.1;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(255, 255, 255, 0.4);
+}
+
+.marquee-group .marquee-word:nth-of-type(even) {
+    color: #fff;
+    -webkit-text-stroke: 0;
+}
+
+.marquee-dot {
+    font-size: clamp(1rem, 3vw, 2rem);
+    color: rgba(255, 255, 255, 0.35);
+}
+
+@keyframes marquee {
+    to {
+        transform: translate3d(-50%, 0, 0);
+    }
+}
+
+/* ---- Interaksi kartu ---- */
+[data-tilt] {
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-magnetic] {
+    transition:
+        translate 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+        background-color 0.2s,
+        color 0.2s,
+        scale 0.2s;
+}
+
+.spotlight-card {
+    position: relative;
+    overflow: hidden;
+    transition:
+        border-color 0.3s ease,
+        background-color 0.3s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .spotlight-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0;
+        background: radial-gradient(
+            240px circle at var(--sx, 50%) var(--sy, 50%),
+            rgba(255, 255, 255, 0.12),
+            transparent 70%
+        );
+        transition: opacity 0.3s ease;
+    }
+
+    .spotlight-card:hover::before {
+        opacity: 1;
+    }
+
+    .spotlight-card:hover {
+        border-color: rgba(255, 255, 255, 0.3);
+    }
+}
+
+/* Layar sentuh: nggak ada hover, kasih feedback saat ditekan */
+@media (hover: none) {
+    a[data-tilt]:active,
+    [data-tilt] .card:active,
+    .card[data-tilt]:active {
+        transform: scale(0.98);
+    }
+
+    .spotlight-card:active {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+}
+
+/* ---- Responsive: panah carousel disembunyikan di HP (swipe aja) ---- */
+@media (max-width: 767px) {
+    #header .swiper-button-next,
+    #header .swiper-button-prev {
+        display: none !important;
+    }
+}
+
+@media (max-width: 639px) {
+    #new-music .swiper-button-next,
+    #new-music .swiper-button-prev,
+    #store .swiper-button-next,
+    #store .swiper-button-prev {
+        display: none !important;
+    }
+}
+
+/* ---- Reduce motion: matiin semua gerakan fase 2 ---- */
+@media (prefers-reduced-motion: reduce) {
+    .marquee-track,
+    .hero-bg,
+    .eq i {
+        animation: none !important;
+    }
+
+    .hero-bg {
+        transform: none;
+    }
+
+    .eq i {
+        transform: scaleY(0.6);
+    }
+
+    .marquee {
+        overflow-x: auto;
+    }
+
+    [data-tilt],
+    [data-magnetic] {
+        transform: none !important;
+        translate: none !important;
     }
 }

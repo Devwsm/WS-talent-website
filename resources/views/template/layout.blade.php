@@ -40,6 +40,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap">
 
+    {{-- Warna universal (CMS: Warna Web) sebagai CSS variable — dipakai aksen yang sebelumnya hardcode merah --}}
+    <style>
+        :root {
+            --theme-color: {{ $color ?? '#000000' }};
+        }
+    </style>
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="icon" href="{{ asset('aset/logo/Whisnu-Santika_Logo-2025-2-White.png') }}" type="image/png">
 
@@ -48,9 +55,12 @@
 </head>
 
 <body class="sora bg-black">
+    <div id="scrollProgress" class="scroll-progress" aria-hidden="true"></div>
     <main>
         @yield('content')
     </main>
+
+    @include('components.motion-script')
 </body>
 
 </html>

@@ -1,14 +1,14 @@
 <div id="store" class="merchandise relative bg-white">
     <div class="relative w-full px-6 py-24 md:px-16 lg:px-52 lg:py-32 gap-6">
-        <div class="swiper merchSwiper">
+        <div class="swiper merchSwiper" data-motion="fade-up">
             <div class="swiper-wrapper">
                 @foreach ($merchandise as $item)
                     <div class="swiper-slide">
                         <a href="{{ $item->link_merchandise }}" target="_blank" rel="noopener noreferrer"
-                            class="block aspect-square overflow-hidden rounded-lg">
+                            class="block aspect-square overflow-hidden rounded-lg" data-tilt="6">
                             <img src="{{ Storage::url('merchandise/' . $item->merchandise_cover) }}"
                                 alt="{{ $item->merchandise_name }}" loading="lazy" decoding="async"
-                                class="w-full h-full object-cover">
+                                class="w-full h-full object-cover transition-transform duration-700 hover:scale-110">
                         </a>
                     </div>
                 @endforeach
