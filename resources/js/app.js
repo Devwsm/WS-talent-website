@@ -21,6 +21,8 @@ import "swiper/css/autoplay";
  */
 function initSwiper(selector, scopeSelector, extraOptions = {}) {
     const el = document.querySelector(selector);
+    // autoplayDelay = jeda antar slide (ms), bukan opsi bawaan Swiper — dipisah dulu.
+    const { autoplayDelay = 3000, ...swiperOptions } = extraOptions;
 
     if (!el) return null;
 
@@ -38,8 +40,8 @@ function initSwiper(selector, scopeSelector, extraOptions = {}) {
         ":scope > .swiper-wrapper > .swiper-slide",
     ).length;
     const maxPerView = Math.max(
-        extraOptions.slidesPerView ?? 1,
-        ...Object.values(extraOptions.breakpoints ?? {}).map(
+        swiperOptions.slidesPerView ?? 1,
+        ...Object.values(swiperOptions.breakpoints ?? {}).map(
             (b) => b.slidesPerView ?? 1,
         ),
     );
@@ -60,7 +62,7 @@ function initSwiper(selector, scopeSelector, extraOptions = {}) {
         autoplay: prefersReducedMotion
             ? false
             : {
-                  delay: 3000,
+                  delay: autoplayDelay,
                   disableOnInteraction: false,
                   pauseOnMouseEnter: true,
               },
@@ -85,7 +87,7 @@ function initSwiper(selector, scopeSelector, extraOptions = {}) {
             clickable: true,
         },
 
-        ...extraOptions,
+        ...swiperOptions,
     });
 
     // "pauseOnMouseEnter" cuma jalan buat mouse — di HP (touch) nggak ada
@@ -105,6 +107,17 @@ function initSwiper(selector, scopeSelector, extraOptions = {}) {
 
 // Header / Videos
 initSwiper(".videosSwiper", "#header");
+
+// Banner — geser/seret saja (tanpa panah & pagination). Kalau cuma 1 banner,
+// Swiper otomatis terkunci (nggak geser, nggak autoplay).
+initSwiper(".bannerSwiper", "#banner-slider", {
+    navigation: false,
+    pagination: false,
+    spaceBetween: 0,
+    autoHeight: true,
+    grabCursor: true,
+    autoplayDelay: 5000,
+});
 
 // New Music
 initSwiper(".musicSwiper", "#new-music", {
