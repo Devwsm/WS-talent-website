@@ -32,7 +32,7 @@
             </a>
         @endisset
     </div>
-    <div class="flex-1 {{ $flush ?? false ? '' : 'p-6' }}">
+    <div class="flex-1 min-w-0 {{ $flush ?? false ? 'flex flex-col' : 'p-6' }}">
         {{ $slot }}
     </div>
 </div>
