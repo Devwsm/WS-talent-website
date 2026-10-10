@@ -547,22 +547,13 @@ scroll buat mereka. Autoplay carousel sendiri udah dimatiin lewat JS
     --swiper-pagination-bottom: 18px;
 }
 
-/* ---- Tema dashboard: charcoal kebiruan yang adem, bukan hitam pekat ----
+/* ---- Tema dashboard: nero (#252525) menggantikan hitam pekat ----
     Dipasang lewat class .dash-theme di <body> dashboardLayout (login juga ikut).
-    Tailwind v4 membaca warna dari variabel --color-*, jadi cukup menimpa variabelnya
-    di sini: semua bg-black / text-white / bg-red-950 di dashboard otomatis berubah,
-    tanpa mengedit puluhan file. Website publik tidak terpengaruh. */
+    Tailwind v4 membaca warna dari variabel --color-*, jadi cukup menimpa
+    --color-black di sini: semua bg-black di dashboard (latar halaman, kartu,
+    modal, bottom sheet) otomatis jadi nero tanpa mengedit puluhan file.
+    Putih, aksen merah, dan hiasan lain sengaja dibiarkan seperti semula.
+    Website publik tidak terpengaruh. */
 body.dash-theme {
-    color-scheme: dark; /* scrollbar & kontrol bawaan browser ikut gelap */
-    --color-black: #1b1f27; /* panel, modal, bottom sheet */
-    --color-white: #e8eaef; /* putih redup, tidak silau saat dibaca lama */
-    --color-neutral-900: #232833; /* dock navigasi */
-    --color-red-950: #5c2230; /* aksen tombol: wine lembut */
-    --color-red-900: #7a2f40; /* hover / fokus */
-    background-color: #151920; /* latar halaman satu tingkat lebih gelap dari panel */
-}
-
-/* Bercak merah dekoratif dibuat lebih samar supaya tidak "kotor" di latar baru */
-body.dash-theme [aria-hidden="true"].blur-3xl {
-    opacity: 0.18 !important;
+    --color-black: #252525;
 }

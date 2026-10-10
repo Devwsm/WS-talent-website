@@ -2,7 +2,7 @@ import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
 
 const swal = Swal.mixin({
-    background: "#1b1f27",
+    background: "#252525",
     color: "#ffffff",
     buttonsStyling: false,
 
@@ -12,7 +12,7 @@ const swal = Swal.mixin({
         htmlContainer: "text-white/60",
 
         confirmButton:
-            "px-4 py-2 rounded-lg bg-red-950 hover:bg-red-900 text-white font-semibold transition",
+            "px-4 py-2 rounded-lg bg-[#5E0006] hover:bg-[#5E0006]/80 text-white font-semibold transition",
 
         cancelButton:
             "px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 font-semibold transition ml-2",
@@ -26,7 +26,7 @@ const Toast = Swal.mixin({
     timer: 3000,
     timerProgressBar: true,
 
-    background: "#1b1f27",
+    background: "#252525",
     color: "#ffffff",
 
     customClass: {
