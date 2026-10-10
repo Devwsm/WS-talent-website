@@ -14,7 +14,7 @@
             <script charset="utf-8" src="https://widgetv3.bandsintown.com/main.min.js" defer></script>
 
             <a href="https://www.bandsintown.com/a/6784724" target="_blank" rel="noopener noreferrer"
-                class="mt-8 inline-flex items-center px-5 py-2 rounded-md bg-black text-white text-sm font-semibold">
+                class="mt-8 inline-flex items-center px-5 py-1.5 rounded-sm border border-black bg-white text-black text-sm uppercase hover:bg-black hover:text-white transition-colors">
                 Lihat semua jadwal di Bandsintown
             </a>
         </div>

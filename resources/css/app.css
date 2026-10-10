@@ -185,10 +185,10 @@ scroll buat mereka. Autoplay carousel sendiri udah dimatiin lewat JS
 }
 
 /* ==========================================================================
-   FASE 2 — MOTION
-   Catatan: TIDAK ada CSS yang menyembunyikan konten. Animasi reveal di-handle
-   penuh oleh components/motion-script.blade.php (elemen disembunyikan lewat
-   JS tepat sebelum dianimasikan), jadi kalau JS gagal halaman tetap tampil.
+    FASE 2 — MOTION
+    Catatan: TIDAK ada CSS yang menyembunyikan konten. Animasi reveal di-handle
+    penuh oleh components/motion-script.blade.php (elemen disembunyikan lewat
+    JS tepat sebelum dianimasikan), jadi kalau JS gagal halaman tetap tampil.
    ========================================================================== */
 
 /* ---- Judul kata-per-kata ---- */
@@ -475,12 +475,23 @@ scroll buat mereka. Autoplay carousel sendiri udah dimatiin lewat JS
     }
 }
 
+/* HP: panah album & merch tetap tampil (ukuran lebih kecil) supaya yang nggak
+   terbiasa swipe tetap bisa geser. Panah hero tetap disembunyikan di atas. */
 @media (max-width: 639px) {
     #new-music .swiper-button-next,
     #new-music .swiper-button-prev,
     #store .swiper-button-next,
     #store .swiper-button-prev {
-        display: none !important;
+        width: 36px !important;
+        height: 36px !important;
+        padding: 8px !important;
+    }
+
+    #new-music .swiper-button-next::after,
+    #new-music .swiper-button-prev::after,
+    #store .swiper-button-next::after,
+    #store .swiper-button-prev::after {
+        font-size: 16px !important;
     }
 }
 
@@ -518,4 +529,18 @@ scroll buat mereka. Autoplay carousel sendiri udah dimatiin lewat JS
 #new-music .swiper-button-lock,
 #store .swiper-button-lock {
     display: none !important;
+}
+
+/* Carousel album & merch: kasih "ruang napas" di sekeliling slide.
+    .swiper punya overflow:hidden, jadi kartu yang membesar/miring saat di-hover
+    (efek tilt + zoom) terpotong di tepinya. Padding menambah ruang, margin negatif
+    mengembalikan posisi dan lebar slide seperti semula. Bagian bawah juga dilebihkan
+    supaya titik pagination turun ke bawah kartu, nggak menimpa cover. */
+.musicSwiper,
+.merchSwiper {
+    padding: 20px 20px 56px;
+    margin: -20px -20px -56px;
+    --swiper-navigation-sides-offset: 24px;
+    --swiper-navigation-top-offset: calc(50% - 18px);
+    --swiper-pagination-bottom: 18px;
 }

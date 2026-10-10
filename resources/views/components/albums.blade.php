@@ -1,5 +1,5 @@
 <div id="new-music" class="relative bg-white overflow-hidden">
-    <div class="absolute top-0 bottom-1 inset-x-0
+    <div class="absolute inset-0
         bg-black transform z-0">
     </div>
     <div class="albums relative
