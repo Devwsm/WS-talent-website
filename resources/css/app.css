@@ -535,9 +535,11 @@ scroll buat mereka. Autoplay carousel sendiri udah dimatiin lewat JS
     .swiper punya overflow:hidden, jadi kartu yang membesar/miring saat di-hover
     (efek tilt + zoom) terpotong di tepinya. Padding menambah ruang, margin negatif
     mengembalikan posisi dan lebar slide seperti semula. Bagian bawah juga dilebihkan
-    supaya titik pagination turun ke bawah kartu, nggak menimpa cover. */
-.musicSwiper,
-.merchSwiper {
+    supaya titik pagination turun ke bawah kartu, nggak menimpa cover.
+    Selektor sengaja .swiper.xxx (bobot lebih tinggi): CSS bawaan Swiper punya
+    `.swiper { padding: 0 }` yang dimuat belakangan dan akan menang kalau bobotnya sama. */
+.swiper.musicSwiper,
+.swiper.merchSwiper {
     padding: 20px 20px 56px;
     margin: -20px -20px -56px;
     --swiper-navigation-sides-offset: 24px;
