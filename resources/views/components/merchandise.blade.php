@@ -4,7 +4,7 @@
             <div class="swiper-wrapper">
                 @foreach ($merchandise as $item)
                     <div class="swiper-slide">
-                        <a href="{{ $item->link_merchandise }}" target="_blank" rel="noopener noreferrer"
+                        <a href="{{ config('site.mavnus_url') }}" target="_blank" rel="noopener noreferrer"
                             class="block aspect-square overflow-hidden rounded-lg" data-tilt="6">
                             <img src="{{ Storage::url('merchandise/' . $item->merchandise_cover) }}"
                                 alt="{{ $item->merchandise_name }}" loading="lazy" decoding="async"
@@ -17,6 +17,13 @@
             <div class="swiper-button-next text-white"></div>
             <div class="swiper-button-prev text-white"></div>
 
+        </div>
+
+        <div class="mt-10 text-center">
+            <a href="{{ config('site.mavnus_url') }}" target="_blank" rel="noopener noreferrer" data-magnetic
+                class="inline-flex items-center px-8 py-3 rounded-md bg-black text-white text-sm font-semibold uppercase tracking-widest">
+                Belanja di Mavnus
+            </a>
         </div>
     </div>
 </div>

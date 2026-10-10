@@ -31,13 +31,30 @@ function initSwiper(selector, scopeSelector, extraOptions = {}) {
         "(prefers-reduced-motion: reduce)",
     ).matches;
 
+    // Loop cuma masuk akal kalau jumlah slide > slide yang tampil sekaligus.
+    // Merch cuma 4 slide sedangkan desktop menampilkan 4 sekaligus → loop bikin
+    // carousel patah/kedip. Hitung tampilan terbanyak dari breakpoint, lalu putuskan.
+    const slideCount = el.querySelectorAll(
+        ":scope > .swiper-wrapper > .swiper-slide",
+    ).length;
+    const maxPerView = Math.max(
+        extraOptions.slidesPerView ?? 1,
+        ...Object.values(extraOptions.breakpoints ?? {}).map(
+            (b) => b.slidesPerView ?? 1,
+        ),
+    );
+    const canLoop = slideCount > maxPerView;
+
     const swiper = new Swiper(el, {
         modules: [Navigation, Pagination, Autoplay, A11y, Keyboard],
 
         slidesPerView: 1,
         spaceBetween: 20,
-        loop: true,
-        watchOverflow: false,
+        loop: canLoop,
+        // tanpa loop: autoplay balik ke slide pertama di akhir, dan kalau semua slide
+        // sudah muat di layar, swiper dikunci (panah & bullet otomatis hilang)
+        rewind: !canLoop,
+        watchOverflow: !canLoop,
         speed: prefersReducedMotion ? 0 : 300,
 
         autoplay: prefersReducedMotion

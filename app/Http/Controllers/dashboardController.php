@@ -107,11 +107,10 @@ class dashboardController extends Controller
         $request->validate([
             'banner_name' => 'required',
             'link_banner' => 'required',
-            'banner_cover' => 'required|image|mimes:jpg,jpeg,png',
+            'banner_cover' => 'nullable|image|mimes:jpg,jpeg,png',
         ], [
             'banner_name.required' => 'Judul Banner harus diisi.',
             'link_banner.required' => 'Link Banner harus diisi.',
-            'banner_cover.required' => 'Gambar Banner harus diisi.',
             'banner_cover.image' => 'File harus berupa gambar.',
         ]);
 

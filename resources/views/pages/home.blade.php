@@ -76,30 +76,17 @@
                 @endfor
             </div>
         </div>
-        <div id="news" class="news flex flex-col w-full">
-            <h2 class="sr-only">Berita Terbaru</h2>
-            @include('components/news')
+        {{-- Jadwal tour — widget Bandsintown (sempat ikut terhapus di commit "remove unused schedule") --}}
+        <div id="tour" class="schedule flex flex-col w-full">
+            @include('components/tour')
         </div>
-        <div class="follow bg-white flex flex-col w-full py-12 gap-2 justify-center items-center">
-            <h2 data-split class="capitalize text-lg md:text-2xl font-bold text-center px-6">Get notified when new events
-                are announced in your area
-            </h2>
-            @php
-                // Prioritaskan Instagram kalau ada, kalau nggak pakai link sosmed pertama yang tersimpan
-                $followLink =
-                    $mediaSosial->first(fn($item) => str_contains(strtolower($item->platform), 'instagram'))?->url ??
-                    $mediaSosial->first()?->url;
-            @endphp
-            @if ($followLink)
-                <a href="{{ $followLink }}" target="_blank" rel="noopener" data-magnetic
-                    class="bg-white w-fit border-2 border-black px-10 py-4 text-xs uppercase text-center hover:bg-black hover:text-white transition-colors">follow
-                    whisnu santika</a>
-            @else
-                <a href="{{ route('profile') }}#ikuti" data-magnetic
-                    class="bg-white w-fit border-2 border-black px-10 py-4 text-xs uppercase text-center hover:bg-black hover:text-white transition-colors">follow
-                    whisnu santika</a>
-            @endif
-        </div>
+
+        @if ($news->isNotEmpty())
+            <div id="news" class="news flex flex-col w-full">
+                <h2 class="sr-only">Berita Terbaru</h2>
+                @include('components/news')
+            </div>
+        @endif
         <div class="product flex flex-col w-full">
             @include('components/albums')
             @include('components/merchandise')

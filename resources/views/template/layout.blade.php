@@ -8,11 +8,17 @@
 
     @php
         // Default SEO values dipakai kalau halaman nggak nge-override lewat @section.
-        $seoTitle = trim($__env->yieldContent('title')) ?: 'Whisnu Santika — DJ & Produser Musik Indonesia';
+        // @section('x', '...') sudah meng-escape isinya (& → &amp;), lalu {{ }} meng-escape lagi
+        // sehingga tab browser menampilkan "&amp;" mentah. Decode dulu, biar {{ }} yang escape sekali.
+        $seoTitle =
+            html_entity_decode(trim($__env->yieldContent('title')), ENT_QUOTES) ?:
+            'Whisnu Santika — DJ & Produser Musik Indonesia';
         $seoDescription =
-            trim($__env->yieldContent('meta_description')) ?:
+            html_entity_decode(trim($__env->yieldContent('meta_description')), ENT_QUOTES) ?:
             'Whisnu Santika — DJ & produser asal Jakarta, pionir Indonesian Bounce. Info tur, rilisan musik, merchandise, dan berita terbaru.';
-        $seoImage = trim($__env->yieldContent('og_image')) ?: asset('aset/logo/Whisnu-Santika_Logo-2025-White.png');
+        $seoImage =
+            html_entity_decode(trim($__env->yieldContent('og_image')), ENT_QUOTES) ?:
+            asset('aset/logo/Whisnu-Santika_Logo-2025-White.png');
     @endphp
 
     <title>{{ $seoTitle }}</title>

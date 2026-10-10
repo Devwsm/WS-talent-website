@@ -52,10 +52,13 @@
         <div class="w-px h-8 bg-white/10 mx-1 shrink-0"></div>
     </div>
 
-    <a href="{{ route('logout') }}" aria-label="Logout"
-        class="flex justify-center items-center h-12 w-12 rounded-xl shrink-0 text-xl text-red-500 hover:bg-red-500/10 transition-colors">
-        <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
-    </a>
+    <form action="{{ route('logout') }}" method="POST" class="contents">
+        @csrf
+        <button type="submit" aria-label="Logout"
+            class="flex justify-center items-center h-12 w-12 rounded-xl shrink-0 text-xl text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer">
+            <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+        </button>
+    </form>
 </div>
 
 {{-- ============== MOBILE & TABLET: burger + bottom sheet setengah layar ============== --}}
@@ -102,11 +105,14 @@
             </a>
         @endforeach
 
-        <a href="{{ route('logout') }}"
-            class="menu-link flex flex-col items-center justify-center gap-2 rounded-xl border border-red-500/20 py-4 text-red-500">
-            <i class="bi bi-box-arrow-right text-2xl" aria-hidden="true"></i>
-            <span class="text-xs font-semibold uppercase text-center">Logout</span>
-        </a>
+        <form action="{{ route('logout') }}" method="POST" class="contents">
+            @csrf
+            <button type="submit"
+                class="menu-link w-full flex flex-col items-center justify-center gap-2 rounded-xl border border-red-500/20 py-4 text-red-500 cursor-pointer">
+                <i class="bi bi-box-arrow-right text-2xl" aria-hidden="true"></i>
+                <span class="text-xs font-semibold uppercase text-center">Logout</span>
+            </button>
+        </form>
     </div>
 </nav>
 

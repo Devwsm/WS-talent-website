@@ -283,6 +283,9 @@ scroll buat mereka. Autoplay carousel sendiri udah dimatiin lewat JS
 #mobileMenu:not(.-translate-x-full) .menu-link:nth-child(6) {
     transition-delay: 0.36s;
 }
+#mobileMenu:not(.-translate-x-full) .menu-link:nth-child(7) {
+    transition-delay: 0.42s;
+}
 
 /* ---- Hero: parallax + zoom pelan ---- */
 .hero-bg {
@@ -506,4 +509,13 @@ scroll buat mereka. Autoplay carousel sendiri udah dimatiin lewat JS
         transform: none !important;
         translate: none !important;
     }
+}
+
+/* Panah/bullet carousel yang "dikunci" Swiper (slide sedikit, semua sudah muat)
+    harus benar-benar hilang. Tanpa ini, display:flex di aturan panah di atas
+    mengalahkan display:none bawaan Swiper. */
+#header .swiper-button-lock,
+#new-music .swiper-button-lock,
+#store .swiper-button-lock {
+    display: none !important;
 }

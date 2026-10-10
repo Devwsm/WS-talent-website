@@ -19,7 +19,10 @@ Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
 Route::prefix('/')->group(function () {
     Route::get('/login', [loginController::class, 'login'])->name('login');
     Route::post('/login', [loginController::class, 'prosesLogin'])->name('login.proses')->middleware('throttle:5,1');
-    Route::get('/logout', [loginController::class, 'logout'])->name('logout');
+    // Logout wajib POST (+ CSRF) supaya nggak bisa dipicu dari link/gambar situs lain.
+    Route::post('/logout', [loginController::class, 'logout'])->name('logout');
+    // Tombol/link lama (GET) nggak error 405 — cukup dialihkan.
+    Route::get('/logout', fn() => redirect()->route('dashboard'));
 });
 
 Route::prefix('/dashboard')->middleware('cekLogin')->group(function () {

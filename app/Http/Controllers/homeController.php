@@ -38,9 +38,6 @@ class homeController extends Controller
         $genre = genre::all();
         $bio = bio::first();
 
-        // dipakai buat link tombol "follow" di CTA homepage
-        $mediaSosial = media_sosial::all();
-
         return view(
             'pages/home',
             compact(
@@ -53,7 +50,6 @@ class homeController extends Controller
                 'hero',
                 'genre',
                 'bio',
-                'mediaSosial',
             )
         );
     }

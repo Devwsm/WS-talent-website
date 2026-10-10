@@ -1,8 +1,8 @@
 <div id="new-music" class="relative bg-white overflow-hidden">
-    <div class="absolute top-32 bottom-1 inset-x-0 
+    <div class="absolute top-0 bottom-1 inset-x-0
         bg-black transform z-0">
     </div>
-    <div class="albums relative mt-24 
+    <div class="albums relative
         w-full py-24 px-6 md:px-16 lg:px-52 gap-6">
         <div class="swiper musicSwiper" data-motion="fade-up">
             <div class="swiper-wrapper">
