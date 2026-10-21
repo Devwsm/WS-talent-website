@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\dashboardController;
 use App\Http\Controllers\homeController;
+use App\Http\Controllers\InnerCircle\memberController;
 use App\Http\Controllers\loginController;
 use App\Http\Controllers\profileController;
 use App\Http\Controllers\SeoController;
@@ -23,6 +24,16 @@ Route::prefix('/')->group(function () {
     Route::post('/logout', [loginController::class, 'logout'])->name('logout');
     // Tombol/link lama (GET) nggak error 405 — cukup dialihkan.
     Route::get('/logout', fn() => redirect()->route('dashboard'));
+});
+
+// WS Inner Circle — dibungkus flag INNER_CIRCLE_AKTIF (404 bila mati, lihat middleware IcAktif).
+// Fase 1: layar masih placeholder + pratinjau komponen. Layar asli menyusul di Fase 2.
+Route::prefix('/inner-circle')->middleware('icAktif')->name('ic.')->group(function () {
+    Route::get('/', [memberController::class, 'beranda'])->name('beranda');
+    Route::get('/hadiah', [memberController::class, 'hadiah'])->name('hadiah');
+    Route::get('/check-in', [memberController::class, 'checkin'])->name('checkin');
+    Route::get('/komunitas', [memberController::class, 'komunitas'])->name('komunitas');
+    Route::get('/profil', [memberController::class, 'profil'])->name('profil');
 });
 
 Route::prefix('/dashboard')->middleware('cekLogin')->group(function () {

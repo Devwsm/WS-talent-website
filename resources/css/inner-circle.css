@@ -1,0 +1,1090 @@
+/*
+ * WS Inner Circle — gaya area anggota.
+ * Diturunkan dari lapisan "Soft Lavender" prototype (WS_Inner_Circle.html), ditulis ulang bersih.
+ * Semua class berawalan ic- dan hanya berlaku di bawah .ic-app; berkas ini tidak mengimpor Tailwind.
+ * Teks kecil memakai warna yang sudah dicek terhadap kontras WCAG AA (>= 4.5:1).
+ */
+@import "bootstrap-icons/font/bootstrap-icons.css";
+
+/* ---------- Token ---------- */
+.ic-app {
+    --ic-latar: #d9cdf7;
+    --ic-shell: #f8f7fc;
+    --ic-krem: #fcfbff;
+    --ic-garis: #e4dff1;
+    --ic-garis-kartu: #ece7f8;
+    --ic-tinta: #151522;
+    --ic-navy: #111322;
+    --ic-redup: #6b6880;
+    --ic-eyebrow: #6a58a8;
+    --ic-lilac: #c8b2ff;
+    --ic-aksen: #8d73ff;
+    --ic-emas: #ffbf57;
+    --ic-koral: #ffb3a5;
+    --ic-kuning: #f5c45f;
+    --ic-biru: #b9d2ff;
+    --ic-pink: #f0a3e6;
+    --ic-hijau: #82dfb4;
+    --ic-merah: #ff7770;
+    --ic-font: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --ic-font-judul: "Space Grotesk", "DM Sans", system-ui, sans-serif;
+
+    margin: 0;
+    background: var(--ic-latar);
+    color: var(--ic-tinta);
+    font-family: var(--ic-font);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+.ic-app *,
+.ic-app *::before,
+.ic-app *::after {
+    box-sizing: border-box;
+}
+
+:where(.ic-app) :is(h1, h2, h3, p) {
+    margin: 0;
+}
+
+:where(.ic-app) a {
+    color: inherit;
+    text-decoration: none;
+}
+
+:where(.ic-app) button {
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+}
+
+:where(.ic-app) img {
+    max-width: 100%;
+    display: block;
+}
+
+.ic-app :focus-visible {
+    outline: 3px solid var(--ic-aksen);
+    outline-offset: 2px;
+}
+
+.ic-lewati {
+    position: absolute;
+    left: 12px;
+    top: -60px;
+    z-index: 100;
+    background: var(--ic-navy);
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-weight: 700;
+}
+
+.ic-lewati:focus {
+    top: 12px;
+}
+
+/* ---------- Warna kartu (dipakai ubin, event, pengumuman, sampul) ---------- */
+.ic-warna-koral {
+    background: var(--ic-koral);
+}
+.ic-warna-kuning {
+    background: var(--ic-kuning);
+}
+.ic-warna-biru {
+    background: var(--ic-biru);
+}
+.ic-warna-lilac {
+    background: #cbb8ff;
+}
+.ic-warna-pink {
+    background: var(--ic-pink);
+}
+.ic-warna-hijau {
+    background: var(--ic-hijau);
+}
+.ic-warna-merah {
+    background: var(--ic-merah);
+}
+
+/* ---------- Shell, header, konten ---------- */
+.ic-shell {
+    max-width: 1180px;
+    margin: 18px auto 110px;
+    background: var(--ic-shell);
+    border: 1px solid #dad4ee;
+    border-radius: 34px;
+    box-shadow: 0 28px 90px rgba(83, 58, 128, 0.16);
+    overflow: hidden;
+}
+
+.ic-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 20px clamp(22px, 4vw, 68px);
+    border-bottom: 1px solid var(--ic-garis);
+}
+
+.ic-bar__sub {
+    margin-top: 4px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: var(--ic-eyebrow);
+}
+
+.ic-bar__aksi {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ic-bar__avatar {
+    display: block;
+    border-radius: 50%;
+}
+
+.ic-konten {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 30px clamp(20px, 4vw, 42px) 145px;
+}
+
+/* ---------- Logo & avatar ---------- */
+.ic-logo {
+    display: inline-block;
+    font-family: var(--ic-font-judul);
+    font-weight: 800;
+    font-style: italic;
+    letter-spacing: -0.12em;
+    line-height: 1;
+    color: var(--ic-navy);
+}
+
+.ic-logo i {
+    font-style: normal;
+    letter-spacing: 0;
+    color: var(--ic-emas);
+    vertical-align: top;
+}
+
+.ic-logo--md {
+    font-size: 23px;
+}
+.ic-logo--md i {
+    font-size: 12px;
+}
+.ic-logo--lg {
+    font-size: 30px;
+}
+.ic-logo--lg i {
+    font-size: 17px;
+}
+
+.ic-avatar {
+    display: inline-grid;
+    place-items: center;
+    width: 37px;
+    height: 37px;
+    border-radius: 50%;
+    background: var(--ic-lilac);
+    color: var(--ic-navy);
+    font-size: 18px;
+    line-height: 1;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.ic-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.ic-avatar--kecil {
+    width: 39px;
+    height: 39px;
+    background: #f9db93;
+    font-size: 20px;
+}
+.ic-avatar--dock {
+    width: 25px;
+    height: 25px;
+    font-size: 15px;
+    background: #cbb8ff;
+}
+
+/* ---------- Tipografi halaman ---------- */
+.ic-eyebrow {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2.4px;
+    text-transform: uppercase;
+    color: var(--ic-eyebrow);
+}
+
+.ic-judul {
+    font-family: var(--ic-font-judul);
+    font-weight: 700;
+    font-size: clamp(54px, 8vw, 92px);
+    line-height: 0.9;
+    letter-spacing: -0.06em;
+    margin: 14px 0 18px;
+    color: #131423;
+}
+
+.ic-judul > span {
+    color: var(--ic-aksen);
+}
+
+.ic-deskripsi {
+    max-width: 720px;
+    font-size: 15px;
+    color: var(--ic-redup);
+}
+
+.ic-judul-bagian {
+    font-family: var(--ic-font-judul);
+    font-weight: 700;
+    font-size: 24px;
+    letter-spacing: -0.04em;
+    margin: 40px 0 15px;
+}
+
+.ic-sub {
+    margin-top: 4px;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.ic-bantuan,
+:where(.ic-app) small {
+    font-size: 12px;
+    color: var(--ic-redup);
+}
+
+/* ---------- Tata letak ---------- */
+.ic-grid {
+    display: grid;
+    gap: 15px;
+}
+.ic-grid--2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.ic-daftar {
+    display: grid;
+    gap: 14px;
+}
+.ic-daftar--rapat {
+    gap: 8px;
+}
+.ic-aksi-baris {
+    display: flex;
+    gap: 9px;
+    flex-wrap: wrap;
+    margin-top: 30px;
+}
+
+.ic-panel {
+    background: #fff;
+    border: 1px solid var(--ic-garis-kartu);
+    border-radius: 24px;
+    padding: 16px;
+}
+
+.ic-kotak {
+    background: #fff;
+    border: 1px solid var(--ic-garis-kartu);
+    border-radius: 28px;
+    padding: 24px;
+    margin: 20px 0;
+}
+
+/* ---------- Tombol, input, pil ---------- */
+.ic-tombol {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 44px;
+    border: 0;
+    border-radius: 18px;
+    padding: 12px 19px;
+    background: var(--ic-navy);
+    color: #fff;
+    font-weight: 800;
+    font-size: 13px;
+    text-align: center;
+    transition: transform 0.2s;
+}
+
+.ic-tombol:hover {
+    transform: translateY(-1px);
+}
+.ic-tombol:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+}
+.ic-tombol--terang {
+    background: #efedf7;
+    color: var(--ic-tinta);
+}
+.ic-tombol--krem {
+    background: #f5f1e9;
+    color: var(--ic-tinta);
+}
+.ic-tombol--kecil {
+    min-height: 44px;
+    padding: 10px 14px;
+    font-size: 12px;
+    border-radius: 14px;
+}
+.ic-tombol--garis {
+    background: transparent;
+    color: #28243b;
+    border: 1px solid #d7d0ec;
+    border-radius: 30px;
+    padding: 8px 14px;
+    font-size: 12px;
+}
+
+.ic-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 800;
+    margin: 14px 0 8px;
+}
+
+.ic-input {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid #ddd6f0;
+    border-radius: 16px;
+    background: var(--ic-krem);
+    color: var(--ic-tinta);
+    font: inherit;
+}
+
+.ic-pil {
+    display: inline-block;
+    padding: 7px 11px;
+    border-radius: 20px;
+    background: #efedf7;
+    color: #4b4960;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.ic-aksi-form {
+    display: flex;
+    gap: 9px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+/* ---------- Ikon gambar ---------- */
+.ic-ikon {
+    display: block;
+    object-fit: contain;
+}
+.ic-ikon--emoji {
+    display: grid;
+    place-items: center;
+    line-height: 1;
+}
+.ic-ikon--mini {
+    width: 16px;
+    height: 16px;
+    font-size: 14px;
+    display: inline-block;
+    vertical-align: -3px;
+}
+.ic-ikon--kecil {
+    width: 30px;
+    height: 30px;
+    font-size: 26px;
+}
+.ic-ikon--event {
+    width: 52px;
+    height: 52px;
+    font-size: 40px;
+}
+.ic-ikon--sampul {
+    width: 96px;
+    height: 96px;
+    font-size: 80px;
+    filter: drop-shadow(0 14px 10px rgba(40, 25, 80, 0.18));
+}
+
+/* ---------- Kartu anggota & bar stempel ---------- */
+.ic-kartu-anggota {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 30px;
+    min-height: 235px;
+    padding: 26px;
+    border: 1px solid #ddd5f6;
+    border-radius: 24px;
+    background: linear-gradient(180deg, #fff 0%, #f4f1ff 100%);
+}
+
+.ic-kartu-anggota::after {
+    content: "✦";
+    position: absolute;
+    right: 10px;
+    bottom: -54px;
+    font-size: 140px;
+    color: #e9e2ff;
+    pointer-events: none;
+}
+
+.ic-kartu-anggota__nama {
+    font-family: var(--ic-font-judul);
+    font-weight: 700;
+    font-size: 31px;
+    letter-spacing: -0.03em;
+}
+
+.ic-bar-stempel {
+    padding: 23px;
+    background: #fff;
+    border: 1px solid #ddd5f6;
+    border-radius: 25px;
+}
+
+.ic-bar-stempel__angka {
+    font-size: 17px;
+}
+.ic-bar-stempel__angka strong {
+    font-family: var(--ic-font-judul);
+    font-size: 35px;
+}
+
+.ic-progres {
+    height: 12px;
+    margin: 12px 0;
+    background: #ebe7f8;
+    border-radius: 50px;
+    overflow: hidden;
+}
+
+.ic-progres span {
+    display: block;
+    height: 100%;
+    border-radius: 50px;
+    background: linear-gradient(90deg, #bca2ff 0%, #8bb8ff 45%, #f8c95f 100%);
+    transition: width 0.3s;
+}
+
+.ic-bar-stempel__catatan {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
+    color: #4b4960;
+}
+.ic-bar-stempel__catatan small {
+    display: block;
+    margin-top: 2px;
+}
+
+/* ---------- Ubin hadiah ---------- */
+.ic-ubin {
+    position: relative;
+    overflow: hidden;
+    display: block;
+    min-height: 230px;
+    padding: 23px;
+    border: 1px solid #e4def3;
+    border-radius: 30px;
+    color: var(--ic-tinta);
+    transition: transform 0.2s;
+}
+
+.ic-ubin:hover {
+    transform: translateY(-2px);
+}
+.ic-ubin--lebar {
+    grid-column: 1 / -1;
+}
+
+.ic-ubin__tag {
+    position: absolute;
+    top: 20px;
+    right: 19px;
+    padding: 6px 10px;
+    border-radius: 15px;
+    background: var(--ic-navy);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.ic-ubin__angka {
+    display: block;
+    font-family: var(--ic-font-judul);
+    font-weight: 700;
+    font-size: 58px;
+    line-height: 0.95;
+    letter-spacing: -0.06em;
+}
+
+.ic-ubin__angka small {
+    display: block;
+    font-family: var(--ic-font);
+    font-size: 14px;
+    letter-spacing: 0;
+    color: inherit;
+}
+
+.ic-ubin__ikon {
+    position: absolute;
+    top: 56px;
+    right: 24px;
+    width: 92px;
+    height: 92px;
+    font-size: 76px;
+    filter: drop-shadow(0 10px 16px rgba(40, 25, 80, 0.14));
+}
+.ic-ubin--lebar .ic-ubin__ikon {
+    width: 104px;
+    height: 104px;
+    font-size: 88px;
+    right: 40px;
+    top: 44px;
+}
+
+.ic-ubin__judul {
+    display: block;
+    margin-top: 22px;
+    font-size: 19px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    position: relative;
+}
+.ic-ubin__deskripsi {
+    display: block;
+    max-width: 66%;
+    margin-top: 5px;
+    font-size: 12px;
+    line-height: 1.45;
+    color: #353246;
+    position: relative;
+}
+
+.ic-ubin__panah {
+    position: absolute;
+    right: 19px;
+    bottom: 18px;
+    display: grid;
+    place-items: center;
+    width: 33px;
+    height: 33px;
+    border-radius: 50%;
+    background: #fff;
+    border: 1px solid #e8e2f6;
+}
+
+/* ---------- Kartu event ---------- */
+.ic-event {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    min-height: 120px;
+    padding: 17px;
+    border: 1px solid #e2dbf3;
+    border-radius: 28px;
+    color: var(--ic-tinta);
+    transition: transform 0.2s;
+}
+
+a.ic-event:hover {
+    transform: translateY(-2px);
+}
+.ic-event.is-dipilih {
+    outline: 2px solid var(--ic-navy);
+    outline-offset: 2px;
+}
+.ic-event.is-nonaktif {
+    opacity: 0.78;
+    cursor: default;
+}
+
+.ic-event__seni {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 76px;
+    height: 76px;
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.ic-event__isi {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+}
+.ic-event__tanggal {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    color: #4b4960;
+}
+.ic-event__venue {
+    font-family: var(--ic-font-judul);
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.05em;
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+}
+.ic-event__kota {
+    font-size: 12px;
+    color: #302f41;
+}
+
+.ic-event__lencana {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 4px 9px;
+    border-radius: 20px;
+    background: #fff;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.ic-event__lencana--ok {
+    background: #dff6e9;
+    color: #245639;
+}
+
+.ic-event__panah {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 33px;
+    height: 33px;
+    margin-left: auto;
+    border-radius: 50%;
+    background: #fff;
+    border: 1px solid #ebe5f7;
+}
+
+/* ---------- Aktivitas ---------- */
+.ic-aktivitas {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 12px;
+    border-radius: 17px;
+    background: #f6f4fb;
+}
+.ic-aktivitas__ikon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+    background: #efeaf9;
+}
+.ic-aktivitas b {
+    font-size: 13px;
+}
+.ic-aktivitas small {
+    display: block;
+    margin-top: 3px;
+    font-size: 11px;
+}
+.ic-aktivitas__poin {
+    margin-left: auto;
+    white-space: nowrap;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+/* ---------- Pengumuman ---------- */
+.ic-unggulan {
+    position: relative;
+    overflow: hidden;
+    min-height: 270px;
+    margin-bottom: 14px;
+    padding: clamp(28px, 4vw, 48px);
+    border-radius: 28px;
+    background: linear-gradient(180deg, #c8b2ff 0%, #bda4ff 100%);
+}
+
+.ic-unggulan__label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.6px;
+    color: #3b2d75;
+}
+.ic-unggulan__judul {
+    max-width: 560px;
+    margin: 14px 0;
+    font-family: var(--ic-font-judul);
+    font-size: clamp(40px, 5vw, 58px);
+    font-weight: 700;
+    line-height: 0.94;
+    letter-spacing: -0.06em;
+}
+.ic-unggulan__isi {
+    max-width: 520px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: #2e2745;
+    position: relative;
+    z-index: 1;
+}
+.ic-unggulan .ic-tombol {
+    position: relative;
+    z-index: 1;
+}
+.ic-unggulan__bintang {
+    position: absolute;
+    right: 12px;
+    bottom: -70px;
+    font-size: 260px;
+    line-height: 1;
+    color: rgba(255, 255, 255, 0.4);
+    transform: rotate(20deg);
+    pointer-events: none;
+}
+
+.ic-pengumuman {
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
+    padding: 21px;
+    background: #fff;
+    border: 1px solid var(--ic-garis-kartu);
+    border-radius: 24px;
+}
+
+.ic-pengumuman__ikon {
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+}
+.ic-pengumuman__meta {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    color: var(--ic-redup);
+}
+.ic-pengumuman__judul {
+    margin: 4px 0 6px;
+    font-family: var(--ic-font-judul);
+    font-size: 18px;
+    letter-spacing: -0.02em;
+}
+.ic-pengumuman__isi {
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: #555267;
+}
+
+/* ---------- Kenangan ---------- */
+.ic-kenangan {
+    min-width: 0;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid var(--ic-garis-kartu);
+    border-radius: 26px;
+}
+.ic-kenangan__sampul {
+    position: relative;
+    display: grid;
+    place-items: center;
+    height: 240px;
+    overflow: hidden;
+}
+.ic-kenangan__sampul img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.ic-kenangan__sampul.ic-warna-kuning {
+    background: linear-gradient(180deg, #f6c65e 0%, #f0b65d 100%);
+}
+.ic-kenangan__sampul.ic-warna-biru {
+    background: linear-gradient(180deg, #b9d2ff 0%, #9ec0ff 100%);
+}
+.ic-kenangan__sampul.ic-warna-pink {
+    background: linear-gradient(180deg, #f0a3e6 0%, #e38adb 100%);
+}
+.ic-kenangan__bintang {
+    position: absolute;
+    top: -18px;
+    right: -6px;
+    font-size: 100px;
+    line-height: 1;
+    color: rgba(255, 255, 255, 0.55);
+    pointer-events: none;
+}
+.ic-kenangan__isi {
+    padding: 18px;
+}
+.ic-kenangan__atas {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.ic-kenangan__atas b {
+    font-size: 13px;
+}
+.ic-kenangan__atas small {
+    display: block;
+    margin-top: 2px;
+    font-size: 11px;
+}
+.ic-kenangan__caption {
+    margin: 13px 0;
+    font-size: 14px;
+    color: #555267;
+}
+.ic-kenangan__kaki {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-top: 12px;
+    border-top: 1px solid #eee9f6;
+}
+.ic-kenangan__tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--ic-redup);
+}
+.ic-kenangan__aksi {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ic-suka {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 9px 14px;
+    border: 0;
+    border-radius: 24px;
+    background: #f4f0fb;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.ic-suka.is-suka {
+    background: #ffd8f3;
+}
+.ic-hapus {
+    min-height: 44px;
+    padding: 8px;
+    border: 0;
+    background: none;
+    font-size: 11px;
+    color: #9b3d3d;
+    text-decoration: underline;
+}
+
+/* ---------- Dock navigasi ---------- */
+.ic-dock {
+    position: fixed;
+    left: 50%;
+    bottom: 20px;
+    z-index: 30;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    width: min(560px, calc(100% - 26px));
+    padding: 10px 12px;
+    background: var(--ic-navy);
+    border-radius: 30px;
+    box-shadow: 0 16px 40px rgba(46, 31, 85, 0.22);
+}
+
+.ic-dock__item {
+    display: grid;
+    place-items: center;
+    gap: 3px;
+    flex: 1;
+    min-width: 0;
+    min-height: 48px;
+    padding: 8px 2px;
+    border-radius: 20px;
+    color: #d9d6eb;
+    font-size: 11px;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.ic-dock__item i {
+    font-size: 22px;
+    line-height: 1;
+}
+.ic-dock__item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+.ic-dock__item.is-aktif {
+    background: #fff;
+    color: var(--ic-navy);
+    font-weight: 800;
+}
+
+/* ---------- Modal ---------- */
+.ic-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    display: grid;
+    place-items: center;
+    padding: 15px;
+    background: rgba(20, 20, 34, 0.62);
+    backdrop-filter: blur(5px);
+}
+
+.ic-modal[hidden] {
+    display: none;
+}
+
+.ic-modal__dialog {
+    width: min(550px, 100%);
+    max-height: 92vh;
+    overflow: auto;
+    padding: 28px;
+    background: var(--ic-krem);
+    border-radius: 29px;
+    box-shadow: 0 20px 80px rgba(0, 0, 0, 0.35);
+}
+
+.ic-modal__kepala {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+.ic-modal__judul {
+    margin-top: 8px;
+    font-family: var(--ic-font-judul);
+    font-size: 30px;
+    letter-spacing: -0.04em;
+}
+.ic-modal__tutup {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: 50%;
+    background: #ece8f7;
+}
+.ic-app.ic-modal-terbuka {
+    overflow: hidden;
+}
+
+/* ---------- Responsif ---------- */
+@media (max-width: 780px) {
+    .ic-shell {
+        margin: 0 0 95px;
+        min-height: 100vh;
+        border-radius: 0;
+        border-width: 0;
+    }
+    .ic-konten {
+        padding: 24px 18px 130px;
+    }
+    .ic-grid--2 {
+        grid-template-columns: 1fr;
+    }
+    .ic-judul {
+        font-size: 52px;
+    }
+    .ic-event__venue {
+        font-size: 18px;
+    }
+    .ic-event__seni {
+        width: 64px;
+        height: 64px;
+    }
+    .ic-ubin {
+        min-height: 200px;
+    }
+    .ic-ubin__angka {
+        font-size: 46px;
+    }
+    .ic-ubin__ikon {
+        width: 72px;
+        height: 72px;
+        font-size: 60px;
+        top: 52px;
+    }
+    .ic-ubin__deskripsi {
+        max-width: 74%;
+    }
+    .ic-unggulan__judul {
+        font-size: 42px;
+    }
+}
+
+@media (max-width: 480px) {
+    .ic-bar {
+        padding: 14px 18px;
+    }
+    .ic-pengumuman {
+        grid-template-columns: 48px minmax(0, 1fr);
+        gap: 12px;
+        padding: 16px;
+    }
+    .ic-pengumuman__ikon {
+        width: 48px;
+        height: 48px;
+        border-radius: 15px;
+    }
+    .ic-kenangan__sampul {
+        height: 200px;
+    }
+    .ic-modal__dialog {
+        padding: 22px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ic-app *,
+    .ic-app *::before,
+    .ic-app *::after {
+        transition: none;
+        animation: none;
+        scroll-behavior: auto;
+    }
+}
+
+/* ---------- SweetAlert2 (muncul di dalam body.ic-app) ---------- */
+.ic-swal {
+    border-radius: 24px;
+    font-family: var(--ic-font);
+}
+.ic-swal__aksi {
+    gap: 9px;
+}

@@ -20,7 +20,7 @@ npm install && npm run dev
 
 # Rencana Penerapan: WS Inner Circle
 
-> Status: **rencana, belum ada kode yang diubah.**
+> Status: **Fase 1 selesai** (kerangka UI, flag fitur mati secara bawaan). Berikutnya: Fase 2.
 > Dibuat: 21 Oktober 2026.
 > Acuan: `WS_Inner_Circle.html` (prototype native, satu file, data di `localStorage`) dan 19 screenshot UI di `inner-circle-ui-prototype.zip`.
 
@@ -76,7 +76,7 @@ Prototype dibuat untuk didemokan, bukan untuk dijalankan. Bagian ini mencatat ap
 
 - **Empat lapis CSS** menumpuk di prototype (krem-emas, "editorial pop", lalu "Soft Lavender"). Hasil akhir di screenshot adalah lapisan lavender, jadi **hanya itu yang dibawa**, ditulis ulang jadi satu berkas bersih tanpa override bertumpuk.
     - Token: latar `#d9cdf7`, cangkang `#f8f7fc` (border `#dad4ee`), tinta `#111322`, lilac `#c8b2ff`, emas `#ffbf57` / `#f6c65e`, koral `#ffb39e`, biru `#b9d2ff`, pink `#f1a8ea`, teks redup `#7b7890`.
-    - Font: DM Sans (UI), Space Grotesk (judul besar dan logo), Barlow Condensed (judul miring di banner Komunitas). Hanya dimuat di layout Inner Circle.
+    - Font: DM Sans (UI) dan Space Grotesk (judul besar dan logo). Barlow Condensed di kode prototype sisa lapisan lama dan tidak tampil di hasil akhir, jadi tidak dimuat. Font hanya dimuat di layout Inner Circle.
 - **Ikon emoji diganti gambar tetap.** Screenshot tampak 3D karena Windows merender emoji gaya Fluent. Di iOS, Android, dan macOS wajahnya beda, jadi identitas visual berubah per perangkat. Solusi: set ikon gambar (WebP) di `public/aset/inner-circle/ikon/`, mis. Fluent Emoji 3D (berlisensi MIT, cek ulang sebelum dipakai).
 - **Glyph teks pada dock** (`⌂ ♧ ⌖ ♡ ◉ ✦`) bergantung font perangkat. Diganti Bootstrap Icons yang sudah ada di project.
 - **Tata letak:** badge tipe/status di kartu event menempel di baris kota (terlihat di screenshot Check-in). Dipisah jadi baris sendiri.
@@ -108,9 +108,9 @@ Prototype dibuat untuk didemokan, bukan untuk dijalankan. Bagian ini mencatat ap
 
 ## 4. Keputusan arsitektur
 
-### 4.1 Flag fitur (penting karena push langsung auto deploy)
+### 4.1 Flag fitur
 
-Fase 1 sampai 3 berisi data dummy. Supaya tidak ikut tayang di produksi saat di-push:
+Fase 1 sampai 3 berisi data dummy. Supaya tidak ikut aktif di produksi ketika kodenya naik (deploy manual pun):
 
 - `config/inner_circle.php` dengan `aktif` = `env('INNER_CIRCLE_AKTIF', false)`.
 - Middleware `icAktif` (didaftarkan sebagai alias di `bootstrap/app.php`, seperti `cekLogin`) mengembalikan 404 untuk semua route Inner Circle bila flag mati.
@@ -124,7 +124,7 @@ Fase 1 sampai 3 berisi data dummy. Supaya tidak ikut tayang di produksi saat di-
 - Semua class diberi prefix `ic-` dan dibatasi di bawah wrapper `.ic-app` supaya tidak bocor ke halaman lain.
 - CSS ditulis sebagai CSS biasa (tidak mengimpor Tailwind), jadi tidak ada konflik reset. Halaman Inner Circle memakai class `ic-*` saja.
 - JS vanilla. Notifikasi dan konfirmasi memakai SweetAlert2 dengan `Swal.mixin` lavender sendiri; wrapper `resources/js/sweetalert.js` yang sudah ada bertema gelap dan tidak dipakai di sini.
-- Komponen Blade mengikuti konvensi repo (`@include`) di `resources/views/components/inner-circle/`.
+- Komponen Blade berupa komponen anonim (`<x-inner-circle.nama-komponen />`) di `resources/views/components/inner-circle/`. Berbeda dari komponen lama yang memakai `@include`, karena komponen baru butuh props dan slot (mis. modal).
 
 ### 4.3 Autentikasi anggota
 
@@ -162,26 +162,31 @@ Kontrak data per layar:
 
 ## 5. Fase pengerjaan
 
-### Fase 1: Fondasi UI
+### Fase 1: Fondasi UI (selesai)
 
 **Tujuan:** kerangka tampilan siap, belum ada layar isi.
 
-File (urut):
+File yang dibuat atau diubah:
 
-1. `config/inner_circle.php` (flag `aktif`)
-2. `app/Http/Middleware/IcAktif.php` + alias `icAktif` di `bootstrap/app.php`
-3. `routes/web.php` (grup `/inner-circle` dengan nama route `ic.*`)
-4. `app/Support/InnerCircleDummy.php` + `database/data/ic_events_contoh.csv` (50 baris dari prototype)
-5. `resources/css/inner-circle.css`, `resources/js/inner-circle.js`, `vite.config.js` (tambah 2 entry)
-6. `resources/views/template/innerCircleLayout.blade.php` (header, dock, area toast)
-7. `resources/views/components/inner-circle/` (logo, dock, kartu-anggota, bar-stempel, ubin-hadiah, kartu-event, baris-aktivitas, item-pengumuman, kartu-kenangan, modal)
-8. `public/aset/inner-circle/ikon/` (set ikon gambar)
+1. `config/inner_circle.php`: flag `aktif`, peta ikon, tipe event, kategori kenangan
+2. `.env.example`: `INNER_CIRCLE_AKTIF=false`
+3. `app/Http/Middleware/IcAktif.php` + alias `icAktif` di `bootstrap/app.php`
+4. `routes/web.php`: grup `/inner-circle` (`ic.beranda`, `ic.hadiah`, `ic.checkin`, `ic.komunitas`, `ic.profil`)
+5. `app/Support/InnerCircleDummy.php` + `database/data/ic_events_contoh.csv` (50 baris dari prototype)
+6. `resources/css/inner-circle.css`, `resources/js/inner-circle.js`, `vite.config.js` (tambah 2 entry)
+7. `resources/views/template/innerCircleLayout.blade.php` (header, dock, `noindex`, `lang="id"`)
+8. `resources/views/components/inner-circle/`: `ikon`, `logo`, `avatar`, `dock`, `kartu-anggota`, `bar-stempel`, `ubin-hadiah`, `kartu-event`, `baris-aktivitas`, `pengumuman-unggulan`, `item-pengumuman`, `kartu-kenangan`, `modal`
+9. `app/Http/Controllers/InnerCircle/memberController.php` + `resources/views/pages/inner-circle/placeholder.blade.php` (halaman sementara berisi pratinjau komponen)
+10. `public/aset/inner-circle/ikon/`: 15 ikon WebP 256 px (Fluent Emoji 3D, lisensi MIT)
+
+Cara mencoba: set `INNER_CIRCLE_AKTIF=true` di `.env`, jalankan `npm run dev` dan `php artisan serve`, buka `/inner-circle`.
 
 Cek hasil:
 
-- Flag mati → semua route `/inner-circle` 404. Flag menyala → layout tampil.
+- Flag mati: semua route `/inner-circle` 404. Flag menyala: layout tampil.
 - Dock muncul di 375 px dan 1280 px, tombol aktif mengikuti route.
-- Token warna dan font sama dengan screenshot.
+- Pratinjau komponen: ubin hadiah (terbuka, terkunci, lebar), kartu event (lewat, sudah check-in, privat, tanpa venue), aktivitas, pengumuman, kenangan, dan modal (tutup dengan silang, Esc, klik latar).
+- Warna dan font mengikuti screenshot prototype.
 
 ### Fase 2: UI anggota (data dummy)
 
@@ -278,7 +283,7 @@ Cek hasil: unggah kenangan dengan foto HP (termasuk yang miring/EXIF) tampil ben
 - Komponen teaser `inner-circle-teaser` di `pages/home.blade.php` dan link "Inner Circle" di `components/navbar.blade.php` (desktop dan menu mobile), hanya bila flag menyala. Teaser mengikuti tema situs (`ThemeColorComposer`).
 - `SeoController@robots`: tambahkan `Disallow: /inner-circle`.
 - QA lintas perangkat: kamera di Safari iOS dan Chrome Android, foto HP, layar 375 px, `prefers-reduced-motion`, kontras, target sentuh 44 px.
-- Cek ulang bahwa pipeline deploy menjalankan `npm run build` sehingga dua entry Vite baru ikut ter-build.
+- Pastikan langkah deploy menjalankan `npm run build` sehingga dua entry Vite baru ikut ter-build.
 - Rilis: set `INNER_CIRCLE_AKTIF=true` di produksi setelah event asli dan hadiah terisi, lalu `php artisan migrate`, `config:clear`, `view:clear`.
 
 ## 6. Skema database (dipakai mulai Fase 4)
