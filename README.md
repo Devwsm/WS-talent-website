@@ -20,7 +20,7 @@ npm install && npm run dev
 # Rencana Penerapan: WS Inner Circle
 
 > Status: **rencana (belum ada kode yang diubah)**.
-> Sumber: prototype `WS_Inner_Circle_Daftar_Anggota_Baru.html` + audit struktur repo ini.
+> Acuan desain dan alur: prototype `WS_Inner_Circle_Daftar_Anggota_Baru.html`. Rencana ini menerjemahkannya ke struktur Laravel repo ini.
 
 ## 1. Tujuan
 
@@ -48,24 +48,30 @@ Aturan bisnis yang sudah tersirat di prototype dan **dipertahankan**:
 4. Event tipe **Private Event** dan event **tanpa venue** tidak bisa dipakai check-in.
 5. Tiap event punya token/QR sendiri; admin bisa membuat ulang, dan token lama otomatis tidak berlaku.
 
-## 3. Yang tidak boleh dibawa mentah ke produksi
+## 3. Pemetaan prototype ke Laravel
 
-Prototype sengaja "simulasi". Bagian ini wajib diganti, bukan disalin:
+Prototype dipakai sebagai **acuan tampilan dan alur**. Karena semua datanya hidup di browser, tiap bagiannya dipetakan ke komponen Laravel berikut:
 
-| Di prototype                                                                       | Masalah                                           | Di produksi                                             |
-| ---------------------------------------------------------------------------------- | ------------------------------------------------- | ------------------------------------------------------- |
-| Stempel, klaim, akun disimpan di `localStorage`                                    | Bisa diedit siapa saja lewat DevTools             | Semua di database, dihitung server                      |
-| Token QR dibuat dan diverifikasi di browser                                        | Check-in bisa dipalsukan                          | Verifikasi **hanya di server**                          |
-| Kredensial demo (`ancha@wsic.demo` / `member123`, admin `admin123`)                | Tertanam di HTML                                  | Dihapus. Demo seeder hanya jalan di environment `local` |
-| Sandi disimpan plaintext, minimal 6 karakter                                       | Tidak aman                                        | `Hash::make`, minimal 8 karakter                        |
-| ID anggota = `max(id)+1` di browser                                                | Bisa bentrok                                      | ID dari auto-increment DB, diformat `IC-00248`          |
-| Foto kenangan jadi `dataURL` di memori                                             | Hilang saat refresh                               | Upload server, re-encode WebP                           |
-| Admin dan member pakai 1 gerbang login                                             | Risiko eskalasi                                   | Admin tetap lewat login CMS yang sudah ada              |
-| Status klaim: member dibuat `Diajukan`, tapi peta status admin memakai `Requested` | **Bug prototype**: tombol admin tidak pernah maju | Satu set status baku (lihat bagian 5)                   |
-| Pilihan hadiah 50 stempel lewat `prompt()`                                         | Tidak bisa divalidasi                             | Field pilihan di form klaim                             |
-| Angka admin hardcode (`128`, `7`), `isPastShow` hardcode `'2026-10-13'`            | Data palsu                                        | Dihitung dari DB dan tanggal server                     |
-| Campuran label Indonesia/Inggris ("Verify & collect stamp", "Save picture")        | Tidak konsisten                                   | Seragam Bahasa Indonesia                                |
-| CSS menumpuk 4 arah desain (`Direction 02`, `04`, dst)                             | CSS mati, berat (~134 KB file)                    | Hanya arah final yang dibawa, dibersihkan               |
+| Di prototype (browser)                                                                                                          | Di Laravel                                                                                                      |
+| ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `users[]` + login di `localStorage`                                                                                             | Model `Member`, guard `member`, tabel `members`, sandi `Hash::make` (min. 8 karakter)                           |
+| ID anggota `max(id)+1`                                                                                                          | Auto-increment `id_member`, `kode_member` diformat `IC-00248` setelah insert                                    |
+| `state.stamps` + `state.activity`                                                                                               | Tabel `ic_stempel_ledger` (sumber kebenaran) + cache `members.stempel_total`                                    |
+| `definitions[]` (5 hadiah, hardcode)                                                                                            | Tabel `ic_rewards`, diseed dari prototype dan bisa diedit di CMS                                                |
+| `state.claims` + `prompt()` pilihan A/B                                                                                         | Tabel `ic_claims` + field `opsi_dipilih` di form klaim                                                          |
+| Status klaim `Requested/Review/Approved/Fulfilled` (di kode member tertulis `Diajukan`, jadi tidak sinkron dengan tombol admin) | Satu set status baku: `diajukan` → `ditinjau` → `disetujui` → `selesai` / `ditolak`, dicatat di `ic_claim_logs` |
+| `tourEvents[]` (50 baris)                                                                                                       | Tabel `ic_events`, diseed dari prototype, CRUD + impor CSV di CMS                                               |
+| Token QR dibuat dan dicek di browser (`tokens[]`)                                                                               | Token dibuat server (`encrypted` cast), dicek di `CheckinService`; QR dirender server                           |
+| `selectedCheckins` (Set)                                                                                                        | Tabel `ic_checkins` dengan unique `(member_id, event_id)`                                                       |
+| `broadcasts[]`                                                                                                                  | Tabel `ic_broadcasts`, CRUD di CMS                                                                              |
+| `memories[]` + foto `dataURL`                                                                                                   | Tabel `ic_memories` + upload ke disk `public` (WebP) + moderasi                                                 |
+| Like di array JS                                                                                                                | Tabel `ic_memory_likes`, endpoint JSON                                                                          |
+| Avatar di `localStorage`                                                                                                        | Kolom `members.avatar` + upload server                                                                          |
+| Angka admin hardcode (`128`, `7`), `isPastShow` hardcode `2026-10-13`                                                           | Query ke DB dan `now()`                                                                                         |
+| Kredensial demo (`member123`, `admin123`)                                                                                       | Tidak dibawa. Akun demo hanya lewat seeder di environment `local`; admin tetap lewat login CMS yang sudah ada   |
+| Satu gerbang login member/admin                                                                                                 | Dipisah: member `/inner-circle/masuk`, admin `/login` yang sudah ada                                            |
+| 4 lapis CSS arah desain                                                                                                         | Hanya arah final (lavender) yang dibawa, dibersihkan jadi `inner-circle.css`                                    |
+| Label campur Indonesia/Inggris                                                                                                  | Diseragamkan Bahasa Indonesia                                                                                   |
 
 ## 4. Keputusan arsitektur
 
@@ -106,6 +112,17 @@ Section **Tour** di home saat ini hanya widget **Bandsintown**; datanya tidak ad
 ### 4.5 Stempel = buku besar (ledger)
 
 Total stempel tidak disimpan sebagai angka yang di-`++`. Sumber kebenaran adalah tabel ledger yang hanya bisa ditambah (append-only); `members.stamps_total` hanya cache yang diperbarui di transaksi yang sama. Ini memudahkan audit, koreksi admin, dan menjawab "kenapa stempel saya segini".
+
+### 4.6 Struktur kode Laravel
+
+- **Controller tipis, logika di service.** `CheckinService` (verifikasi + ledger), `ClaimService` (cek ambang + ubah status). Controller hanya validasi dan memanggil service.
+- **Form Request** per aksi tulis (`RegisterMemberRequest`, `CheckinRequest`, `ClaimRewardRequest`, `StoreMemoryRequest`), pesan error Bahasa Indonesia seperti validasi yang sudah ada.
+- **Policy** `MemoryPolicy` (hanya pemilik boleh hapus) dan `ClaimPolicy`.
+- **Relasi Eloquent:** `Member` hasMany `checkins`, `ledger`, `claims`, `memories`; `ic_event` hasMany `checkins`; `ic_reward` hasMany `claims`.
+- **Scope** `ic_event::bisaCheckin()` (bukan private, venue terisi, status aktif, di dalam jendela waktu) supaya aturan itu hanya ditulis sekali.
+- **Scheduled command** (`schedule:run`) untuk menandai event `selesai` setelah jendela check-in tutup.
+- **Blade component** untuk kartu anggota, kartu hadiah, kartu kenangan, dan kartu event, agar dipakai ulang di landing, beranda, dan preview CMS.
+- **Seeder** terpisah: `innerCircleSeeder` (hadiah + event) dan demo seeder khusus `local`.
 
 ## 5. Skema database
 
@@ -309,14 +326,16 @@ Ukuran: **S** kecil, **M** sedang, **L** besar. Tiap fase selesai berarti: migra
 
 - `app/Models/member.php`, `ic_event.php`, `ic_checkin.php`, `ic_stempel_ledger.php`, `ic_reward.php`, `ic_claim.php`, `ic_claim_log.php`, `ic_broadcast.php`, `ic_memory.php`
 - `app/Http/Controllers/InnerCircle/` (auth, home, rewards, checkin, community, profile) dan `app/Http/Controllers/Dashboard/InnerCircle/` (event, hadiah, klaim, broadcast, kenangan, anggota)
-- `app/Services/CheckinService.php`, `app/Support/ImageProcessor.php`
+- `app/Services/CheckinService.php`, `app/Services/ClaimService.php`, `app/Support/ImageProcessor.php`
+- `app/Http/Requests/` (RegisterMember, Checkin, ClaimReward, StoreMemory), `app/Policies/` (Memory, Claim)
+- `app/Console/Commands/` penutup event otomatis, dijadwalkan di `routes/console.php`
 - `database/migrations/*` (9 tabel bagian 5), `database/seeders/innerCircleSeeder.php` (+ demo seeder khusus `local`)
 - `resources/views/template/innerCircleLayout.blade.php`, `resources/views/inner-circle/*`, `resources/views/pages/dashboard-pages/inner-circle/*`, `resources/views/components/inner-circle-teaser.blade.php`
 - `resources/css/inner-circle.css`, `resources/js/inner-circle.js`
 
 **Diubah**
 
-- `routes/web.php`, `config/auth.php`, `vite.config.js`, `database/seeders/DatabaseSeeder.php`
+- `routes/web.php`, `routes/console.php`, `config/auth.php`, `vite.config.js`, `database/seeders/DatabaseSeeder.php`
 - `resources/views/components/navbar.blade.php`, `resources/views/pages/home.blade.php`
 - `resources/views/components/dashboard/navbar.blade.php` (1 menu baru)
 - `app/Http/Controllers/SeoController.php` (sitemap + robots)
