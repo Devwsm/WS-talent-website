@@ -82,6 +82,40 @@ class InnerCircleDummy
         ]);
     }
 
+    /** Riwayat stempel lengkap untuk halaman Profil (Fase 4: dari tabel ic_stempel). */
+    public static function riwayat(): array
+    {
+        return self::aktivitas();
+    }
+
+    /** Pengajuan hadiah milik anggota contoh (hadiah 10 sudah diajukan). */
+    public static function klaim(): array
+    {
+        return [
+            (object) [
+                'target_stempel' => 10,
+                'judul' => 'Hadiah Pertama',
+                'opsi' => null,
+                'diajukan_pada' => Carbon::parse('2026-10-21'),
+                'status' => 'diajukan',
+            ],
+        ];
+    }
+
+    /** Tiga angka ringkasan di halaman Profil. */
+    public static function metrik(): object
+    {
+        $terbuka = collect(self::rewards())
+            ->filter(fn($r) => $r->status_member !== 'terkunci')
+            ->count();
+
+        return (object) [
+            'total_stempel' => self::member()->stempel_total,
+            'tahap_terbuka' => $terbuka,
+            'jumlah_klaim' => count(self::klaim()),
+        ];
+    }
+
     /**
      * Jadwal contoh dari database/data/ic_events_contoh.csv (50 baris, tentatif).
      *

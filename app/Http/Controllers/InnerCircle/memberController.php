@@ -4,63 +4,102 @@ namespace App\Http\Controllers\InnerCircle;
 
 use App\Http\Controllers\Controller;
 use App\Support\InnerCircleDummy;
+use Illuminate\Http\Request;
 
 /**
  * Layar anggota WS Inner Circle.
- * Fase 1: semua layar masih placeholder + pratinjau komponen (data dummy).
- * Fase 2 mengganti placeholder dengan layar asli; Fase 4+ mengganti dummy dengan Eloquent.
+ * Fase 2: semua layar sudah asli, datanya masih dari InnerCircleDummy.
+ * Fase 4+ mengganti InnerCircleDummy dengan Eloquent; nama variabel ke view tidak berubah.
  */
 class memberController extends Controller
 {
     public function beranda()
     {
-        return $this->placeholder('Beranda', 'Musik seru. Teman baru.');
+        return view('pages.inner-circle.beranda', [
+            'member' => InnerCircleDummy::member(),
+            'berikutnya' => InnerCircleDummy::berikutnya(),
+            'aktivitas' => array_slice(InnerCircleDummy::aktivitas(), 0, 5),
+        ]);
     }
 
     public function hadiah()
     {
-        return $this->placeholder('Hadiah', 'Kumpulkan • Buka • Rasakan');
+        return view('pages.inner-circle.hadiah', [
+            'member' => InnerCircleDummy::member(),
+            'rewards' => InnerCircleDummy::rewards(),
+        ]);
     }
 
-    public function checkin()
+    /**
+     * Filter jadwal lewat GET (?bulan=&tipe=&q=) dan acara terpilih lewat ?acara=KODE,
+     * jadi bisa dibagikan dan tetap jalan tanpa JavaScript.
+     */
+    public function checkin(Request $request)
     {
-        return $this->placeholder('Check-in', 'Datang. Kumpulkan stempel.');
+        $bulan = $this->teks($request, 'bulan');
+        $tipe = $this->teks($request, 'tipe');
+
+        $filter = [
+            'bulan' => array_key_exists((int) $bulan, config('inner_circle.bulan_event')) ? (string) (int) $bulan : 'all',
+            'tipe' => array_key_exists($tipe, config('inner_circle.tipe_event')) ? $tipe : 'all',
+            'q' => mb_substr(trim($this->teks($request, 'q')), 0, 60),
+        ];
+
+        // Parameter filter yang bukan nilai bawaan, dipakai ulang di tautan tiap kartu acara.
+        $parameterFilter = array_filter([
+            'bulan' => $filter['bulan'] !== 'all' ? $filter['bulan'] : null,
+            'tipe' => $filter['tipe'] !== 'all' ? $filter['tipe'] : null,
+            'q' => $filter['q'] !== '' ? $filter['q'] : null,
+        ]);
+
+        $kode = $this->teks($request, 'acara');
+        $eventDipilih = collect(InnerCircleDummy::events())
+            ->first(fn($e) => $e->kode === $kode && $e->bisa_checkin);
+
+        return view('pages.inner-circle.checkin', [
+            'member' => InnerCircleDummy::member(),
+            'events' => InnerCircleDummy::events($filter),
+            'totalEvents' => InnerCircleDummy::totalEvents(),
+            'filter' => $filter,
+            'parameterFilter' => $parameterFilter,
+            'eventDipilih' => $eventDipilih,
+        ]);
     }
 
-    public function komunitas()
+    /** Tab lewat ?tab=pengumuman|galeri dan kategori galeri lewat ?kategori=festival|club|personal. */
+    public function komunitas(Request $request)
     {
-        return $this->placeholder('Komunitas', 'Lebih banyak musik • Teman yang sama');
+        $tab = $this->teks($request, 'tab') === 'galeri' ? 'galeri' : 'pengumuman';
+
+        $kategori = $this->teks($request, 'kategori');
+        $kategori = array_key_exists($kategori, config('inner_circle.kategori_kenangan')) ? $kategori : 'all';
+
+        return view('pages.inner-circle.komunitas', [
+            'member' => InnerCircleDummy::member(),
+            'tab' => $tab,
+            'kategori' => $kategori,
+            'unggulan' => InnerCircleDummy::pengumumanUnggulan(),
+            'pengumuman' => InnerCircleDummy::pengumuman(),
+            'kenangan' => InnerCircleDummy::kenangan($kategori === 'all' ? null : $kategori),
+            'jumlahKenangan' => count(InnerCircleDummy::kenangan()),
+        ]);
     }
 
     public function profil()
     {
-        return $this->placeholder('Profil', 'Perjalanan Inner Circle-mu');
-    }
-
-    /** Empat event contoh yang mewakili tiap kondisi: lewat, sudah check-in, privat, tanpa venue. */
-    private function contohEvent(): array
-    {
-        $kode = ['WS26-1001', 'WS26-1008', 'WS26-1021', 'WS26-1023'];
-
-        return array_values(array_filter(
-            InnerCircleDummy::events(['bulan' => 10]),
-            fn($e) => in_array($e->kode, $kode, true),
-        ));
-    }
-
-    private function placeholder(string $judul, string $eyebrow)
-    {
-        return view('pages.inner-circle.placeholder', [
-            'judul' => $judul,
-            'eyebrow' => $eyebrow,
+        return view('pages.inner-circle.profil', [
             'member' => InnerCircleDummy::member(),
-            'rewards' => InnerCircleDummy::rewards(),
-            'berikutnya' => InnerCircleDummy::berikutnya(),
-            'aktivitas' => InnerCircleDummy::aktivitas(),
-            'events' => $this->contohEvent(),
-            'unggulan' => InnerCircleDummy::pengumumanUnggulan(),
-            'pengumuman' => array_slice(InnerCircleDummy::pengumuman(), 0, 2),
-            'kenangan' => array_slice(InnerCircleDummy::kenangan(), 0, 2),
+            'metrik' => InnerCircleDummy::metrik(),
+            'riwayat' => InnerCircleDummy::riwayat(),
+            'klaim' => InnerCircleDummy::klaim(),
         ]);
+    }
+
+    /** Ambil parameter query sebagai teks; array atau nilai aneh dianggap kosong. */
+    private function teks(Request $request, string $kunci): string
+    {
+        $nilai = $request->query($kunci);
+
+        return is_string($nilai) ? $nilai : '';
     }
 }

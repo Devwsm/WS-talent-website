@@ -18,7 +18,7 @@
     @stack('head')
 </head>
 
-<body class="ic-app">
+<body class="ic-app" data-ic-toast="{{ session('ic_toast') }}">
     <a class="ic-lewati" href="#konten">Lewati ke konten</a>
 
     <div class="ic-shell">
@@ -28,8 +28,8 @@
                 <p class="ic-bar__sub">INNER CIRCLE</p>
             </div>
             <div class="ic-bar__aksi">
-                {{-- Sementara: tombol keluar baru berfungsi setelah login anggota ada (Fase 4). --}}
-                <button type="button" class="ic-tombol ic-tombol--garis" data-ic-keluar>Keluar</button>
+                {{-- Sementara berupa tautan ke halaman Masuk. Jadi form POST (logout guard `member`) di Fase 4. --}}
+                <a href="{{ route('ic.masuk') }}" class="ic-tombol ic-tombol--garis">Keluar</a>
                 <a href="{{ route('ic.profil') }}" class="ic-bar__avatar" aria-label="Profil saya">
                     <x-inner-circle.avatar :member="$member" />
                 </a>

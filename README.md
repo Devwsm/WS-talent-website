@@ -20,7 +20,7 @@ npm install && npm run dev
 
 # Rencana Penerapan: WS Inner Circle
 
-> Status: **Fase 1 selesai** (kerangka UI, flag fitur mati secara bawaan). Berikutnya: Fase 2.
+> Status: **Fase 1 dan 2 selesai** (kerangka UI dan 7 layar anggota dengan data contoh; flag fitur mati secara bawaan). Berikutnya: Fase 3.
 > Dibuat: 21 Oktober 2026.
 > Acuan: `WS_Inner_Circle.html` (prototype native, satu file, data di `localStorage`) dan 19 screenshot UI di `inner-circle-ui-prototype.zip`.
 
@@ -188,13 +188,26 @@ Cek hasil:
 - Pratinjau komponen: ubin hadiah (terbuka, terkunci, lebar), kartu event (lewat, sudah check-in, privat, tanpa venue), aktivitas, pengumuman, kenangan, dan modal (tutup dengan silang, Esc, klik latar).
 - Warna dan font mengikuti screenshot prototype.
 
-### Fase 2: UI anggota (data dummy)
+### Fase 2: UI anggota (data dummy) (selesai)
 
 **Urutan layar:** Masuk dan Daftar → Beranda → Hadiah → Check-in → Komunitas → Profil.
 
-File: `resources/views/pages/inner-circle/{masuk,daftar,beranda,hadiah,checkin,komunitas,profil}.blade.php` dan `app/Http/Controllers/InnerCircle/{authController,memberController}.php` (isi sementara dari dummy).
+File yang dibuat atau diubah:
 
-Yang sudah hidup di fase ini: filter Check-in lewat GET, tab dan filter kategori Komunitas, modal unggah kenangan, modal pilihan A/B hadiah 50, toast. Form belum menyimpan apa pun. Tombol kamera dan unggah QR ada tapi belum berfungsi (Fase 4).
+1. `config/inner_circle.php`: tambah `status_klaim` (label + warna lencana) dan `bulan_event`
+2. `app/Support/InnerCircleDummy.php`: tambah `riwayat()`, `klaim()`, `metrik()`
+3. `routes/web.php`: `ic.masuk`, `ic.masuk.proses`, `ic.daftar`, `ic.daftar.proses` (POST memakai `throttle:10,1`)
+4. `app/Http/Controllers/InnerCircle/authController.php` (baru): form hanya divalidasi, lalu diarahkan ke Beranda. Kata sandi tidak ikut disimpan ke sesi
+5. `app/Http/Controllers/InnerCircle/memberController.php`: lima layar asli; filter Check-in dan tab Komunitas dibaca dari GET
+6. `resources/views/template/innerCircleLayout.blade.php`: tombol Keluar jadi tautan ke Masuk, toast dari flash sesi
+7. `resources/views/template/innerCircleAuthLayout.blade.php` (baru): layout kartu tengah untuk Masuk dan Daftar
+8. `resources/views/pages/inner-circle/{masuk,daftar,beranda,hadiah,checkin,komunitas,profil}.blade.php`
+9. `resources/css/inner-circle.css` dan `resources/js/inner-circle.js`
+10. `public/aset/inner-circle/ikon/ok-hand.webp` (Fluent Emoji 3D, MIT)
+
+Hapus manual: `resources/views/pages/inner-circle/placeholder.blade.php` (sudah tidak dipakai controller).
+
+Yang sudah hidup di fase ini: filter Check-in lewat GET (`?bulan=&tipe=&q=&acara=`), tab dan filter kategori Komunitas (`?tab=&kategori=`), modal unggah kenangan, modal pilihan A/B hadiah 50, konfirmasi klaim, tampil/sembunyi kata sandi, pratinjau foto profil, tanda suka (hanya tampilan), toast. Tombol kamera, unggah QR, simpan foto, hapus foto, klaim, dan unggah kenangan hanya menampilkan toast "segera hadir" (Fase 4 sampai 6).
 
 Cek hasil:
 
@@ -202,6 +215,7 @@ Cek hasil:
 - Event privat dan event tanpa venue tampil tapi tidak bisa dipilih.
 - Tiap halaman punya satu `<h1>`. Tidak ada kata "simulasi", "demo", atau "dummy" di teks yang terlihat.
 - Untuk anggota dummy 68 stempel: hadiah 10 `diajukan`, 25 dan 50 `terbuka`, 100 dan 250 `terkunci` (sama seperti screenshot).
+- Catatan: pastikan `public/hot` (sisa `npm run dev`) tidak ikut ter-upload ke hosting, kalau ikut, CSS dan JS halaman akan dicari ke server dev.
 
 ### Fase 3: UI admin di dashboard CMS (data dummy)
 

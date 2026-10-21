@@ -48,4 +48,24 @@ return [
         'personal' => ['label' => 'Momen pribadi', 'ikon' => 'sparkles'],
     ],
 
+    /*
+    | Status pengajuan hadiah (satu set baku untuk anggota dan admin):
+    | diajukan -> ditinjau -> disetujui -> selesai, atau ditolak.
+    | `warna` dipakai sebagai modifier lencana: .ic-pil--{warna}.
+    */
+    'status_klaim' => [
+        'diajukan' => ['label' => 'Diajukan', 'warna' => 'kuning'],
+        'ditinjau' => ['label' => 'Ditinjau', 'warna' => 'kuning'],
+        'disetujui' => ['label' => 'Disetujui', 'warna' => 'biru'],
+        'selesai' => ['label' => 'Selesai', 'warna' => 'hijau'],
+        'ditolak' => ['label' => 'Ditolak', 'warna' => 'merah'],
+    ],
+
+    /* Pilihan bulan di filter jadwal Check-in (Kuartal IV). Kunci = nomor bulan. */
+    'bulan_event' => [
+        10 => 'Oktober',
+        11 => 'November',
+        12 => 'Desember',
+    ],
+
 ];

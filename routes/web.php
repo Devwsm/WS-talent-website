@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\dashboardController;
 use App\Http\Controllers\homeController;
+use App\Http\Controllers\InnerCircle\authController;
 use App\Http\Controllers\InnerCircle\memberController;
 use App\Http\Controllers\loginController;
 use App\Http\Controllers\profileController;
@@ -27,8 +28,14 @@ Route::prefix('/')->group(function () {
 });
 
 // WS Inner Circle — dibungkus flag INNER_CIRCLE_AKTIF (404 bila mati, lihat middleware IcAktif).
-// Fase 1: layar masih placeholder + pratinjau komponen. Layar asli menyusul di Fase 2.
+// Fase 2: semua layar anggota sudah asli tapi datanya masih contoh (App\Support\InnerCircleDummy).
+// Login/daftar baru memvalidasi form; akun dan guard `member` menyusul di Fase 4.
 Route::prefix('/inner-circle')->middleware('icAktif')->name('ic.')->group(function () {
+    Route::get('/masuk', [authController::class, 'masuk'])->name('masuk');
+    Route::post('/masuk', [authController::class, 'prosesMasuk'])->name('masuk.proses')->middleware('throttle:10,1');
+    Route::get('/daftar', [authController::class, 'daftar'])->name('daftar');
+    Route::post('/daftar', [authController::class, 'prosesDaftar'])->name('daftar.proses')->middleware('throttle:10,1');
+
     Route::get('/', [memberController::class, 'beranda'])->name('beranda');
     Route::get('/hadiah', [memberController::class, 'hadiah'])->name('hadiah');
     Route::get('/check-in', [memberController::class, 'checkin'])->name('checkin');

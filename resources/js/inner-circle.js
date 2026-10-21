@@ -1,7 +1,9 @@
 /*
  * WS Inner Circle — perilaku UI dasar (vanilla JS, tanpa framework).
- * Fase 1: modal, notifikasi/konfirmasi bertema lavender, dan penampung tombol "Keluar".
- * Fitur lain (scanner QR, suka, klaim) ditambahkan di fase berikutnya.
+ * Fase 1: modal dan notifikasi/konfirmasi bertema lavender.
+ * Fase 2: toast dari flash sesi, tombol "segera hadir", tampil/sembunyi kata sandi, filter otomatis,
+ *         pratinjau foto profil, validasi ukuran berkas, tombol klaim, dan suka (belum disimpan).
+ * Scanner QR, simpan suka, dan klaim sungguhan ditambahkan di fase berikutnya.
  */
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
@@ -82,8 +84,126 @@ document.addEventListener("keydown", (e) => {
     }
 });
 
-// ---------- Keluar (sementara) ----------
-// Berfungsi sungguhan setelah login anggota tersedia (Fase 4).
-document.querySelector("[data-ic-keluar]")?.addEventListener("click", () => {
-    window.icToast("Keluar akan aktif setelah login anggota tersedia.", "info");
+// ---------- Toast dari flash sesi ----------
+// Layout menaruh pesan flash di <body data-ic-toast="...">, mis. setelah masuk.
+const pesanAwal = document.body.dataset.icToast;
+if (pesanAwal) {
+    window.icToast(pesanAwal);
+}
+
+// ---------- Fitur yang belum aktif ----------
+// Tombol atau form dengan data-ic-segera="pesan" hanya menampilkan toast (Fase 2: tampilan dulu).
+const PESAN_SEGERA = "Fitur ini segera hadir.";
+
+document.addEventListener("click", (e) => {
+    const tombol = e.target.closest("button[data-ic-segera]");
+    if (!tombol || tombol.type === "submit") return;
+    window.icToast(tombol.dataset.icSegera || PESAN_SEGERA, "info");
 });
+
+document.addEventListener("submit", (e) => {
+    const form = e.target.closest("form[data-ic-segera]");
+    if (!form) return;
+    e.preventDefault();
+    window.icToast(form.dataset.icSegera || PESAN_SEGERA, "info");
+    tutupModal(form.closest(".ic-modal"));
+});
+
+// ---------- Tampilkan kata sandi ----------
+document.addEventListener("change", (e) => {
+    const centang = e.target.closest("[data-ic-tampil-sandi]");
+    if (!centang) return;
+    document
+        .querySelectorAll(centang.dataset.icTampilSandi)
+        .forEach(
+            (input) => (input.type = centang.checked ? "text" : "password"),
+        );
+});
+
+// ---------- Filter Check-in: kirim otomatis saat pilihan berubah ----------
+// Tanpa JS tombol "Terapkan" tetap berfungsi.
+document.addEventListener("change", (e) => {
+    const pilihan = e.target.closest("select[data-ic-otomatis]");
+    pilihan?.form?.submit();
+});
+
+// ---------- Validasi ukuran berkas ----------
+// Input dengan data-ic-maks-mb menolak berkas yang terlalu besar sebelum dikirim.
+document.addEventListener("change", (e) => {
+    const input = e.target.closest("input[type=file][data-ic-maks-mb]");
+    const berkas = input?.files?.[0];
+    if (!berkas) return;
+    const maks = Number(input.dataset.icMaksMb);
+    if (berkas.size > maks * 1024 * 1024) {
+        input.value = "";
+        window.icToast(`Ukuran foto maksimal ${maks} MB.`, "error");
+    }
+});
+
+// ---------- Klaim hadiah ----------
+// Hadiah tanpa pilihan: minta konfirmasi dulu. Pengajuan sungguhan ditambahkan di Fase 5.
+document.addEventListener("click", async (e) => {
+    const tombol = e.target.closest("[data-ic-klaim]");
+    if (!tombol) return;
+    const hasil = await window.icKonfirmasi({
+        title: "Ajukan hadiah ini?",
+        text: tombol.dataset.judul,
+        confirmButtonText: "Ya, ajukan",
+    });
+    if (hasil.isConfirmed) {
+        window.icToast("Pengajuan hadiah segera aktif.", "info");
+    }
+});
+
+// ---------- Suka kenangan ----------
+// Hanya mengubah tampilan di halaman ini; tersimpan ke server di Fase 6.
+document.addEventListener("click", (e) => {
+    const tombol = e.target.closest("[data-ic-suka]");
+    if (!tombol) return;
+    const aktif = tombol.getAttribute("aria-pressed") !== "true";
+    const angka = tombol.querySelector("span");
+    tombol.setAttribute("aria-pressed", String(aktif));
+    tombol.classList.toggle("is-suka", aktif);
+    tombol
+        .querySelector("i")
+        ?.setAttribute("class", `bi ${aktif ? "bi-heart-fill" : "bi-heart"}`);
+    if (angka)
+        angka.textContent = String(
+            Math.max(0, Number(angka.textContent) + (aktif ? 1 : -1)),
+        );
+});
+
+// ---------- Foto profil: pilih dan pratinjau ----------
+const inputFoto = document.getElementById("ic-foto-input");
+if (inputFoto) {
+    const pratinjau = document.getElementById("ic-foto-pratinjau");
+    const tombolPilih = document.getElementById("ic-foto-pilih");
+    const tombolSimpan = document.getElementById("ic-foto-simpan");
+    const umpan = document.getElementById("ic-foto-umpan");
+    let urlSementara = null;
+
+    tombolPilih.addEventListener("click", () => inputFoto.click());
+
+    inputFoto.addEventListener("change", () => {
+        const berkas = inputFoto.files?.[0];
+        // Berkas yang terlalu besar sudah dikosongkan oleh validasi ukuran di atas.
+        if (!berkas) {
+            tombolSimpan.disabled = true;
+            return;
+        }
+        if (urlSementara) URL.revokeObjectURL(urlSementara);
+        urlSementara = URL.createObjectURL(berkas);
+
+        const gambar = document.createElement("img");
+        gambar.src = urlSementara;
+        gambar.alt = "Pratinjau foto profil baru";
+        pratinjau.replaceChildren(gambar);
+
+        tombolSimpan.disabled = false;
+        umpan.textContent = "Foto dipilih. Tekan Simpan foto untuk memakainya.";
+    });
+
+    tombolSimpan.addEventListener("click", () => {
+        window.icToast("Simpan foto segera aktif.", "info");
+    });
+}
