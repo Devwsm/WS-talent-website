@@ -17,6 +17,9 @@
                 'pakaiCss' => false,
             ])
 
+            @include('components/errors')
+            @include('components/success')
+
             {{-- Cari: GET, jadi bisa dibagikan dan jalan tanpa JavaScript --}}
             <form method="GET" action="{{ route('ic.admin.anggota') }}" role="search"
                 class="flex flex-col sm:flex-row gap-3 rounded-3xl border border-white/10 bg-white/3 p-4 md:p-5">
@@ -46,15 +49,18 @@
                 <h2 class="font-bold uppercase tracking-wide text-sm mb-4 flex items-center gap-2">
                     <i class="bi bi-people-fill text-white/50" aria-hidden="true"></i>
                     @if ($q !== '')
-                        Hasil pencarian ({{ count($anggota) }} dari {{ $totalAnggota }})
+                        Hasil pencarian ({{ $anggota->total() }} dari {{ $totalAnggota }})
                     @else
                         Anggota terdaftar ({{ $totalAnggota }})
                     @endif
                 </h2>
 
-                @if (empty($anggota))
+                @if ($anggota->isEmpty())
                     @include('components/dashboard/card/empty-state', [
-                        'message' => 'Tidak ada anggota yang cocok dengan pencarian ini.',
+                        'message' =>
+                            $q !== ''
+                                ? 'Tidak ada anggota yang cocok dengan pencarian ini.'
+                                : 'Belum ada anggota yang mendaftar.',
                     ])
                 @else
                     <ul class="grid grid-cols-1 xl:grid-cols-2 gap-3">
@@ -88,6 +94,7 @@
                                     </p>
                                     <button type="button" data-ic-stempel data-nama="{{ $m->nama }}"
                                         data-kode="{{ $m->kode_member }}"
+                                        data-aksi="{{ route('ic.admin.anggota.stempel', $m->id_member) }}"
                                         class="h-11 px-4 inline-flex items-center gap-2 rounded-full bg-white text-black text-xs font-semibold hover:bg-white/80 transition-colors">
                                         <i class="bi bi-plus-circle-fill" aria-hidden="true"></i> Tambah stempel
                                     </button>
@@ -95,6 +102,7 @@
                             </li>
                         @endforeach
                     </ul>
+                    @include('components.dashboard.pagination', ['paginator' => $anggota])
                 @endif
             </div>
         </div>
@@ -115,8 +123,8 @@
                     </button>
                 </div>
 
-                <form method="dialog" data-ic-segera="Tambah stempel manual aktif di Fase 4."
-                    class="flex flex-col flex-1 min-h-0 overflow-hidden">
+                <form method="POST" action="#" id="formStempel" class="flex flex-col flex-1 min-h-0 overflow-hidden">
+                    @csrf
                     <div class="flex-1 min-h-0 p-6 flex flex-col gap-4 overflow-y-auto">
                         <div class="flex flex-col gap-1.5">
                             <label for="stempel-anggota"
@@ -166,6 +174,7 @@
                 const tombol = e.target.closest('[data-ic-stempel]');
                 if (!tombol) return;
                 document.getElementById('stempel-anggota').value = `${tombol.dataset.nama} (${tombol.dataset.kode})`;
+                document.getElementById('formStempel').action = tombol.dataset.aksi;
                 dialogStempel.showModal();
                 document.getElementById('stempel-jumlah').focus();
             });

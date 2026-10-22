@@ -3,7 +3,8 @@
  * Fase 1: modal dan notifikasi/konfirmasi bertema lavender.
  * Fase 2: toast dari flash sesi, tombol "segera hadir", tampil/sembunyi kata sandi, filter otomatis,
  *         pratinjau foto profil, validasi ukuran berkas, tombol klaim, dan suka (belum disimpan).
- * Scanner QR, simpan suka, dan klaim sungguhan ditambahkan di fase berikutnya.
+ * Fase 4: pemindai QR check-in (kamera dan unggah gambar) memakai pustaka qr-scanner yang dimuat
+ *         hanya saat dibutuhkan. Simpan suka dan klaim sungguhan ditambahkan di fase berikutnya.
  */
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
@@ -54,6 +55,7 @@ function bukaModal(id, pemicu) {
 function tutupModal(modal) {
     if (!modal || modal.hidden) return;
     modal.hidden = true;
+    if (modal.id === "modal-pindai") hentikanPemindai();
     document.body.classList.remove("ic-modal-terbuka");
     pemicuTerakhir?.focus?.();
 }
@@ -207,3 +209,108 @@ if (inputFoto) {
         window.icToast("Simpan foto segera aktif.", "info");
     });
 }
+
+// ---------- Pindai QR check-in ----------
+// QR berisi URL .../inner-circle/check-in?kode=WS-XXXXXXXXXXXX. Yang diambil hanya tokennya; anggota tetap
+// menekan Verifikasi sendiri. Kamera butuh HTTPS (atau localhost) dan izin dari pengguna.
+let pemindai = null;
+let galatTerakhirPada = 0;
+
+const muatQrScanner = async () => (await import("qr-scanner")).default;
+
+function ambilToken(teks) {
+    const cocok = String(teks).match(/WS-[A-Za-z0-9]{12}/i);
+    return cocok ? cocok[0].toUpperCase() : null;
+}
+
+function terapkanHasilQr(teks) {
+    const token = ambilToken(teks);
+    const input = document.getElementById("kode");
+    if (!token || !input) {
+        // Kamera membaca banyak bingkai per detik: batasi pemberitahuan galat agar tidak menumpuk.
+        if (Date.now() - galatTerakhirPada > 3000) {
+            galatTerakhirPada = Date.now();
+            window.icToast(
+                "QR ini bukan QR check-in WS Inner Circle.",
+                "error",
+            );
+        }
+        return false;
+    }
+    input.value = token;
+    window.icToast("QR terbaca. Tekan Verifikasi untuk mendapat stempel.");
+    input.form?.querySelector("button[type=submit]")?.focus();
+    return true;
+}
+
+async function mulaiPemindai() {
+    const video = document.getElementById("ic-pindai-video");
+    const umpan = document.getElementById("ic-pindai-umpan");
+    if (!video || !umpan) return;
+    umpan.textContent = "Menyalakan kamera…";
+    try {
+        const QrScanner = await muatQrScanner();
+        if (!(await QrScanner.hasCamera())) {
+            umpan.textContent =
+                "Kamera tidak ditemukan. Ketik kodenya atau unggah gambar QR.";
+            return;
+        }
+        pemindai = new QrScanner(
+            video,
+            (hasil) => {
+                if (terapkanHasilQr(hasil.data)) {
+                    tutupModal(document.getElementById("modal-pindai"));
+                }
+            },
+            {
+                preferredCamera: "environment",
+                returnDetailedScanResult: true,
+                highlightScanRegion: true,
+                maxScansPerSecond: 8,
+            },
+        );
+        await pemindai.start();
+        umpan.textContent = "Arahkan kamera ke QR di lokasi.";
+    } catch {
+        umpan.textContent =
+            "Kamera tidak bisa dipakai. Izinkan akses kamera di browser, atau ketik kode / unggah gambar QR.";
+    }
+}
+
+function hentikanPemindai() {
+    pemindai?.stop();
+    pemindai?.destroy();
+    pemindai = null;
+}
+
+document.addEventListener("click", (e) => {
+    const buka = e.target.closest("[data-ic-pindai-buka]");
+    if (buka) {
+        bukaModal("modal-pindai", buka);
+        mulaiPemindai();
+        return;
+    }
+    if (e.target.closest("[data-ic-pindai-berkas]")) {
+        document.getElementById("ic-qr-berkas")?.click();
+    }
+});
+
+document.addEventListener("change", async (e) => {
+    const input = e.target.closest("#ic-qr-berkas");
+    const berkas = input?.files?.[0];
+    if (!berkas) return;
+    try {
+        const QrScanner = await muatQrScanner();
+        const hasil = await QrScanner.scanImage(berkas, {
+            returnDetailedScanResult: true,
+        });
+        terapkanHasilQr(hasil.data);
+    } catch {
+        window.icToast(
+            "QR tidak terbaca dari gambar ini. Coba foto yang lebih jelas.",
+            "error",
+        );
+    } finally {
+        input.value = "";
+    }
+});

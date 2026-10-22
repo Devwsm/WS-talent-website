@@ -29,30 +29,44 @@ Route::prefix('/')->group(function () {
 });
 
 // WS Inner Circle — dibungkus flag INNER_CIRCLE_AKTIF (404 bila mati, lihat middleware IcAktif).
-// Fase 2: semua layar anggota sudah asli tapi datanya masih contoh (App\Support\InnerCircleDummy).
-// Login/daftar baru memvalidasi form; akun dan guard `member` menyusul di Fase 4.
+// Fase 4: akun anggota (guard `member`), check-in, dan stempel sudah tersambung ke database.
+// Hadiah dan Komunitas masih memakai data contoh (App\Support\InnerCircleDummy) sampai Fase 5-6.
 Route::prefix('/inner-circle')->middleware('icAktif')->name('ic.')->group(function () {
     Route::get('/masuk', [authController::class, 'masuk'])->name('masuk');
     Route::post('/masuk', [authController::class, 'prosesMasuk'])->name('masuk.proses')->middleware('throttle:10,1');
     Route::get('/daftar', [authController::class, 'daftar'])->name('daftar');
     Route::post('/daftar', [authController::class, 'prosesDaftar'])->name('daftar.proses')->middleware('throttle:10,1');
 
-    Route::get('/', [memberController::class, 'beranda'])->name('beranda');
-    Route::get('/hadiah', [memberController::class, 'hadiah'])->name('hadiah');
-    Route::get('/check-in', [memberController::class, 'checkin'])->name('checkin');
-    Route::get('/komunitas', [memberController::class, 'komunitas'])->name('komunitas');
-    Route::get('/profil', [memberController::class, 'profil'])->name('profil');
+    Route::middleware('auth:member')->group(function () {
+        Route::post('/keluar', [authController::class, 'keluar'])->name('keluar');
+
+        Route::get('/', [memberController::class, 'beranda'])->name('beranda');
+        Route::get('/hadiah', [memberController::class, 'hadiah'])->name('hadiah');
+        Route::get('/check-in', [memberController::class, 'checkin'])->name('checkin');
+        Route::post('/check-in', [memberController::class, 'prosesCheckin'])->name('checkin.proses')->middleware('throttle:ic-checkin');
+        Route::get('/komunitas', [memberController::class, 'komunitas'])->name('komunitas');
+        Route::get('/profil', [memberController::class, 'profil'])->name('profil');
+    });
 });
 
 Route::prefix('/dashboard')->middleware('cekLogin')->group(function () {
     Route::get('/', [dashboardController::class, 'dashboard'])->name('dashboard');
 
     // WS Inner Circle — panel admin di dashboard CMS (7 tab), ikut flag INNER_CIRCLE_AKTIF (404 bila mati).
-    // Fase 3: tampilan saja, datanya contoh (App\Support\InnerCircleDummy). Route simpan menyusul di Fase 4-6.
+    // Fase 4: Ringkasan, Anggota, dan Acara & QR sudah memakai database. Tab lain masih data contoh (Fase 5-6).
     Route::prefix('/inner-circle')->middleware('icAktif')->name('ic.admin.')->group(function () {
         Route::get('/', [adminController::class, 'ringkasan'])->name('ringkasan');
         Route::get('/anggota', [adminController::class, 'anggota'])->name('anggota');
+        Route::post('/anggota/{id}/stempel', [adminController::class, 'tambahStempel'])->whereNumber('id')->name('anggota.stempel')->middleware('throttle:10,1');
+
         Route::get('/acara', [adminController::class, 'acara'])->name('acara');
+        Route::post('/acara', [adminController::class, 'simpanAcara'])->name('acara.simpan')->middleware('throttle:10,1');
+        Route::post('/acara/impor', [adminController::class, 'imporAcara'])->name('acara.impor')->middleware('throttle:10,1');
+        Route::put('/acara/{kode}', [adminController::class, 'ubahAcara'])->name('acara.ubah')->middleware('throttle:10,1');
+        Route::delete('/acara/{kode}', [adminController::class, 'hapusAcara'])->name('acara.hapus')->middleware('throttle:10,1');
+        Route::post('/acara/{kode}/token', [adminController::class, 'tokenBaru'])->name('acara.token')->middleware('throttle:10,1');
+        Route::get('/acara/{kode}/qr', [adminController::class, 'unduhQr'])->name('acara.qr');
+        Route::get('/acara/{kode}/cetak', [adminController::class, 'cetakQr'])->name('acara.cetak');
         Route::get('/klaim', [adminController::class, 'klaim'])->name('klaim');
         Route::get('/hadiah', [adminController::class, 'hadiah'])->name('hadiah');
         Route::get('/pengumuman', [adminController::class, 'pengumuman'])->name('pengumuman');

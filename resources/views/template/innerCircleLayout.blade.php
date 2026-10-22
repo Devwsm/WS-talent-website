@@ -28,8 +28,11 @@
                 <p class="ic-bar__sub">INNER CIRCLE</p>
             </div>
             <div class="ic-bar__aksi">
-                {{-- Sementara berupa tautan ke halaman Masuk. Jadi form POST (logout guard `member`) di Fase 4. --}}
-                <a href="{{ route('ic.masuk') }}" class="ic-tombol ic-tombol--garis">Keluar</a>
+                {{-- Keluar wajib POST + CSRF (guard `member`); sesi admin CMS di browser yang sama tidak ikut keluar. --}}
+                <form method="POST" action="{{ route('ic.keluar') }}">
+                    @csrf
+                    <button type="submit" class="ic-tombol ic-tombol--garis">Keluar</button>
+                </form>
                 <a href="{{ route('ic.profil') }}" class="ic-bar__avatar" aria-label="Profil saya">
                     <x-inner-circle.avatar :member="$member" />
                 </a>

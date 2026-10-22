@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -16,6 +17,14 @@ return Application::configure(basePath: dirname(__DIR__))
             'cekLogin' => \App\Http\Middleware\CekLogin::class,
             'icAktif' => \App\Http\Middleware\IcAktif::class,
         ]);
+
+        // Pengunjung yang belum login: area anggota ke halaman Masuk Inner Circle,
+        // selain itu tetap ke halaman login admin seperti sebelumnya.
+        $middleware->redirectGuestsTo(
+            fn(Request $request) => $request->is('inner-circle', 'inner-circle/*')
+                ? route('ic.masuk')
+                : route('login')
+        );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

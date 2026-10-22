@@ -16,21 +16,6 @@
             'bisa_checkin' => false,
             'sudah_checkin' => false,
         ];
-
-        // Data untuk panel QR (JavaScript): satu entri per acara yang bisa check-in.
-        $dataQr = collect($acaraQr)->mapWithKeys(
-            fn($e) => [
-                $e->kode => [
-                    'venue' => $e->venue,
-                    'kota' => $e->kota,
-                    'tanggal' => $e->tanggal->locale('id')->translatedFormat('D, j M Y'),
-                    'tipe' => $tipeEvent[$e->tipe]['label'],
-                    'token' => $e->token,
-                    'buka' => $e->jendela_buka->locale('id')->translatedFormat('D, j M Y H.i') . ' WIB',
-                    'tutup' => $e->jendela_tutup->locale('id')->translatedFormat('D, j M Y H.i') . ' WIB',
-                ],
-            ],
-        );
     @endphp
 
     <div class="relative w-full flex flex-col justify-center items-center overflow-hidden">
@@ -48,6 +33,9 @@
                 'deskripsi' => 'Kelola jadwal pertunjukan dan buat QR check-in untuk tiap acara.',
             ])
 
+            @include('components/errors')
+            @include('components/success')
+
             {{-- ============ 1. PEMBUAT QR ============ --}}
             <section id="qr" aria-labelledby="judul-qr" class="flex flex-col gap-4 scroll-mt-8">
                 <h2 id="judul-qr" class="font-bold uppercase tracking-wide text-sm flex items-center gap-2">
@@ -58,10 +46,10 @@
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
                         {{-- Kiri: pilih acara dan aksi --}}
                         <div class="rounded-3xl border border-white/10 bg-white/3 p-6 md:p-8 flex flex-col gap-4">
-                            <div class="flex flex-col gap-1.5">
+                            <form method="GET" action="{{ route('ic.admin.acara') }}#qr" class="flex flex-col gap-1.5">
                                 <label for="qr-acara"
                                     class="text-sm font-semibold uppercase tracking-widest text-white/60">Acara</label>
-                                <select id="qr-acara"
+                                <select id="qr-acara" name="acara" onchange="this.form.submit()"
                                     class="bg-white/5 border border-white/15 text-white p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition scheme-dark">
                                     @foreach ($acaraQr as $e)
                                         <option class="bg-neutral-900" value="{{ $e->kode }}"
@@ -71,40 +59,55 @@
                                         </option>
                                     @endforeach
                                 </select>
+                                <noscript>
+                                    <button type="submit"
+                                        class="self-start h-11 px-5 rounded-lg border border-white/15 text-xs font-semibold uppercase tracking-widest text-white/70">Tampilkan</button>
+                                </noscript>
                                 <p class="text-xs text-white/30">Hanya acara yang bukan privat dan sudah punya venue yang
                                     bisa dipakai check-in.</p>
-                            </div>
+                            </form>
 
                             <div class="flex flex-wrap gap-2">
-                                <button type="button" id="qr-baru"
-                                    class="h-11 px-5 inline-flex items-center gap-2 text-white font-bold uppercase tracking-widest text-xs bg-red-950 hover:bg-red-900 active:scale-95 transition rounded-lg">
-                                    <i class="bi bi-arrow-repeat" aria-hidden="true"></i> Buat QR baru
-                                </button>
-                                <button type="button" data-ic-segera="Unduh QR aktif di Fase 4."
+                                <form method="POST" action="{{ route('ic.admin.acara.token', $acaraDipilih->kode) }}"
+                                    data-ic-konfirmasi data-judul="Buat QR baru?"
+                                    data-teks="QR lama langsung tidak berlaku. Cetakan QR yang sudah terpasang di venue harus diganti."
+                                    data-tombol="Ya, buat QR baru">
+                                    @csrf
+                                    <button type="submit"
+                                        class="h-11 px-5 inline-flex items-center gap-2 text-white font-bold uppercase tracking-widest text-xs bg-red-950 hover:bg-red-900 active:scale-95 transition rounded-lg">
+                                        <i class="bi bi-arrow-repeat" aria-hidden="true"></i> Buat QR baru
+                                    </button>
+                                </form>
+                                <a href="{{ route('ic.admin.acara.qr', $acaraDipilih->kode) }}" download
                                     class="h-11 px-5 inline-flex items-center gap-2 rounded-lg border border-white/15 text-xs font-semibold uppercase tracking-widest text-white/70 hover:bg-white/10 hover:text-white transition-colors">
                                     <i class="bi bi-download" aria-hidden="true"></i> Unduh
-                                </button>
-                                <button type="button" data-ic-segera="Cetak QR aktif di Fase 4."
+                                </a>
+                                <a href="{{ route('ic.admin.acara.cetak', $acaraDipilih->kode) }}" target="_blank"
+                                    rel="noopener"
                                     class="h-11 px-5 inline-flex items-center gap-2 rounded-lg border border-white/15 text-xs font-semibold uppercase tracking-widest text-white/70 hover:bg-white/10 hover:text-white transition-colors">
                                     <i class="bi bi-printer" aria-hidden="true"></i> Cetak
-                                </button>
+                                </a>
                             </div>
 
                             <dl class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                                 <div class="rounded-2xl border border-white/10 bg-white/2 p-4">
                                     <dt class="text-xs uppercase tracking-widest text-white/40">Check-in dibuka</dt>
-                                    <dd id="qr-buka" class="mt-1 font-semibold">—</dd>
+                                    <dd id="qr-buka" class="mt-1 font-semibold">
+                                        {{ $acaraDipilih->jendela_buka->locale('id')->translatedFormat('D, j M Y H.i') }}
+                                        WIB</dd>
                                 </div>
                                 <div class="rounded-2xl border border-white/10 bg-white/2 p-4">
                                     <dt class="text-xs uppercase tracking-widest text-white/40">Check-in ditutup</dt>
-                                    <dd id="qr-tutup" class="mt-1 font-semibold">—</dd>
+                                    <dd id="qr-tutup" class="mt-1 font-semibold">
+                                        {{ $acaraDipilih->jendela_tutup->locale('id')->translatedFormat('D, j M Y H.i') }}
+                                        WIB</dd>
                                 </div>
                             </dl>
 
                             <ul class="text-xs text-white/40 flex flex-col gap-1.5 list-disc pl-5">
                                 <li>Satu stempel per anggota per acara.</li>
                                 <li>Membuat QR baru mengganti token: QR lama langsung tidak berlaku.</li>
-                                <li>Jendela check-in bisa diubah per acara.</li>
+                                <li>Jendela check-in bisa diubah per acara lewat tombol ubah di jadwal.</li>
                             </ul>
                         </div>
 
@@ -116,26 +119,32 @@
                                 <span class="text-xs uppercase tracking-widest text-black/40">Kertas QR di venue</span>
                             </div>
                             <div class="p-6 flex flex-col sm:flex-row items-center gap-6">
-                                <svg id="qr-gambar" role="img" aria-label="Pratinjau kode QR check-in"
-                                    class="w-48 h-48 shrink-0 rounded-xl border border-black/10 bg-white"
-                                    viewBox="0 0 33 33" shape-rendering="crispEdges"></svg>
+                                <div id="qr-gambar" role="img"
+                                    aria-label="Kode QR check-in untuk {{ $acaraDipilih->venue }}"
+                                    class="w-48 h-48 shrink-0 rounded-xl border border-black/10 bg-white overflow-hidden [&>svg]:w-full [&>svg]:h-full">
+                                    {!! $qrSvg !!}
+                                </div>
                                 <div class="min-w-0 text-center sm:text-left">
                                     <p class="text-[11px] font-bold uppercase tracking-widest text-black/50">WS Inner Circle
                                         ·
                                         Tanda check-in</p>
-                                    <p id="qr-venue" class="text-2xl font-bold mt-1 wrap-anywhere">—</p>
-                                    <p id="qr-meta" class="text-sm text-black/60 mt-1">—</p>
+                                    <p id="qr-venue" class="text-2xl font-bold mt-1 wrap-anywhere">
+                                        {{ $acaraDipilih->venue }}</p>
+                                    <p id="qr-meta" class="text-sm text-black/60 mt-1">
+                                        {{ $acaraDipilih->kota ?? 'Kota belum diumumkan' }} ·
+                                        {{ $acaraDipilih->tanggal->locale('id')->translatedFormat('D, j M Y') }} ·
+                                        {{ $tipeEvent[$acaraDipilih->tipe]['label'] }}</p>
                                     <p id="qr-token"
                                         class="inline-block mt-3 rounded-xl bg-neutral-900 px-4 py-2 font-mono text-sm font-bold tracking-widest text-white">
-                                        —</p>
+                                        {{ $acaraDipilih->token }}</p>
                                 </div>
                             </div>
                             <p class="px-6 pb-6 text-xs text-black/50 break-all">
-                                Tautan di dalam QR: <span id="qr-tautan">—</span>
+                                Tautan di dalam QR: <span id="qr-tautan">{{ $tautanQr }}</span>
                             </p>
                             <p class="px-6 py-3 border-t border-black/10 text-xs text-black/50 bg-black/3">
-                                Gambar di atas hanya pratinjau tata letak dan belum bisa dipindai. QR asli dibuat server di
-                                Fase 4.
+                                Kamera HP biasa pun bisa memindai QR ini: anggota akan dibawa ke halaman Check-in (setelah
+                                masuk) dengan kode sudah terisi.
                             </p>
                         </div>
                     </div>
@@ -155,14 +164,16 @@
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
                     {{-- FORM --}}
                     <div class="rounded-3xl border border-white/10 bg-white/3 p-6 md:p-8">
-                        <form id="form-acara" data-ic-segera="Simpan acara aktif di Fase 4." class="flex flex-col gap-4">
+                        <form id="form-acara" method="POST" action="{{ route('ic.admin.acara.simpan') }}"
+                            class="flex flex-col gap-4">
+                            @csrf
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="flex flex-col gap-1.5">
                                     <label for="acara-tanggal"
                                         class="text-sm font-semibold uppercase tracking-widest text-white/60">Tanggal show
                                         <span class="text-red-400">*</span></label>
                                     <input type="date" id="acara-tanggal" name="tanggal" required
-                                        value="{{ $contohAcara->tanggal->format('Y-m-d') }}"
+                                        value="{{ old('tanggal', $contohAcara->tanggal->format('Y-m-d')) }}"
                                         class="bg-white/5 border border-white/15 text-white p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition scheme-dark" />
                                 </div>
                                 <div class="flex flex-col gap-1.5">
@@ -173,7 +184,7 @@
                                         class="bg-white/5 border border-white/15 text-white p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition scheme-dark">
                                         @foreach ($tipeEvent as $kunci => $t)
                                             <option class="bg-neutral-900" value="{{ $kunci }}"
-                                                @selected($kunci === $contohAcara->tipe)>{{ $t['label'] }}</option>
+                                                @selected($kunci === old('tipe', $contohAcara->tipe))>{{ $t['label'] }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -184,19 +195,43 @@
                                     <label for="acara-venue"
                                         class="text-sm font-semibold uppercase tracking-widest text-white/60">Venue</label>
                                     <input type="text" id="acara-venue" name="venue" maxlength="80"
-                                        placeholder="Contoh: Superhouse Satrio"
+                                        value="{{ old('venue') }}" placeholder="Contoh: Superhouse Satrio"
                                         class="bg-white/5 border border-white/15 text-white placeholder-white/30 p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition" />
                                 </div>
                                 <div class="flex flex-col gap-1.5">
                                     <label for="acara-kota"
                                         class="text-sm font-semibold uppercase tracking-widest text-white/60">Kota</label>
                                     <input type="text" id="acara-kota" name="kota" maxlength="60"
-                                        placeholder="Contoh: Jakarta"
+                                        value="{{ old('kota') }}" placeholder="Contoh: Jakarta"
                                         class="bg-white/5 border border-white/15 text-white placeholder-white/30 p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition" />
                                 </div>
                             </div>
                             <p class="text-xs text-white/30">Acara privat dan acara tanpa venue tampil di jadwal anggota,
                                 tetapi tidak bisa dipakai check-in.</p>
+
+                            <details class="rounded-2xl border border-white/10 bg-white/2 p-4"
+                                @if (old('jendela_mulai') || old('jendela_selesai')) open @endif>
+                                <summary class="cursor-pointer text-sm font-semibold text-white/70">Atur jendela check-in
+                                    (opsional)</summary>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                    <div class="flex flex-col gap-1.5">
+                                        <label for="acara-mulai"
+                                            class="text-sm font-semibold uppercase tracking-widest text-white/60">Dibuka</label>
+                                        <input type="datetime-local" id="acara-mulai" name="jendela_mulai"
+                                            value="{{ old('jendela_mulai') }}"
+                                            class="bg-white/5 border border-white/15 text-white p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition scheme-dark" />
+                                    </div>
+                                    <div class="flex flex-col gap-1.5">
+                                        <label for="acara-selesai"
+                                            class="text-sm font-semibold uppercase tracking-widest text-white/60">Ditutup</label>
+                                        <input type="datetime-local" id="acara-selesai" name="jendela_selesai"
+                                            value="{{ old('jendela_selesai') }}"
+                                            class="bg-white/5 border border-white/15 text-white p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition scheme-dark" />
+                                    </div>
+                                </div>
+                                <p class="text-xs text-white/30 mt-3">Kosongkan keduanya untuk memakai bawaan: tanggal show
+                                    pukul 12.00 sampai hari berikutnya pukul 06.00 WIB.</p>
+                            </details>
 
                             <button type="submit"
                                 class="w-full text-white font-bold uppercase tracking-widest p-3 mt-2 bg-red-950 hover:bg-red-900 active:scale-95 transition rounded-lg">
@@ -205,23 +240,27 @@
                         </form>
 
                         {{-- Impor CSV --}}
-                        <div class="mt-6 pt-6 border-t border-white/10 flex flex-col gap-2">
+                        <form method="POST" action="{{ route('ic.admin.acara.impor') }}" enctype="multipart/form-data"
+                            class="mt-6 pt-6 border-t border-white/10 flex flex-col gap-2">
+                            @csrf
                             <label for="acara-csv"
                                 class="text-sm font-semibold uppercase tracking-widest text-white/60">Impor jadwal dari
                                 CSV</label>
-                            <input type="file" id="acara-csv" accept=".csv,text/csv"
+                            <input type="file" id="acara-csv" name="csv" accept=".csv,text/csv" required
                                 class="w-full bg-white/5 border border-white/15 border-dashed text-white/50 p-3 rounded-lg cursor-pointer
                                 file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0
                                 file:text-sm file:font-semibold file:bg-red-950 file:text-white
                                 hover:file:bg-red-900 transition" />
                             <p class="text-xs text-white/30">Kolom: <code class="text-white/50">kode, tanggal, kota,
                                     venue,
-                                    tipe</code>. Tipe: festival, club, atau private.</p>
-                            <button type="button" data-ic-segera="Impor CSV aktif di Fase 4."
+                                    tipe</code>. Tanggal berformat YYYY-MM-DD. Tipe: festival, club, atau private. Kode yang
+                                sudah ada diperbarui (QR-nya tetap), kode kosong dibuat otomatis. Satu baris salah
+                                membatalkan seluruh impor.</p>
+                            <button type="submit"
                                 class="self-start h-11 px-5 rounded-lg border border-white/15 text-xs font-semibold uppercase tracking-widest text-white/70 hover:bg-white/10 hover:text-white transition-colors">
                                 Impor
                             </button>
-                        </div>
+                        </form>
                     </div>
 
                     {{-- PREVIEW: kartu yang sama dengan yang dilihat anggota di Check-in --}}
@@ -326,16 +365,27 @@
                                             <i class="bi bi-qr-code" aria-hidden="true"></i> QR
                                         </a>
                                     @endif
-                                    <button type="button" data-ic-segera="Ubah acara aktif di Fase 4."
+                                    <button type="button" data-ic-acara-ubah
+                                        data-aksi="{{ route('ic.admin.acara.ubah', $e->kode) }}"
+                                        data-tanggal="{{ $e->tanggal->format('Y-m-d') }}"
+                                        data-tipe="{{ $e->tipe }}" data-venue="{{ $e->venue }}"
+                                        data-kota="{{ $e->kota }}"
+                                        data-mulai="{{ $e->jendela_mulai?->format('Y-m-d\TH:i') }}"
+                                        data-selesai="{{ $e->jendela_selesai?->format('Y-m-d\TH:i') }}"
                                         aria-label="Ubah acara {{ $e->venue ?? $e->kode }}"
                                         class="w-11 h-11 inline-flex items-center justify-center text-white/40 hover:text-white transition">
                                         <i class="bi bi-pencil-fill" aria-hidden="true"></i>
                                     </button>
-                                    <button type="button" data-ic-segera="Hapus acara aktif di Fase 4."
-                                        aria-label="Hapus acara {{ $e->venue ?? $e->kode }}"
-                                        class="w-11 h-11 inline-flex items-center justify-center text-white/40 hover:text-red-400 transition">
-                                        <i class="bi bi-trash-fill" aria-hidden="true"></i>
-                                    </button>
+                                    <form method="POST" action="{{ route('ic.admin.acara.hapus', $e->kode) }}"
+                                        class="inline-flex" data-swal-confirm
+                                        data-confirm-message="Acara {{ $e->venue ?? $e->kode }} akan dihapus dari jadwal.">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" aria-label="Hapus acara {{ $e->venue ?? $e->kode }}"
+                                            class="w-11 h-11 inline-flex items-center justify-center text-white/40 hover:text-red-400 transition">
+                                            <i class="bi bi-trash-fill" aria-hidden="true"></i>
+                                        </button>
+                                    </form>
                                 </div>
                             </li>
                         @endforeach
@@ -346,91 +396,142 @@
         </div>
     </div>
 
+    {{-- Dialog ubah acara: satu dialog dipakai semua baris, isinya diisi lewat JS dari tombol yang diklik --}}
+    <dialog id="dialogAcara" aria-labelledby="dialogAcaraJudul"
+        class="fixed inset-0 m-0 w-screen h-screen max-w-none max-h-none bg-black/70 backdrop:bg-transparent p-0 overflow-y-auto">
+        <div class="min-h-screen w-full flex items-center justify-center p-4">
+            <div
+                class="w-full max-w-lg max-h-[calc(100vh-2rem)] flex flex-col min-w-0 rounded-3xl border border-white/10 bg-black shadow-xl overflow-hidden">
+                <div
+                    class="flex items-center justify-between gap-2 px-6 py-4 border-b border-white/10 bg-white/3 shrink-0">
+                    <h3 id="dialogAcaraJudul" class="font-bold uppercase tracking-wide text-sm text-white">Ubah acara</h3>
+                    <button type="button" onclick="document.getElementById('dialogAcara').close()" aria-label="Tutup"
+                        class="text-white/40 hover:text-white transition">
+                        <i class="bi bi-x-lg" aria-hidden="true"></i>
+                    </button>
+                </div>
+
+                <form method="POST" action="#" id="formUbahAcara"
+                    class="flex flex-col flex-1 min-h-0 overflow-hidden">
+                    @csrf
+                    @method('PUT')
+                    <div class="flex-1 min-h-0 p-6 flex flex-col gap-4 overflow-y-auto">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="flex flex-col gap-1.5">
+                                <label for="ubah-tanggal"
+                                    class="text-sm font-semibold uppercase tracking-widest text-white/60">Tanggal show
+                                    <span class="text-red-400">*</span></label>
+                                <input type="date" id="ubah-tanggal" name="tanggal" required
+                                    class="bg-white/5 border border-white/15 text-white p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition scheme-dark" />
+                            </div>
+                            <div class="flex flex-col gap-1.5">
+                                <label for="ubah-tipe"
+                                    class="text-sm font-semibold uppercase tracking-widest text-white/60">Tipe <span
+                                        class="text-red-400">*</span></label>
+                                <select id="ubah-tipe" name="tipe"
+                                    class="bg-white/5 border border-white/15 text-white p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition scheme-dark">
+                                    @foreach ($tipeEvent as $kunci => $t)
+                                        <option class="bg-neutral-900" value="{{ $kunci }}">{{ $t['label'] }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="flex flex-col gap-1.5">
+                                <label for="ubah-venue"
+                                    class="text-sm font-semibold uppercase tracking-widest text-white/60">Venue</label>
+                                <input type="text" id="ubah-venue" name="venue" maxlength="80"
+                                    class="bg-white/5 border border-white/15 text-white p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition" />
+                            </div>
+                            <div class="flex flex-col gap-1.5">
+                                <label for="ubah-kota"
+                                    class="text-sm font-semibold uppercase tracking-widest text-white/60">Kota</label>
+                                <input type="text" id="ubah-kota" name="kota" maxlength="60"
+                                    class="bg-white/5 border border-white/15 text-white p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition" />
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="flex flex-col gap-1.5">
+                                <label for="ubah-mulai"
+                                    class="text-sm font-semibold uppercase tracking-widest text-white/60">Check-in
+                                    dibuka</label>
+                                <input type="datetime-local" id="ubah-mulai" name="jendela_mulai"
+                                    class="bg-white/5 border border-white/15 text-white p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition scheme-dark" />
+                            </div>
+                            <div class="flex flex-col gap-1.5">
+                                <label for="ubah-selesai"
+                                    class="text-sm font-semibold uppercase tracking-widest text-white/60">Check-in
+                                    ditutup</label>
+                                <input type="datetime-local" id="ubah-selesai" name="jendela_selesai"
+                                    class="bg-white/5 border border-white/15 text-white p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition scheme-dark" />
+                            </div>
+                        </div>
+                        <p class="text-xs text-white/30">Kosongkan kedua jendela untuk memakai bawaan (tanggal show pukul
+                            12.00
+                            sampai hari berikutnya pukul 06.00 WIB). Token dan QR acara tidak berubah.</p>
+                    </div>
+                    <div class="flex justify-end gap-2 px-6 py-4 border-t border-white/10 bg-white/3 shrink-0">
+                        <button type="button" onclick="document.getElementById('dialogAcara').close()"
+                            class="h-11 px-5 rounded-lg border border-white/15 text-sm font-semibold text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+                            Batal
+                        </button>
+                        <button type="submit"
+                            class="h-11 px-5 text-white font-bold uppercase tracking-widest text-sm bg-red-950 hover:bg-red-900 active:scale-95 transition rounded-lg">
+                            Simpan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
     @push('scripts')
         <script>
             window.icIkonPeta = @json($ikonPeta);
 
             const TIPE = @json($tipeEvent);
-            const DATA_QR = @json($dataQr);
-            const URL_CHECKIN = @json(route('ic.checkin'));
             const $ = (id) => document.getElementById(id);
 
-            // ---------- 1. Panel QR ----------
-            // Gambar ini pola acak yang dibangun dari token supaya tata letak kertas QR bisa ditinjau.
-            // Bukan QR sungguhan; QR asli dibuat server (bacon/bacon-qr-code) di Fase 4.
-            function gambarQr(token) {
-                const n = 25;
-                let h = 2166136261;
-                for (const c of token) {
-                    h ^= c.charCodeAt(0);
-                    h = Math.imul(h, 16777619) >>> 0;
-                }
-                const acak = () => {
-                    h ^= h << 13;
-                    h >>>= 0;
-                    h ^= h >>> 17;
-                    h ^= h << 5;
-                    h >>>= 0;
-                    return h / 4294967296;
-                };
-                const gelap = Array.from({
-                    length: n
-                }, () => Array(n).fill(false));
-                const sudut = (x, y) => (x < 8 && y < 8) || (x >= n - 8 && y < 8) || (x < 8 && y >= n - 8);
-                for (let y = 0; y < n; y++) {
-                    for (let x = 0; x < n; x++) {
-                        if (!sudut(x, y)) gelap[y][x] = acak() > 0.52;
-                    }
-                }
-                const penanda = (ox, oy) => {
-                    for (let dy = 0; dy < 7; dy++) {
-                        for (let dx = 0; dx < 7; dx++) {
-                            gelap[oy + dy][ox + dx] = Math.max(Math.abs(dx - 3), Math.abs(dy - 3)) !== 2;
-                        }
-                    }
-                };
-                penanda(0, 0);
-                penanda(n - 7, 0);
-                penanda(0, n - 7);
-
-                let d = '';
-                gelap.forEach((baris, y) => baris.forEach((g, x) => {
-                    if (g) d += `M${x + 4} ${y + 4}h1v1h-1z`;
-                }));
-                $('qr-gambar').innerHTML = `<rect width="33" height="33" fill="#fff"/><path d="${d}" fill="#111322"/>`;
-            }
-
-            function tampilkanQr(kode) {
-                const a = DATA_QR[kode];
-                if (!a) return;
-                $('qr-venue').textContent = a.venue;
-                $('qr-meta').textContent = `${a.kota ?? 'Kota belum diumumkan'} · ${a.tanggal} · ${a.tipe}`;
-                $('qr-token').textContent = a.token;
-                $('qr-tautan').textContent = `${URL_CHECKIN}?kode=${a.token}`;
-                $('qr-buka').textContent = a.buka;
-                $('qr-tutup').textContent = a.tutup;
-                gambarQr(a.token);
-            }
-
-            if ($('qr-acara')) {
-                tampilkanQr($('qr-acara').value);
-
-                $('qr-acara').addEventListener('change', (e) => {
-                    tampilkanQr(e.target.value);
-                    history.replaceState(null, '', `?acara=${encodeURIComponent(e.target.value)}#qr`);
+            // ---------- 1. Konfirmasi sebelum membuat QR baru ----------
+            // Pesan khusus (bukan "Hapus data?" bawaan konfirmasi hapus), karena QR lama langsung tidak berlaku.
+            document.addEventListener('submit', async (e) => {
+                const form = e.target.closest('form[data-ic-konfirmasi]');
+                if (!form || form.dataset.icSudahKonfirmasi === 'true') return;
+                e.preventDefault();
+                const hasil = await window.Swal.fire({
+                    title: form.dataset.judul || 'Lanjutkan?',
+                    text: form.dataset.teks || '',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: form.dataset.tombol || 'Ya',
+                    cancelButtonText: 'Batal',
+                    reverseButtons: true,
+                    focusCancel: true,
                 });
+                if (!hasil.isConfirmed) return;
+                form.dataset.icSudahKonfirmasi = 'true';
+                form.submit();
+            });
 
-                $('qr-baru').addEventListener('click', () => {
-                    const huruf = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-                    const acak = crypto.getRandomValues(new Uint8Array(12));
-                    const kode = $('qr-acara').value;
-                    DATA_QR[kode].token = 'WS-' + Array.from(acak, (b) => huruf[b % huruf.length]).join('');
-                    tampilkanQr(kode);
-                    window.icSegera('QR baru dibuat (contoh). Pada Fase 4 token lama langsung tidak berlaku.');
-                });
-            }
+            // ---------- 2. Dialog ubah acara ----------
+            const dialogAcara = $('dialogAcara');
+            document.addEventListener('click', (e) => {
+                const tombol = e.target.closest('[data-ic-acara-ubah]');
+                if (!tombol || !dialogAcara) return;
+                const d = tombol.dataset;
+                $('formUbahAcara').action = d.aksi;
+                $('ubah-tanggal').value = d.tanggal || '';
+                $('ubah-tipe').value = d.tipe || 'club';
+                $('ubah-venue').value = d.venue || '';
+                $('ubah-kota').value = d.kota || '';
+                $('ubah-mulai').value = d.mulai || '';
+                $('ubah-selesai').value = d.selesai || '';
+                dialogAcara.showModal();
+                $('ubah-venue').focus();
+            });
 
-            // ---------- 2. Preview form acara ----------
+            // ---------- 3. Preview form acara ----------
             const kartu = $('preview-acara')?.querySelector('.ic-event');
             const hariIni = new Date().toISOString().slice(0, 10);
 

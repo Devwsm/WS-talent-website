@@ -86,10 +86,11 @@
                         </div>
                         <p class="text-xs text-white/40 mt-3">
                             Jendela check-in:
-                            {{ $e->tanggal->copy()->setTime(12, 0)->locale('id')->translatedFormat('D, j M') }} pukul 12.00
+                            {{ $e->jendela_buka->locale('id')->translatedFormat('D, j M') }} pukul
+                            {{ $e->jendela_buka->format('H.i') }}
                             sampai
-                            {{ $e->tanggal->copy()->addDay()->setTime(6, 0)->locale('id')->translatedFormat('D, j M') }} pukul
-                            06.00 WIB.
+                            {{ $e->jendela_tutup->locale('id')->translatedFormat('D, j M') }} pukul
+                            {{ $e->jendela_tutup->format('H.i') }} WIB.
                         </p>
                     @else
                         @include('components/dashboard/card/empty-state', [

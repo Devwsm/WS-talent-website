@@ -13,6 +13,8 @@
 @php
     $tabs = config('inner_circle.tab_admin');
     $fase = $tabs[$aktif]['fase'];
+    // Tab yang fasenya sudah tersambung ke database tidak lagi memakai catatan "data contoh".
+    $dataContoh = $fase > config('inner_circle.fase_tersambung');
 @endphp
 
 @if ($pakaiCss ?? true)
@@ -54,12 +56,14 @@
     </ul>
 </nav>
 
-<div
-    class="flex items-start gap-3 rounded-2xl border border-amber-300/20 bg-amber-300/5 px-4 py-3 text-sm text-amber-100/80">
-    <i class="bi bi-info-circle mt-0.5 shrink-0" aria-hidden="true"></i>
-    <p>Tampilan contoh: data di tab ini belum tersimpan dan baru tersambung ke database di <b>Fase
-            {{ $fase }}</b>. Tombol simpan hanya menampilkan pemberitahuan.</p>
-</div>
+@if ($dataContoh)
+    <div
+        class="flex items-start gap-3 rounded-2xl border border-amber-300/20 bg-amber-300/5 px-4 py-3 text-sm text-amber-100/80">
+        <i class="bi bi-info-circle mt-0.5 shrink-0" aria-hidden="true"></i>
+        <p>Tampilan contoh: data di tab ini belum tersimpan dan baru tersambung ke database di <b>Fase
+                {{ $fase }}</b>. Tombol simpan hanya menampilkan pemberitahuan.</p>
+    </div>
+@endif
 
 @push('scripts')
     @once

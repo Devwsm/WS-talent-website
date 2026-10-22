@@ -67,35 +67,59 @@
         @if ($eventDipilih)
             <p class="ic-bantuan"><b>{{ $eventDipilih->venue }}</b> · {{ $eventDipilih->kota }} ·
                 {{ $eventDipilih->tanggal->locale('id')->translatedFormat('D, j M Y') }}</p>
+            @if ($eventDipilih->sudah_checkin)
+                <p class="ic-bantuan"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Kamu sudah check-in di
+                    acara
+                    ini.</p>
+            @endif
         @else
-            <p class="ic-bantuan"><b>Belum memilih acara.</b> Pilih acara dari daftar di atas.</p>
+            <p class="ic-bantuan"><b>Belum memilih acara.</b> Pilih dari daftar di atas, atau langsung pindai QR di lokasi.
+            </p>
         @endif
 
         <ol class="ic-langkah">
-            <li>Pilih pertunjukan dari daftar.</li>
             <li>Pindai QR yang disediakan panitia di lokasi, atau ketik kodenya.</li>
-            <li>Stempel bertambah satu untuk setiap acara.</li>
+            <li>Tekan Verifikasi. Stempel bertambah satu untuk setiap acara.</li>
+            <li>Check-in hanya bisa dilakukan saat acara berlangsung.</li>
         </ol>
         <p class="ic-bantuan">Acara privat tidak tersedia untuk check-in.</p>
 
         <div class="ic-aksi-baris">
-            <button type="button" class="ic-tombol ic-tombol--kecil" data-ic-segera="Pemindai kamera segera hadir."
-                @disabled(!$eventDipilih)><i class="bi bi-qr-code-scan" aria-hidden="true"></i> Pindai QR dengan
-                kamera</button>
-            <button type="button" class="ic-tombol ic-tombol--kecil ic-tombol--terang"
-                data-ic-segera="Unggah gambar QR segera hadir." @disabled(!$eventDipilih)><i class="bi bi-image"
-                    aria-hidden="true"></i> Unggah gambar QR</button>
+            <button type="button" class="ic-tombol ic-tombol--kecil" data-ic-pindai-buka><i class="bi bi-qr-code-scan"
+                    aria-hidden="true"></i> Pindai QR dengan kamera</button>
+            <button type="button" class="ic-tombol ic-tombol--kecil ic-tombol--terang" data-ic-pindai-berkas><i
+                    class="bi bi-image" aria-hidden="true"></i> Unggah gambar QR</button>
+            <input type="file" id="ic-qr-berkas" accept="image/*" hidden>
         </div>
 
-        <form data-ic-segera="Check-in segera aktif.">
+        <form method="POST" action="{{ route('ic.checkin.proses') }}" novalidate>
+            @csrf
+            @if ($eventDipilih)
+                <input type="hidden" name="acara" value="{{ $eventDipilih->kode }}">
+            @endif
             <label class="ic-label" for="kode">Kode check-in acara</label>
-            <input class="ic-input" id="kode" name="kode"
-                placeholder="Masukkan kode dari panitia atau hasil pindai QR" autocomplete="off" required
-                @disabled(!$eventDipilih)>
+            <input class="ic-input" id="kode" name="kode" value="{{ old('kode', $kodeIsian) }}"
+                placeholder="Masukkan kode dari panitia atau hasil pindai QR" autocomplete="off" autocapitalize="characters"
+                maxlength="300" required
+                @if ($errors->has('kode') || $galatKode) aria-invalid="true" aria-describedby="kode-galat" @endif>
+            @if ($errors->has('kode'))
+                <p class="ic-galat" id="kode-galat" role="alert">{{ $errors->first('kode') }}</p>
+            @elseif ($galatKode)
+                <p class="ic-galat" id="kode-galat" role="alert">{{ $galatKode }}</p>
+            @endif
             <div class="ic-aksi-baris">
-                <button type="submit" class="ic-tombol" @disabled(!$eventDipilih)>Verifikasi &amp; dapatkan
-                    stempel <i class="bi bi-arrow-right" aria-hidden="true"></i></button>
+                <button type="submit" class="ic-tombol">Verifikasi &amp; dapatkan stempel <i class="bi bi-arrow-right"
+                        aria-hidden="true"></i></button>
             </div>
         </form>
     </section>
 @endsection
+
+@push('modal')
+    <x-inner-circle.modal id="modal-pindai" judul="Pindai QR check-in" eyebrow="Arahkan kamera">
+        <div class="ic-pindai">
+            <video id="ic-pindai-video" class="ic-pindai__video" playsinline muted></video>
+            <p class="ic-bantuan ic-umpan" id="ic-pindai-umpan" role="status" aria-live="polite"></p>
+        </div>
+    </x-inner-circle.modal>
+@endpush

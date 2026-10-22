@@ -3,84 +3,92 @@
 namespace App\Http\Controllers\InnerCircle;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\InnerCircle\daftarRequest;
+use App\Http\Requests\InnerCircle\masukRequest;
+use App\Models\member;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 /**
- * Halaman Masuk dan Daftar anggota WS Inner Circle.
+ * Masuk, Daftar, dan Keluar anggota WS Inner Circle (guard `member`).
  *
- * Fase 2 (UI dulu): form hanya divalidasi supaya tampilan pesan galatnya bisa ditinjau.
- * Belum ada akun, sesi, atau guard `member`: setelah lolos validasi anggota langsung
- * diarahkan ke Beranda yang berisi data contoh. Fase 4 mengganti isi dua method proses
- * di bawah dengan Form Request, tabel `members`, dan guard `member`.
+ * Login admin CMS (`session('login')`, tabel `accounts`) tidak disentuh. Karena itu logout anggota
+ * TIDAK memakai session()->invalidate(): sesi admin di browser yang sama harus tetap hidup.
  */
 class authController extends Controller
 {
     public function masuk()
     {
-        return view('pages.inner-circle.masuk');
+        return Auth::guard('member')->check()
+            ? redirect()->route('ic.beranda')
+            : view('pages.inner-circle.masuk');
     }
 
     public function daftar()
     {
-        return view('pages.inner-circle.daftar');
+        return Auth::guard('member')->check()
+            ? redirect()->route('ic.beranda')
+            : view('pages.inner-circle.daftar');
     }
 
-    public function prosesMasuk(Request $request): RedirectResponse
+    public function prosesMasuk(masukRequest $request): RedirectResponse
     {
-        $validator = Validator::make($request->all(), [
-            'email' => ['required', 'email', 'max:150'],
-            'sandi' => ['required', 'string'],
-        ], $this->pesan(), $this->atribut());
+        $berhasil = Auth::guard('member')->attempt([
+            'email' => $request->validated('email'),
+            'password' => $request->validated('sandi'),
+        ]);
 
-        if ($validator->fails()) {
-            return $this->kembaliDenganGalat($request, $validator);
+        if (! $berhasil) {
+            // Pesan sengaja generik: tidak membocorkan apakah emailnya terdaftar.
+            return back()
+                ->withErrors(['email' => 'Email atau kata sandi salah.'])
+                ->onlyInput('email');
         }
 
-        return redirect()->route('ic.beranda')->with('ic_toast', 'Selamat datang kembali!');
+        // regenerate() mengganti ID sesi tanpa menghapus isinya (cegah session fixation, sesi admin aman).
+        $request->session()->regenerate();
+
+        // Kalau anggota tadi diarahkan ke Masuk dari tautan QR check-in, kembalikan ke sana.
+        return redirect()->intended(route('ic.beranda'))->with('ic_toast', 'Selamat datang kembali!');
     }
 
-    public function prosesDaftar(Request $request): RedirectResponse
+    public function prosesDaftar(daftarRequest $request): RedirectResponse
     {
-        $validator = Validator::make($request->all(), [
-            'nama' => ['required', 'string', 'max:100'],
-            'email' => ['required', 'email', 'max:150'],
-            'sandi' => ['required', 'string', 'min:8', 'confirmed'],
-        ], $this->pesan(), $this->atribut());
+        try {
+            $anggota = DB::transaction(function () use ($request) {
+                $baru = member::create([
+                    'nama' => $request->validated('nama'),
+                    'email' => $request->validated('email'),
+                    'password' => $request->validated('sandi'),
+                ]);
 
-        if ($validator->fails()) {
-            return $this->kembaliDenganGalat($request, $validator);
+                // IC-00001: nomor urut dari ID, diisi di transaksi yang sama dengan pembuatan akunnya.
+                $baru->kode_member = sprintf('IC-%05d', $baru->id_member);
+                $baru->save();
+
+                return $baru;
+            });
+        } catch (UniqueConstraintViolationException) {
+            // Dua pendaftaran dengan email sama persis bersamaan: yang kedua kalah di batasan unik database.
+            return back()
+                ->withErrors(['email' => 'Email ini sudah terdaftar. Silakan masuk.'])
+                ->withInput($request->except(['sandi', 'sandi_confirmation']));
         }
 
-        return redirect()->route('ic.beranda')->with('ic_toast', 'Selamat datang di WS Inner Circle!');
+        Auth::guard('member')->login($anggota);
+        $request->session()->regenerate();
+
+        return redirect()->intended(route('ic.beranda'))->with('ic_toast', 'Selamat datang di WS Inner Circle!');
     }
 
-    /** Kata sandi sengaja tidak ikut disimpan ke sesi sebagai input lama. */
-    private function kembaliDenganGalat(Request $request, $validator): RedirectResponse
+    public function keluar(Request $request): RedirectResponse
     {
-        return redirect()->back()
-            ->withErrors($validator)
-            ->withInput($request->except(['sandi', 'sandi_confirmation']));
-    }
+        Auth::guard('member')->logout();
+        $request->session()->regenerateToken();
 
-    private function atribut(): array
-    {
-        return [
-            'nama' => 'Nama lengkap',
-            'email' => 'Email',
-            'sandi' => 'Kata sandi',
-        ];
-    }
-
-    private function pesan(): array
-    {
-        return [
-            'required' => ':attribute wajib diisi.',
-            'email' => 'Format email belum benar.',
-            'max' => ':attribute terlalu panjang (maksimal :max karakter).',
-            'sandi.min' => 'Kata sandi minimal :min karakter.',
-            'sandi.confirmed' => 'Ulangi kata sandi belum sama.',
-        ];
+        return redirect()->route('ic.masuk')->with('ic_toast', 'Kamu sudah keluar.');
     }
 }

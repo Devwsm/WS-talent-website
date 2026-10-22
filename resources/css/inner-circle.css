@@ -1004,6 +1004,16 @@ a.ic-event:hover {
     overflow: hidden;
 }
 
+/* Pemindai QR check-in (Fase 4) */
+.ic-pindai__video {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 20px;
+    background: #111322;
+}
+
 /* ============================================================
    FASE 2 — layar anggota (Masuk, Daftar, Beranda, Hadiah, Check-in,
    Komunitas, Profil). Blok ini sengaja di atas bagian Responsif supaya

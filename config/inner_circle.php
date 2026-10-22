@@ -10,6 +10,18 @@ return [
     'aktif' => (bool) env('INNER_CIRCLE_AKTIF', false),
 
     /*
+    | Isi jadwal contoh (database/data/ic_events_contoh.csv) ke database lewat `php artisan db:seed`.
+    | Hanya untuk lokal/preview: di produksi biarkan false dan isi jadwal asli lewat CMS atau impor CSV.
+    */
+    'seed_contoh' => (bool) env('IC_SEED_CONTOH', false),
+
+    /* Fase terakhir yang sudah tersambung ke database. Tab dashboard dengan `fase` lebih besar masih memakai data contoh. */
+    'fase_tersambung' => 4,
+
+    /* Batas percobaan check-in per anggota per menit (lihat RateLimiter `ic-checkin` di AppServiceProvider). */
+    'batas_checkin_per_menit' => 8,
+
+    /*
     | Ikon gambar ada di public/aset/inner-circle/ikon/{nama}.webp (Fluent Emoji 3D, MIT).
     | Kalau berkasnya belum ada, komponen <x-inner-circle.ikon> jatuh ke emoji di bawah ini.
     */

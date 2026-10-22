@@ -42,6 +42,12 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        // Anggota WS Inner Circle (Fase 4). Login admin CMS tidak memakai guard ini.
+        'member' => [
+            'driver' => 'session',
+            'provider' => 'members',
+        ],
     ],
 
     /*
@@ -65,6 +71,11 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', User::class),
+        ],
+
+        'members' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\member::class,
         ],
 
         // 'users' => [

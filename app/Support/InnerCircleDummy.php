@@ -27,11 +27,20 @@ class InnerCircleDummy
         ];
     }
 
-    /** Tahapan hadiah + status untuk anggota contoh (10 sudah diajukan). */
-    public static function rewards(): array
+    /**
+     * Tahapan hadiah + status. Tanpa argumen: anggota contoh (68 stempel, tahap 10 sudah diajukan).
+     * Dengan $stempel (Fase 4: anggota sungguhan): status dihitung dari jumlah stempel itu, dan karena
+     * pengajuan hadiah baru tersambung ke database di Fase 5, belum ada tahap yang berstatus diajukan.
+     *
+     * @param  array<int, string>|null  $klaim  peta target_stempel => status pengajuan
+     */
+    public static function rewards(?int $stempel = null, ?array $klaim = null): array
     {
-        $stempel = self::member()->stempel_total;
-        $klaim = [10 => 'diajukan'];
+        if ($stempel === null) {
+            $stempel = self::member()->stempel_total;
+            $klaim ??= [10 => 'diajukan'];
+        }
+        $klaim ??= [];
 
         $data = [
             [10, 'Hadiah Pertama', 'Diskon merchandise resmi + stiker & gantungan kunci', 'gift', 'koral', null],
@@ -53,9 +62,9 @@ class InnerCircleDummy
     }
 
     /** Tahapan berikutnya yang belum tercapai (setelah tahap terakhir, tetap 250). */
-    public static function berikutnya(): object
+    public static function berikutnya(?int $stempel = null): object
     {
-        $stempel = self::member()->stempel_total;
+        $stempel ??= self::member()->stempel_total;
         $target = collect(self::rewards())
             ->pluck('target_stempel')
             ->first(fn($n) => $n > $stempel);

@@ -20,7 +20,7 @@ npm install && npm run dev
 
 # Rencana Penerapan: WS Inner Circle
 
-> Status: **Fase 1 sampai 3 selesai** (kerangka UI, 7 layar anggota, dan panel admin 7 tab di dashboard, semuanya dengan data contoh; flag fitur mati secara bawaan). Berikutnya: Fase 4.
+> Status: **Fase 1 sampai 4 selesai**. Fase 1 sampai 3: kerangka UI, 7 layar anggota, dan panel admin 7 tab. Fase 4: akun anggota, check-in QR, dan stempel sudah tersambung ke database (Hadiah, Komunitas, dan tab admin Klaim, Hadiah, Pengumuman, Kenangan masih data contoh). Flag fitur mati secara bawaan. Berikutnya: Fase 5.
 > Dibuat: 21 Oktober 2026.
 > Acuan: `WS_Inner_Circle.html` (prototype native, satu file, data di `localStorage`) dan 19 screenshot UI di `inner-circle-ui-prototype.zip`.
 
@@ -30,15 +30,15 @@ Menanam komunitas **WS Inner Circle** di website ini: penggemar mendaftar, mengu
 
 Urutan kerja: **UI dulu dengan data dummy, backend menyusul per fitur.**
 
-| Fase | Isi                                              | Data     |
-| ---- | ------------------------------------------------ | -------- |
-| 1    | Fondasi UI (layout, CSS, komponen, flag fitur)   | Dummy    |
-| 2    | UI anggota: 6 layar                              | Dummy    |
-| 3    | UI admin di dashboard CMS                        | Dummy    |
-| 4    | Anggota, check-in, dan stempel sungguhan         | Database |
-| 5    | Hadiah dan klaim                                 | Database |
-| 6    | Komunitas (pengumuman, kenangan) dan foto profil | Database |
-| 7    | Teaser di home, SEO, QA, rilis                   | Database |
+| Fase | Isi                                                | Data     |
+| ---- | -------------------------------------------------- | -------- |
+| 1    | Fondasi UI (layout, CSS, komponen, flag fitur)     | Dummy    |
+| 2    | UI anggota: 6 layar                                | Dummy    |
+| 3    | UI admin di dashboard CMS                          | Dummy    |
+| 4    | Anggota, check-in, dan stempel sungguhan (selesai) | Database |
+| 5    | Hadiah dan klaim                                   | Database |
+| 6    | Komunitas (pengumuman, kenangan) dan foto profil   | Database |
+| 7    | Teaser di home, SEO, QA, rilis                     | Database |
 
 Fase 1 sampai 3 menghasilkan tampilan lengkap yang bisa ditinjau di browser sebelum satu pun tabel dibuat. Setelah itu tiap fase hanya mengganti sumber data, bukan tampilannya (lihat bagian 4.5).
 
@@ -252,33 +252,46 @@ Catatan:
 
 Cek hasil: 7 tab tampil dengan data contoh, preview identik dengan tampilan anggota, tombol antrean klaim tidak ada yang "undefined", flag mati membuat semua route admin 404.
 
-### Fase 4: Anggota, check-in, dan stempel sungguhan
+### Fase 4: Anggota, check-in, dan stempel sungguhan (selesai)
 
-File (urut):
+File yang dibuat atau diubah:
 
-1. Migration: `members`, `ic_events`, `ic_stempel` (skema di bagian 6)
-2. Model `member`, `ic_event`, `ic_stempel`; guard `member` di `config/auth.php`
-3. Form Request: daftar, masuk, check-in, simpan event
-4. `QrService` (SVG, pustaka `bacon/bacon-qr-code`), `CheckinService`
-5. Controller auth, Beranda, Check-in, Profil (ganti dummy ke Eloquent)
-6. Admin: tab Ringkasan, Anggota, Acara & QR
-7. `qr-scanner` di `inner-circle.js` (kamera dan unggah gambar QR)
-8. Seeder event contoh, hanya jalan bila `IC_SEED_CONTOH=true`
-9. Test feature untuk aturan check-in
+1. Migration `members`, `ic_events`, `ic_stempel` (`database/migrations/2026_10_22_10*`)
+2. Model `member` (guard `member`), `ic_event`, `ic_stempel`; `config/auth.php` (guard + provider `members`)
+3. Form Request di `app/Http/Requests/InnerCircle/`: `daftarRequest`, `masukRequest`, `checkinRequest`, `simpanEventRequest`, `stempelManualRequest`, `imporEventRequest`
+4. Service di `app/Services/InnerCircle/`: `QrService` (SVG, `bacon/bacon-qr-code`), `CheckinService`, `StempelService`, `AcaraService` (kode otomatis + impor CSV), `CheckinGagal`
+5. Controller `authController` (masuk, daftar, keluar), `memberController` (Beranda, Check-in, Profil, Hadiah, Komunitas memakai anggota login), `adminController` (Ringkasan, Anggota, Acara & QR + route tulis)
+6. `bootstrap/app.php` (tamu area anggota diarahkan ke `/inner-circle/masuk`), `AppServiceProvider` (limiter `ic-checkin` per anggota), `routes/web.php`, `config/inner_circle.php` (`seed_contoh`, `fase_tersambung`, `batas_checkin_per_menit`)
+7. View: `innerCircleLayout` (Keluar jadi form POST), `checkin` (form sungguhan + modal pemindai), dashboard `ringkasan`, `anggota`, `acara`, `cetak-qr` (baru), `tabs` (catatan "data contoh" hanya di tab Fase 5 ke atas)
+8. `resources/js/inner-circle.js` (`qr-scanner` dimuat lazy: kamera dan unggah gambar) + sedikit CSS pemindai
+9. `database/seeders/icEventContohSeeder.php` (hanya jalan bila `IC_SEED_CONTOH=true`), `tests/Feature/InnerCircleTest.php`, `phpunit.xml` (`INNER_CIRCLE_AKTIF=true` untuk tes)
+
+Dependensi baru: `composer require bacon/bacon-qr-code` dan `npm install qr-scanner`. Setelah deploy: `php artisan migrate`, dan jalankan `npm run build` seperti biasa.
+
+Penyesuaian dari rencana awal:
+
+- **Token menentukan acara.** Kode acara di halaman hanya petunjuk. Token terenkripsi tidak bisa dicari lewat SQL, jadi pencarian dari token hanya membandingkan acara yang jendelanya sedang terbuka. Anggota bisa langsung memindai QR tanpa memilih acara dulu.
+- Kolom tambahan `ic_stempel.catatan` menyimpan alasan stempel manual dari admin.
+- Acara yang sudah punya check-in tidak bisa dihapus (buku besar tidak boleh kehilangan acaranya).
+- Jendela check-in khusus per acara bisa diatur di form Acara (kosong = bawaan 12.00 sampai H+1 06.00 WIB).
+- Impor CSV semua atau tidak sama sekali; kode yang sudah ada diperbarui tanpa mengganti token.
+- Tab Klaim di dashboard masih memuat data contoh, tetapi lencana dan angka Ringkasan menampilkan 0 klaim sampai Fase 5.
+- Kamera pemindai butuh HTTPS (atau localhost).
 
 Aturan check-in:
 
 - QR berisi URL `/inner-circle/check-in?kode=WS-XXXXXXXXXXXX`. Dipindai kamera bawaan HP pun tetap sampai ke halaman yang benar (setelah login), kode terisi otomatis.
-- Dicek di server: anggota login, event bisa check-in (bukan privat, ada venue), di dalam jendela waktu, token cocok, belum pernah check-in di event itu.
-- Jendela default: **tanggal show pukul 12.00 sampai H+1 pukul 06.00 WIB** (show klub selesai lewat tengah malam), bisa diubah per event.
-- Limiter per **anggota**, bukan per IP, karena penonton satu venue sering berbagi IP.
+- Dicek di server: anggota login, acara bisa check-in (bukan privat, ada venue), di dalam jendela waktu, token cocok, belum pernah check-in di acara itu.
+- Jendela default: **tanggal show pukul 12.00 sampai H+1 pukul 06.00 WIB**, bisa diubah per acara.
+- Limiter per **anggota**, bukan per IP.
 - Tombol "Buat QR Baru" mengganti token; token lama langsung tidak berlaku.
 
 Cek hasil:
 
 - Daftar → dapat `IC-00001`, stempel 0.
 - Check-in dengan token benar → +1 stempel dan masuk riwayat. Ulangi → ditolak. Token lama, event privat, event tanpa venue, di luar jendela → ditolak dengan pesan jelas.
-- Event dummy diganti event asli lewat CMS (seeder contoh tidak aktif di produksi).
+- Event contoh diganti event asli lewat CMS atau impor CSV.
+- Tes otomatis: `php artisan test --filter=InnerCircleTest`. Kunci baris (`lockForUpdate`) tidak teruji di SQLite.
 
 ### Fase 5: Hadiah dan klaim
 
