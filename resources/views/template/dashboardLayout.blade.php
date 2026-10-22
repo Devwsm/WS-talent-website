@@ -7,12 +7,14 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Whisnu Santika</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('head')
 </head>
 
 <body class="dash-theme bg-black text-white flex flex-col w-full sora">
     <div class="flex flex-col justify-center items-center">
         @yield('content')
     </div>
+    @stack('scripts')
 </body>
 
 </html>

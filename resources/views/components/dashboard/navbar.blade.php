@@ -8,6 +8,16 @@
         ['route' => 'news', 'icon' => 'bi-newspaper', 'label' => 'News'],
         ['route' => 'merchandise', 'icon' => 'bi-basket-fill', 'label' => 'Merchandise'],
     ];
+    // WS Inner Circle: menu muncul hanya bila flag INNER_CIRCLE_AKTIF menyala (lokal/preview dulu).
+    $icAktif = config('inner_circle.aktif');
+    if ($icAktif) {
+        $navLinks[] = [
+            'route' => 'ic.admin.ringkasan',
+            'pola' => 'ic.admin.*',
+            'icon' => 'bi-people-fill',
+            'label' => 'Inner Circle',
+        ];
+    }
     $isKontenActive = request()->routeIs([
         'banner',
         'headers',
@@ -16,6 +26,7 @@
         'albums',
         'news',
         'merchandise',
+        'ic.admin.*',
     ]);
 @endphp
 
@@ -41,11 +52,14 @@
     <div id="contentMenu"
         class="hidden items-center gap-1 pl-1 pr-1 opacity-0 scale-x-95 origin-left transition-all duration-200 ease-out">
         @foreach ($navLinks as $link)
+            {{-- Saat menu Inner Circle ikut tampil, 8 menu tidak muat di layar 1024-1279px: label disembunyikan
+                 di rentang itu (ikon + title saja) dan baru tampil penuh mulai 1280px. --}}
             <a href="{{ route($link['route']) }}"
+                @if ($icAktif) title="{{ $link['label'] }}" aria-label="{{ $link['label'] }}" @endif
                 class="flex items-center gap-2 h-12 px-3.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-colors
-                {{ request()->routeIs($link['route']) ? 'bg-white text-black' : 'text-white/60 hover:bg-white/10 hover:text-white' }}">
+                {{ request()->routeIs($link['pola'] ?? $link['route']) ? 'bg-white text-black' : 'text-white/60 hover:bg-white/10 hover:text-white' }}">
                 <i class="bi {{ $link['icon'] }} text-base" aria-hidden="true"></i>
-                {{ $link['label'] }}
+                <span class="{{ $icAktif ? 'hidden xl:inline' : '' }}">{{ $link['label'] }}</span>
             </a>
         @endforeach
 
@@ -99,7 +113,7 @@
         @foreach ($navLinks as $link)
             <a href="{{ route($link['route']) }}"
                 class="menu-link flex flex-col items-center justify-center gap-2 rounded-xl border border-white/10 py-4
-                {{ request()->routeIs($link['route']) ? 'bg-white text-black' : 'text-white/70' }}">
+                {{ request()->routeIs($link['pola'] ?? $link['route']) ? 'bg-white text-black' : 'text-white/70' }}">
                 <i class="bi {{ $link['icon'] }} text-2xl" aria-hidden="true"></i>
                 <span class="text-xs font-semibold uppercase text-center">{{ $link['label'] }}</span>
             </a>

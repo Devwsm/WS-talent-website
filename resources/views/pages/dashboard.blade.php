@@ -262,6 +262,28 @@
                     @endif
                 @endcomponent
             </div>
+
+            {{-- Row 5: WS Inner Circle — pintasan ke 7 tab (hanya bila flag INNER_CIRCLE_AKTIF menyala) --}}
+            @if (config('inner_circle.aktif'))
+                @component('components.dashboard.card.card', [
+                    'title' => 'WS Inner Circle',
+                    'href' => route('ic.admin.ringkasan'),
+                    'icon' => 'bi-people-fill',
+                ])
+                    <ul class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+                        @foreach (config('inner_circle.tab_admin') as $tab)
+                            <li>
+                                <a href="{{ route($tab['route']) }}"
+                                    class="flex flex-col items-center justify-center gap-2 min-h-24 rounded-2xl border border-white/10 bg-white/4 p-3
+                                    text-white/70 hover:border-white/20 hover:bg-white/10 hover:text-white transition-colors">
+                                    <i class="bi {{ $tab['ikon'] }} text-2xl" aria-hidden="true"></i>
+                                    <span class="text-xs font-semibold text-center">{{ $tab['label'] }}</span>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endcomponent
+            @endif
         </div>
     </div>
 @endsection

@@ -68,4 +68,66 @@ return [
         12 => 'Desember',
     ],
 
+    /*
+    | Pilihan ikon untuk form admin (hadiah dan pengumuman): kunci = nama ikon di atas, nilai = label.
+    | Ikon `lock`, `sunglasses`, dan `ok-hand` sengaja tidak ada: dipakai khusus oleh komponen lain.
+    */
+    'ikon_pilihan' => [
+        'gift' => 'Kado',
+        'cap' => 'Topi',
+        'love-letter' => 'Surat cinta',
+        'camera' => 'Kamera',
+        'ticket' => 'Tiket',
+        'circus' => 'Tenda festival',
+        'headphone' => 'Headphone',
+        'mirror-ball' => 'Bola disko',
+        'fireworks' => 'Kembang api',
+        'knobs' => 'Mixer',
+        'sparkles' => 'Kilau',
+        'cd' => 'Cakram CD',
+        'megaphone' => 'Pengeras suara',
+    ],
+
+    /* Warna kartu yang boleh dipilih admin. Kunci = modifier .ic-warna-{kunci} di CSS anggota. */
+    'warna_kartu' => [
+        'koral' => 'Koral',
+        'kuning' => 'Kuning',
+        'biru' => 'Biru',
+        'lilac' => 'Lilac',
+        'pink' => 'Pink',
+        'hijau' => 'Hijau',
+        'merah' => 'Merah',
+    ],
+
+    /* Tujuan tombol (CTA) pengumuman: nama route anggota => label di form admin. */
+    'cta_pengumuman' => [
+        'ic.checkin' => 'Check-in',
+        'ic.hadiah' => 'Hadiah',
+        'ic.komunitas' => 'Komunitas',
+    ],
+
+    /*
+    | Alur tombol antrean klaim di dashboard: status sekarang => status berikutnya + label tombol.
+    | `ditolak` bisa dipilih dari tiga status yang masih menunggu; `selesai` dan `ditolak` adalah akhir alur.
+    */
+    'alur_klaim' => [
+        'diajukan' => ['berikutnya' => 'ditinjau', 'aksi' => 'Tinjau'],
+        'ditinjau' => ['berikutnya' => 'disetujui', 'aksi' => 'Setujui'],
+        'disetujui' => ['berikutnya' => 'selesai', 'aksi' => 'Selesaikan'],
+    ],
+
+    /*
+    | Tab dashboard CMS Inner Circle (urutan = urutan tab). `fase` = fase yang menyambungkan tab
+    | ini ke database; sebelum itu tab memakai data contoh dan tombol simpan hanya memberi tahu.
+    */
+    'tab_admin' => [
+        'ringkasan' => ['label' => 'Ringkasan', 'ikon' => 'bi-speedometer2', 'route' => 'ic.admin.ringkasan', 'fase' => 4],
+        'anggota' => ['label' => 'Anggota', 'ikon' => 'bi-people-fill', 'route' => 'ic.admin.anggota', 'fase' => 4],
+        'acara' => ['label' => 'Acara & QR', 'ikon' => 'bi-qr-code', 'route' => 'ic.admin.acara', 'fase' => 4],
+        'klaim' => ['label' => 'Klaim', 'ikon' => 'bi-inbox-fill', 'route' => 'ic.admin.klaim', 'fase' => 5],
+        'hadiah' => ['label' => 'Hadiah', 'ikon' => 'bi-gift-fill', 'route' => 'ic.admin.hadiah', 'fase' => 5],
+        'pengumuman' => ['label' => 'Pengumuman', 'ikon' => 'bi-megaphone-fill', 'route' => 'ic.admin.pengumuman', 'fase' => 6],
+        'kenangan' => ['label' => 'Kenangan', 'ikon' => 'bi-images', 'route' => 'ic.admin.kenangan', 'fase' => 6],
+    ],
+
 ];

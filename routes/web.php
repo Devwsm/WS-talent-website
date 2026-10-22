@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\dashboardController;
 use App\Http\Controllers\homeController;
+use App\Http\Controllers\InnerCircle\adminController;
 use App\Http\Controllers\InnerCircle\authController;
 use App\Http\Controllers\InnerCircle\memberController;
 use App\Http\Controllers\loginController;
@@ -45,6 +46,18 @@ Route::prefix('/inner-circle')->middleware('icAktif')->name('ic.')->group(functi
 
 Route::prefix('/dashboard')->middleware('cekLogin')->group(function () {
     Route::get('/', [dashboardController::class, 'dashboard'])->name('dashboard');
+
+    // WS Inner Circle — panel admin di dashboard CMS (7 tab), ikut flag INNER_CIRCLE_AKTIF (404 bila mati).
+    // Fase 3: tampilan saja, datanya contoh (App\Support\InnerCircleDummy). Route simpan menyusul di Fase 4-6.
+    Route::prefix('/inner-circle')->middleware('icAktif')->name('ic.admin.')->group(function () {
+        Route::get('/', [adminController::class, 'ringkasan'])->name('ringkasan');
+        Route::get('/anggota', [adminController::class, 'anggota'])->name('anggota');
+        Route::get('/acara', [adminController::class, 'acara'])->name('acara');
+        Route::get('/klaim', [adminController::class, 'klaim'])->name('klaim');
+        Route::get('/hadiah', [adminController::class, 'hadiah'])->name('hadiah');
+        Route::get('/pengumuman', [adminController::class, 'pengumuman'])->name('pengumuman');
+        Route::get('/kenangan', [adminController::class, 'kenangan'])->name('kenangan');
+    });
 
     Route::prefix('/color_pages')->group(function () {
         Route::get('/', [dashboardController::class, 'colorPages'])->name('color_pages.index');

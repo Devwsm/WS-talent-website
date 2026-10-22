@@ -20,7 +20,7 @@ npm install && npm run dev
 
 # Rencana Penerapan: WS Inner Circle
 
-> Status: **Fase 1 dan 2 selesai** (kerangka UI dan 7 layar anggota dengan data contoh; flag fitur mati secara bawaan). Berikutnya: Fase 3.
+> Status: **Fase 1 sampai 3 selesai** (kerangka UI, 7 layar anggota, dan panel admin 7 tab di dashboard, semuanya dengan data contoh; flag fitur mati secara bawaan). Berikutnya: Fase 4.
 > Dibuat: 21 Oktober 2026.
 > Acuan: `WS_Inner_Circle.html` (prototype native, satu file, data di `localStorage`) dan 19 screenshot UI di `inner-circle-ui-prototype.zip`.
 
@@ -217,25 +217,40 @@ Cek hasil:
 - Untuk anggota dummy 68 stempel: hadiah 10 `diajukan`, 25 dan 50 `terbuka`, 100 dan 250 `terkunci` (sama seperti screenshot).
 - Catatan: pastikan `public/hot` (sisa `npm run dev`) tidak ikut ter-upload ke hosting, kalau ikut, CSS dan JS halaman akan dicari ke server dev.
 
-### Fase 3: UI admin di dashboard CMS (data dummy)
+### Fase 3: UI admin di dashboard CMS (data dummy) (selesai)
 
-Prototype menaruh admin dalam satu halaman panjang. Di dashboard dibuat satu menu **Inner Circle** (`/dashboard/inner-circle`) dengan bar tab, supaya dock dashboard tidak penuh:
+Prototype menaruh admin dalam satu halaman panjang. Di dashboard dibuat menu **Inner Circle** (`/dashboard/inner-circle`) dengan bar tab; tiap tab satu route, satu Blade, satu `<h1>`:
 
-| Tab        | Isi                                                                            |
-| ---------- | ------------------------------------------------------------------------------ |
-| Ringkasan  | Kehadiran terverifikasi, klaim menunggu, acara aktif, jumlah anggota           |
-| Anggota    | Daftar, cari, tambah stempel manual                                            |
-| Acara & QR | Daftar show, form tambah/ubah, impor CSV, pembuat QR (buat baru, unduh, cetak) |
-| Klaim      | Antrean pengajuan hadiah dan tombol alur status                                |
-| Hadiah     | Edit 5 tahapan (judul, deskripsi, ikon, warna, opsi)                           |
-| Pengumuman | Form kiri / preview kanan                                                      |
-| Kenangan   | Moderasi (sembunyikan / tayangkan)                                             |
+| Tab        | Route (`ic.admin.*`) | Isi                                                                                        |
+| ---------- | -------------------- | ------------------------------------------------------------------------------------------ |
+| Ringkasan  | `ringkasan`          | 4 angka (anggota, kehadiran, klaim menunggu, acara aktif), klaim terbaru, acara berikutnya |
+| Anggota    | `anggota`            | Daftar, cari (`?q=`), dialog tambah stempel manual                                         |
+| Acara & QR | `acara`              | Panel QR per acara, form acara + preview, impor CSV, jadwal terfilter dan terpaginasi      |
+| Klaim      | `klaim`              | Antrean pengajuan dengan tombol alur status dan tolak                                      |
+| Hadiah     | `hadiah`             | Edit 5 tahapan (judul, deskripsi, ikon, warna, pilihan) + preview                          |
+| Pengumuman | `pengumuman`         | Form kiri / preview kanan (Kabar Pilihan atau item biasa) + daftar tersimpan               |
+| Kenangan   | `kenangan`           | Moderasi: filter kategori dan status, sembunyikan / tayangkan                              |
 
-File: `resources/views/pages/dashboard-pages/inner-circle/*.blade.php`, `resources/views/components/dashboard/inner-circle/tabs.blade.php`, link baru di `components/dashboard/navbar.blade.php` (dock desktop dan sheet mobile) dan kartu di `pages/dashboard.blade.php`, `app/Http/Controllers/InnerCircle/adminController.php`.
+File yang dibuat atau diubah:
 
-Pola revamp CMS sebelumnya tetap berlaku: tema gelap dashboard, form kiri / preview kanan (sticky), preview memakai **komponen member yang sama** (satu sumber markup). CSS Inner Circle dimuat hanya di halaman yang butuh preview, di bawah `.ic-app`.
+1. `routes/web.php`: grup `/dashboard/inner-circle` (`cekLogin` + `icAktif`)
+2. `config/inner_circle.php`: tambah `tab_admin`, `alur_klaim`, `ikon_pilihan`, `warna_kartu`, `cta_pengumuman`
+3. `app/Support/InnerCircleDummy.php`: tambah `anggota()`, `klaimAdmin()`, `ringkasan()`, `eventsAdmin()`, `tokenAcara()`, `pengumumanAdmin()`, `kenanganAdmin()`
+4. `app/Http/Controllers/InnerCircle/adminController.php` (baru)
+5. `resources/views/template/dashboardLayout.blade.php`: tambah `@stack('head')` dan `@stack('scripts')`
+6. `resources/views/components/dashboard/inner-circle/tabs.blade.php` (baru): judul, bar tab, catatan data contoh, skrip bersama
+7. `resources/views/pages/dashboard-pages/inner-circle/{ringkasan,anggota,acara,klaim,hadiah,pengumuman,kenangan}.blade.php` (baru)
+8. `resources/views/components/dashboard/navbar.blade.php`: menu Inner Circle (hanya bila flag menyala)
+9. `resources/views/pages/dashboard.blade.php`: kartu pintasan 7 tab (hanya bila flag menyala)
 
-Cek hasil: 7 tab tampil dengan dummy, preview identik dengan tampilan anggota, tombol antrean klaim tidak ada yang "undefined".
+Yang sudah hidup di fase ini: preview memakai **komponen anggota yang sama** (`kartu-event`, `ubin-hadiah`, `pengumuman-unggulan`, `item-pengumuman`, `kartu-kenangan`) di dalam `.ic-app`, dan CSS Inner Circle hanya dimuat di tab yang punya preview (Anggota tidak memuatnya). Preview form Acara, Hadiah, dan Pengumuman berubah langsung saat mengetik; tombol alur Klaim (Tinjau, Setujui, Selesaikan, Tolak) dan Sembunyikan/Tayangkan Kenangan mengubah tampilan di halaman saja. Gambar QR di panel Acara hanyalah pratinjau tata letak dan belum bisa dipindai. Tombol simpan, unduh, cetak, impor, dan hapus hanya menampilkan pemberitahuan "segera aktif" (Fase 4 sampai 6).
+
+Catatan:
+
+- Saat flag menyala, dock desktop memuat 8 menu. Di layar 1024 sampai 1279 px label disembunyikan (ikon saja, ada `title`), label penuh mulai 1280 px. Bila flag mati, dock tidak berubah.
+- Tab Acara memakai `?acara=KODE` untuk memilih acara pada panel QR.
+
+Cek hasil: 7 tab tampil dengan data contoh, preview identik dengan tampilan anggota, tombol antrean klaim tidak ada yang "undefined", flag mati membuat semua route admin 404.
 
 ### Fase 4: Anggota, check-in, dan stempel sungguhan
 
