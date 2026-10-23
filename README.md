@@ -20,7 +20,7 @@ npm install && npm run dev
 
 # Rencana Penerapan: WS Inner Circle
 
-> Status: **Fase 1 sampai 5 selesai**. Fase 1 sampai 3: kerangka UI, 7 layar anggota, dan panel admin 7 tab. Fase 4: akun anggota, check-in QR, dan stempel sudah tersambung ke database. Fase 5: hadiah dan klaim sudah tersambung ke database (tahapan hadiah dikelola di tab Hadiah, antrean klaim di tab Klaim). Komunitas (tab admin Pengumuman dan Kenangan serta layar Komunitas anggota) masih data contoh. Flag fitur mati secara bawaan. Berikutnya: Fase 6.
+> Status: **Fase 1 sampai 6 selesai**. Fase 1 sampai 3: kerangka UI, 7 layar anggota, dan panel admin 7 tab. Fase 4: akun anggota, check-in QR, dan stempel sudah tersambung ke database. Fase 5: hadiah dan klaim sudah tersambung ke database (tahapan hadiah dikelola di tab Hadiah, antrean klaim di tab Klaim). Fase 6: Komunitas (pengumuman, galeri kenangan, suka) dan foto profil sudah tersambung ke database; semua layar anggota dan 7 tab admin kini memakai data asli. Flag fitur mati secara bawaan. Berikutnya: Fase 7.
 > Dibuat: 21 Oktober 2026.
 > Acuan: `WS_Inner_Circle.html` (prototype native, satu file, data di `localStorage`) dan 19 screenshot UI di `inner-circle-ui-prototype.zip`.
 
@@ -30,15 +30,15 @@ Menanam komunitas **WS Inner Circle** di website ini: penggemar mendaftar, mengu
 
 Urutan kerja: **UI dulu dengan data dummy, backend menyusul per fitur.**
 
-| Fase | Isi                                                | Data     |
-| ---- | -------------------------------------------------- | -------- |
-| 1    | Fondasi UI (layout, CSS, komponen, flag fitur)     | Dummy    |
-| 2    | UI anggota: 6 layar                                | Dummy    |
-| 3    | UI admin di dashboard CMS                          | Dummy    |
-| 4    | Anggota, check-in, dan stempel sungguhan (selesai) | Database |
-| 5    | Hadiah dan klaim (selesai)                         | Database |
-| 6    | Komunitas (pengumuman, kenangan) dan foto profil   | Database |
-| 7    | Teaser di home, SEO, QA, rilis                     | Database |
+| Fase | Isi                                                        | Data     |
+| ---- | ---------------------------------------------------------- | -------- |
+| 1    | Fondasi UI (layout, CSS, komponen, flag fitur)             | Dummy    |
+| 2    | UI anggota: 6 layar                                        | Dummy    |
+| 3    | UI admin di dashboard CMS                                  | Dummy    |
+| 4    | Anggota, check-in, dan stempel sungguhan (selesai)         | Database |
+| 5    | Hadiah dan klaim (selesai)                                 | Database |
+| 6    | Komunitas (pengumuman, kenangan) dan foto profil (selesai) | Database |
+| 7    | Teaser di home, SEO, QA, rilis                             | Database |
 
 Fase 1 sampai 3 menghasilkan tampilan lengkap yang bisa ditinjau di browser sebelum satu pun tabel dibuat. Setelah itu tiap fase hanya mengganti sumber data, bukan tampilannya (lihat bagian 4.5).
 
@@ -336,19 +336,51 @@ Cek hasil:
 - Mengubah tahap di CMS langsung tampil di halaman Hadiah anggota; isian yang gagal divalidasi tampil lagi di tahap yang sama.
 - Tes otomatis: `php artisan test --filter=InnerCircleHadiahTest` (22 tes). Kunci baris (`lockForUpdate`) tidak teruji di SQLite, jadi uji klik ganda klaim juga secara manual di MySQL.
 
-### Fase 6: Komunitas dan foto profil
+### Fase 6: Komunitas dan foto profil (selesai)
 
-File (urut): migration `ic_broadcasts`, `ic_memories`, `ic_memory_likes`; model; `app/Support/ImageProcessor.php`; `MemoryPolicy` (didaftarkan manual lewat `Gate::policy` karena nama model huruf kecil); controller Komunitas dan Profil (foto); admin tab Pengumuman dan Kenangan; endpoint JSON untuk suka.
+File yang dibuat atau diubah:
 
-Aturan:
+1. Migration `ic_broadcasts`, `ic_memories`, `ic_memory_likes` (`database/migrations/2026_10_23_14000*` sampai `14002*`)
+2. Model `ic_broadcast` dan `ic_memory`; `member` (relasi `kenangan()`). Tanda suka tidak punya model: dipakai lewat relasi `ic_memory::penyuka()`
+3. `app/Support/ImageProcessor.php` dan `GambarGagal.php` (JPG/PNG/WebP, EXIF diluruskan, dikecilkan, disimpan WebP)
+4. `app/Policies/MemoryPolicy.php`, didaftarkan di `AppServiceProvider` lewat `Gate::policy` (nama model huruf kecil)
+5. Form Request di `app/Http/Requests/InnerCircle/`: `simpanKenanganRequest`, `simpanFotoProfilRequest`, `simpanPengumumanRequest`, `moderasiKenanganRequest`
+6. Service di `app/Services/InnerCircle/`: `KenanganService`, `PengumumanService`, `AvatarService`
+7. Controller: `kenanganController` (unggah, hapus, suka) dan `fotoProfilController` (simpan, hapus) baru; `memberController` (Komunitas dari database), `adminController` (tab Pengumuman dan Kenangan + aksi tulis)
+8. `routes/web.php` (`ic.kenangan.*`, `ic.profil.foto*`, `ic.admin.pengumuman.*`, `ic.admin.kenangan.moderasi`), `AppServiceProvider` (limiter `ic-kenangan`, `ic-suka`, `ic-foto`), `config/inner_circle.php` (`fase_tersambung` = 6, batas unggah, ukuran foto, `warna` dan `sampul` per kategori kenangan)
+9. View anggota `komunitas`, `profil`, `innerCircleLayout` (meta CSRF); komponen `kartu-kenangan`, `item-pengumuman`, `pengumuman-unggulan`, `modal`; view dashboard `pengumuman` dan `kenangan`
+10. `resources/js/inner-circle.js` (suka lewat fetch, modal terbuka otomatis, konfirmasi hapus, kunci kirim ganda, foto profil)
+11. Tes: `tests/Feature/InnerCircleKomunitasTest.php` (32 tes) dan `tests/Unit/ImageProcessorTest.php` (15 tes)
 
-- Pengumuman: satu bisa ditandai **unggulan** (kartu besar "Kabar pilihan"), sisanya daftar. CTA mengarah ke `checkin`, `hadiah`, atau `komunitas`.
-- Kenangan: caption maks 240 karakter, tempat maks 65, kategori Festival / Klub / Pribadi, foto opsional maks 4 MB (WebP). Tanpa foto, kartu memakai sampul berwarna + ikon sesuai kategori seperti di prototype.
-- Suka bersifat toggle per anggota (`unique` pada pasangan anggota dan kenangan). Hanya pemilik yang bisa menghapus kenangannya; admin bisa menyembunyikan.
-- Foto profil JPG/PNG/WebP maks 5 MB; tombol Simpan aktif setelah memilih foto, tombol Hapus mengembalikan avatar bawaan.
-- Teks pengguna di-escape (prototype sudah memakai `escapeText`; di Blade cukup `{{ }}`). Tidak ada HTML bebas dari anggota.
+Setelah deploy: `php artisan migrate` (tiga tabel baru) dan `npm run build` seperti biasa. Pastikan `php artisan storage:link` sudah pernah dijalankan (foto disimpan di disk `public`). Di cPanel, naikkan `upload_max_filesize` dan `post_max_size` ke minimal **6M** (MultiPHP INI Editor), dan pastikan ekstensi PHP **gd** dan **exif** aktif. Kalau `post_max_size` terlalu kecil, form unggah gagal dengan halaman "419 Page Expired" sebelum validasi sempat jalan.
 
-Cek hasil: unggah kenangan dengan foto HP (termasuk yang miring/EXIF) tampil benar; suka dan hapus berfungsi; kenangan yang disembunyikan admin hilang dari galeri.
+Aturan yang berlaku (dicek di server):
+
+- **Pengumuman:** tampil ke anggota hanya bila `aktif` dan tanggal terbitnya sudah tiba (zona `Asia/Jakarta`). Tanggal di masa depan = **terjadwal** (ditandai di dashboard, belum tampil ke anggota). Hanya satu yang boleh jadi **unggulan** (kartu besar "Kabar pilihan"): menandai satu pengumuman otomatis menurunkan yang lama, dalam satu transaksi (`PengumumanService`). Tujuan tombol hanya boleh `ic.checkin`, `ic.hadiah`, atau `ic.komunitas`; bila route di database sudah tidak ada, tombol jatuh ke Komunitas, bukan error. Daftar anggota dibatasi 20 pengumuman terbaru (di luar unggulan).
+- **Kenangan:** caption maks 240 karakter (wajib), tempat maks 65 (opsional), kategori Festival / Acara klub / Momen pribadi, foto opsional maks 4 MB. Langsung tayang; admin bisa menyembunyikan dan menayangkan lagi (tidak menghapus apa pun). Tanpa foto, kartu memakai sampul berwarna dan ikon sesuai kategori. Hanya pemilik yang bisa menghapus kenangannya (`MemoryPolicy`); foto dan tanda suka ikut terhapus. Galeri dipaginasi 12 per halaman.
+- **Suka:** toggle per anggota lewat `POST /inner-circle/kenangan/{id}/suka`, jawabannya JSON `{disukai, jumlah}` dan angka di layar mengikuti jawaban server. Kunci utama `(member_id, memory_id)` mencegah suka ganda walau dua klik datang bersamaan. Kenangan yang disembunyikan tidak bisa disukai (404).
+- **Foto:** diolah `ImageProcessor`, bukan hanya divalidasi. Format ditentukan dari **isi** berkas (nama atau tipe kiriman browser diabaikan), foto dikecilkan (kenangan 1600 px, profil 512 px sisi terpanjang), orientasi EXIF HP diluruskan, lalu disimpan ulang sebagai WebP dengan nama acak. Karena di-encode ulang, metadata EXIF termasuk lokasi GPS ikut terbuang. Foto di atas 40 megapiksel, atau yang tidak muat di `memory_limit` server, ditolak dengan pesan jelas, bukan error 500. Foto lama avatar baru dihapus setelah yang baru tersimpan.
+- **Foto profil:** JPG/PNG/WebP maks 5 MB. Tombol Simpan aktif setelah memilih foto; Hapus mengembalikan avatar bawaan (emoji).
+- **Batas laju (per anggota, bukan per IP):** unggah kenangan 4 per menit dan 20 per hari, suka 60 per menit, foto profil 6 per menit. Semuanya di `config/inner_circle.php`.
+- Teks dari anggota dan admin selalu di-escape (`{{ }}`); tidak ada HTML bebas.
+
+Penyesuaian dari rencana awal:
+
+- **Nama di galeri disingkat** ("Ancha Mahendra" jadi "Ancha M."), seperti contoh di prototype, supaya nama lengkap anggota tidak terlihat sesama anggota. Admin melihat nama lengkap dan kode anggota di tab Kenangan.
+- **Laporan kenangan dibuang.** Tab Kenangan versi data contoh punya lencana "n laporan", tetapi rencana awal (bagian 6) tidak punya tabel atau tombol lapor untuk anggota. Moderasi tetap lewat tombol Sembunyikan.
+- **Edit pengumuman lewat `?ubah=ID`**, bukan mengisi form dengan JavaScript. Tautannya bisa dibagikan, jalan tanpa JS, dan gagal validasi kembali ke form mode ubah yang sama. Pratinjau langsung tetap memakai JavaScript.
+- **Controller dipecah:** `kenanganController` dan `fotoProfilController` untuk aksi tulis; halaman Komunitas dan Profil tetap di `memberController` supaya nama route dan view tidak berubah.
+- **Kolom `ic_broadcasts.aktif`** ada di skema tetapi belum ada tombolnya di CMS (pengumuman dihapus, bukan dimatikan), sama seperti `ic_rewards.aktif`.
+- **Pengumuman unggulan yang terjadwal:** menyimpan pengumuman unggulan yang tanggal terbitnya di masa depan langsung menurunkan unggulan lama, jadi sampai tanggal itu tiba Komunitas tidak punya kartu "Kabar pilihan". Hindari menjadwalkan unggulan terlalu jauh dari yang sedang tayang.
+- Paginasi galeri anggota memakai tautan "Lebih baru" dan "Lebih lama" buatan sendiri, karena tampilan paginasi bawaan Laravel memakai kelas Tailwind yang tidak dimuat di area anggota.
+- Foto yang gagal divalidasi tidak bisa diisi ulang otomatis di form unggah (batasan browser): modal terbuka lagi dengan cerita, tempat, dan kategori terisi, foto dipilih ulang.
+
+Cek hasil:
+
+- Unggah kenangan dengan foto HP (termasuk yang miring atau memakai EXIF) tampil tegak; suka, batal suka, dan hapus berfungsi; angka suka sama di dua akun; kenangan yang disembunyikan admin hilang dari galeri.
+- Pengumuman terbit sesuai tanggal; menandai satu sebagai unggulan menurunkan yang lain; tombol pengumuman membuka halaman yang benar.
+- Ganti foto profil dua kali: berkas lama hilang dari `storage/app/public/inner-circle/avatar`; Hapus mengembalikan emoji.
+- Tes otomatis: `php artisan test --filter=InnerCircleKomunitasTest` (32 tes, memakai stub `ImageProcessor` supaya tidak butuh GD) dan `php artisan test --filter=ImageProcessorTest` (15 tes, membutuhkan ekstensi GD dan exif; dilewati otomatis bila tidak ada, jadi jalankan sekali di mesin lokal yang punya GD). Kunci baris tidak relevan di fase ini, tetapi tes klik ganda suka sebaiknya dicoba juga di MySQL.
 
 ### Fase 7: Integrasi situs publik, SEO, QA, rilis
 
@@ -356,7 +388,7 @@ Cek hasil: unggah kenangan dengan foto HP (termasuk yang miring/EXIF) tampil ben
 - `SeoController@robots`: tambahkan `Disallow: /inner-circle`.
 - QA lintas perangkat: kamera di Safari iOS dan Chrome Android, foto HP, layar 375 px, `prefers-reduced-motion`, kontras, target sentuh 44 px.
 - Pastikan langkah deploy menjalankan `npm run build` sehingga dua entry Vite baru ikut ter-build.
-- Hapus `app/Support/InnerCircleDummy.php` setelah Fase 6 (sejak Fase 5 hanya Pengumuman dan Kenangan yang masih memakainya) beserta `database/data/ic_events_contoh.csv` bila tidak dipakai lagi oleh `icEventContohSeeder`.
+- Hapus `app/Support/InnerCircleDummy.php` (sejak Fase 6 tidak ada lagi controller, view, atau tes yang memakainya) beserta `database/data/ic_events_contoh.csv` bila tidak dipakai lagi oleh `icEventContohSeeder`.
 - Rilis: set `INNER_CIRCLE_AKTIF=true` di produksi setelah event asli dan hadiah terisi, lalu `php artisan migrate`, `config:clear`, `view:clear`.
 
 ## 6. Skema database (dipakai mulai Fase 4)
@@ -378,6 +410,7 @@ Catatan:
 - Check-in tidak punya tabel sendiri: check-in adalah baris `ic_stempel` dengan `sumber = checkin` dan `event_id` terisi. Satu tabel ini sekaligus melayani riwayat stempel, aturan "1 stempel per anggota per event", dan stempel manual dari admin ("Ikut kegiatan resmi" di prototype).
 - `members.stempel_total` hanya cache yang diperbarui di transaksi yang sama dengan penambahan stempel.
 - Test memakai SQLite in-memory (`phpunit.xml`): unique key teruji, tapi kunci baris (`lockForUpdate`) tidak. Uji klik ganda klaim juga secara manual di MySQL.
+- `ic_broadcasts.unggulan`: aturan "hanya satu" dijaga `PengumumanService` dalam transaksi (MySQL tidak punya kunci unik parsial). `ic_memory_likes` memakai kunci utama gabungan `(member_id, memory_id)` dan tidak punya model.
 
 ## 7. Aturan bisnis yang dipertahankan dari prototype
 

@@ -14,11 +14,10 @@
     </div>
     <div class="ic-kenangan__isi">
         <div class="ic-kenangan__atas">
-            <span class="ic-avatar ic-avatar--kecil" aria-hidden="true">{{ $kenangan->avatar_emoji }}</span>
+            <x-inner-circle.avatar :member="$kenangan->member" kelas="ic-avatar--kecil" />
             <div>
                 <b>{{ $kenangan->nama_member }}</b>
-                <small>{{ $kenangan->tempat }} ·
-                    {{ $kenangan->tanggal->locale('id')->translatedFormat('j M Y') }}</small>
+                <small>{{ $kenangan->tempat ? $kenangan->tempat . ' · ' : '' }}{{ $kenangan->tanggal->locale('id')->translatedFormat('j M Y') }}</small>
             </div>
         </div>
         <p class="ic-kenangan__caption">{{ $kenangan->caption }}</p>
@@ -28,12 +27,21 @@
             <span class="ic-kenangan__aksi">
                 <button type="button" class="ic-suka {{ $kenangan->disukai_saya ? 'is-suka' : '' }}"
                     aria-pressed="{{ $kenangan->disukai_saya ? 'true' : 'false' }}"
-                    data-ic-suka="{{ $kenangan->id_memory }}">
+                    data-ic-suka="{{ $kenangan->id_memory }}"
+                    data-ic-suka-url="{{ route('ic.kenangan.suka', $kenangan->id_memory) }}">
                     <i class="bi {{ $kenangan->disukai_saya ? 'bi-heart-fill' : 'bi-heart' }}" aria-hidden="true"></i>
                     <span>{{ $kenangan->jumlah_like }}</span>
                 </button>
                 @if ($kenangan->milik_saya)
-                    <button type="button" class="ic-hapus" data-ic-hapus="{{ $kenangan->id_memory }}">Hapus</button>
+                    {{-- Hapus = form DELETE: jalan tanpa JS; dengan JS minta konfirmasi dulu (data-ic-konfirmasi). --}}
+                    <form method="POST" action="{{ route('ic.kenangan.hapus', $kenangan->id_memory) }}"
+                        data-ic-konfirmasi data-ic-sekali data-ic-konfirmasi-judul="Hapus kenangan ini?"
+                        data-ic-konfirmasi-tombol="Ya, hapus"
+                        data-judul="Foto dan ceritanya akan dihapus dari galeri dan tidak bisa dikembalikan.">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="ic-hapus">Hapus</button>
+                    </form>
                 @endif
             </span>
         </div>

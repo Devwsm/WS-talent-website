@@ -16,13 +16,36 @@ return [
     'seed_contoh' => (bool) env('IC_SEED_CONTOH', false),
 
     /* Fase terakhir yang sudah tersambung ke database. Tab dashboard dengan `fase` lebih besar masih memakai data contoh. */
-    'fase_tersambung' => 5,
+    'fase_tersambung' => 6,
 
     /* Batas percobaan check-in per anggota per menit (lihat RateLimiter `ic-checkin` di AppServiceProvider). */
     'batas_checkin_per_menit' => 8,
 
     /* Batas pengajuan hadiah per anggota per menit (RateLimiter `ic-klaim`). Pengaman klik ganda dan skrip. */
     'batas_klaim_per_menit' => 6,
+
+    /*
+    | Batas Komunitas (Fase 6), semua per ANGGOTA (RateLimiter di AppServiceProvider).
+    | Unggah kenangan dibatasi per menit (salah klik) dan per hari (spam); suka dan foto profil per menit.
+    */
+    'batas_kenangan_per_menit' => 4,
+    'batas_kenangan_per_hari' => 20,
+    'batas_suka_per_menit' => 60,
+    'batas_foto_per_menit' => 6,
+
+    /* Jumlah kenangan per halaman di galeri anggota dan tab Kenangan dashboard; maksimum daftar pengumuman anggota. */
+    'kenangan_per_halaman' => 12,
+    'pengumuman_maks_anggota' => 20,
+
+    /*
+    | Foto (Fase 6). Batas ukuran berkas dalam KB (dipakai validasi server dan batas di form), sisi terpanjang
+    | hasil olahan dalam piksel. Semua foto disimpan ulang sebagai WebP (metadata EXIF, termasuk lokasi GPS, ikut terbuang).
+    | Server juga perlu upload_max_filesize dan post_max_size minimal 6M (cPanel: MultiPHP INI Editor).
+    */
+    'foto_kenangan_maks_kb' => 4096,
+    'foto_profil_maks_kb' => 5120,
+    'foto_kenangan_sisi_maks' => 1600,
+    'foto_profil_sisi_maks' => 512,
 
     /*
     | Ikon gambar ada di public/aset/inner-circle/ikon/{nama}.webp (Fluent Emoji 3D, MIT).
@@ -57,10 +80,14 @@ return [
         'private' => ['label' => 'Acara Privat', 'ikon' => 'lock', 'warna' => 'pink'],
     ],
 
+    /*
+    | `ikon` dipakai di chip dan tag kategori; `sampul` dan `warna` dipakai kartu kenangan yang tidak punya foto
+    | (warna: .ic-kenangan__sampul.ic-warna-{warna} di CSS anggota).
+    */
     'kategori_kenangan' => [
-        'festival' => ['label' => 'Festival', 'ikon' => 'circus'],
-        'club' => ['label' => 'Acara klub', 'ikon' => 'headphone'],
-        'personal' => ['label' => 'Momen pribadi', 'ikon' => 'sparkles'],
+        'festival' => ['label' => 'Festival', 'ikon' => 'circus', 'sampul' => 'fireworks', 'warna' => 'kuning'],
+        'club' => ['label' => 'Acara klub', 'ikon' => 'headphone', 'sampul' => 'knobs', 'warna' => 'biru'],
+        'personal' => ['label' => 'Momen pribadi', 'ikon' => 'sparkles', 'sampul' => 'ticket', 'warna' => 'pink'],
     ],
 
     /*

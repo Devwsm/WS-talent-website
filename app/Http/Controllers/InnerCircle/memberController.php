@@ -5,14 +5,16 @@ namespace App\Http\Controllers\InnerCircle;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\InnerCircle\ajukanKlaimRequest;
 use App\Http\Requests\InnerCircle\checkinRequest;
+use App\Models\ic_broadcast;
 use App\Models\ic_event;
+use App\Models\ic_memory;
 use App\Models\ic_stempel;
 use App\Models\member;
 use App\Services\InnerCircle\CheckinGagal;
 use App\Services\InnerCircle\CheckinService;
 use App\Services\InnerCircle\ClaimService;
+use App\Services\InnerCircle\KenanganService;
 use App\Services\InnerCircle\KlaimGagal;
-use App\Support\InnerCircleDummy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,9 +22,9 @@ use Illuminate\Support\Facades\Auth;
 /**
  * Layar anggota WS Inner Circle (semua route di sini dilindungi `auth:member`).
  *
- * Fase 4-5: anggota, Beranda, Check-in, riwayat stempel, Hadiah, dan pengajuan hadiah di Profil
- * sudah dari database. Komunitas masih memakai InnerCircleDummy untuk isinya (Fase 6), tetapi
- * anggotanya sudah anggota yang sedang login. Nama variabel ke view tidak berubah dari Fase 2.
+ * Fase 4-6: semua layar sudah dari database (anggota, Beranda, Check-in, Hadiah, Komunitas, Profil).
+ * Nama variabel ke view tidak berubah dari Fase 2. Aksi tulis Komunitas ada di kenanganController
+ * (unggah, hapus, suka) dan foto profil di fotoProfilController.
  */
 class memberController extends Controller
 {
@@ -164,23 +166,38 @@ class memberController extends Controller
             ->with('ic_toast', 'Check-in berhasil! +' . $stempel->jumlah . ' stempel. ' . $stempel->judul . '.');
     }
 
-    /** Tab lewat ?tab=pengumuman|galeri dan kategori galeri lewat ?kategori=festival|club|personal. */
-    public function komunitas(Request $request)
+    /**
+     * Tab lewat ?tab=pengumuman|galeri, kategori galeri lewat ?kategori=festival|club|personal, halaman galeri
+     * lewat ?page=. Pengumuman hanya yang aktif dan sudah tiba tanggal terbitnya; galeri hanya yang tayang.
+     */
+    public function komunitas(Request $request, KenanganService $kenangan)
     {
+        $anggota = $this->anggota();
         $tab = $this->teks($request, 'tab') === 'galeri' ? 'galeri' : 'pengumuman';
 
         $kategori = $this->teks($request, 'kategori');
         $kategori = array_key_exists($kategori, config('inner_circle.kategori_kenangan')) ? $kategori : 'all';
 
-        return view('pages.inner-circle.komunitas', [
-            'member' => $this->anggota(),
+        $data = [
+            'member' => $anggota,
             'tab' => $tab,
             'kategori' => $kategori,
-            'unggulan' => InnerCircleDummy::pengumumanUnggulan(),
-            'pengumuman' => InnerCircleDummy::pengumuman(),
-            'kenangan' => InnerCircleDummy::kenangan($kategori === 'all' ? null : $kategori),
-            'jumlahKenangan' => count(InnerCircleDummy::kenangan()),
-        ]);
+            'jumlahPengumuman' => ic_broadcast::query()->tayang()->count(),
+            'jumlahKenangan' => ic_memory::query()->tayang()->count(),
+            'maksFotoMb' => config('inner_circle.foto_kenangan_maks_kb') / 1024,
+        ];
+
+        if ($tab === 'pengumuman') {
+            $data['unggulan'] = ic_broadcast::query()->tayang()->where('unggulan', true)
+                ->orderByDesc('terbit_pada')->orderByDesc('id_broadcast')->first();
+            $data['pengumuman'] = ic_broadcast::query()->tayang()->where('unggulan', false)
+                ->orderByDesc('terbit_pada')->orderByDesc('id_broadcast')
+                ->limit((int) config('inner_circle.pengumuman_maks_anggota', 20))->get();
+        } else {
+            $data['kenangan'] = $kenangan->galeri($anggota, $kategori === 'all' ? null : $kategori);
+        }
+
+        return view('pages.inner-circle.komunitas', $data);
     }
 
     public function profil(ClaimService $klaim)
@@ -191,6 +208,7 @@ class memberController extends Controller
 
         return view('pages.inner-circle.profil', [
             'member' => $anggota,
+            'maksFotoMb' => config('inner_circle.foto_profil_maks_kb') / 1024,
             'metrik' => (object) [
                 'total_stempel' => $anggota->stempel_total,
                 'tahap_terbuka' => $rewards->filter(fn($r) => $r->status_member !== 'terkunci')->count(),

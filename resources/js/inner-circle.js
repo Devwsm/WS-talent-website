@@ -7,7 +7,8 @@
  *         hanya saat dibutuhkan.
  * Fase 5: klaim hadiah sungguhan: form POST dengan konfirmasi (data-ic-konfirmasi) dan pengaman
  *         kirim ganda (data-ic-sekali), serta toast galat dari flash sesi.
- *         Simpan suka ditambahkan di fase berikutnya.
+ * Fase 6: Komunitas sungguhan: suka lewat fetch (JSON), modal yang dibuka otomatis dari server (galat
+ *         validasi), konfirmasi hapus yang judulnya bisa diatur, dan foto profil yang benar-benar terkirim.
  */
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
@@ -94,6 +95,11 @@ document.addEventListener("keydown", (e) => {
     }
 });
 
+// Modal yang diminta terbuka oleh server (atribut data-ic-buka-awal), mis. form unggah dengan galat validasi.
+document
+    .querySelectorAll("[data-ic-buka-awal]")
+    .forEach((modal) => bukaModal(modal.id));
+
 // ---------- Toast dari flash sesi ----------
 // Layout menaruh pesan flash di <body data-ic-toast="...">, mis. setelah masuk.
 const pesanAwal = document.body.dataset.icToast;
@@ -162,10 +168,11 @@ document.addEventListener("submit", async (e) => {
     const form = e.target.closest("form[data-ic-konfirmasi]");
     if (!form || form.dataset.icSudahKonfirmasi) return;
     e.preventDefault();
+    // Bawaan untuk pengajuan hadiah; form lain (hapus kenangan, hapus foto) mengatur sendiri lewat data-ic-konfirmasi-*.
     const hasil = await window.icKonfirmasi({
-        title: "Ajukan hadiah ini?",
+        title: form.dataset.icKonfirmasiJudul || "Ajukan hadiah ini?",
         text: form.dataset.judul,
-        confirmButtonText: "Ya, ajukan",
+        confirmButtonText: form.dataset.icKonfirmasiTombol || "Ya, ajukan",
     });
     if (!hasil.isConfirmed) return;
     form.dataset.icSudahKonfirmasi = "1";
@@ -177,40 +184,83 @@ document.addEventListener("submit", async (e) => {
 document.addEventListener("submit", (e) => {
     const form = e.target.closest("form[data-ic-sekali]");
     if (!form || e.defaultPrevented) return;
-    form.querySelectorAll("button[type=submit]").forEach((t) => {
-        // Ditunda satu tick supaya nilai tombol tetap ikut terkirim.
-        setTimeout(() => (t.disabled = true), 0);
-    });
+    // form.elements ikut menghitung tombol di luar form yang memakai atribut form="id".
+    Array.from(form.elements)
+        .filter((t) => t.type === "submit")
+        .forEach((t) => {
+            // Ditunda satu tick supaya nilai tombol tetap ikut terkirim.
+            setTimeout(() => (t.disabled = true), 0);
+        });
 });
 
 // Kembali lewat tombol "back" memulihkan halaman dari cache apa adanya: buka kembali kunci kirim
 // dan tanda konfirmasi supaya form bisa dipakai lagi.
 window.addEventListener("pageshow", (e) => {
     if (!e.persisted) return;
-    document
-        .querySelectorAll("form[data-ic-sekali] button[type=submit]")
-        .forEach((t) => (t.disabled = false));
+    document.querySelectorAll("form[data-ic-sekali]").forEach((f) =>
+        Array.from(f.elements)
+            .filter((t) => t.type === "submit")
+            .forEach((t) => (t.disabled = f.id === "ic-foto-form")),
+    );
     document
         .querySelectorAll("form[data-ic-konfirmasi]")
         .forEach((f) => delete f.dataset.icSudahKonfirmasi);
 });
 
 // ---------- Suka kenangan ----------
-// Hanya mengubah tampilan di halaman ini; tersimpan ke server di Fase 6.
-document.addEventListener("click", (e) => {
+// Server yang menentukan hasilnya (toggle di KenanganService); tampilan mengikuti jawaban JSON
+// {disukai, jumlah}, jadi angka selalu benar walau ada klik ganda atau anggota lain ikut menyukai.
+const sedangSuka = new WeakSet();
+
+document.addEventListener("click", async (e) => {
     const tombol = e.target.closest("[data-ic-suka]");
-    if (!tombol) return;
-    const aktif = tombol.getAttribute("aria-pressed") !== "true";
-    const angka = tombol.querySelector("span");
-    tombol.setAttribute("aria-pressed", String(aktif));
-    tombol.classList.toggle("is-suka", aktif);
-    tombol
-        .querySelector("i")
-        ?.setAttribute("class", `bi ${aktif ? "bi-heart-fill" : "bi-heart"}`);
-    if (angka)
-        angka.textContent = String(
-            Math.max(0, Number(angka.textContent) + (aktif ? 1 : -1)),
-        );
+    if (!tombol?.dataset.icSukaUrl || sedangSuka.has(tombol)) return;
+    sedangSuka.add(tombol);
+    tombol.setAttribute("aria-busy", "true");
+    try {
+        const respons = await fetch(tombol.dataset.icSukaUrl, {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                Accept: "application/json",
+                "X-Requested-With": "XMLHttpRequest",
+                "X-CSRF-TOKEN":
+                    document.querySelector('meta[name="csrf-token"]')
+                        ?.content ?? "",
+            },
+        });
+        // Sesi habis: muat ulang, server mengarahkan ke halaman masuk.
+        if (respons.status === 401 || respons.status === 419) {
+            window.location.reload();
+            return;
+        }
+        if (respons.status === 404) {
+            window.icToast("Kenangan ini sudah tidak tersedia.", "info");
+            return;
+        }
+        if (respons.status === 429) {
+            window.icToast("Terlalu cepat. Coba lagi sebentar.", "info");
+            return;
+        }
+        if (!respons.ok) throw new Error("gagal");
+
+        const { disukai, jumlah } = await respons.json();
+        tombol.setAttribute("aria-pressed", String(disukai));
+        tombol.classList.toggle("is-suka", disukai);
+        tombol
+            .querySelector("i")
+            ?.setAttribute(
+                "class",
+                `bi ${disukai ? "bi-heart-fill" : "bi-heart"}`,
+            );
+        const angka = tombol.querySelector("span");
+        if (angka) angka.textContent = String(jumlah);
+    } catch {
+        window.icToast("Suka belum tersimpan. Coba lagi.", "error");
+    } finally {
+        sedangSuka.delete(tombol);
+        tombol.removeAttribute("aria-busy");
+    }
 });
 
 // ---------- Foto profil: pilih dan pratinjau ----------
@@ -241,10 +291,6 @@ if (inputFoto) {
 
         tombolSimpan.disabled = false;
         umpan.textContent = "Foto dipilih. Tekan Simpan foto untuk memakainya.";
-    });
-
-    tombolSimpan.addEventListener("click", () => {
-        window.icToast("Simpan foto segera aktif.", "info");
     });
 }
 

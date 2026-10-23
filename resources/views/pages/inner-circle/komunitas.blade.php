@@ -26,7 +26,7 @@
             href="{{ route('ic.komunitas', ['tab' => 'pengumuman']) }}"
             @if ($tab === 'pengumuman') aria-current="page" @endif>
             <x-inner-circle.ikon nama="megaphone" kelas="ic-ikon--mini" /> Pengumuman WS
-            <span class="ic-tab__lencana">{{ count($pengumuman) }}</span>
+            <span class="ic-tab__lencana">{{ $jumlahPengumuman }}</span>
         </a>
         <a class="ic-tab {{ $tab === 'galeri' ? 'is-aktif' : '' }}" href="{{ route('ic.komunitas', ['tab' => 'galeri']) }}"
             @if ($tab === 'galeri') aria-current="page" @endif>
@@ -43,12 +43,20 @@
             </div>
             <span class="ic-pil">✦ Kabar resmi</span>
         </div>
-        <x-inner-circle.pengumuman-unggulan :pengumuman="$unggulan" />
+        @if ($unggulan)
+            <x-inner-circle.pengumuman-unggulan :pengumuman="$unggulan" />
+        @endif
         <div class="ic-daftar ic-jarak-atas">
             @foreach ($pengumuman as $p)
                 <x-inner-circle.item-pengumuman :pengumuman="$p" />
             @endforeach
         </div>
+        @if (!$unggulan && $pengumuman->isEmpty())
+            <div class="ic-panel ic-kosong">
+                <b>Belum ada pengumuman.</b>
+                <p class="ic-bantuan">Kabar resmi dari WSM akan muncul di sini.</p>
+            </div>
+        @endif
     @else
         <div class="ic-bagian-kepala">
             <div>
@@ -85,28 +93,56 @@
             @endforelse
         </div>
 
+        {{-- Paginasi sederhana (tautan biasa, jalan tanpa JS). Tampilan bawaan Laravel memakai Tailwind, yang tidak dimuat di sini. --}}
+        @if ($kenangan->hasPages())
+            <nav class="ic-aksi-baris ic-jarak-atas" aria-label="Halaman galeri">
+                @if ($kenangan->onFirstPage())
+                    <span class="ic-tombol ic-tombol--kecil ic-tombol--terang" aria-disabled="true">
+                        <i class="bi bi-arrow-left" aria-hidden="true"></i> Lebih baru</span>
+                @else
+                    <a class="ic-tombol ic-tombol--kecil ic-tombol--terang" href="{{ $kenangan->previousPageUrl() }}"
+                        rel="prev"><i class="bi bi-arrow-left" aria-hidden="true"></i> Lebih baru</a>
+                @endif
+                <span class="ic-bantuan">Halaman {{ $kenangan->currentPage() }} dari {{ $kenangan->lastPage() }}</span>
+                @if ($kenangan->hasMorePages())
+                    <a class="ic-tombol ic-tombol--kecil" href="{{ $kenangan->nextPageUrl() }}" rel="next">Lebih lama
+                        <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                @else
+                    <span class="ic-tombol ic-tombol--kecil ic-tombol--terang" aria-disabled="true">Lebih lama <i
+                            class="bi bi-arrow-right" aria-hidden="true"></i></span>
+                @endif
+            </nav>
+        @endif
+
         <p class="ic-catatan">Tim WSM dapat menyembunyikan kenangan yang melanggar aturan komunitas.</p>
     @endif
 @endsection
 
 @push('modal')
-    <x-inner-circle.modal id="modal-kenangan" judul="Unggah kenangan ✦" eyebrow="Momenmu, ceritamu">
-        <form data-ic-segera="Unggah kenangan segera aktif.">
+    {{-- Galat validasi (mis. foto terlalu besar) membuka modal ini lagi dengan isian tadi; foto harus dipilih ulang. --}}
+    <x-inner-circle.modal id="modal-kenangan" judul="Unggah kenangan ✦" eyebrow="Momenmu, ceritamu" :terbuka="$errors->any()">
+        <form method="POST" action="{{ route('ic.kenangan.simpan') }}" enctype="multipart/form-data" data-ic-sekali>
+            @csrf
+            @foreach ($errors->all() as $galat)
+                <p class="ic-galat" role="alert">{{ $galat }}</p>
+            @endforeach
+
             <label class="ic-label" for="kenangan-caption">Apa ceritamu?</label>
             <textarea class="ic-input ic-input--area" id="kenangan-caption" name="caption" maxlength="240" rows="3"
-                placeholder="Cerita singkat tentang momen paling berkesan…" required></textarea>
+                placeholder="Cerita singkat tentang momen paling berkesan…" required>{{ old('caption') }}</textarea>
 
             <div class="ic-baris-2">
                 <div>
                     <label class="ic-label" for="kenangan-tempat">Acara / tempat</label>
-                    <input class="ic-input" id="kenangan-tempat" name="tempat" maxlength="65"
+                    <input class="ic-input" id="kenangan-tempat" name="tempat" maxlength="65" value="{{ old('tempat') }}"
                         placeholder="Contoh: WS Showcase">
                 </div>
                 <div>
                     <label class="ic-label" for="kenangan-kategori">Kategori</label>
                     <select class="ic-input" id="kenangan-kategori" name="kategori">
                         @foreach (config('inner_circle.kategori_kenangan') as $kunci => $item)
-                            <option value="{{ $kunci }}">{{ $item['label'] }}</option>
+                            <option value="{{ $kunci }}" @selected(old('kategori') === $kunci)>{{ $item['label'] }}
+                            </option>
                         @endforeach
                     </select>
                 </div>
@@ -114,8 +150,8 @@
 
             <label class="ic-label" for="kenangan-foto">Tambahkan foto (opsional)</label>
             <input class="ic-input" type="file" id="kenangan-foto" name="foto"
-                accept="image/jpeg,image/png,image/webp" data-ic-maks-mb="4">
-            <p class="ic-bantuan">JPG, PNG, atau WebP. Maksimal 4 MB.</p>
+                accept="image/jpeg,image/png,image/webp" data-ic-maks-mb="{{ $maksFotoMb }}">
+            <p class="ic-bantuan">JPG, PNG, atau WebP. Maksimal {{ $maksFotoMb }} MB.</p>
 
             <div class="ic-aksi-form">
                 <button type="button" class="ic-tombol ic-tombol--terang" data-ic-modal-tutup>Batal</button>

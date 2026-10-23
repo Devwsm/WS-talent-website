@@ -1,5 +1,6 @@
-@props(['id', 'judul', 'eyebrow' => null])
-<div class="ic-modal" id="{{ $id }}" hidden>
+@props(['id', 'judul', 'eyebrow' => null, 'terbuka' => false])
+{{-- `terbuka`: dibuka otomatis saat halaman dimuat (inner-circle.js), mis. supaya galat validasi form terlihat. --}}
+<div class="ic-modal" id="{{ $id }}" hidden @if ($terbuka) data-ic-buka-awal @endif>
     <div class="ic-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="{{ $id }}-judul"
         tabindex="-1">
         <div class="ic-modal__kepala">

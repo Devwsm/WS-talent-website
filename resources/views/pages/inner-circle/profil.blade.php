@@ -19,16 +19,37 @@
         </span>
         <div class="ic-profil-editor__isi">
             <h2 class="ic-panel__judul" id="judul-foto">Foto profilmu ✦</h2>
-            <p class="ic-bantuan">Sesuaikan akun Inner Circle-mu. Pilih foto JPG, PNG, atau WebP (maksimal 5 MB).</p>
-            <input type="file" id="ic-foto-input" accept="image/jpeg,image/png,image/webp" data-ic-maks-mb="5" hidden>
+            <p class="ic-bantuan">Sesuaikan akun Inner Circle-mu. Pilih foto JPG, PNG, atau WebP (maksimal
+                {{ $maksFotoMb }} MB).</p>
+
+            {{-- Dua form tanpa isi tampak; tombolnya di bawah memakai atribut form="..." supaya tetap satu baris. --}}
+            <form method="POST" action="{{ route('ic.profil.foto') }}" enctype="multipart/form-data" id="ic-foto-form"
+                data-ic-sekali>
+                @csrf
+                <input type="file" id="ic-foto-input" name="foto" accept="image/jpeg,image/png,image/webp"
+                    data-ic-maks-mb="{{ $maksFotoMb }}" hidden>
+            </form>
+            @if ($member->avatar)
+                <form method="POST" action="{{ route('ic.profil.foto.hapus') }}" id="ic-foto-hapus-form"
+                    data-ic-konfirmasi data-ic-sekali data-ic-konfirmasi-judul="Hapus foto profil?"
+                    data-ic-konfirmasi-tombol="Ya, hapus" data-judul="Kamu bisa mengunggah foto baru kapan saja.">
+                    @csrf
+                    @method('DELETE')
+                </form>
+            @endif
+
             <div class="ic-aksi-baris ic-aksi-baris--rapat">
                 <button type="button" class="ic-tombol ic-tombol--kecil" id="ic-foto-pilih"><i class="bi bi-camera-fill"
                         aria-hidden="true"></i> Pilih foto</button>
-                <button type="button" class="ic-tombol ic-tombol--kecil" id="ic-foto-simpan" disabled>Simpan foto</button>
-                <button type="button" class="ic-tombol ic-tombol--kecil ic-tombol--terang"
-                    data-ic-segera="Hapus foto segera aktif." @disabled(!$member->avatar)>Hapus</button>
+                <button type="submit" form="ic-foto-form" class="ic-tombol ic-tombol--kecil" id="ic-foto-simpan"
+                    disabled>Simpan foto</button>
+                <button type="submit" form="ic-foto-hapus-form" class="ic-tombol ic-tombol--kecil ic-tombol--terang"
+                    @disabled(!$member->avatar)>Hapus</button>
             </div>
             <p class="ic-bantuan ic-umpan" id="ic-foto-umpan" role="status" aria-live="polite"></p>
+            @error('foto')
+                <p class="ic-galat" role="alert">{{ $message }}</p>
+            @enderror
         </div>
     </section>
 

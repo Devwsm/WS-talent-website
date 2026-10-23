@@ -41,7 +41,7 @@ class member extends Authenticatable
         ];
     }
 
-    /** Avatar bawaan sebelum anggota mengunggah foto (Fase 6): emoji seperti di prototype. */
+    /** Avatar bawaan selama anggota belum mengunggah foto (kolom `avatar`, Fase 6): emoji seperti di prototype. */
     protected function avatarEmoji(): Attribute
     {
         return Attribute::get(fn() => '😎');
@@ -61,5 +61,10 @@ class member extends Authenticatable
     public function klaim(): HasMany
     {
         return $this->hasMany(ic_claim::class, 'member_id', 'id_member');
+    }
+
+    public function kenangan(): HasMany
+    {
+        return $this->hasMany(ic_memory::class, 'member_id', 'id_member');
     }
 }

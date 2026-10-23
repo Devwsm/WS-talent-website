@@ -4,6 +4,8 @@ use App\Http\Controllers\dashboardController;
 use App\Http\Controllers\homeController;
 use App\Http\Controllers\InnerCircle\adminController;
 use App\Http\Controllers\InnerCircle\authController;
+use App\Http\Controllers\InnerCircle\fotoProfilController;
+use App\Http\Controllers\InnerCircle\kenanganController;
 use App\Http\Controllers\InnerCircle\memberController;
 use App\Http\Controllers\loginController;
 use App\Http\Controllers\profileController;
@@ -29,8 +31,8 @@ Route::prefix('/')->group(function () {
 });
 
 // WS Inner Circle — dibungkus flag INNER_CIRCLE_AKTIF (404 bila mati, lihat middleware IcAktif).
-// Fase 4-5: akun anggota (guard `member`), check-in, stempel, hadiah, dan klaim sudah tersambung ke database.
-// Komunitas masih memakai data contoh (App\Support\InnerCircleDummy) sampai Fase 6.
+// Fase 4-6: akun anggota (guard `member`), check-in, stempel, hadiah, klaim, Komunitas (pengumuman, kenangan),
+// dan foto profil sudah tersambung ke database.
 Route::prefix('/inner-circle')->middleware('icAktif')->name('ic.')->group(function () {
     Route::get('/masuk', [authController::class, 'masuk'])->name('masuk');
     Route::post('/masuk', [authController::class, 'prosesMasuk'])->name('masuk.proses')->middleware('throttle:10,1');
@@ -46,7 +48,12 @@ Route::prefix('/inner-circle')->middleware('icAktif')->name('ic.')->group(functi
         Route::get('/check-in', [memberController::class, 'checkin'])->name('checkin');
         Route::post('/check-in', [memberController::class, 'prosesCheckin'])->name('checkin.proses')->middleware('throttle:ic-checkin');
         Route::get('/komunitas', [memberController::class, 'komunitas'])->name('komunitas');
+        Route::post('/kenangan', [kenanganController::class, 'simpan'])->name('kenangan.simpan')->middleware('throttle:ic-kenangan');
+        Route::delete('/kenangan/{id}', [kenanganController::class, 'hapus'])->whereNumber('id')->name('kenangan.hapus')->middleware('throttle:30,1');
+        Route::post('/kenangan/{id}/suka', [kenanganController::class, 'suka'])->whereNumber('id')->name('kenangan.suka')->middleware('throttle:ic-suka');
         Route::get('/profil', [memberController::class, 'profil'])->name('profil');
+        Route::post('/profil/foto', [fotoProfilController::class, 'simpan'])->name('profil.foto')->middleware('throttle:ic-foto');
+        Route::delete('/profil/foto', [fotoProfilController::class, 'hapus'])->name('profil.foto.hapus')->middleware('throttle:ic-foto');
     });
 });
 
@@ -54,7 +61,7 @@ Route::prefix('/dashboard')->middleware('cekLogin')->group(function () {
     Route::get('/', [dashboardController::class, 'dashboard'])->name('dashboard');
 
     // WS Inner Circle — panel admin di dashboard CMS (7 tab), ikut flag INNER_CIRCLE_AKTIF (404 bila mati).
-    // Fase 4-5: Ringkasan, Anggota, Acara & QR, Klaim, dan Hadiah sudah memakai database. Pengumuman dan Kenangan masih data contoh (Fase 6).
+    // Fase 4-6: semua tab sudah memakai database.
     Route::prefix('/inner-circle')->middleware('icAktif')->name('ic.admin.')->group(function () {
         Route::get('/', [adminController::class, 'ringkasan'])->name('ringkasan');
         Route::get('/anggota', [adminController::class, 'anggota'])->name('anggota');
@@ -73,7 +80,11 @@ Route::prefix('/dashboard')->middleware('cekLogin')->group(function () {
         Route::get('/hadiah', [adminController::class, 'hadiah'])->name('hadiah');
         Route::put('/hadiah/{target}', [adminController::class, 'ubahHadiah'])->whereNumber('target')->name('hadiah.ubah')->middleware('throttle:10,1');
         Route::get('/pengumuman', [adminController::class, 'pengumuman'])->name('pengumuman');
+        Route::post('/pengumuman', [adminController::class, 'simpanPengumuman'])->name('pengumuman.simpan')->middleware('throttle:10,1');
+        Route::put('/pengumuman/{id}', [adminController::class, 'ubahPengumuman'])->whereNumber('id')->name('pengumuman.ubah')->middleware('throttle:10,1');
+        Route::delete('/pengumuman/{id}', [adminController::class, 'hapusPengumuman'])->whereNumber('id')->name('pengumuman.hapus')->middleware('throttle:10,1');
         Route::get('/kenangan', [adminController::class, 'kenangan'])->name('kenangan');
+        Route::patch('/kenangan/{id}', [adminController::class, 'moderasiKenangan'])->whereNumber('id')->name('kenangan.moderasi')->middleware('throttle:30,1');
     });
 
     Route::prefix('/color_pages')->group(function () {

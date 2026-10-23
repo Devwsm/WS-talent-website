@@ -4,22 +4,27 @@ namespace App\Http\Controllers\InnerCircle;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\InnerCircle\imporEventRequest;
+use App\Http\Requests\InnerCircle\moderasiKenanganRequest;
 use App\Http\Requests\InnerCircle\simpanEventRequest;
 use App\Http\Requests\InnerCircle\simpanHadiahRequest;
+use App\Http\Requests\InnerCircle\simpanPengumumanRequest;
 use App\Http\Requests\InnerCircle\stempelManualRequest;
 use App\Http\Requests\InnerCircle\ubahKlaimRequest;
+use App\Models\ic_broadcast;
 use App\Models\ic_claim;
 use App\Models\ic_event;
+use App\Models\ic_memory;
 use App\Models\ic_reward;
 use App\Models\ic_stempel;
 use App\Models\member;
 use App\Services\InnerCircle\AcaraService;
 use App\Services\InnerCircle\CheckinService;
 use App\Services\InnerCircle\ClaimService;
+use App\Services\InnerCircle\KenanganService;
 use App\Services\InnerCircle\KlaimGagal;
+use App\Services\InnerCircle\PengumumanService;
 use App\Services\InnerCircle\QrService;
 use App\Services\InnerCircle\StempelService;
-use App\Support\InnerCircleDummy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -27,15 +32,16 @@ use Illuminate\Http\Response;
 /**
  * Panel admin WS Inner Circle di dashboard CMS (7 tab).
  *
- * Fase 4-5: tab Ringkasan, Anggota, Acara & QR, Klaim, dan Hadiah sudah memakai database
- * (dengan route tulis). Tab Pengumuman dan Kenangan (Fase 6) masih memakai InnerCircleDummy;
- * nama variabel ke view tidak berubah.
+ * Fase 4-6: semua tab sudah memakai database (dengan route tulis); nama variabel ke view tidak
+ * berubah dari Fase 3.
  */
 class adminController extends Controller
 {
     private const PER_HALAMAN_ANGGOTA = 15;
     private const PER_HALAMAN_ACARA = 10;
     private const PER_HALAMAN_KLAIM = 15;
+    private const PER_HALAMAN_PENGUMUMAN = 15;
+    private const PER_HALAMAN_KENANGAN = 12;
 
     public function ringkasan(CheckinService $checkin)
     {
@@ -348,35 +354,92 @@ class adminController extends Controller
             ->with('success', "Tahap {$target} stempel diperbarui.");
     }
 
-    public function pengumuman()
+    /**
+     * Daftar pengumuman (terbaru dulu, termasuk yang terjadwal) dan form tambah/ubah. Mode ubah lewat
+     * ?ubah=ID, jadi bisa ditautkan dan tetap jalan tanpa JavaScript.
+     */
+    public function pengumuman(Request $request)
     {
+        $idUbah = (int) $this->teks($request, 'ubah');
+
         return $this->tampil('pengumuman', [
-            'daftar' => InnerCircleDummy::pengumumanAdmin(),
+            'daftar' => ic_broadcast::query()
+                ->orderByDesc('terbit_pada')
+                ->orderByDesc('id_broadcast')
+                ->paginate(self::PER_HALAMAN_PENGUMUMAN)
+                ->withQueryString(),
+            'ubah' => $idUbah > 0 ? ic_broadcast::query()->find($idUbah) : null,
             'ikonPeta' => $this->ikonPeta(),
         ]);
     }
 
-    /** Moderasi galeri: filter lewat ?kategori=festival|club|personal dan ?status=tayang|disembunyikan. */
+    public function simpanPengumuman(simpanPengumumanRequest $request, PengumumanService $pengumuman): RedirectResponse
+    {
+        $baru = $pengumuman->simpan($request->validated());
+
+        return redirect()->route('ic.admin.pengumuman')
+            ->with('success', $baru->terjadwal
+                ? 'Pengumuman dijadwalkan: tampil ke anggota mulai ' . $baru->terbit_pada->locale('id')->translatedFormat('j F Y') . '.'
+                : 'Pengumuman diterbitkan.');
+    }
+
+    public function ubahPengumuman(int $id, simpanPengumumanRequest $request, PengumumanService $pengumuman): RedirectResponse
+    {
+        $pengumuman->simpan($request->validated(), ic_broadcast::query()->findOrFail($id));
+
+        return redirect()->route('ic.admin.pengumuman')->with('success', 'Pengumuman diperbarui.');
+    }
+
+    public function hapusPengumuman(int $id, PengumumanService $pengumuman): RedirectResponse
+    {
+        $pengumuman->hapus(ic_broadcast::query()->findOrFail($id));
+
+        return redirect()->route('ic.admin.pengumuman')->with('success', 'Pengumuman dihapus.');
+    }
+
+    /** Moderasi galeri: filter lewat ?kategori=festival|club|personal dan ?status=tayang|disembunyikan, dipaginasi (?page=). */
     public function kenangan(Request $request)
     {
         $kategori = $this->teks($request, 'kategori');
         $kategori = array_key_exists($kategori, config('inner_circle.kategori_kenangan')) ? $kategori : 'all';
 
         $status = $this->teks($request, 'status');
-        $status = in_array($status, ['tayang', 'disembunyikan'], true) ? $status : 'all';
+        $status = in_array($status, [ic_memory::TAYANG, ic_memory::DISEMBUNYIKAN], true) ? $status : 'all';
 
-        $semua = InnerCircleDummy::kenanganAdmin();
+        $query = ic_memory::query()
+            ->with('member')
+            ->withCount('penyuka as jumlah_like')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id_memory');
+        if ($kategori !== 'all') {
+            $query->where('kategori', $kategori);
+        }
+        if ($status !== 'all') {
+            $query->where('status', $status);
+        }
 
         return $this->tampil('kenangan', [
-            'kenangan' => InnerCircleDummy::kenanganAdmin(
-                $kategori === 'all' ? null : $kategori,
-                $status === 'all' ? null : $status
-            ),
+            'kenangan' => $query->paginate(self::PER_HALAMAN_KENANGAN)->withQueryString(),
             'kategori' => $kategori,
             'status' => $status,
-            'jumlahSemua' => count($semua),
-            'jumlahDisembunyikan' => count(array_filter($semua, fn($k) => $k->disembunyikan)),
+            'jumlahSemua' => ic_memory::query()->count(),
+            'jumlahDisembunyikan' => ic_memory::query()->where('status', ic_memory::DISEMBUNYIKAN)->count(),
         ]);
+    }
+
+    /** Sembunyikan kenangan dari galeri anggota atau tayangkan lagi. Tidak menghapus foto maupun tanda suka. */
+    public function moderasiKenangan(int $id, moderasiKenanganRequest $request, KenanganService $kenangan): RedirectResponse
+    {
+        $dipilih = ic_memory::query()->with('member')->findOrFail($id);
+        $sembunyi = $request->validated('aksi') === 'sembunyikan';
+
+        $kenangan->atur($dipilih, $sembunyi);
+
+        $nama = $dipilih->member->nama;
+
+        return back()->with('success', $sembunyi
+            ? "Kenangan dari {$nama} disembunyikan dari galeri."
+            : "Kenangan dari {$nama} tayang kembali di galeri.");
     }
 
     /** Acara yang boleh punya QR (bukan privat, ada venue); selain itu 404. */
