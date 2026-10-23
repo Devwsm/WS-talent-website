@@ -16,10 +16,13 @@ return [
     'seed_contoh' => (bool) env('IC_SEED_CONTOH', false),
 
     /* Fase terakhir yang sudah tersambung ke database. Tab dashboard dengan `fase` lebih besar masih memakai data contoh. */
-    'fase_tersambung' => 4,
+    'fase_tersambung' => 5,
 
     /* Batas percobaan check-in per anggota per menit (lihat RateLimiter `ic-checkin` di AppServiceProvider). */
     'batas_checkin_per_menit' => 8,
+
+    /* Batas pengajuan hadiah per anggota per menit (RateLimiter `ic-klaim`). Pengaman klik ganda dan skrip. */
+    'batas_klaim_per_menit' => 6,
 
     /*
     | Ikon gambar ada di public/aset/inner-circle/ikon/{nama}.webp (Fluent Emoji 3D, MIT).
@@ -121,6 +124,7 @@ return [
     /*
     | Alur tombol antrean klaim di dashboard: status sekarang => status berikutnya + label tombol.
     | `ditolak` bisa dipilih dari tiga status yang masih menunggu; `selesai` dan `ditolak` adalah akhir alur.
+    | Dipakai ClaimService sebagai satu-satunya aturan perpindahan status.
     */
     'alur_klaim' => [
         'diajukan' => ['berikutnya' => 'ditinjau', 'aksi' => 'Tinjau'],

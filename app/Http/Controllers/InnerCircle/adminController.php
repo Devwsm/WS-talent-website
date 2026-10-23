@@ -5,12 +5,18 @@ namespace App\Http\Controllers\InnerCircle;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\InnerCircle\imporEventRequest;
 use App\Http\Requests\InnerCircle\simpanEventRequest;
+use App\Http\Requests\InnerCircle\simpanHadiahRequest;
 use App\Http\Requests\InnerCircle\stempelManualRequest;
+use App\Http\Requests\InnerCircle\ubahKlaimRequest;
+use App\Models\ic_claim;
 use App\Models\ic_event;
+use App\Models\ic_reward;
 use App\Models\ic_stempel;
 use App\Models\member;
 use App\Services\InnerCircle\AcaraService;
 use App\Services\InnerCircle\CheckinService;
+use App\Services\InnerCircle\ClaimService;
+use App\Services\InnerCircle\KlaimGagal;
 use App\Services\InnerCircle\QrService;
 use App\Services\InnerCircle\StempelService;
 use App\Support\InnerCircleDummy;
@@ -21,14 +27,15 @@ use Illuminate\Http\Response;
 /**
  * Panel admin WS Inner Circle di dashboard CMS (7 tab).
  *
- * Fase 4: tab Ringkasan, Anggota, dan Acara & QR sudah memakai database (dengan route tulis).
- * Tab Klaim dan Hadiah (Fase 5) serta Pengumuman dan Kenangan (Fase 6) masih memakai
- * InnerCircleDummy; nama variabel ke view tidak berubah.
+ * Fase 4-5: tab Ringkasan, Anggota, Acara & QR, Klaim, dan Hadiah sudah memakai database
+ * (dengan route tulis). Tab Pengumuman dan Kenangan (Fase 6) masih memakai InnerCircleDummy;
+ * nama variabel ke view tidak berubah.
  */
 class adminController extends Controller
 {
     private const PER_HALAMAN_ANGGOTA = 15;
     private const PER_HALAMAN_ACARA = 10;
+    private const PER_HALAMAN_KLAIM = 15;
 
     public function ringkasan(CheckinService $checkin)
     {
@@ -45,12 +52,19 @@ class adminController extends Controller
             'ringkasan' => (object) [
                 'anggota_total' => member::query()->count(),
                 'kehadiran_terverifikasi' => ic_stempel::query()->where('sumber', 'checkin')->count(),
-                // Pengajuan hadiah baru ada di Fase 5.
-                'klaim_menunggu' => 0,
+                'klaim_menunggu' => ic_claim::query()->whereIn('status', ic_claim::statusMenunggu())->count(),
                 'acara_aktif' => $checkin->eventTerbuka($sekarang)->count(),
                 'acara_berikutnya' => $berikutnya,
             ],
-            'klaimMenunggu' => [],
+            // Lima pengajuan tertua yang menunggu (yang paling lama dulu), array supaya `empty()` di view bekerja.
+            'klaimMenunggu' => ic_claim::query()
+                ->with(['reward', 'member'])
+                ->whereIn('status', ic_claim::statusMenunggu())
+                ->orderBy('created_at')
+                ->orderBy('id_claim')
+                ->limit(5)
+                ->get()
+                ->all(),
         ]);
     }
 
@@ -237,19 +251,101 @@ class adminController extends Controller
             ->header('Cache-Control', 'no-store');
     }
 
-    public function klaim()
+    /**
+     * Antrean klaim. Filter lewat ?status=menunggu (bawaan, yang tertua dulu) | semua | selesai | ditolak.
+     * Dipaginasi (?page=).
+     */
+    public function klaim(Request $request)
     {
+        $status = $this->teks($request, 'status');
+        $status = in_array($status, ['semua', 'selesai', 'ditolak'], true) ? $status : 'menunggu';
+
+        $query = ic_claim::query()->with(['reward', 'member', 'logs']);
+        if ($status === 'menunggu') {
+            $query->whereIn('status', ic_claim::statusMenunggu())->orderBy('created_at')->orderBy('id_claim');
+        } else {
+            if ($status !== 'semua') {
+                $query->where('status', $status);
+            }
+            $query->orderByDesc('created_at')->orderByDesc('id_claim');
+        }
+
+        $perStatus = ic_claim::query()
+            ->selectRaw('status, count(*) as jumlah')
+            ->groupBy('status')
+            ->pluck('jumlah', 'status');
+
         return $this->tampil('klaim', [
-            'klaim' => InnerCircleDummy::klaimAdmin(),
+            'klaim' => $query->paginate(self::PER_HALAMAN_KLAIM)->withQueryString(),
+            'filterStatus' => $status,
+            'hitung' => [
+                'menunggu' => (int) collect(ic_claim::statusMenunggu())->sum(fn($s) => $perStatus[$s] ?? 0),
+                'semua' => (int) $perStatus->sum(),
+                'selesai' => (int) ($perStatus['selesai'] ?? 0),
+                'ditolak' => (int) ($perStatus['ditolak'] ?? 0),
+            ],
         ]);
     }
 
-    public function hadiah()
+    /** Lanjutkan, tolak, atau ubah catatan satu pengajuan. Aturan alurnya di ClaimService. */
+    public function ubahKlaim(int $id, ubahKlaimRequest $request, ClaimService $klaim): RedirectResponse
     {
+        $pengajuan = ic_claim::query()->findOrFail($id);
+
+        try {
+            $hasil = $klaim->proses(
+                $pengajuan,
+                $request->validated('aksi'),
+                $request->validated('dari'),
+                $request->validated('catatan'),
+                session('user'),
+            );
+        } catch (KlaimGagal $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        $nama = $hasil->nama_member;
+        $pesan = match ($request->validated('aksi')) {
+            'lanjut' => "Pengajuan {$nama} sekarang berstatus " . config('inner_circle.status_klaim.' . $hasil->status . '.label') . '.',
+            'tolak' => "Pengajuan {$nama} ditolak. Alasannya tampil di profil anggota.",
+            default => "Catatan untuk {$nama} disimpan.",
+        };
+
+        return back()->with('success', $pesan);
+    }
+
+    /** Pilih tahap yang dibuka di form lewat ?tahap=10|25|50|100|250. */
+    public function hadiah(Request $request)
+    {
+        $rewards = ic_reward::query()
+            ->where('aktif', true)
+            ->orderBy('urutan')
+            ->orderBy('target_stempel')
+            ->get()
+            ->all();
+
+        $tahap = (int) $this->teks($request, 'tahap');
+        $tahapAwal = collect($rewards)->first(fn($r) => $r->target_stempel === $tahap)?->target_stempel
+            ?? ($rewards[0]->target_stempel ?? null);
+
         return $this->tampil('hadiah', [
-            'rewards' => InnerCircleDummy::rewards(),
+            'rewards' => $rewards,
+            'tahapAwal' => $tahapAwal,
             'ikonPeta' => $this->ikonPeta(),
         ]);
+    }
+
+    /** Ubah teks dan tampilan satu tahap. Target stempel tidak bisa diubah (kunci di URL dan aturan klaim). */
+    public function ubahHadiah(int $target, simpanHadiahRequest $request): RedirectResponse
+    {
+        $reward = ic_reward::query()->where('target_stempel', $target)->firstOrFail();
+
+        $data = $request->validated();
+        $data['opsi'] = $data['opsi'] ?: null;
+        $reward->update($data);
+
+        return redirect(route('ic.admin.hadiah', ['tahap' => $target]))
+            ->with('success', "Tahap {$target} stempel diperbarui.");
     }
 
     public function pengumuman()
@@ -296,8 +392,7 @@ class adminController extends Controller
     private function tampil(string $tab, array $data)
     {
         return view('pages.dashboard-pages.inner-circle.' . $tab, $data + [
-            // Antrean klaim baru tersambung ke database di Fase 5, jadi belum ada klaim yang menunggu.
-            'jumlahKlaimMenunggu' => 0,
+            'jumlahKlaimMenunggu' => ic_claim::query()->whereIn('status', ic_claim::statusMenunggu())->count(),
         ]);
     }
 

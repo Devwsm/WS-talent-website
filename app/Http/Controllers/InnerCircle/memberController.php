@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\InnerCircle;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\InnerCircle\ajukanKlaimRequest;
 use App\Http\Requests\InnerCircle\checkinRequest;
 use App\Models\ic_event;
 use App\Models\ic_stempel;
 use App\Models\member;
 use App\Services\InnerCircle\CheckinGagal;
 use App\Services\InnerCircle\CheckinService;
+use App\Services\InnerCircle\ClaimService;
+use App\Services\InnerCircle\KlaimGagal;
 use App\Support\InnerCircleDummy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,31 +20,44 @@ use Illuminate\Support\Facades\Auth;
 /**
  * Layar anggota WS Inner Circle (semua route di sini dilindungi `auth:member`).
  *
- * Fase 4: anggota, Beranda, Check-in, dan riwayat stempel di Profil sudah dari database.
- * Hadiah dan Komunitas masih memakai InnerCircleDummy untuk isinya (Fase 5-6), tetapi anggotanya
- * sudah anggota yang sedang login. Nama variabel ke view tidak berubah dari Fase 2.
+ * Fase 4-5: anggota, Beranda, Check-in, riwayat stempel, Hadiah, dan pengajuan hadiah di Profil
+ * sudah dari database. Komunitas masih memakai InnerCircleDummy untuk isinya (Fase 6), tetapi
+ * anggotanya sudah anggota yang sedang login. Nama variabel ke view tidak berubah dari Fase 2.
  */
 class memberController extends Controller
 {
-    public function beranda()
+    public function beranda(ClaimService $klaim)
     {
         $anggota = $this->anggota();
 
         return view('pages.inner-circle.beranda', [
             'member' => $anggota,
-            'berikutnya' => InnerCircleDummy::berikutnya($anggota->stempel_total),
+            'berikutnya' => $klaim->berikutnya($anggota->stempel_total),
             'aktivitas' => $this->riwayatStempel($anggota, 5),
         ]);
     }
 
-    public function hadiah()
+    public function hadiah(ClaimService $klaim)
     {
         $anggota = $this->anggota();
 
         return view('pages.inner-circle.hadiah', [
             'member' => $anggota,
-            'rewards' => InnerCircleDummy::rewards($anggota->stempel_total),
+            'rewards' => $klaim->hadiahUntuk($anggota)->all(),
         ]);
+    }
+
+    /** Ajukan hadiah satu tahap (target stempel dari URL). Aturannya ada di ClaimService. */
+    public function ajukanKlaim(int $target, ajukanKlaimRequest $request, ClaimService $klaim): RedirectResponse
+    {
+        try {
+            $pengajuan = $klaim->ajukan($this->anggota(), $target, $request->validated('opsi'));
+        } catch (KlaimGagal $e) {
+            return redirect(route('ic.hadiah') . '#klaim')->with('ic_toast_galat', $e->getMessage());
+        }
+
+        return redirect(route('ic.hadiah') . '#klaim')
+            ->with('ic_toast', 'Pengajuan terkirim! Tim WSM akan meninjau hadiah ' . $pengajuan->target_stempel . ' stempel.');
     }
 
     /**
@@ -167,21 +183,21 @@ class memberController extends Controller
         ]);
     }
 
-    public function profil()
+    public function profil(ClaimService $klaim)
     {
         $anggota = $this->anggota();
-        $rewards = InnerCircleDummy::rewards($anggota->stempel_total);
+        $rewards = $klaim->hadiahUntuk($anggota);
+        $pengajuan = $klaim->klaimAnggota($anggota);
 
         return view('pages.inner-circle.profil', [
             'member' => $anggota,
             'metrik' => (object) [
                 'total_stempel' => $anggota->stempel_total,
-                'tahap_terbuka' => count(array_filter($rewards, fn($r) => $r->status_member !== 'terkunci')),
-                // Pengajuan hadiah baru tersambung ke database di Fase 5.
-                'jumlah_klaim' => 0,
+                'tahap_terbuka' => $rewards->filter(fn($r) => $r->status_member !== 'terkunci')->count(),
+                'jumlah_klaim' => $pengajuan->count(),
             ],
             'riwayat' => $this->riwayatStempel($anggota, 100),
-            'klaim' => [],
+            'klaim' => $pengajuan->all(),
         ]);
     }
 

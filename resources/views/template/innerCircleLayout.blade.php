@@ -18,7 +18,7 @@
     @stack('head')
 </head>
 
-<body class="ic-app" data-ic-toast="{{ session('ic_toast') }}">
+<body class="ic-app" data-ic-toast="{{ session('ic_toast') }}" data-ic-toast-galat="{{ session('ic_toast_galat') }}">
     <a class="ic-lewati" href="#konten">Lewati ke konten</a>
 
     <div class="ic-shell">

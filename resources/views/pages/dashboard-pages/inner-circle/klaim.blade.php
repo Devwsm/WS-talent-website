@@ -11,8 +11,19 @@
             'hijau' => 'border-emerald-300/30 bg-emerald-300/10 text-emerald-200',
             'merah' => 'border-red-400/30 bg-red-400/10 text-red-300',
         ];
-        $statusMenunggu = ['diajukan', 'ditinjau', 'disetujui'];
-        $jumlahMenunggu = count(array_filter($klaim, fn($k) => in_array($k->status, $statusMenunggu, true)));
+
+        $pilihanFilter = [
+            'menunggu' => 'Menunggu',
+            'semua' => 'Semua',
+            'selesai' => 'Selesai',
+            'ditolak' => 'Ditolak',
+        ];
+        $pesanKosong = [
+            'menunggu' => 'Tidak ada pengajuan yang menunggu tindakan.',
+            'semua' => 'Belum ada pengajuan hadiah.',
+            'selesai' => 'Belum ada pengajuan yang selesai.',
+            'ditolak' => 'Belum ada pengajuan yang ditolak.',
+        ];
     @endphp
 
     <div class="relative w-full flex flex-col justify-center items-center overflow-hidden">
@@ -30,23 +41,43 @@
                 'deskripsi' => 'Tinjau pengajuan hadiah anggota dan gerakkan statusnya sampai selesai.',
             ])
 
+            @include('components/errors')
+            @include('components/success')
+
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <h2 class="font-bold uppercase tracking-wide text-sm flex items-center gap-2">
                     <i class="bi bi-inbox-fill text-white/50" aria-hidden="true"></i>
-                    Antrean pengajuan ({{ count($klaim) }})
+                    Antrean pengajuan
                 </h2>
-                <p class="text-xs text-white/50" role="status" aria-live="polite">
-                    Menunggu tindakan: <b id="hitung-menunggu" class="text-white">{{ $jumlahMenunggu }}</b>
-                </p>
+
+                {{-- Filter status lewat ?status= (bisa dibagikan, jalan tanpa JavaScript) --}}
+                <nav aria-label="Saring pengajuan" class="-mx-5 md:mx-0 overflow-x-auto md:overflow-visible">
+                    <ul class="flex gap-2 px-5 md:px-0 w-max md:w-auto">
+                        @foreach ($pilihanFilter as $kunci => $label)
+                            @php $dipilih = $kunci === $filterStatus; @endphp
+                            <li>
+                                <a href="{{ route('ic.admin.klaim', ['status' => $kunci]) }}"
+                                    @if ($dipilih) aria-current="page" @endif
+                                    class="inline-flex items-center gap-2 h-11 px-4 rounded-full border text-sm font-semibold whitespace-nowrap transition-colors
+                                    {{ $dipilih ? 'bg-white text-black border-white' : 'border-white/10 text-white/60 hover:bg-white/10 hover:text-white' }}">
+                                    {{ $label }}
+                                    <span
+                                        class="text-xs {{ $dipilih ? 'text-black/60' : 'text-white/40' }}">{{ $hitung[$kunci] }}</span>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </nav>
             </div>
 
             <p class="text-xs text-white/40 -mt-3">
-                Alur status: Diajukan → Ditinjau → Disetujui → Selesai. Pengajuan juga bisa ditolak selama belum selesai.
+                Alur status: Diajukan → Ditinjau → Disetujui → Selesai. Pengajuan bisa ditolak selama belum selesai
+                (alasan wajib dan tampil di profil anggota). Catatan, mis. kode voucher, juga tampil di profil anggota.
             </p>
 
-            @if (empty($klaim))
+            @if ($klaim->isEmpty())
                 @include('components/dashboard/card/empty-state', [
-                    'message' => 'Belum ada pengajuan hadiah.',
+                    'message' => $pesanKosong[$filterStatus],
                 ])
             @else
                 <ul class="flex flex-col gap-3" id="antrean-klaim">
@@ -57,7 +88,8 @@
                         @endphp
                         <li class="rounded-3xl border border-white/10 bg-white/3 p-4 md:p-5 transition-colors hover:border-white/20"
                             data-klaim data-status="{{ $k->status }}"
-                            data-judul="{{ $k->nama_member }} · {{ $k->judul }}">
+                            data-judul="{{ $k->nama_member }} · {{ $k->judul }}"
+                            data-catatan-awal="{{ $k->catatan_admin }}">
                             <div class="flex flex-col md:flex-row md:items-center gap-4">
                                 <div class="flex items-start gap-3 min-w-0 flex-1">
                                     {{-- Bulatan ikon hadiah: gaya yang sama dengan daftar klaim anggota --}}
@@ -77,95 +109,124 @@
                                         </p>
                                         <p class="text-xs text-white/40 mt-0.5">Diajukan
                                             {{ $k->diajukan_pada->locale('id')->translatedFormat('j M Y') }}</p>
-                                        <p class="text-xs text-white/60 mt-2 {{ $k->catatan_admin ? '' : 'hidden' }}"
-                                            data-catatan>
-                                            <i class="bi bi-chat-left-text" aria-hidden="true"></i>
-                                            <span data-catatan-isi>{{ $k->catatan_admin }}</span>
-                                        </p>
+                                        @if ($k->catatan_admin)
+                                            <p class="text-xs text-white/60 mt-2">
+                                                <i class="bi bi-chat-left-text" aria-hidden="true"></i>
+                                                {{ $k->catatan_admin }}
+                                            </p>
+                                        @endif
                                     </div>
                                 </div>
 
                                 <div class="flex flex-wrap items-center gap-2 md:justify-end shrink-0">
-                                    <span data-lencana
+                                    <span
                                         class="rounded-full border px-3 py-1.5 text-xs font-semibold {{ $kelasLencana[$status['warna']] }}">{{ $status['label'] }}</span>
 
-                                    <button type="button" data-aksi="lanjut"
-                                        class="h-11 px-5 rounded-full bg-white text-black text-xs font-semibold hover:bg-white/80 transition-colors {{ $aksi ? '' : 'hidden' }}">
-                                        {{ $aksi['aksi'] ?? '' }}
-                                    </button>
-                                    <button type="button" data-aksi="tolak"
-                                        class="h-11 px-4 rounded-full border border-red-400/30 text-red-300 text-xs font-semibold hover:bg-red-400/10 transition-colors {{ $aksi ? '' : 'hidden' }}">
-                                        Tolak
+                                    @if ($aksi)
+                                        <button type="button" data-aksi="lanjut" data-label="{{ $aksi['aksi'] }}"
+                                            class="h-11 px-5 rounded-full bg-white text-black text-xs font-semibold hover:bg-white/80 transition-colors">
+                                            {{ $aksi['aksi'] }}
+                                        </button>
+                                        <button type="button" data-aksi="tolak"
+                                            class="h-11 px-4 rounded-full border border-red-400/30 text-red-300 text-xs font-semibold hover:bg-red-400/10 transition-colors">
+                                            Tolak
+                                        </button>
+                                    @endif
+                                    <button type="button" data-aksi="catatan"
+                                        class="h-11 px-4 rounded-full border border-white/15 text-white/70 text-xs font-semibold hover:bg-white/10 hover:text-white transition-colors">
+                                        Catatan
                                     </button>
                                 </div>
                             </div>
+
+                            {{-- Riwayat perubahan status (siapa, kapan, catatan) --}}
+                            <details class="mt-3 text-xs text-white/50">
+                                <summary class="cursor-pointer select-none py-2 hover:text-white/80">
+                                    Riwayat ({{ $k->logs->count() }})
+                                </summary>
+                                <ol class="flex flex-col gap-1.5 pb-1 pl-1">
+                                    @foreach ($k->logs as $log)
+                                        <li>
+                                            <b class="text-white/70">{{ $statusKlaim[$log->status]['label'] }}</b>
+                                            · {{ $log->created_at->locale('id')->translatedFormat('j M Y, H.i') }}
+                                            · {{ $log->oleh ?? ($log->status === 'diajukan' ? 'anggota' : 'admin') }}
+                                            @if ($log->catatan)
+                                                <span class="text-white/40">— {{ $log->catatan }}</span>
+                                            @endif
+                                        </li>
+                                    @endforeach
+                                </ol>
+                            </details>
+
+                            {{-- Dikirim lewat JavaScript setelah dialog dikonfirmasi. `dari` = status yang dilihat admin;
+                                 server menolak bila statusnya sudah berubah (klik ganda atau admin lain). --}}
+                            <form method="POST" action="{{ route('ic.admin.klaim.proses', $k->id_claim) }}"
+                                data-form-klaim hidden>
+                                @csrf
+                                @method('PATCH')
+                                <input type="hidden" name="aksi" value="">
+                                <input type="hidden" name="dari" value="{{ $k->status }}">
+                                <input type="hidden" name="catatan" value="">
+                            </form>
                         </li>
                     @endforeach
                 </ul>
+
+                @include('components.dashboard.pagination', ['paginator' => $klaim])
             @endif
         </div>
     </div>
 
     @push('scripts')
         <script>
-            const STATUS = @json($statusKlaim);
-            const ALUR = @json($alurKlaim);
-            const KELAS_LENCANA = @json($kelasLencana);
-            const MENUNGGU = @json($statusMenunggu);
-
-            // Perbarui satu baris sesuai status barunya: lencana, tombol alur, dan penghitung.
-            function tampilkanStatus(baris, status) {
-                baris.dataset.status = status;
-
-                const lencana = baris.querySelector('[data-lencana]');
-                const info = STATUS[status];
-                lencana.textContent = info.label;
-                lencana.className = 'rounded-full border px-3 py-1.5 text-xs font-semibold ' + KELAS_LENCANA[info.warna];
-
-                const lanjut = baris.querySelector('[data-aksi="lanjut"]');
-                const tolak = baris.querySelector('[data-aksi="tolak"]');
-                const alur = ALUR[status];
-                lanjut.classList.toggle('hidden', !alur);
-                tolak.classList.toggle('hidden', !alur);
-                if (alur) lanjut.textContent = alur.aksi;
-
-                document.getElementById('hitung-menunggu').textContent = [...document.querySelectorAll('[data-klaim]')].filter((
-                    b) => MENUNGGU.includes(b.dataset.status)).length;
-            }
-
             document.addEventListener('click', async (e) => {
                 const tombol = e.target.closest('[data-aksi]');
                 if (!tombol) return;
                 const baris = tombol.closest('[data-klaim]');
-                const alur = ALUR[baris.dataset.status];
-                if (!alur) return;
+                const form = baris.querySelector('form[data-form-klaim]');
+                const aksi = tombol.dataset.aksi;
+                const catatanAwal = baris.dataset.catatanAwal || '';
 
-                if (tombol.dataset.aksi === 'lanjut') {
-                    tampilkanStatus(baris, alur.berikutnya);
-                    window.icSegera(`Status diubah ke ${STATUS[alur.berikutnya].label} (contoh, belum tersimpan).`);
-                    return;
-                }
+                const dialog = {
+                    lanjut: {
+                        title: `${tombol.dataset.label} pengajuan ini?`,
+                        inputLabel: 'Catatan untuk anggota (opsional, mis. kode voucher)',
+                        inputValue: catatanAwal,
+                        confirmButtonText: tombol.dataset.label,
+                    },
+                    tolak: {
+                        title: 'Tolak pengajuan ini?',
+                        inputLabel: 'Alasan (tampil di profil anggota)',
+                        inputValidator: (nilai) => (nilai.trim() ? undefined : 'Alasan wajib diisi.'),
+                        confirmButtonText: 'Ya, tolak',
+                    },
+                    catatan: {
+                        title: 'Catatan pengajuan',
+                        inputLabel: 'Tampil di profil anggota. Kosongkan untuk menghapus catatan.',
+                        inputValue: catatanAwal,
+                        confirmButtonText: 'Simpan catatan',
+                    },
+                } [aksi];
+                if (!dialog) return;
 
                 const hasil = await window.Swal.fire({
-                    title: 'Tolak pengajuan ini?',
+                    ...dialog,
                     text: baris.dataset.judul,
                     input: 'textarea',
-                    inputLabel: 'Alasan (tampil di profil anggota)',
                     inputAttributes: {
                         maxlength: 160
                     },
-                    inputValidator: (nilai) => (nilai.trim() ? undefined : 'Alasan wajib diisi.'),
                     showCancelButton: true,
-                    confirmButtonText: 'Ya, tolak',
                     cancelButtonText: 'Batal',
                     reverseButtons: true,
                 });
                 if (!hasil.isConfirmed) return;
 
-                baris.querySelector('[data-catatan-isi]').textContent = hasil.value.trim();
-                baris.querySelector('[data-catatan]').classList.remove('hidden');
-                tampilkanStatus(baris, 'ditolak');
-                window.icSegera('Pengajuan ditolak (contoh, belum tersimpan).');
+                form.elements.aksi.value = aksi;
+                form.elements.catatan.value = (hasil.value || '').trim();
+                // Kunci semua tombol baris ini supaya klik ganda tidak mengirim dua permintaan.
+                baris.querySelectorAll('[data-aksi]').forEach((b) => (b.disabled = true));
+                form.submit();
             });
         </script>
     @endpush

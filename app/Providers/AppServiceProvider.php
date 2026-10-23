@@ -43,5 +43,16 @@ class AppServiceProvider extends ServiceProvider
                     ->route('ic.checkin')
                     ->withErrors(['kode' => 'Terlalu banyak percobaan. Tunggu sebentar lalu coba lagi.']));
         });
+
+        // Pengajuan hadiah juga per ANGGOTA: cukup longgar untuk salah klik, cukup ketat untuk skrip.
+        RateLimiter::for('ic-klaim', function (Request $request) {
+            $id = Auth::guard('member')->id();
+
+            return Limit::perMinute((int) config('inner_circle.batas_klaim_per_menit', 6))
+                ->by($id ? 'member:' . $id : 'ip:' . $request->ip())
+                ->response(fn() => redirect()
+                    ->route('ic.hadiah')
+                    ->with('ic_toast_galat', 'Terlalu banyak percobaan. Tunggu sebentar lalu coba lagi.'));
+        });
     }
 }

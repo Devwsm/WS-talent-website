@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             headerSeeder::class,
             albumsSeeder::class,
             merchandiseSeeder::class,
+            icRewardSeeder::class,
             icEventContohSeeder::class,
         ]);
     }

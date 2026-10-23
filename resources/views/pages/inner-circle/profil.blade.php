@@ -65,6 +65,9 @@
                     <h3>{{ $k->target_stempel }} stempel · {{ $k->judul }}</h3>
                     <p class="ic-bantuan">{{ $k->opsi ?? 'Hadiah tahapan' }} ·
                         {{ $k->diajukan_pada->locale('id')->translatedFormat('j M Y') }}</p>
+                    @if ($k->catatan_admin)
+                        <p class="ic-bantuan"><b>Catatan WSM:</b> {{ $k->catatan_admin }}</p>
+                    @endif
                 </div>
                 <span class="ic-pil ic-pil--{{ $status['warna'] }}">{{ $status['label'] }}</span>
             </div>

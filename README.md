@@ -20,7 +20,7 @@ npm install && npm run dev
 
 # Rencana Penerapan: WS Inner Circle
 
-> Status: **Fase 1 sampai 4 selesai**. Fase 1 sampai 3: kerangka UI, 7 layar anggota, dan panel admin 7 tab. Fase 4: akun anggota, check-in QR, dan stempel sudah tersambung ke database (Hadiah, Komunitas, dan tab admin Klaim, Hadiah, Pengumuman, Kenangan masih data contoh). Flag fitur mati secara bawaan. Berikutnya: Fase 5.
+> Status: **Fase 1 sampai 5 selesai**. Fase 1 sampai 3: kerangka UI, 7 layar anggota, dan panel admin 7 tab. Fase 4: akun anggota, check-in QR, dan stempel sudah tersambung ke database. Fase 5: hadiah dan klaim sudah tersambung ke database (tahapan hadiah dikelola di tab Hadiah, antrean klaim di tab Klaim). Komunitas (tab admin Pengumuman dan Kenangan serta layar Komunitas anggota) masih data contoh. Flag fitur mati secara bawaan. Berikutnya: Fase 6.
 > Dibuat: 21 Oktober 2026.
 > Acuan: `WS_Inner_Circle.html` (prototype native, satu file, data di `localStorage`) dan 19 screenshot UI di `inner-circle-ui-prototype.zip`.
 
@@ -36,7 +36,7 @@ Urutan kerja: **UI dulu dengan data dummy, backend menyusul per fitur.**
 | 2    | UI anggota: 6 layar                                | Dummy    |
 | 3    | UI admin di dashboard CMS                          | Dummy    |
 | 4    | Anggota, check-in, dan stempel sungguhan (selesai) | Database |
-| 5    | Hadiah dan klaim                                   | Database |
+| 5    | Hadiah dan klaim (selesai)                         | Database |
 | 6    | Komunitas (pengumuman, kenangan) dan foto profil   | Database |
 | 7    | Teaser di home, SEO, QA, rilis                     | Database |
 
@@ -275,7 +275,7 @@ Penyesuaian dari rencana awal:
 - Acara yang sudah punya check-in tidak bisa dihapus (buku besar tidak boleh kehilangan acaranya).
 - Jendela check-in khusus per acara bisa diatur di form Acara (kosong = bawaan 12.00 sampai H+1 06.00 WIB).
 - Impor CSV semua atau tidak sama sekali; kode yang sudah ada diperbarui tanpa mengganti token.
-- Tab Klaim di dashboard masih memuat data contoh, tetapi lencana dan angka Ringkasan menampilkan 0 klaim sampai Fase 5.
+- Tab Klaim di dashboard memakai data contoh sampai Fase 5 (sudah tersambung ke database di Fase 5).
 - Kamera pemindai butuh HTTPS (atau localhost).
 
 Aturan check-in:
@@ -293,18 +293,48 @@ Cek hasil:
 - Event contoh diganti event asli lewat CMS atau impor CSV.
 - Tes otomatis: `php artisan test --filter=InnerCircleTest`. Kunci baris (`lockForUpdate`) tidak teruji di SQLite.
 
-### Fase 5: Hadiah dan klaim
+### Fase 5: Hadiah dan klaim (selesai)
 
-File (urut): migration `ic_rewards`, `ic_claims`, `ic_claim_logs`; model; `ClaimService`; seeder 5 hadiah dari prototype; controller Hadiah dan Profil (bagian klaim); admin tab Hadiah dan Klaim; modal pilihan A/B.
+File yang dibuat atau diubah:
 
-Aturan:
+1. Migration `ic_rewards`, `ic_claims`, `ic_claim_logs` (`database/migrations/2026_10_23_07000*`)
+2. Model `ic_reward`, `ic_claim`, `ic_claim_log`; `member` (relasi `klaim()` dan nilai bawaan `stempel_total` = 0)
+3. `database/seeders/icRewardSeeder.php` + `DatabaseSeeder`; seeder yang sama dipanggil dari migration `ic_rewards`
+4. Form Request di `app/Http/Requests/InnerCircle/`: `ajukanKlaimRequest`, `ubahKlaimRequest`, `simpanHadiahRequest`
+5. Service `ClaimService` dan `KlaimGagal` di `app/Services/InnerCircle/`
+6. `memberController` (Beranda, Hadiah, `ajukanKlaim`, Profil) dan `adminController` (Ringkasan, Klaim, `ubahKlaim`, Hadiah, `ubahHadiah`)
+7. `routes/web.php` (`ic.hadiah.klaim`, `ic.admin.klaim.proses`, `ic.admin.hadiah.ubah`), `AppServiceProvider` (limiter `ic-klaim` per anggota), `config/inner_circle.php` (`fase_tersambung` = 5, `batas_klaim_per_menit`)
+8. View anggota `hadiah`, `profil`, `innerCircleLayout`; view dashboard `klaim` dan `hadiah`
+9. `resources/js/inner-circle.js` (form klaim dengan konfirmasi, pengaman kirim ganda, toast galat)
+10. `tests/Feature/InnerCircleHadiahTest.php`
 
-- Klaim hanya bila `stempel_total >= target_stempel`, **sekali** per anggota per tahap, dalam transaksi dengan kunci baris supaya klik ganda tidak membuat dua klaim.
-- Tahap 50 wajib memilih opsi; tersimpan di `opsi_dipilih`.
-- Alur status: `diajukan` → `ditinjau` → `disetujui` → `selesai`, atau `ditolak`. Tiap perubahan dicatat di `ic_claim_logs` (siapa, kapan, catatan).
-- Pemenuhan hadiah merchandise (diskon, akses awal) dilakukan manual: admin mengisi `catatan_admin` (mis. kode voucher) yang tampil di Profil anggota.
+Setelah deploy: `php artisan migrate` (lima tahapan hadiah ikut terisi) dan `npm run build` seperti biasa.
 
-Cek hasil: tombol "Klaim" aktif hanya saat cukup stempel; klaim dobel ditolak; antrean admin menggerakkan status dan anggota melihat perubahannya.
+Aturan yang berlaku (semua dicek di server, `ClaimService`):
+
+- Klaim hanya bila `stempel_total >= target_stempel`, **sekali** per anggota per tahap. Baris anggota dikunci selama transaksi (`lockForUpdate`) dan kunci unik `(member_id, reward_id)` jadi pengaman terakhir, jadi klik ganda tidak membuat dua klaim. Stempel tidak berkurang.
+- Tahap yang punya pilihan (50 stempel) wajib memilih salah satunya; nilainya harus salah satu pilihan tahap itu. Tahap tanpa pilihan mengabaikan kiriman `opsi`.
+- Alur status: `diajukan` → `ditinjau` → `disetujui` → `selesai`, atau `ditolak` (alasan wajib). `selesai` dan `ditolak` adalah akhir alur. Tiap perubahan masuk `ic_claim_logs` (siapa, kapan, catatan).
+- `catatan_admin` (kode voucher, alasan penolakan) tampil di Profil dan di daftar Hadiah anggota.
+- Dashboard: tab Klaim (filter `?status=menunggu|semua|selesai|ditolak`, bawaan menunggu dengan yang tertua dulu, 15 per halaman, riwayat per pengajuan) dan tab Hadiah (edit judul, deskripsi, ikon, warna, pilihan per tahap; target stempel tetap).
+
+Penyesuaian dari rencana awal:
+
+- **Lima tahapan diisi lewat migration**, bukan hanya seeder, karena deploy manual hanya menjalankan `migrate`. Seeder memakai `firstOrCreate`: tahap yang sudah ada (dan sudah diedit di CMS) tidak ditimpa.
+- **Perpindahan status membawa status yang dilihat admin** (`dari`). Bila status sudah berubah (klik ganda atau admin lain), perubahan ditolak, jadi status tidak melompat dua langkah.
+- Aksi tambahan **Catatan**: mengubah catatan tanpa mengubah status, bisa kapan saja (mis. kode voucher dikirim setelah disetujui, atau setelah selesai).
+- Tahap hadiah punya **tepat 0 atau 2 pilihan**. Mengubah pilihan tidak mengubah pengajuan yang sudah masuk (`opsi_dipilih` tersimpan apa adanya).
+- Pengajuan **ditolak bersifat final**: kunci unik membuat anggota tidak bisa mengajukan ulang tahap yang sama.
+- Kolom `ic_rewards.aktif` dan `urutan` sudah ada di skema, tetapi belum ada tombolnya di CMS (lima tahap tetap).
+- Pesan galat klaim memakai toast terpisah (`ic_toast_galat`, tampil 6 detik), bukan toast sukses.
+- Temuan saat tes: anggota yang baru dibuat membawa `stempel_total` null di memori (kolom baru terisi default 0 di database). Dulu tertutup oleh data contoh. `member` sekarang punya nilai bawaan 0.
+
+Cek hasil:
+
+- Anggota dengan stempel cukup bisa mengajukan; yang kurang ditolak dengan pesan jelas. Klaim dobel ditolak. Tahap 50 wajib memilih opsi.
+- Antrean admin menggerakkan status; anggota melihat statusnya dan catatan WSM di Profil dan Hadiah.
+- Mengubah tahap di CMS langsung tampil di halaman Hadiah anggota; isian yang gagal divalidasi tampil lagi di tahap yang sama.
+- Tes otomatis: `php artisan test --filter=InnerCircleHadiahTest` (22 tes). Kunci baris (`lockForUpdate`) tidak teruji di SQLite, jadi uji klik ganda klaim juga secara manual di MySQL.
 
 ### Fase 6: Komunitas dan foto profil
 
@@ -326,6 +356,7 @@ Cek hasil: unggah kenangan dengan foto HP (termasuk yang miring/EXIF) tampil ben
 - `SeoController@robots`: tambahkan `Disallow: /inner-circle`.
 - QA lintas perangkat: kamera di Safari iOS dan Chrome Android, foto HP, layar 375 px, `prefers-reduced-motion`, kontras, target sentuh 44 px.
 - Pastikan langkah deploy menjalankan `npm run build` sehingga dua entry Vite baru ikut ter-build.
+- Hapus `app/Support/InnerCircleDummy.php` setelah Fase 6 (sejak Fase 5 hanya Pengumuman dan Kenangan yang masih memakainya) beserta `database/data/ic_events_contoh.csv` bila tidak dipakai lagi oleh `icEventContohSeeder`.
 - Rilis: set `INNER_CIRCLE_AKTIF=true` di produksi setelah event asli dan hadiah terisi, lalu `php artisan migrate`, `config:clear`, `view:clear`.
 
 ## 6. Skema database (dipakai mulai Fase 4)
@@ -367,6 +398,7 @@ Default di bawah dipakai sampai ada keputusan lain.
 - **Jendela check-in:** default D 12.00 sampai D+1 06.00 WIB. Sesuaikan bila jam show WSM berbeda.
 - **Halaman `/inner-circle` untuk pengunjung belum login:** default dialihkan ke `/inner-circle/masuk`. Landing publik penuh (penjelasan program, daftar hadiah) belum ada di prototype; bisa jadi fase tambahan.
 - **Ikon:** pakai set gambar berlisensi terbuka (bagian 3.2) atau ilustrasi buatan tim WSM.
+- **Klaim yang ditolak:** final (anggota tidak bisa mengajukan ulang tahap itu). Bila WSM ingin bisa membuka kembali, perlu aksi "buka kembali" di antrean Klaim; belum ada.
 - **Data event:** 50 baris di prototype adalah data contoh tentatif (33 Club, 14 Festival, 3 Private Event; 2 tanpa venue). Jadwal asli diisi tim WSM lewat CMS atau impor CSV.
 
 ## 9. Di luar cakupan

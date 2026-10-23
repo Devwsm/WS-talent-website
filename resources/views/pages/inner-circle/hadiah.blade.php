@@ -32,6 +32,9 @@
                 <div>
                     <h3>{{ $reward->target_stempel }} stempel · {{ $reward->judul }}</h3>
                     <p class="ic-bantuan">{{ $reward->deskripsi }}</p>
+                    @if ($reward->catatan_admin)
+                        <p class="ic-bantuan"><b>Catatan WSM:</b> {{ $reward->catatan_admin }}</p>
+                    @endif
                 </div>
 
                 @if ($reward->status_member === 'terbuka')
@@ -41,9 +44,14 @@
                             data-ic-modal-buka="modal-opsi-{{ $reward->target_stempel }}">Klaim <i class="bi bi-arrow-right"
                                 aria-hidden="true"></i></button>
                     @else
-                        <button type="button" class="ic-tombol ic-tombol--kecil" data-ic-klaim
-                            data-judul="{{ $reward->target_stempel }} stempel · {{ $reward->judul }}">Klaim <i
-                                class="bi bi-arrow-right" aria-hidden="true"></i></button>
+                        {{-- Konfirmasi lewat JS (data-ic-konfirmasi); tanpa JS form tetap terkirim dan dicek di server. --}}
+                        <form method="POST" action="{{ route('ic.hadiah.klaim', $reward->target_stempel) }}"
+                            data-ic-konfirmasi data-ic-sekali
+                            data-judul="{{ $reward->target_stempel }} stempel · {{ $reward->judul }}">
+                            @csrf
+                            <button type="submit" class="ic-tombol ic-tombol--kecil">Klaim <i class="bi bi-arrow-right"
+                                    aria-hidden="true"></i></button>
+                        </form>
                     @endif
                 @elseif ($reward->status_member === 'terkunci')
                     <span class="ic-pil ic-pil--redup"><i class="bi bi-lock-fill" aria-hidden="true"></i> Terkunci</span>
@@ -66,7 +74,8 @@
 @push('modal')
     @foreach ($semua->whereNotNull('opsi') as $reward)
         <x-inner-circle.modal :id="'modal-opsi-' . $reward->target_stempel" :judul="$reward->judul" :eyebrow="$reward->target_stempel . ' stempel'">
-            <form data-ic-segera="Pengajuan hadiah segera aktif.">
+            <form method="POST" action="{{ route('ic.hadiah.klaim', $reward->target_stempel) }}" data-ic-sekali>
+                @csrf
                 <fieldset class="ic-pilihan-daftar">
                     <legend class="ic-bantuan">Pilih salah satu hadiah:</legend>
                     @foreach ($reward->opsi as $opsi)

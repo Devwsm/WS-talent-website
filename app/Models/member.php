@@ -26,6 +26,11 @@ class member extends Authenticatable
         'remember_token',
     ];
 
+    /** Sama dengan default kolom: anggota yang baru dibuat langsung punya 0 stempel di memori, bukan null. */
+    protected $attributes = [
+        'stempel_total' => 0,
+    ];
+
     protected function casts(): array
     {
         return [
@@ -51,5 +56,10 @@ class member extends Authenticatable
     public function stempel(): HasMany
     {
         return $this->hasMany(ic_stempel::class, 'member_id', 'id_member');
+    }
+
+    public function klaim(): HasMany
+    {
+        return $this->hasMany(ic_claim::class, 'member_id', 'id_member');
     }
 }

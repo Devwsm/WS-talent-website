@@ -29,8 +29,8 @@ Route::prefix('/')->group(function () {
 });
 
 // WS Inner Circle — dibungkus flag INNER_CIRCLE_AKTIF (404 bila mati, lihat middleware IcAktif).
-// Fase 4: akun anggota (guard `member`), check-in, dan stempel sudah tersambung ke database.
-// Hadiah dan Komunitas masih memakai data contoh (App\Support\InnerCircleDummy) sampai Fase 5-6.
+// Fase 4-5: akun anggota (guard `member`), check-in, stempel, hadiah, dan klaim sudah tersambung ke database.
+// Komunitas masih memakai data contoh (App\Support\InnerCircleDummy) sampai Fase 6.
 Route::prefix('/inner-circle')->middleware('icAktif')->name('ic.')->group(function () {
     Route::get('/masuk', [authController::class, 'masuk'])->name('masuk');
     Route::post('/masuk', [authController::class, 'prosesMasuk'])->name('masuk.proses')->middleware('throttle:10,1');
@@ -42,6 +42,7 @@ Route::prefix('/inner-circle')->middleware('icAktif')->name('ic.')->group(functi
 
         Route::get('/', [memberController::class, 'beranda'])->name('beranda');
         Route::get('/hadiah', [memberController::class, 'hadiah'])->name('hadiah');
+        Route::post('/hadiah/{target}/klaim', [memberController::class, 'ajukanKlaim'])->whereNumber('target')->name('hadiah.klaim')->middleware('throttle:ic-klaim');
         Route::get('/check-in', [memberController::class, 'checkin'])->name('checkin');
         Route::post('/check-in', [memberController::class, 'prosesCheckin'])->name('checkin.proses')->middleware('throttle:ic-checkin');
         Route::get('/komunitas', [memberController::class, 'komunitas'])->name('komunitas');
@@ -53,7 +54,7 @@ Route::prefix('/dashboard')->middleware('cekLogin')->group(function () {
     Route::get('/', [dashboardController::class, 'dashboard'])->name('dashboard');
 
     // WS Inner Circle — panel admin di dashboard CMS (7 tab), ikut flag INNER_CIRCLE_AKTIF (404 bila mati).
-    // Fase 4: Ringkasan, Anggota, dan Acara & QR sudah memakai database. Tab lain masih data contoh (Fase 5-6).
+    // Fase 4-5: Ringkasan, Anggota, Acara & QR, Klaim, dan Hadiah sudah memakai database. Pengumuman dan Kenangan masih data contoh (Fase 6).
     Route::prefix('/inner-circle')->middleware('icAktif')->name('ic.admin.')->group(function () {
         Route::get('/', [adminController::class, 'ringkasan'])->name('ringkasan');
         Route::get('/anggota', [adminController::class, 'anggota'])->name('anggota');
@@ -68,7 +69,9 @@ Route::prefix('/dashboard')->middleware('cekLogin')->group(function () {
         Route::get('/acara/{kode}/qr', [adminController::class, 'unduhQr'])->name('acara.qr');
         Route::get('/acara/{kode}/cetak', [adminController::class, 'cetakQr'])->name('acara.cetak');
         Route::get('/klaim', [adminController::class, 'klaim'])->name('klaim');
+        Route::patch('/klaim/{id}', [adminController::class, 'ubahKlaim'])->whereNumber('id')->name('klaim.proses')->middleware('throttle:30,1');
         Route::get('/hadiah', [adminController::class, 'hadiah'])->name('hadiah');
+        Route::put('/hadiah/{target}', [adminController::class, 'ubahHadiah'])->whereNumber('target')->name('hadiah.ubah')->middleware('throttle:10,1');
         Route::get('/pengumuman', [adminController::class, 'pengumuman'])->name('pengumuman');
         Route::get('/kenangan', [adminController::class, 'kenangan'])->name('kenangan');
     });
