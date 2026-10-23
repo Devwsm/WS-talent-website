@@ -150,6 +150,10 @@ class ImageProcessorTest extends TestCase
 
     public function test_hasil_adalah_webp_dan_exif_terbuang(): void
     {
+        if (! function_exists('exif_read_data')) {
+            $this->markTestSkipped('Ekstensi exif tidak tersedia.');
+        }
+
         $sumber = $this->tulis($this->denganOrientasi($this->jpegBiner($this->kuadran()), 6), '.jpg');
         $isi = (new ImageProcessor())->keWebp($sumber, 1600);
 
@@ -215,32 +219,32 @@ class ImageProcessorTest extends TestCase
     {
         $palsu = $this->tulis('<?php echo "bukan gambar"; ?>', '.jpg');
 
-$this->expectException(GambarGagal::class);
-$this->expectExceptionMessage('bukan gambar yang valid');
-(new ImageProcessor())->keWebp($palsu, 1600);
-}
+        $this->expectException(GambarGagal::class);
+        $this->expectExceptionMessage('bukan gambar yang valid');
+        (new ImageProcessor())->keWebp($palsu, 1600);
+    }
 
-public function test_format_gif_ditolak(): void
-{
-$g = imagecreatetruecolor(10, 10);
-ob_start();
-imagegif($g);
-$gif = $this->tulis((string) ob_get_clean(), '.jpg'); // sengaja berekstensi jpg
+    public function test_format_gif_ditolak(): void
+    {
+        $g = imagecreatetruecolor(10, 10);
+        ob_start();
+        imagegif($g);
+        $gif = $this->tulis((string) ob_get_clean(), '.jpg'); // sengaja berekstensi jpg
 
-$this->expectException(GambarGagal::class);
-$this->expectExceptionMessage('tidak didukung');
-(new ImageProcessor())->keWebp($gif, 1600);
-}
+        $this->expectException(GambarGagal::class);
+        $this->expectExceptionMessage('tidak didukung');
+        (new ImageProcessor())->keWebp($gif, 1600);
+    }
 
-public function test_resolusi_raksasa_ditolak_sebelum_didecode(): void
-{
-// Header PNG 10000x10000 (100 MP) tanpa data piksel: cukup untuk getimagesize(), tanpa memakan memori.
-$ihdr = pack('N', 10000) . pack('N', 10000) . "\x08\x02\x00\x00\x00";
-$png = "\x89PNG\r\n\x1a\n" . pack('N', 13) . 'IHDR' . $ihdr . pack('N', crc32('IHDR' . $ihdr));
-$berkas = $this->tulis($png, '.png');
+    public function test_resolusi_raksasa_ditolak_sebelum_didecode(): void
+    {
+        // Header PNG 10000x10000 (100 MP) tanpa data piksel: cukup untuk getimagesize(), tanpa memakan memori.
+        $ihdr = pack('N', 10000) . pack('N', 10000) . "\x08\x02\x00\x00\x00";
+        $png = "\x89PNG\r\n\x1a\n" . pack('N', 13) . 'IHDR' . $ihdr . pack('N', crc32('IHDR' . $ihdr));
+        $berkas = $this->tulis($png, '.png');
 
-$this->expectException(GambarGagal::class);
-$this->expectExceptionMessage('Resolusi foto terlalu besar');
-(new ImageProcessor())->keWebp($berkas, 1600);
-}
+        $this->expectException(GambarGagal::class);
+        $this->expectExceptionMessage('Resolusi foto terlalu besar');
+        (new ImageProcessor())->keWebp($berkas, 1600);
+    }
 }

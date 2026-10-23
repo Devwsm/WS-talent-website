@@ -7,6 +7,7 @@ use App\Models\ic_memory;
 use App\Models\member;
 use App\Support\GambarGagal;
 use App\Support\ImageProcessor;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -33,6 +34,15 @@ class InnerCircleKomunitasTest extends TestCase
         parent::setUp();
         Storage::fake('public');
         $this->pakaiPemrosesPalsu();
+    }
+
+    /** Disk fake bertipe FilesystemAdapter, supaya assertExists/assertMissing dikenali analisis statis (Intelephense). */
+    private function diskPublik(): FilesystemAdapter
+    {
+        /** @var FilesystemAdapter $disk */
+        $disk = Storage::disk('public');
+
+        return $disk;
     }
 
     /** @param  \Closure|null  $perilaku  fn(string $sumber, int $sisiMaks): string; bawaan mengembalikan byte WebP palsu */
@@ -319,7 +329,7 @@ class InnerCircleKomunitasTest extends TestCase
         $this->assertNull($k->tempat, 'tempat kosong disimpan sebagai null');
         $this->assertStringStartsWith('inner-circle/kenangan/', $k->foto);
         $this->assertStringEndsWith('.webp', $k->foto);
-        Storage::disk('public')->assertExists($k->foto);
+        $this->diskPublik()->assertExists($k->foto);
         $this->assertSame('RIFF0000WEBPfake-1600', Storage::disk('public')->get($k->foto), 'sisi maksimum kenangan 1600 px');
     }
 
@@ -504,7 +514,7 @@ class InnerCircleKomunitasTest extends TestCase
 
         $this->actingAs($lain, 'member')->delete(route('ic.kenangan.hapus', $k->id_memory))->assertForbidden();
         $this->assertNotNull($k->fresh());
-        Storage::disk('public')->assertExists($path);
+        $this->diskPublik()->assertExists($path);
 
         // Tombol Hapus hanya tampil untuk pemilik.
         // (action="..." lengkap, karena URL suka /kenangan/{id}/suka berawalan sama dengan URL hapus.)
@@ -515,7 +525,7 @@ class InnerCircleKomunitasTest extends TestCase
 
         $this->delete(route('ic.kenangan.hapus', $k->id_memory))->assertRedirect()->assertSessionHas('ic_toast');
         $this->assertNull(ic_memory::find($k->id_memory));
-        Storage::disk('public')->assertMissing($path);
+        $this->diskPublik()->assertMissing($path);
         $this->assertSame(0, DB::table('ic_memory_likes')->count(), 'tanda suka ikut terhapus');
     }
 
@@ -601,7 +611,7 @@ class InnerCircleKomunitasTest extends TestCase
             ->assertRedirect(route('ic.profil'))->assertSessionHas('ic_toast');
         $pertama = $m->fresh()->avatar;
         $this->assertStringStartsWith('inner-circle/avatar/', $pertama);
-        Storage::disk('public')->assertExists($pertama);
+        $this->diskPublik()->assertExists($pertama);
         $this->assertSame('RIFF0000WEBPfake-512', Storage::disk('public')->get($pertama), 'sisi maksimum avatar 512 px');
 
         $this->get(route('ic.profil'))->assertOk()->assertSee($pertama, false);
@@ -610,13 +620,13 @@ class InnerCircleKomunitasTest extends TestCase
         $this->post(route('ic.profil.foto'), ['foto' => $this->fotoPng('lain.png')])->assertSessionHasNoErrors();
         $kedua = $m->fresh()->avatar;
         $this->assertNotSame($pertama, $kedua);
-        Storage::disk('public')->assertExists($kedua);
-        Storage::disk('public')->assertMissing($pertama);
+        $this->diskPublik()->assertExists($kedua);
+        $this->diskPublik()->assertMissing($pertama);
 
         // Hapus: kembali ke avatar bawaan.
         $this->delete(route('ic.profil.foto.hapus'))->assertRedirect(route('ic.profil'))->assertSessionHas('ic_toast');
         $this->assertNull($m->fresh()->avatar);
-        Storage::disk('public')->assertMissing($kedua);
+        $this->diskPublik()->assertMissing($kedua);
         $this->assertSame([], Storage::disk('public')->allFiles());
 
         // Hapus lagi saat memang tidak ada foto: tidak error.
@@ -637,7 +647,7 @@ class InnerCircleKomunitasTest extends TestCase
         $this->post(route('ic.profil.foto'), ['foto' => $this->fotoPng()])->assertSessionHasErrors(['foto' => 'Foto tidak bisa dibaca.']);
 
         $this->assertSame($lama, $m->fresh()->avatar);
-        Storage::disk('public')->assertExists($lama);
+        $this->diskPublik()->assertExists($lama);
         $this->assertCount(1, Storage::disk('public')->allFiles());
     }
 
