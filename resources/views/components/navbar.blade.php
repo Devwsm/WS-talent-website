@@ -23,6 +23,11 @@
                 <a href="{{ route('home') }}#tour" class="font-bold uppercase">Tour</a>
                 <a href="{{ route('home') }}#news" class="font-bold uppercase">News</a>
                 <a href="{{ route('home') }}#new-music" class="font-bold uppercase">Albums</a>
+                {{-- Link komunitas cuma muncul bila fitur WS Inner Circle dinyalakan (INNER_CIRCLE_AKTIF).
+                     Tamu otomatis dialihkan ke halaman masuk, anggota langsung ke beranda mereka. --}}
+                @if (config('inner_circle.aktif'))
+                    <a href="{{ route('ic.beranda') }}" class="font-bold uppercase">Inner Circle</a>
+                @endif
                 <a href="{{ config('site.mavnus_url') }}" target="_blank" rel="noopener noreferrer"
                     class="font-bold uppercase">Merch</a>
                 {{-- Link admin cuma muncul kalau sudah login — pengunjung biasa nggak lihat sama sekali --}}
@@ -57,6 +62,9 @@
         <a href="{{ route('home') }}#tour" class="menu-link text-2xl font-bold uppercase">Tour</a>
         <a href="{{ route('home') }}#news" class="menu-link text-2xl font-bold uppercase">News</a>
         <a href="{{ route('home') }}#new-music" class="menu-link text-2xl font-bold uppercase">Albums</a>
+        @if (config('inner_circle.aktif'))
+            <a href="{{ route('ic.beranda') }}" class="menu-link text-2xl font-bold uppercase">Inner Circle</a>
+        @endif
         <a href="{{ config('site.mavnus_url') }}" target="_blank" rel="noopener noreferrer"
             class="menu-link text-2xl font-bold uppercase">Merch</a>
         @if (session('login'))

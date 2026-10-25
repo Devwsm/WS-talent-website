@@ -34,9 +34,9 @@
 @section('content')
     <div>
         {{-- Satu-satunya <h1> di halaman ini — bagian lain (hero carousel, teaser, dst)
-             pakai heading level di bawahnya biar struktur halaman nggak flat buat
-             screen reader & SEO. Disembunyikan visual (sr-only) karena nama artis
-             sudah tampil besar di profile-teaser, cuma perlu ada di DOM. --}}
+            pakai heading level di bawahnya biar struktur halaman nggak flat buat
+            screen reader & SEO. Disembunyikan visual (sr-only) karena nama artis
+            sudah tampil besar di profile-teaser, cuma perlu ada di DOM. --}}
         <h1 class="sr-only">{{ $hero->nama ?? 'Whisnu Santika' }}</h1>
 
         <div class="grid grid-cols-1 w-full justify-center items-center">
@@ -76,6 +76,10 @@
                 @endfor
             </div>
         </div>
+        {{-- Teaser komunitas WS Inner Circle — hanya tampil bila flag INNER_CIRCLE_AKTIF menyala --}}
+        @if (config('inner_circle.aktif'))
+            @include('components/inner-circle-teaser')
+        @endif
         {{-- Jadwal tour — widget Bandsintown (sempat ikut terhapus di commit "remove unused schedule") --}}
         <div id="tour" class="schedule flex flex-col w-full">
             @include('components/tour')

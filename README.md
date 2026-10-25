@@ -2,7 +2,7 @@
 
 Website publik profil artis **Whisnu Santika** beserta dashboard CMS-nya.
 
-- **Stack:** Laravel 13 · PHP 8.3 · Tailwind CSS 4 · Vite · Swiper · SweetAlert2 · Bootstrap Icons
+- **Stack:** Laravel 13 · PHP 8.4+ (dependensi Symfony 8.1 di `composer.lock` mensyaratkan PHP >= 8.4.1, walau `composer.json` masih menulis `^8.3`; versi PHP di hosting dan di workflow auto deploy harus 8.4 atau lebih) · Tailwind CSS 4 · Vite · Swiper · SweetAlert2 · Bootstrap Icons
 - **Database:** MySQL di `.env` lokal (`.env.example` masih bawaan SQLite, ganti `DB_CONNECTION=mysql`)
 - **Publik:** `/` (home) dan `/profile`
 - **CMS:** `/dashboard` (Banner, Headers, Profile, Warna Web, Albums, News, Merchandise)
@@ -20,7 +20,7 @@ npm install && npm run dev
 
 # Rencana Penerapan: WS Inner Circle
 
-> Status: **Fase 1 sampai 6 selesai**. Fase 1 sampai 3: kerangka UI, 7 layar anggota, dan panel admin 7 tab. Fase 4: akun anggota, check-in QR, dan stempel sudah tersambung ke database. Fase 5: hadiah dan klaim sudah tersambung ke database (tahapan hadiah dikelola di tab Hadiah, antrean klaim di tab Klaim). Fase 6: Komunitas (pengumuman, galeri kenangan, suka) dan foto profil sudah tersambung ke database; semua layar anggota dan 7 tab admin kini memakai data asli. Flag fitur mati secara bawaan. Berikutnya: Fase 7.
+> Status: **Fase 1 sampai 7 selesai**. Fase 1 sampai 3: kerangka UI, 7 layar anggota, dan panel admin 7 tab. Fase 4: akun anggota, check-in QR, dan stempel sudah tersambung ke database. Fase 5: hadiah dan klaim sudah tersambung ke database (tahapan hadiah dikelola di tab Hadiah, antrean klaim di tab Klaim). Fase 6: Komunitas (pengumuman, galeri kenangan, suka) dan foto profil sudah tersambung ke database; semua layar anggota dan 7 tab admin kini memakai data asli. Fase 7: teaser di home, link navbar, robots.txt, pembersihan data dummy, dan daftar rilis. Flag fitur mati secara bawaan. Yang tersisa hanya uji perangkat nyata (lihat Fase 7) dan rilis.
 > Dibuat: 21 Oktober 2026.
 > Acuan: `WS_Inner_Circle.html` (prototype native, satu file, data di `localStorage`) dan 19 screenshot UI di `inner-circle-ui-prototype.zip`.
 
@@ -38,7 +38,7 @@ Urutan kerja: **UI dulu dengan data dummy, backend menyusul per fitur.**
 | 4    | Anggota, check-in, dan stempel sungguhan (selesai)         | Database |
 | 5    | Hadiah dan klaim (selesai)                                 | Database |
 | 6    | Komunitas (pengumuman, kenangan) dan foto profil (selesai) | Database |
-| 7    | Teaser di home, SEO, QA, rilis                             | Database |
+| 7    | Teaser di home, SEO, QA, rilis (selesai)                   | Database |
 
 Fase 1 sampai 3 menghasilkan tampilan lengkap yang bisa ditinjau di browser sebelum satu pun tabel dibuat. Setelah itu tiap fase hanya mengganti sumber data, bukan tampilannya (lihat bagian 4.5).
 
@@ -146,7 +146,7 @@ Login admin sengaja sederhana (tabel `accounts`, `session('login')`, middleware 
 
 ### 4.5 Data dummy memakai bentuk yang sama dengan data asli
 
-Selama Fase 1 sampai 3, `app/Support/InnerCircleDummy.php` mengembalikan objek (`(object) [...]`) dengan nama properti yang sama dengan kolom database nanti. Blade memakai `$x->properti` dan tidak tahu datanya dari mana. Mulai Fase 4, hanya controller yang berganti ke Eloquent; view tidak diubah.
+Selama Fase 1 sampai 3, `app/Support/InnerCircleDummy.php` mengembalikan objek (`(object) [...]`) dengan nama properti yang sama dengan kolom database nanti. Blade memakai `$x->properti` dan tidak tahu datanya dari mana. Mulai Fase 4, hanya controller yang berganti ke Eloquent; view tidak diubah. `InnerCircleDummy.php` sudah dihapus di Fase 7 karena tidak ada lagi yang memakainya.
 
 Kontrak data per layar:
 
@@ -382,14 +382,38 @@ Cek hasil:
 - Ganti foto profil dua kali: berkas lama hilang dari `storage/app/public/inner-circle/avatar`; Hapus mengembalikan emoji.
 - Tes otomatis: `php artisan test --filter=InnerCircleKomunitasTest` (32 tes, memakai stub `ImageProcessor` supaya tidak butuh GD) dan `php artisan test --filter=ImageProcessorTest` (15 tes, membutuhkan ekstensi GD dan exif; dilewati otomatis bila tidak ada, jadi jalankan sekali di mesin lokal yang punya GD). Kunci baris tidak relevan di fase ini, tetapi tes klik ganda suka sebaiknya dicoba juga di MySQL.
 
-### Fase 7: Integrasi situs publik, SEO, QA, rilis
+### Fase 7: Integrasi situs publik, SEO, QA, rilis (selesai)
 
-- Komponen teaser `inner-circle-teaser` di `pages/home.blade.php` dan link "Inner Circle" di `components/navbar.blade.php` (desktop dan menu mobile), hanya bila flag menyala. Teaser mengikuti tema situs (`ThemeColorComposer`).
-- `SeoController@robots`: tambahkan `Disallow: /inner-circle`.
-- QA lintas perangkat: kamera di Safari iOS dan Chrome Android, foto HP, layar 375 px, `prefers-reduced-motion`, kontras, target sentuh 44 px.
-- Pastikan langkah deploy menjalankan `npm run build` sehingga dua entry Vite baru ikut ter-build.
-- Hapus `app/Support/InnerCircleDummy.php` (sejak Fase 6 tidak ada lagi controller, view, atau tes yang memakainya) beserta `database/data/ic_events_contoh.csv` bila tidak dipakai lagi oleh `icEventContohSeeder`.
-- Rilis: set `INNER_CIRCLE_AKTIF=true` di produksi setelah event asli dan hadiah terisi, lalu `php artisan migrate`, `config:clear`, `view:clear`.
+File yang dibuat atau diubah:
+
+1. `resources/views/components/inner-circle-teaser.blade.php` (baru): section "WS Inner Circle" bertema situs publik (latar hitam, tombol pill, Bootstrap Icons, animasi `data-motion` yang sudah ada). Tamu melihat "Gabung sekarang" (`ic.daftar`) dan "Sudah punya akun? Masuk" (`ic.masuk`); anggota yang sedang masuk melihat "Buka Inner Circle" (`ic.beranda`). Tombol setinggi minimal 44 px, cincin fokus putih.
+2. `resources/views/pages/home.blade.php`: teaser disisipkan setelah pita genre dan sebelum Tour, dibungkus `@if (config('inner_circle.aktif'))`.
+3. `resources/views/components/navbar.blade.php`: link "Inner Circle" (ke `ic.beranda`; tamu otomatis dialihkan ke halaman masuk) di navigasi desktop dan drawer mobile, juga hanya bila flag menyala. Navbar dipakai juga di `/profile`, jadi link ikut tampil di sana.
+4. `app/Http/Controllers/SeoController.php`: `robots.txt` menambah `Disallow: /inner-circle`. Sitemap tidak diubah (tidak ada halaman Inner Circle yang publik); halaman area anggota sudah `noindex` lewat layoutnya.
+5. `app/Support/InnerCircleDummy.php` dihapus. `database/data/ic_events_contoh.csv` **dipertahankan** karena masih dipakai `icEventContohSeeder` (jadwal contoh untuk lokal dan preview).
+6. `tests/Feature/InnerCircleSitusPublikTest.php` (baru, 7 tes): flag mati tidak menampilkan apa pun di home dan profile; flag menyala menampilkan teaser dan link; CTA berubah untuk anggota yang sudah masuk; link navbar muncul dua kali (desktop dan drawer); robots menutup `/inner-circle` tapi tidak halaman publik; sitemap bersih; halaman masuk tetap `noindex`.
+7. `README.md` (bagian ini, status, dan baris PHP 8.4).
+
+Hasil pemeriksaan:
+
+- Seluruh tes: 84 lulus, 15 dilewati (`ImageProcessorTest`, karena PHP yang dipakai untuk memeriksa tidak punya ekstensi GD; jalankan di mesin lokal yang punya GD). `npm run build` berhasil dan semua kelas Tailwind teaser ikut ter-build (dua entry Vite Inner Circle ikut terbangun).
+- Audit statis CSS area anggota (bukan pengganti uji perangkat): target sentuh tombol, label centang, dan dock 44 px ke atas; ikon panah 33 px hanya hiasan (`aria-hidden`) di dalam tautan yang lebih besar; `prefers-reduced-motion` mematikan transisi dan animasi di seluruh `.ic-app`; pasangan warna teks utama lolos 4.5:1 (teks redup di kartu 5.0 sampai 5.2, eyebrow 5.5, putih di navy 18.4). Satu pengecualian yang disengaja: kata beraksen ungu di judul besar (54 sampai 92 px) berkontras 3.3:1, memenuhi syarat teks besar (3:1).
+
+Yang tidak bisa diperiksa tanpa perangkat nyata, jadi lakukan sendiri sebelum rilis:
+
+- Kamera pindai QR di Safari iOS dan Chrome Android (kamera hanya jalan lewat **HTTPS**, jadi uji di preview atau produksi, bukan lewat IP lokal).
+- Unggah foto langsung dari HP (miring, ukuran besar, dan foto HEIC dari iPhone) dan foto profil.
+- Tampilan layar 375 px untuk semua layar anggota, dock bawah tidak menutupi tombol terakhir, dan teaser di home.
+- Kunci klik ganda klaim dan suka di MySQL (tes otomatis memakai SQLite).
+
+Rilis (urutan):
+
+1. Server memakai **PHP 8.4 atau lebih** (cPanel: MultiPHP Manager), ekstensi **gd** dan **exif** aktif, `upload_max_filesize` dan `post_max_size` minimal **6M**.
+2. Unggah project terbaru, termasuk hasil `npm run build` (`public/build/`). Di auto deploy, langkah build harus berjalan dengan PHP 8.4 dan Node, karena ada dua entry Vite baru.
+3. Buat tabel baru di database server: `members` dan semua tabel `ic_*` (migration Fase 4 sampai 6). Hosting tanpa terminal tidak bisa menjalankan `php artisan migrate`, jadi caranya harus diputuskan saat auto deploy disiapkan (mis. impor struktur tabel lewat phpMyAdmin, atau langkah migrasi di workflow).
+4. Pastikan tautan `public/storage` ke `storage/app/public` berfungsi (foto kenangan dan avatar disimpan di sana).
+5. Isi data asli lewat CMS: jadwal acara (CMS atau impor CSV), hadiah, dan satu pengumuman. Jangan set `IC_SEED_CONTOH=true` di produksi.
+6. Saat semua di atas siap, set `INNER_CIRCLE_AKTIF=true` di `.env` server, lalu bersihkan cache (`config:clear`, `view:clear`; tanpa terminal, hapus berkas cache di `bootstrap/cache` dan `storage/framework/views`). Sebelum itu, flag tetap `false`: situs publik tampil persis seperti sekarang.
 
 ## 6. Skema database (dipakai mulai Fase 4)
 

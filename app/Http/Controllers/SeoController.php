@@ -27,6 +27,7 @@ class SeoController extends Controller
         $content = "User-agent: *\n" .
             "Disallow: /dashboard\n" .
             "Disallow: /login\n" .
+            "Disallow: /inner-circle\n" .
             "Allow: /\n\n" .
             'Sitemap: ' . url('/sitemap.xml') . "\n";
 
