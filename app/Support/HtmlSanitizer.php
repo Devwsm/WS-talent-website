@@ -54,7 +54,30 @@ class HtmlSanitizer
     ];
 
     /** Tag yang kalau ketemu, dibuang TOTAL beserta isinya (bukan cuma tag-nya). */
-    private const STRIP_WITH_CONTENT = ['script', 'style', 'iframe', 'object', 'embed', 'form'];
+    private const STRIP_WITH_CONTENT = [
+        'script',
+        'style',
+        'iframe',
+        'object',
+        'embed',
+        'form',
+        // Elemen yang parser HTML browser perlakukan khusus (namespace SVG/MathML, konten mentah, dst).
+        // Dibuang bersama isinya supaya tidak ada celah "mutation XSS" lewat pembungkus yang dibuka.
+        'svg',
+        'math',
+        'noscript',
+        'template',
+        'textarea',
+        'select',
+        'button',
+        'canvas',
+        'audio',
+        'video',
+        'applet',
+        'xmp',
+        'frameset',
+        'frame',
+    ];
 
     /** Prefix class yang diizinkan — cuma class bawaan Quill (align/indent). */
     private const ALLOWED_CLASS_PREFIXES = ['ql-align-', 'ql-indent-', 'ql-'];
@@ -119,6 +142,9 @@ class HtmlSanitizer
             if (!array_key_exists($tag, self::ALLOWED_TAGS)) {
                 // Tag nggak dikenal/nggak diizinkan → buang tag-nya doang,
                 // isinya (teks di dalamnya) diangkat naik biar nggak hilang.
+                // Bersihkan isinya DULU: anak yang sudah diangkat tidak akan diperiksa lagi oleh
+                // perulangan di atas (dulu lewat sini <svg><script> dan atribut bebas bisa lolos).
+                self::cleanChildren($child);
                 while ($child->firstChild) {
                     $node->insertBefore($child->firstChild, $child);
                 }

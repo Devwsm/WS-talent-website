@@ -52,7 +52,7 @@
         <div class="p-5 flex flex-col gap-3">
             <h2 class="text-xs text-white/30 uppercase tracking-widest">Bio</h2>
             <div id="bioPreviewContent" class="text-sm text-white/70 leading-relaxed flex flex-col gap-3">
-                {!! $bio->konten ?? null ? $bio->konten : '<span class="text-white/30">—</span>' !!}
+                {!! \App\Support\HtmlSanitizer::clean($bio->konten ?? '') ?: '<span class="text-white/30">—</span>' !!}
             </div>
         </div>
     </div>
@@ -146,9 +146,15 @@
 
         // Isi editor dengan data yang sudah tersimpan (atau old value kalau validasi gagal)
         @if (old('konten'))
-            quill.root.innerHTML = {!! json_encode(old('konten')) !!};
+            quill.root.innerHTML = {!! json_encode(
+                \App\Support\HtmlSanitizer::clean(old('konten')),
+                JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT,
+            ) !!};
         @elseif ($bio->konten ?? null)
-            quill.root.innerHTML = {!! json_encode($bio->konten) !!};
+            quill.root.innerHTML = {!! json_encode(
+                \App\Support\HtmlSanitizer::clean($bio->konten),
+                JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT,
+            ) !!};
         @endif
 
         // Update preview secara live tiap kali konten Quill berubah

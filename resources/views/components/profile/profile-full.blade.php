@@ -67,7 +67,7 @@
         <div class="flex flex-col gap-3">
             <h2 class="text-xs text-white/50 uppercase tracking-widest" data-motion="fade-right">Bio</h2>
             <div class="text-sm md:text-base text-white/70 leading-relaxed flex flex-col gap-3" data-motion="fade-up">
-                {!! $bio->konten ??
+                {!! \App\Support\HtmlSanitizer::clean($bio->konten ?? '') ?:
                     '<p class="text-sm text-white/70 leading-relaxed">Whisnu Santika adalah DJ dan produser rekaman asal Jakarta yang dikenal sebagai pionir <span class="text-white font-medium">Indonesian Bounce</span> — sebuah pendekatan genre yang ia ciptakan sendiri dengan memadukan EDM, dancehall, moombahton, hip hop, bass, dan afrobeat.</p>' !!}
             </div>
         </div>

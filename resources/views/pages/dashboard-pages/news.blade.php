@@ -370,7 +370,10 @@
 
         // Isi ulang konten jika ada old value (setelah validasi gagal)
         @if (old('news_description'))
-            quill.root.innerHTML = {!! json_encode(old('news_description')) !!};
+            quill.root.innerHTML = {!! json_encode(
+                \App\Support\HtmlSanitizer::clean(old('news_description')),
+                JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT,
+            ) !!};
             previewDesc.innerHTML = quill.root.innerHTML;
         @endif
 

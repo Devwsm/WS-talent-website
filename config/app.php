@@ -55,6 +55,12 @@ return [
     'url' => env('APP_URL', 'http://localhost'),
 
     /*
+    | Proxy/CDN yang dipercaya (mis. Cloudflare), dipisah koma, atau * untuk semua. Kosong = tidak ada.
+    | Diperlukan supaya https dan IP pengunjung terbaca benar di belakang proxy (HSTS, pembatas laju).
+    */
+    'trusted_proxies' => env('TRUSTED_PROXIES'),
+
+    /*
     |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------

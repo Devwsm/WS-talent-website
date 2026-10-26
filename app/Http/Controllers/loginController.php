@@ -28,7 +28,13 @@ class loginController extends Controller
 
         $user = account::where('username', $request->username)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        // Hash::check selalu dijalankan (pada hash palsu bila username tidak ada) supaya waktu respons
+        // tidak membedakan "username salah" dari "sandi salah" — cegah penebakan username lewat selisih waktu.
+        // (hash bcrypt cost 12 dari string acak yang dibuang, jadi tidak cocok dengan sandi apa pun)
+        $hashPalsu = '$2y$12$BKZsD4zPLZE2LpybB3R/x.3Blu9aFV7LJN1R2YBPpp7mxvRVoUEZy';
+        $sandiCocok = Hash::check($request->password, $user->password ?? $hashPalsu);
+
+        if (!$user || !$sandiCocok) {
             // Pesan sengaja dibuat generik — tidak bocorkan mana yang salah
             return back()->withErrors(['login' => 'Username atau password salah.'])->onlyInput('username');
         }

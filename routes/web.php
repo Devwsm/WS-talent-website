@@ -35,9 +35,9 @@ Route::prefix('/')->group(function () {
 // dan foto profil sudah tersambung ke database.
 Route::prefix('/inner-circle')->middleware('icAktif')->name('ic.')->group(function () {
     Route::get('/masuk', [authController::class, 'masuk'])->name('masuk');
-    Route::post('/masuk', [authController::class, 'prosesMasuk'])->name('masuk.proses')->middleware('throttle:10,1');
+    Route::post('/masuk', [authController::class, 'prosesMasuk'])->name('masuk.proses')->middleware('throttle:ic-masuk');
     Route::get('/daftar', [authController::class, 'daftar'])->name('daftar');
-    Route::post('/daftar', [authController::class, 'prosesDaftar'])->name('daftar.proses')->middleware('throttle:10,1');
+    Route::post('/daftar', [authController::class, 'prosesDaftar'])->name('daftar.proses')->middleware('throttle:ic-daftar');
 
     Route::middleware('auth:member')->group(function () {
         Route::post('/keluar', [authController::class, 'keluar'])->name('keluar');

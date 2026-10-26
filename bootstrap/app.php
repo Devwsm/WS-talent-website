@@ -13,6 +13,11 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         //
+        // Header keamanan untuk semua halaman web (lihat App\Http\Middleware\SecurityHeaders).
+        $middleware->web(append: [
+            \App\Http\Middleware\SecurityHeaders::class,
+        ]);
+
         $middleware->alias([
             'cekLogin' => \App\Http\Middleware\CekLogin::class,
             'icAktif' => \App\Http\Middleware\IcAktif::class,

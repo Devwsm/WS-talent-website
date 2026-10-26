@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -29,6 +30,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if ($proxies = config('app.trusted_proxies')) {
+            TrustProxies::at($proxies === '*' ? '*' : array_map('trim', explode(',', $proxies)));
+        }
+
         View::composer(
             ['template.layout', 'components.navbar', 'components.footer'],
             ThemeColorComposer::class
@@ -38,6 +43,29 @@ class AppServiceProvider extends ServiceProvider
 
         // Nama model huruf kecil (ic_memory) tidak ditemukan penemuan otomatis policy, jadi didaftarkan manual.
         Gate::policy(ic_memory::class, MemoryPolicy::class);
+
+        // Masuk anggota: dibatasi per EMAIL+IP (tebak sandi satu akun) dan per IP yang longgar, karena penonton satu
+        // venue sering berbagi IP (Wi-Fi/CGNAT) dan tidak boleh saling mengunci.
+        RateLimiter::for('ic-masuk', function (Request $request) {
+            $email = mb_strtolower(trim((string) $request->input('email')));
+            $galat = fn() => back()
+                ->withErrors(['email' => 'Terlalu banyak percobaan masuk. Tunggu semenit lalu coba lagi.'])
+                ->onlyInput('email');
+
+            return [
+                Limit::perMinute(5)->by('masuk:' . sha1($email . '|' . $request->ip()))->response($galat),
+                Limit::perMinute(60)->by('masuk-ip:' . $request->ip())->response($galat),
+            ];
+        });
+
+        // Daftar anggota per IP, longgar untuk keramaian satu venue tapi tetap menahan skrip pembuat akun massal.
+        RateLimiter::for('ic-daftar', function (Request $request) {
+            return Limit::perMinute(30)->by('daftar:' . $request->ip())->response(
+                fn() => back()
+                    ->withErrors(['email' => 'Terlalu banyak pendaftaran dari jaringan ini. Tunggu semenit lalu coba lagi.'])
+                    ->withInput($request->except(['sandi', 'sandi_confirmation']))
+            );
+        });
 
         // Check-in Inner Circle dibatasi per ANGGOTA, bukan per IP: penonton satu venue sering berbagi IP.
         RateLimiter::for('ic-checkin', function (Request $request) {
