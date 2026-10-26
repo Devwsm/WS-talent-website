@@ -58,6 +58,9 @@ class AppServiceProvider extends ServiceProvider
             ];
         });
 
+        // Alur Google (mulai + callback) per IP, longgar karena penonton satu venue berbagi IP.
+        RateLimiter::for('ic-google', fn(Request $request) => Limit::perMinute(60)->by('google:' . $request->ip()));
+
         // Daftar anggota per IP, longgar untuk keramaian satu venue tapi tetap menahan skrip pembuat akun massal.
         RateLimiter::for('ic-daftar', function (Request $request) {
             return Limit::perMinute(30)->by('daftar:' . $request->ip())->response(

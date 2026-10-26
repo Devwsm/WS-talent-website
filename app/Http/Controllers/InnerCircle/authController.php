@@ -42,7 +42,7 @@ class authController extends Controller
         ]);
 
         if (! $berhasil) {
-            // Pesan sengaja generik: tidak membocorkan apakah emailnya terdaftar.
+            // Pesan sengaja generik: tidak membocorkan apakah emailnya terdaftar (atau hanya memakai Google).
             return back()
                 ->withErrors(['email' => 'Email atau kata sandi salah.'])
                 ->onlyInput('email');
@@ -50,6 +50,7 @@ class authController extends Controller
 
         // regenerate() mengganti ID sesi tanpa menghapus isinya (cegah session fixation, sesi admin aman).
         $request->session()->regenerate();
+        $request->session()->put('ic_sesi_versi', (int) Auth::guard('member')->user()->sesi_versi);
 
         // Kalau anggota tadi diarahkan ke Masuk dari tautan QR check-in, kembalikan ke sana.
         return redirect()->intended(route('ic.beranda'))->with('ic_toast', 'Selamat datang kembali!');
@@ -80,6 +81,7 @@ class authController extends Controller
 
         Auth::guard('member')->login($anggota);
         $request->session()->regenerate();
+        $request->session()->put('ic_sesi_versi', (int) $anggota->sesi_versi);
 
         return redirect()->intended(route('ic.beranda'))->with('ic_toast', 'Selamat datang di WS Inner Circle!');
     }

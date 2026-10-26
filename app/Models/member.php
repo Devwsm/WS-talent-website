@@ -29,12 +29,15 @@ class member extends Authenticatable
     /** Sama dengan default kolom: anggota yang baru dibuat langsung punya 0 stempel di memori, bukan null. */
     protected $attributes = [
         'stempel_total' => 0,
+        'sesi_versi' => 0,
     ];
 
     protected function casts(): array
     {
         return [
             'password' => 'hashed',
+            'email_verified_at' => 'datetime',
+            'sesi_versi' => 'integer',
             'stempel_total' => 'integer',
             // Alias hasil withMax() di tab Anggota dashboard.
             'terakhir_checkin' => 'datetime',

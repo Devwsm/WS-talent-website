@@ -1,26 +1,217 @@
 # WS Talent Website
 
-Website publik profil artis **Whisnu Santika** beserta dashboard CMS-nya.
+Website publik profil artis **Whisnu Santika**, dashboard CMS-nya, dan komunitas penggemar **WS Inner Circle**.
 
-- **Stack:** Laravel 13 · PHP 8.4+ (dependensi Symfony 8.1 di `composer.lock` mensyaratkan PHP >= 8.4.1, walau `composer.json` masih menulis `^8.3`; versi PHP di hosting dan di workflow auto deploy harus 8.4 atau lebih) · Tailwind CSS 4 · Vite · Swiper · SweetAlert2 · Bootstrap Icons
-- **Database:** MySQL di `.env` lokal (`.env.example` masih bawaan SQLite, ganti `DB_CONNECTION=mysql`)
-- **Publik:** `/` (home) dan `/profile`
-- **CMS:** `/dashboard` (Banner, Headers, Profile, Warna Web, Albums, News, Merchandise)
-- **Sesi, antrean, cache:** driver `database`
+## Daftar isi
+
+- [Ringkasan](#ringkasan)
+- [Menjalankan di lokal](#menjalankan-di-lokal)
+- [Konfigurasi `.env`](#konfigurasi-env)
+- [Tes](#tes)
+- [Audit keamanan dan kesiapan produksi](#audit-keamanan-dan-kesiapan-produksi)
+- [Deploy dan rilis](#deploy-dan-rilis)
+- [Fase 8: login dengan Google](#fase-8-login-dengan-google)
+- [Lampiran A: Rencana dan catatan WS Inner Circle](#lampiran-a-rencana-dan-catatan-ws-inner-circle)
+
+## Ringkasan
+
+| Bagian       | Isi                                                                                                      |
+| ------------ | -------------------------------------------------------------------------------------------------------- |
+| Situs publik | `/` (home) dan `/profile`; `robots.txt` dan `sitemap.xml` dibuat dinamis oleh `SeoController`            |
+| CMS          | `/dashboard` (Banner, Headers, Profile, Warna Web, Albums, News, Merchandise), login admin di `/login`   |
+| Inner Circle | `/inner-circle/*` (anggota) dan `/dashboard/inner-circle` (admin), di belakang flag `INNER_CIRCLE_AKTIF` |
+| Stack        | Laravel 13, **PHP 8.4+**, MySQL, Tailwind CSS 4, Vite, Swiper, SweetAlert2, Bootstrap Icons, Quill (CMS) |
+| Hosting      | cPanel bersama (Rumahweb) tanpa terminal; sesi, antrean, dan cache memakai driver `database`             |
+
+PHP 8.4+ wajib: `composer.lock` memuat Symfony 8.1 yang mensyaratkan PHP >= 8.4.1 (`composer.json` kini juga `^8.4`).
+
+## Menjalankan di lokal
+
+Semua perintah dijalankan di terminal yang terbuka **di folder project** (di VS Code: menu Terminal, New Terminal). Butuh PHP 8.4+, Composer, Node.js, dan MySQL.
 
 ```bash
-composer install
-cp .env.example .env && php artisan key:generate
-php artisan migrate --seed
-php artisan storage:link
-npm install && npm run dev
+composer install                    # memasang pustaka PHP
+cp .env.example .env                # salin contoh konfigurasi (Windows PowerShell: copy .env.example .env)
+php artisan key:generate            # membuat APP_KEY
+# isi DB_* di .env (DB_CONNECTION=mysql, nama database, user, sandi), lalu:
+php artisan migrate --seed          # membuat tabel dan data awal; sandi admin acak dicetak sekali di terminal
+php artisan storage:link            # menautkan storage/app/public ke public/storage (foto unggahan)
+npm install                         # memasang pustaka JS
+npm run dev                         # menjalankan Vite (biarkan terbuka), lalu di terminal kedua:
+php artisan serve                   # membuka situs di http://127.0.0.1:8000
 ```
+
+`npm run build` membuat berkas siap produksi di `public/build/`. Jangan unggah `public/hot` ke server (berkas itu ada selama `npm run dev` berjalan dan membuat situs mencari aset ke komputermu).
+
+## Konfigurasi `.env`
+
+- Lokal: `.env.example`. Server: `.env.production.example` (debug mati, cookie sesi aman, log harian, kredensial kosong).
+- Variabel yang spesifik project:
+
+| Variabel                                                                                       | Fungsi                                                                                     |
+| ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `INNER_CIRCLE_AKTIF`                                                                           | Menyalakan seluruh fitur Inner Circle (default `false`)                                    |
+| `INNER_CIRCLE_GOOGLE_AKTIF`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI` | Login dengan Google (Fase 8). Tombol muncul hanya bila flag `true` dan ID + rahasia terisi |
+| `IC_SEED_CONTOH`                                                                               | Mengisi jadwal acara contoh saat `db:seed`. Hanya lokal/preview                            |
+| `ADMIN_USERNAME`, `ADMIN_PASSWORD`                                                             | Akun admin pertama untuk seeder (sandi min. 12 karakter). Wajib di produksi                |
+| `TRUSTED_PROXIES`                                                                              | Isi bila di belakang proxy/CDN (mis. Cloudflare); kosong = tidak ada proxy                 |
+| `MAVNUS_URL`                                                                                   | Alamat toko merchandise (default `https://mavnus.com`)                                     |
+
+- `.env` tidak boleh masuk git dan tidak boleh ikut dikirim dalam zip. `APP_DEBUG=true` di server membocorkan isi `.env` lewat halaman galat.
+
+## Tes
+
+```bash
+php artisan test
+```
+
+Perintah ini menjalankan semua tes otomatis (database SQLite di memori, tidak menyentuh database lokalmu). `ImageProcessorTest` otomatis dilewati bila ekstensi PHP `gd` dan `exif` tidak aktif, jadi jalankan sekali di mesin yang memilikinya. Tes tidak menguji kunci baris MySQL (klik ganda klaim dan suka): coba manual di MySQL.
+
+## Audit keamanan dan kesiapan produksi
+
+Audit dilakukan pada kode di commit `b18c7ea` (Fase 7). **Cakupan:** konfigurasi dan `.env`, login admin dan anggota, middleware, validasi dan unggahan, semua keluaran tanpa escape (`{!! !!}`), SQL mentah, redirect, mass assignment, `HtmlSanitizer` (diuji dengan payload XSS), `npm audit`, dan pencocokan `composer.lock` dengan database advisory FriendsOfPHP (snapshot 20 Oktober 2026). **Di luar cakupan:** uji penetrasi, server dan hosting sungguhan, konfigurasi cPanel, dan `composer audit` resmi (Packagist tidak terjangkau dari lingkungan audit, jadi jalankan sendiri, lihat checklist). Audit ini mengurangi risiko, bukan menjamin situs bebas celah.
+
+### Temuan dan status
+
+| #   | Tingkat | Temuan                                                                                                                                                                             | Status                                                                                             |
+| --- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| 1   | Tinggi  | Username dan sandi admin tertulis di `accountSeeder` (ada di riwayat git)                                                                                                          | Kode diperbaiki (kredensial dari `.env`). **Sandi lama harus diganti**, lihat di bawah             |
+| 2   | Sedang  | `HtmlSanitizer` meloloskan `<svg><script>` dan atribut di dalam tag tak dikenal (elemen yang dibuka bungkusnya tidak diperiksa ulang). Hanya admin yang bisa memasukkan konten ini | Diperbaiki, tes baru; teks juga dibersihkan lagi saat ditampilkan (data lama aman)                 |
+| 3   | Sedang  | `public/robots.txt` statis menimpa route dinamis, jadi `Disallow: /inner-circle` dari Fase 7 tidak pernah tayang di Apache                                                         | Berkas statis dihapus                                                                              |
+| 4   | Sedang  | `npm audit`: 10 kerentanan (vite dev server, axios, follow-redirects, dll.), semuanya di devDependencies, 0 di dependensi produksi                                                 | `npm audit fix`, tersisa 0                                                                         |
+| 5   | Sedang  | `composer.json` menulis PHP `^8.3`, padahal lock butuh >= 8.4.1: instalasi di PHP 8.3 gagal dengan pesan membingungkan                                                             | Disamakan `^8.4`, lock disinkronkan                                                                |
+| 6   | Sedang  | Tidak ada header keamanan                                                                                                                                                          | Middleware `SecurityHeaders` (nosniff, frame, referrer, permissions, HSTS di produksi)             |
+| 7   | Sedang  | Login anggota hanya dibatasi per IP (10/menit): tebak sandi satu akun tidak tertahan, sedangkan penonton satu venue yang berbagi IP bisa saling terkunci                           | Pembatas baru `ic-masuk` (5/menit per email+IP, 60/menit per IP) dan `ic-daftar` (30/menit per IP) |
+| 8   | Rendah  | Login admin: waktu respons membedakan username yang ada dan tidak ada                                                                                                              | Hash selalu dicek (hash bcrypt pengganti)                                                          |
+| 9   | Rendah  | `.env.example` berisi `APP_DEBUG=true`, tidak ada contoh `.env` server                                                                                                             | `.env.production.example` ditambah                                                                 |
+| 10  | Info    | Zip kerja memuat `.env` dan `public/hot` (keduanya di luar git). `public/hot` membuat situs rusak bila terunggah; `.env` memuat kredensial                                         | Jangan unggah/kirim keduanya                                                                       |
+
+Hasil pencocokan Composer: 110 paket, 0 cocok dengan advisory yang dikenal (termasuk `laravel/framework` v13.38.0 dan Symfony 8.1.x).
+
+### Tindakan wajib: ganti sandi admin
+
+Sandi admin lama pernah tertulis di repo, jadi anggap bocor. Lakukan di **setiap** database (lokal, preview, produksi) yang akunnya dibuat dari seeder lama:
+
+1. Di komputermu, buka terminal di folder project dan jalankan perintah ini. Ia mencetak hash bcrypt dari sandi baru (ganti `SANDI-BARU-YANG-PANJANG` dengan sandi pilihanmu, minimal 12 karakter):
+    ```bash
+    php -r "echo password_hash('SANDI-BARU-YANG-PANJANG', PASSWORD_BCRYPT), PHP_EOL;"
+    ```
+2. Buka cPanel, menu **phpMyAdmin**, pilih database situs, tabel `accounts`, klik **Edit** pada baris admin, tempel hash tadi ke kolom `password`, lalu **Go/Kirim**. Ubah juga `username` bila perlu.
+3. Coba login di `/login` dengan sandi baru. Simpan sandi di pengelola kata sandi, jangan di chat atau repo.
+
+### Belum dikerjakan (rekomendasi, urut prioritas)
+
+1. **Content-Security-Policy.** Belum dipasang karena widget Bandsintown, Google Fonts, dan embed video bisa mati bila terlalu ketat. Pasang dulu sebagai `Content-Security-Policy-Report-Only` di preview, perbaiki pelanggaran di konsol browser, baru ditegakkan.
+2. **Verifikasi email dan "lupa kata sandi"** (butuh SMTP). Tanpa itu, akun yang salah ketik email tidak bisa dipulihkan.
+3. **Batas ukuran unggahan di CMS:** `header_background` (video) dan `banner_cover` tidak punya `max`. Hanya admin yang bisa mengunggah, risikonya disk penuh.
+4. **Login admin:** satu sesi bendera `login` tanpa peran, log aktivitas, atau 2FA. Cukup untuk tim kecil; pertimbangkan bila tim bertambah.
+5. **Cadangan database** terjadwal di cPanel (Backup / JetBackup) sebelum Inner Circle tayang, karena anggota mulai menyimpan data.
+6. **HTTPS paksa** (cPanel: Domains, Force HTTPS Redirect) dan sertifikat AutoSSL aktif.
+7. Periksa `composer audit` dan `npm audit` rutin (misal tiap bulan atau di workflow deploy).
+
+## Deploy dan rilis
+
+Keadaan saat ini: server hanya menayangkan halaman profil artis (deploy manual, belum ada auto deploy). Inner Circle naik saat project diunggah ulang bersamaan dengan setting auto deploy.
+
+Checklist (urut):
+
+1. **Server:** PHP **8.4 atau lebih** (cPanel: MultiPHP Manager), ekstensi `gd` (dengan WebP), `exif`, `mbstring`, `pdo_mysql` aktif, `upload_max_filesize` dan `post_max_size` minimal **6M** (MultiPHP INI Editor). HTTPS aktif.
+2. **`.env` server:** buat dari `.env.production.example` (jangan salin `.env` lokal). Pastikan `APP_DEBUG=false`, `APP_ENV=production`, `APP_URL` berawalan `https://`, `INNER_CIRCLE_AKTIF=false`, `IC_SEED_CONTOH=false`.
+3. **Build:** `npm ci` lalu `npm run build` di mesin build (lokal atau workflow), dengan PHP 8.4 untuk `composer install --no-dev --optimize-autoloader`. Unggah `vendor/` dan `public/build/`. **Jangan** unggah `.env` lokal, `public/hot`, `node_modules`, `storage/logs`.
+4. **Database:** tabel baru (`members` dan semua `ic_*`, migration Fase 4 sampai 6 dan `members_google` dari Fase 8) harus dibuat di database server. Tanpa terminal, `php artisan migrate` tidak bisa dijalankan, jadi pilih salah satu: (a) migrasikan database lokal kosong lalu ekspor strukturnya dan impor lewat phpMyAdmin; atau (b) jalankan migrasi dari langkah di workflow auto deploy. Keputusannya diambil saat auto deploy disiapkan.
+5. **Akun admin:** pastikan sandinya sudah diganti (bagian _Tindakan wajib_ di atas).
+6. **Storage:** tautan `public/storage` ke `storage/app/public` harus berfungsi (foto dan avatar). Cek dengan membuka salah satu gambar berita.
+7. **`robots.txt`:** pastikan `public/robots.txt` tidak ada di server, lalu buka `https://domain/robots.txt` dan cek ada `Disallow: /inner-circle`.
+8. **Isi data asli** lewat CMS: jadwal acara (atau impor CSV), hadiah, satu pengumuman.
+9. **Uji perangkat nyata** di preview HTTPS (daftar di Fase 7).
+10. **Nyalakan:** set `INNER_CIRCLE_AKTIF=true` di `.env` server, lalu hapus cache tampilan dan konfigurasi (tanpa terminal: hapus isi `storage/framework/views/` dan berkas `bootstrap/cache/config.php` bila ada).
+11. **Pasca rilis:** buka header respons di browser (DevTools, tab Network) dan cek `X-Frame-Options` dan `Strict-Transport-Security` muncul; jalankan `composer audit` dan `npm audit` dari lokal.
+
+## Fase 8: login dengan Google
+
+**Status:** kode selesai dan teruji (28 tes). Tombol baru tampil setelah kamu membuat client OAuth di Google dan mengisi `.env` (langkah di bawah). Hanya untuk anggota Inner Circle; login admin CMS tidak berubah. Login Google berjalan **berdampingan** dengan email + sandi.
+
+### Cara kerjanya
+
+Tombol "Lanjutkan dengan Google" (halaman masuk) dan "Daftar dengan Google" (halaman daftar) membuka `/inner-circle/google/masuk`, pengunjung dialihkan ke Google, lalu Google mengembalikannya ke `/inner-circle/google/callback`. Server memeriksa jawaban Google, mencocokkan atau membuat anggota, lalu login seperti biasa (dan kembali ke tujuan semula, mis. tautan QR check-in).
+
+Alurnya ditulis langsung dengan HTTP client bawaan Laravel (OAuth 2.0 authorization code + PKCE, OpenID Connect), **tanpa** `laravel/socialite`. Alasannya: tidak ada paket baru yang harus dipasang dan diunggah (`vendor/`) ke hosting tanpa terminal, dan alurnya kecil serta bisa diuji penuh tanpa jaringan. Bila kelak ingin pindah ke Socialite, hanya `GoogleOAuth` yang perlu diganti.
+
+| File                                                              | Peran                                                                         |
+| ----------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `app/Services/InnerCircle/GoogleOAuth.php`                        | Membuat URL izin Google, menukar kode dengan token, memeriksa id_token        |
+| `app/Services/InnerCircle/GoogleAkun.php`                         | Mencocokkan identitas Google dengan anggota (masuk, buat baru, atau kaitkan)  |
+| `app/Http/Controllers/InnerCircle/googleController.php`           | Dua route: `ic.google.masuk` dan `ic.google.callback`                         |
+| `app/Http/Middleware/IcSesiVersi.php`                             | Mengeluarkan sesi anggota yang sudah dicabut (lihat aturan 4)                 |
+| `database/migrations/2026_10_27_000000_members_google.php`        | Kolom `google_id`, `email_verified_at`, `sesi_versi`; `password` boleh kosong |
+| `resources/views/components/inner-circle/tombol-google.blade.php` | Tombol sesuai pedoman merek Google                                            |
+
+### Aturan keamanan yang diterapkan (semuanya ada tesnya)
+
+1. **`state`, `nonce`, dan PKCE** per permintaan, disimpan di sesi dan dibuang setelah dipakai; kedaluwarsa 10 menit.
+2. **id_token diperiksa:** penerbit (`iss`), penerima (`aud` = client ID kita), kedaluwarsa (`exp`), dan `nonce`. Tanda tangan tidak diverifikasi ulang karena token diterima langsung dari Google lewat HTTPS dengan client secret (sesuai dokumentasi Google).
+3. **Email harus terverifikasi oleh Google.** Pencocokan memakai `google_id` (`sub`) lebih dulu, baru email.
+4. **Cegah pengambilalihan akun.** Pendaftaran sandi belum memverifikasi email, jadi orang lain bisa mendaftarkan email korban lebih dulu. Saat korban masuk lewat Google, akun itu dikaitkan, **sandi lama dihapus**, token "ingat saya" diganti, dan `sesi_versi` dinaikkan sehingga sesi lama penyerang langsung berakhir.
+5. **Akun yang sudah tertaut ke akun Google lain ditolak.** Akun hanya-Google tidak bisa masuk dengan sandi (pesan galatnya sama dengan "sandi salah").
+6. **Token Google tidak disimpan**; hanya `sub`, email, dan nama.
+7. **Galat ramah, bukan error 500:** pembatalan, sesi habis, state salah, Google menolak, atau tidak terjangkau; semuanya kembali ke halaman masuk dengan pesan jelas. Log hanya memuat status dan jenis galat, tanpa rahasia.
+8. **Pembatas laju** `ic-google`: 60/menit per IP (longgar karena penonton satu venue berbagi IP).
+
+### Setup di Google (sekali, dikerjakan pemilik akun Google Cloud)
+
+Tampilan Google Cloud Console sering berubah; nama menu di bawah bisa sedikit berbeda, tetapi isinya sama.
+
+1. Buka <https://console.cloud.google.com>, masuk dengan akun Google organisasi WSM (bukan akun pribadi), lalu buat **project** baru (mis. "WS Inner Circle").
+2. Buka menu **Google Auth Platform** (dulu: _APIs & Services > OAuth consent screen_). Isi: nama aplikasi "WS Inner Circle", email dukungan, tipe audiens **External**, email kontak.
+3. Buka **Clients > Create client**, tipe **Web application**. Pada **Authorized redirect URIs** isi alamat callback persis seperti di bawah (huruf, `http`/`https`, dan garis miring harus sama):
+    - lokal: `http://127.0.0.1:8000/inner-circle/google/callback`, dan juga versi `http://localhost:8000/...` bila kamu kadang membukanya lewat `localhost` (alamat di browser harus sama dengan yang terdaftar, kalau tidak Google menampilkan `redirect_uri_mismatch`);
+    - preview: `https://<domain-preview>/inner-circle/google/callback`;
+    - produksi: `https://whisnusantika.com/inner-circle/google/callback`.
+
+    Disarankan satu client untuk lokal/preview dan satu client lain untuk produksi, supaya rahasianya terpisah.
+
+4. Simpan **Client ID** dan **Client secret**. Rahasia hanya boleh ada di `.env` server dan di secret manager workflow deploy, tidak di repo atau chat.
+5. Selama status aplikasi **Testing**, hanya akun yang didaftarkan di **Audience > Test users** yang bisa masuk (dan izin kedaluwarsa tiap 7 hari). Tambahkan Gmail-mu untuk uji coba.
+
+### Menjalankan di lokal
+
+1. Isi `.env` (file di folder project, buka di VS Code). Nilainya dari langkah 4 di atas:
+    ```
+    INNER_CIRCLE_AKTIF=true
+    INNER_CIRCLE_GOOGLE_AKTIF=true
+    GOOGLE_CLIENT_ID=isi-client-id-dari-google
+    GOOGLE_CLIENT_SECRET=isi-client-secret-dari-google
+    ```
+    Biarkan `GOOGLE_REDIRECT_URI` kosong (bawaannya alamat callback situs).
+2. Di Terminal VS Code (folder project), jalankan perintah ini untuk menambah kolom baru di database lokal dan membersihkan cache konfigurasi:
+    ```bash
+    php artisan migrate
+    php artisan config:clear
+    ```
+3. Jalankan `php artisan serve` dan `npm run dev`, buka `http://127.0.0.1:8000/inner-circle/masuk` (alamat yang sama dengan yang didaftarkan di Google), lalu klik tombol Google dengan akun penguji.
+4. Uji tiga skenario: (a) email Google belum pernah terdaftar (akun baru dibuat), (b) email yang sudah terdaftar lewat sandi (akun dikaitkan dan sandi lama tidak berlaku), (c) klik "Batal" di halaman Google (kembali dengan pesan, tanpa error).
+
+### Rilis ke preview dan produksi
+
+- Migration baru ikut dalam kumpulan tabel Inner Circle yang dibuat di database server (lihat _Deploy dan rilis_, langkah 4). Karena Inner Circle belum tayang, tidak ada data anggota lama yang perlu dimigrasikan.
+- Isi `.env` server (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `INNER_CIRCLE_GOOGLE_AKTIF=true`) hanya setelah client OAuth untuk domain itu dibuat. Tanpa kredensial, tombol otomatis tidak muncul.
+- **Sebelum produksi:** ubah status aplikasi dari _Testing_ ke **In production** (Google Auth Platform > Audience). Untuk itu Google meminta **tautan beranda** dan **tautan kebijakan privasi** yang publik, jadi halaman kebijakan privasi (mis. `/privasi`: data yang disimpan, tujuan, cara minta hapus akun) perlu dibuat dulu. Ini belum ada di situs. Scope yang dipakai hanya `openid`, `email`, `profile` (tidak sensitif).
+- Pasca rilis, uji dengan akun Google yang **bukan** penguji dan dari ponsel (HTTPS), termasuk alur QR check-in sebagai tamu yang masuk lewat Google.
+
+### Catatan dan batasan
+
+- Foto profil Google **tidak** dipakai; anggota mengunggah foto sendiri (menghindari hotlink dan data pribadi tambahan).
+- Belum ada "lupa kata sandi" dan verifikasi email untuk akun sandi. Akun yang hanya-Google tidak membutuhkannya.
+- Belum ada fitur hapus akun; sebaiknya ditambahkan bersama halaman privasi.
+- Login admin CMS sengaja tidak memakai Google.
 
 ---
 
-# Rencana Penerapan: WS Inner Circle
+# Lampiran A: Rencana dan catatan WS Inner Circle
 
-> Status: **Fase 1 sampai 7 selesai**. Fase 1 sampai 3: kerangka UI, 7 layar anggota, dan panel admin 7 tab. Fase 4: akun anggota, check-in QR, dan stempel sudah tersambung ke database. Fase 5: hadiah dan klaim sudah tersambung ke database (tahapan hadiah dikelola di tab Hadiah, antrean klaim di tab Klaim). Fase 6: Komunitas (pengumuman, galeri kenangan, suka) dan foto profil sudah tersambung ke database; semua layar anggota dan 7 tab admin kini memakai data asli. Fase 7: teaser di home, link navbar, robots.txt, pembersihan data dummy, dan daftar rilis. Flag fitur mati secara bawaan. Yang tersisa hanya uji perangkat nyata (lihat Fase 7) dan rilis.
+> Nomor bagian di lampiran ini (1 sampai 9) berdiri sendiri dan dipakai sebagai rujukan silang di dalamnya.
+
+> Status: **Fase 1 sampai 7 selesai**; Fase 8 (login Google): kode selesai, menunggu setup di Google (lihat bagian _Fase 8_). Fase 1 sampai 3: kerangka UI, 7 layar anggota, dan panel admin 7 tab. Fase 4: akun anggota, check-in QR, dan stempel sudah tersambung ke database. Fase 5: hadiah dan klaim sudah tersambung ke database (tahapan hadiah dikelola di tab Hadiah, antrean klaim di tab Klaim). Fase 6: Komunitas (pengumuman, galeri kenangan, suka) dan foto profil sudah tersambung ke database; semua layar anggota dan 7 tab admin kini memakai data asli. Fase 7: teaser di home, link navbar, robots.txt, pembersihan data dummy, dan daftar rilis. Flag fitur mati secara bawaan. Yang tersisa: uji perangkat nyata (lihat Fase 7), checklist rilis (bagian _Deploy dan rilis_ di atas), dan setup Google (Fase 8).
 > Dibuat: 21 Oktober 2026.
 > Acuan: `WS_Inner_Circle.html` (prototype native, satu file, data di `localStorage`) dan 19 screenshot UI di `inner-circle-ui-prototype.zip`.
 
@@ -110,12 +301,12 @@ Prototype dibuat untuk didemokan, bukan untuk dijalankan. Bagian ini mencatat ap
 
 ### 4.1 Flag fitur
 
-Fase 1 sampai 3 berisi data dummy. Supaya tidak ikut aktif di produksi ketika kodenya naik (deploy manual pun):
+Seluruh Inner Circle berada di belakang satu flag supaya kodenya boleh naik ke server (deploy manual maupun otomatis) tanpa langsung tayang:
 
 - `config/inner_circle.php` dengan `aktif` = `env('INNER_CIRCLE_AKTIF', false)`.
-- Middleware `icAktif` (didaftarkan sebagai alias di `bootstrap/app.php`, seperti `cekLogin`) mengembalikan 404 untuk semua route Inner Circle bila flag mati.
-- Link di dashboard dan navbar publik hanya muncul bila flag menyala.
-- `.env` produksi tetap `INNER_CIRCLE_AKTIF=false` sampai Fase 4 selesai dan dites. Lokal dan preview boleh `true`.
+- Middleware `icAktif` (alias di `bootstrap/app.php`, seperti `cekLogin`) mengembalikan 404 untuk semua route Inner Circle bila flag mati.
+- Link di dashboard, navbar publik, dan teaser home hanya muncul bila flag menyala.
+- `.env` server tetap `INNER_CIRCLE_AKTIF=false` sampai rilis (lihat _Deploy dan rilis_). Lokal dan preview boleh `true`.
 
 ### 4.2 Tampilan terpisah dari tema situs
 
@@ -162,7 +353,8 @@ Kontrak data per layar:
 
 ## 5. Fase pengerjaan
 
-### Fase 1: Fondasi UI (selesai)
+<details>
+<summary><b>Fase 1: Fondasi UI (selesai)</b></summary>
 
 **Tujuan:** kerangka tampilan siap, belum ada layar isi.
 
@@ -188,7 +380,10 @@ Cek hasil:
 - Pratinjau komponen: ubin hadiah (terbuka, terkunci, lebar), kartu event (lewat, sudah check-in, privat, tanpa venue), aktivitas, pengumuman, kenangan, dan modal (tutup dengan silang, Esc, klik latar).
 - Warna dan font mengikuti screenshot prototype.
 
-### Fase 2: UI anggota (data dummy) (selesai)
+</details>
+
+<details>
+<summary><b>Fase 2: UI anggota (data dummy) (selesai)</b></summary>
 
 **Urutan layar:** Masuk dan Daftar → Beranda → Hadiah → Check-in → Komunitas → Profil.
 
@@ -217,7 +412,10 @@ Cek hasil:
 - Untuk anggota dummy 68 stempel: hadiah 10 `diajukan`, 25 dan 50 `terbuka`, 100 dan 250 `terkunci` (sama seperti screenshot).
 - Catatan: pastikan `public/hot` (sisa `npm run dev`) tidak ikut ter-upload ke hosting, kalau ikut, CSS dan JS halaman akan dicari ke server dev.
 
-### Fase 3: UI admin di dashboard CMS (data dummy) (selesai)
+</details>
+
+<details>
+<summary><b>Fase 3: UI admin di dashboard CMS (data dummy) (selesai)</b></summary>
 
 Prototype menaruh admin dalam satu halaman panjang. Di dashboard dibuat menu **Inner Circle** (`/dashboard/inner-circle`) dengan bar tab; tiap tab satu route, satu Blade, satu `<h1>`:
 
@@ -252,7 +450,10 @@ Catatan:
 
 Cek hasil: 7 tab tampil dengan data contoh, preview identik dengan tampilan anggota, tombol antrean klaim tidak ada yang "undefined", flag mati membuat semua route admin 404.
 
-### Fase 4: Anggota, check-in, dan stempel sungguhan (selesai)
+</details>
+
+<details>
+<summary><b>Fase 4: Anggota, check-in, dan stempel sungguhan (selesai)</b></summary>
 
 File yang dibuat atau diubah:
 
@@ -293,7 +494,10 @@ Cek hasil:
 - Event contoh diganti event asli lewat CMS atau impor CSV.
 - Tes otomatis: `php artisan test --filter=InnerCircleTest`. Kunci baris (`lockForUpdate`) tidak teruji di SQLite.
 
-### Fase 5: Hadiah dan klaim (selesai)
+</details>
+
+<details>
+<summary><b>Fase 5: Hadiah dan klaim (selesai)</b></summary>
 
 File yang dibuat atau diubah:
 
@@ -336,7 +540,10 @@ Cek hasil:
 - Mengubah tahap di CMS langsung tampil di halaman Hadiah anggota; isian yang gagal divalidasi tampil lagi di tahap yang sama.
 - Tes otomatis: `php artisan test --filter=InnerCircleHadiahTest` (22 tes). Kunci baris (`lockForUpdate`) tidak teruji di SQLite, jadi uji klik ganda klaim juga secara manual di MySQL.
 
-### Fase 6: Komunitas dan foto profil (selesai)
+</details>
+
+<details>
+<summary><b>Fase 6: Komunitas dan foto profil (selesai)</b></summary>
 
 File yang dibuat atau diubah:
 
@@ -382,6 +589,8 @@ Cek hasil:
 - Ganti foto profil dua kali: berkas lama hilang dari `storage/app/public/inner-circle/avatar`; Hapus mengembalikan emoji.
 - Tes otomatis: `php artisan test --filter=InnerCircleKomunitasTest` (32 tes, memakai stub `ImageProcessor` supaya tidak butuh GD) dan `php artisan test --filter=ImageProcessorTest` (15 tes, membutuhkan ekstensi GD dan exif; dilewati otomatis bila tidak ada, jadi jalankan sekali di mesin lokal yang punya GD). Kunci baris tidak relevan di fase ini, tetapi tes klik ganda suka sebaiknya dicoba juga di MySQL.
 
+</details>
+
 ### Fase 7: Integrasi situs publik, SEO, QA, rilis (selesai)
 
 File yang dibuat atau diubah:
@@ -396,7 +605,7 @@ File yang dibuat atau diubah:
 
 Hasil pemeriksaan:
 
-- Seluruh tes: 84 lulus, 15 dilewati (`ImageProcessorTest`, karena PHP yang dipakai untuk memeriksa tidak punya ekstensi GD; jalankan di mesin lokal yang punya GD). `npm run build` berhasil dan semua kelas Tailwind teaser ikut ter-build (dua entry Vite Inner Circle ikut terbangun).
+- Seluruh tes saat Fase 7 selesai: 84 lulus, 15 dilewati (`ImageProcessorTest`, karena PHP yang dipakai untuk memeriksa tidak punya ekstensi GD; jalankan di mesin lokal yang punya GD). `npm run build` berhasil dan semua kelas Tailwind teaser ikut ter-build (dua entry Vite Inner Circle ikut terbangun).
 - Audit statis CSS area anggota (bukan pengganti uji perangkat): target sentuh tombol, label centang, dan dock 44 px ke atas; ikon panah 33 px hanya hiasan (`aria-hidden`) di dalam tautan yang lebih besar; `prefers-reduced-motion` mematikan transisi dan animasi di seluruh `.ic-app`; pasangan warna teks utama lolos 4.5:1 (teks redup di kartu 5.0 sampai 5.2, eyebrow 5.5, putih di navy 18.4). Satu pengecualian yang disengaja: kata beraksen ungu di judul besar (54 sampai 92 px) berkontras 3.3:1, memenuhi syarat teks besar (3:1).
 
 Yang tidak bisa diperiksa tanpa perangkat nyata, jadi lakukan sendiri sebelum rilis:
@@ -406,14 +615,7 @@ Yang tidak bisa diperiksa tanpa perangkat nyata, jadi lakukan sendiri sebelum ri
 - Tampilan layar 375 px untuk semua layar anggota, dock bawah tidak menutupi tombol terakhir, dan teaser di home.
 - Kunci klik ganda klaim dan suka di MySQL (tes otomatis memakai SQLite).
 
-Rilis (urutan):
-
-1. Server memakai **PHP 8.4 atau lebih** (cPanel: MultiPHP Manager), ekstensi **gd** dan **exif** aktif, `upload_max_filesize` dan `post_max_size` minimal **6M**.
-2. Unggah project terbaru, termasuk hasil `npm run build` (`public/build/`). Di auto deploy, langkah build harus berjalan dengan PHP 8.4 dan Node, karena ada dua entry Vite baru.
-3. Buat tabel baru di database server: `members` dan semua tabel `ic_*` (migration Fase 4 sampai 6). Hosting tanpa terminal tidak bisa menjalankan `php artisan migrate`, jadi caranya harus diputuskan saat auto deploy disiapkan (mis. impor struktur tabel lewat phpMyAdmin, atau langkah migrasi di workflow).
-4. Pastikan tautan `public/storage` ke `storage/app/public` berfungsi (foto kenangan dan avatar disimpan di sana).
-5. Isi data asli lewat CMS: jadwal acara (CMS atau impor CSV), hadiah, dan satu pengumuman. Jangan set `IC_SEED_CONTOH=true` di produksi.
-6. Saat semua di atas siap, set `INNER_CIRCLE_AKTIF=true` di `.env` server, lalu bersihkan cache (`config:clear`, `view:clear`; tanpa terminal, hapus berkas cache di `bootstrap/cache` dan `storage/framework/views`). Sebelum itu, flag tetap `false`: situs publik tampil persis seperti sekarang.
+Rilis: ikuti checklist di bagian _Deploy dan rilis_ (dekat awal README).
 
 ## 6. Skema database (dipakai mulai Fase 4)
 
@@ -450,7 +652,7 @@ Catatan:
 Default di bawah dipakai sampai ada keputusan lain.
 
 - **Moderasi kenangan:** langsung tayang, admin bisa menyembunyikan (prototype langsung terbit). Alternatif: disetujui admin dulu.
-- **Verifikasi email dan "lupa kata sandi":** tidak ada di prototype dan butuh SMTP (`config/mail.php`). Default: ditunda sampai setelah Fase 6.
+- **Verifikasi email dan "lupa kata sandi":** tidak ada di prototype dan butuh SMTP (`config/mail.php`). Default: ditunda. Pendaftaran lewat Google (Fase 8) memberi email terverifikasi tanpa SMTP; "lupa kata sandi" tetap butuh SMTP.
 - **Avatar bawaan** sebelum anggota unggah foto: emoji 😎 seperti prototype, atau inisial nama.
 - **Jendela check-in:** default D 12.00 sampai D+1 06.00 WIB. Sesuaikan bila jam show WSM berbeda.
 - **Halaman `/inner-circle` untuk pengunjung belum login:** default dialihkan ke `/inner-circle/masuk`. Landing publik penuh (penjelasan program, daftar hadiah) belum ada di prototype; bisa jadi fase tambahan.
@@ -464,4 +666,5 @@ Default di bawah dipakai sampai ada keputusan lain.
 - QR yang berputar otomatis dan verifikasi lokasi (GPS). Mitigasi awal: jendela waktu, token per event, limiter per anggota.
 - Notifikasi (email, WhatsApp, Instagram) dan pesan antar anggota.
 - Integrasi akun atau voucher dengan Mavnus. Hadiah merchandise dipenuhi manual lewat antrean klaim.
-- Perubahan pada login admin, controller CMS yang sudah ada, dan tema situs publik.
+- Perubahan pada login admin, controller CMS yang sudah ada, dan tema situs publik (di luar perbaikan keamanan pada audit, lihat _Audit keamanan_).
+- Login Google untuk **admin** CMS: Fase 8 hanya untuk anggota.

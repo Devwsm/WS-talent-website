@@ -5,6 +5,7 @@ use App\Http\Controllers\homeController;
 use App\Http\Controllers\InnerCircle\adminController;
 use App\Http\Controllers\InnerCircle\authController;
 use App\Http\Controllers\InnerCircle\fotoProfilController;
+use App\Http\Controllers\InnerCircle\googleController;
 use App\Http\Controllers\InnerCircle\kenanganController;
 use App\Http\Controllers\InnerCircle\memberController;
 use App\Http\Controllers\loginController;
@@ -39,7 +40,11 @@ Route::prefix('/inner-circle')->middleware('icAktif')->name('ic.')->group(functi
     Route::get('/daftar', [authController::class, 'daftar'])->name('daftar');
     Route::post('/daftar', [authController::class, 'prosesDaftar'])->name('daftar.proses')->middleware('throttle:ic-daftar');
 
-    Route::middleware('auth:member')->group(function () {
+    // Masuk/daftar dengan Google (Fase 8): 404 bila belum diaktifkan (flag + kredensial), lihat googleController.
+    Route::get('/google/masuk', [googleController::class, 'mulai'])->name('google.masuk')->middleware('throttle:ic-google');
+    Route::get('/google/callback', [googleController::class, 'callback'])->name('google.callback')->middleware('throttle:ic-google');
+
+    Route::middleware(['auth:member', 'icSesi'])->group(function () {
         Route::post('/keluar', [authController::class, 'keluar'])->name('keluar');
 
         Route::get('/', [memberController::class, 'beranda'])->name('beranda');

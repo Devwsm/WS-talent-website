@@ -1208,6 +1208,48 @@ a.ic-event:hover {
     color: var(--ic-redup);
 }
 
+.ic-tombol--google {
+    background: #fff;
+    color: #1f1f1f;
+    border: 1px solid #747775;
+    border-radius: 30px;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: 0;
+}
+
+.ic-tombol--google:hover {
+    background: #f6f6f8;
+}
+
+.ic-tombol--google svg {
+    width: 18px;
+    height: 18px;
+    flex: none;
+}
+
+.ic-galat--blok {
+    margin: 0 0 10px;
+}
+
+.ic-pemisah {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 18px 0 4px;
+    color: var(--ic-redup);
+    font-size: 12px;
+}
+
+.ic-pemisah::before,
+.ic-pemisah::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--ic-garis);
+}
+
 .ic-auth__alih {
     margin-top: 16px;
     text-align: center;

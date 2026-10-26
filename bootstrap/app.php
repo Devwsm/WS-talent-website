@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'cekLogin' => \App\Http\Middleware\CekLogin::class,
             'icAktif' => \App\Http\Middleware\IcAktif::class,
+            'icSesi' => \App\Http\Middleware\IcSesiVersi::class,
         ]);
 
         // Pengunjung yang belum login: area anggota ke halaman Masuk Inner Circle,

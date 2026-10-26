@@ -15,6 +15,14 @@ return [
     */
     'seed_contoh' => (bool) env('IC_SEED_CONTOH', false),
 
+    /*
+    | Login dengan Google (Fase 8). Tombol dan route hanya hidup bila flag ini true DAN GOOGLE_CLIENT_ID serta
+    | GOOGLE_CLIENT_SECRET terisi (lihat App\Services\InnerCircle\GoogleOAuth::tersedia()).
+    */
+    'google' => [
+        'aktif' => (bool) env('INNER_CIRCLE_GOOGLE_AKTIF', false),
+    ],
+
     /* Fase terakhir yang sudah tersambung ke database. Tab dashboard dengan `fase` lebih besar masih memakai data contoh. */
     'fase_tersambung' => 6,
 

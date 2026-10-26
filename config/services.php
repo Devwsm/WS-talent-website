@@ -14,6 +14,17 @@ return [
     |
     */
 
+    /*
+    | Masuk dengan Google untuk anggota WS Inner Circle (Fase 8, lihat README).
+    | Isi dari Google Cloud Console: Clients > Web application. `redirect` boleh dikosongkan:
+    | bawaannya route ic.google.callback (harus sama persis dengan Authorized redirect URI di Google).
+    */
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI'),
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],
