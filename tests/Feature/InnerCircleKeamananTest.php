@@ -25,6 +25,16 @@ class InnerCircleKeamananTest extends TestCase
         parent::tearDown();
     }
 
+    /**
+     * Seeder dijalankan langsung, bukan lewat `$this->seed()` (perintah `db:seed`): di env production perintah itu
+     * meminta konfirmasi interaktif, sehingga hasil tes bergantung pada terminal yang dipakai (lolos di Linux,
+     * gagal di PowerShell). Yang diuji di sini adalah logika seedernya, bukan perintah artisan-nya.
+     */
+    private function jalankanSeeder(): void
+    {
+        $this->app->make(accountSeeder::class)->run();
+    }
+
     public function test_header_keamanan_terpasang_di_halaman_publik(): void
     {
         $respons = $this->get('/')->assertOk();
@@ -94,7 +104,7 @@ class InnerCircleKeamananTest extends TestCase
         putenv('ADMIN_USERNAME');
         putenv('ADMIN_PASSWORD');
 
-        $this->seed(accountSeeder::class);
+        $this->jalankanSeeder();
 
         $this->assertSame(0, account::count());
     }
@@ -104,13 +114,13 @@ class InnerCircleKeamananTest extends TestCase
         putenv('ADMIN_USERNAME=admin-env');
         putenv('ADMIN_PASSWORD=sandi-panjang-yang-kuat-1');
 
-        $this->seed(accountSeeder::class);
+        $this->jalankanSeeder();
 
         $akun = account::where('username', 'admin-env')->firstOrFail();
         $this->assertTrue(Hash::check('sandi-panjang-yang-kuat-1', $akun->password));
 
         putenv('ADMIN_PASSWORD=sandi-baru-yang-lain-123');
-        $this->seed(accountSeeder::class);
+        $this->jalankanSeeder();
 
         $this->assertSame(1, account::count());
         $this->assertTrue(Hash::check('sandi-panjang-yang-kuat-1', $akun->fresh()->password));
@@ -121,7 +131,7 @@ class InnerCircleKeamananTest extends TestCase
         putenv('ADMIN_USERNAME=admin-env');
         putenv('ADMIN_PASSWORD=pendek');
 
-        $this->seed(accountSeeder::class);
+        $this->jalankanSeeder();
 
         $this->assertSame(0, account::count());
     }
