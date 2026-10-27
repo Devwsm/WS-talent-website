@@ -756,3 +756,51 @@ Default di bawah dipakai sampai ada keputusan lain.
 - Integrasi akun atau voucher dengan Mavnus. Hadiah merchandise dipenuhi manual lewat antrean klaim.
 - Perubahan pada login admin, controller CMS yang sudah ada, dan tema situs publik (di luar perbaikan keamanan pada audit, lihat _Audit keamanan_).
 - Login Google untuk **admin** CMS: Fase 8 hanya untuk anggota.
+
+---
+
+## Fase 9: perbaikan token QR, Bandsintown, lupa kata sandi, dan email
+
+### Galat "The MAC is invalid" di Acara & QR
+
+Token QR tiap acara disimpan **terenkripsi** memakai `APP_KEY`. Kalau `APP_KEY` di `.env` berbeda dari saat token dibuat
+(mis. `php artisan key:generate` dijalankan lagi setelah seeding, `.env` diganti, atau database dipindah dari komputer lain),
+token tidak bisa dibuka. Sekarang halaman tidak lagi error: muncul peringatan merah dengan tombol **Perbaiki token**
+yang membuat token baru (token lama tidak bisa dipulihkan; cetak ulang QR acara itu).
+
+Aturan agar tidak terulang: **`APP_KEY` tiap server dibuat sekali lalu jangan diubah**, dan simpan salinannya di tempat aman
+(password manager). Mengubahnya juga mengeluarkan semua yang sedang login (sesi terenkripsi).
+
+### Bandsintown
+
+1. Jadwal ditarik dari API Bandsintown dengan `BANDSINTOWN_APP_ID` (butuh persetujuan Bandsintown; lihat halaman
+   _API installation_ di Bandsintown for Artists). `BANDSINTOWN_ARTIST` bawaannya `id_6784724` (artis yang sama dengan widget Tour).
+   App ID widget di halaman Tour belum tentu diterima API ini: coba dulu, atau minta App ID ke Bandsintown.
+2. Dashboard, tab **Acara & QR**, tombol **Sinkron sekarang**. Acara baru dibuat dengan QR sendiri; acara yang sudah ada
+   tidak ditimpa dan **tidak pernah dihapus otomatis** (acara yang hilang dari Bandsintown hanya dilaporkan).
+3. Tipe acara baru ditebak (nama memuat festival/fest/open air = festival, selain itu club); ubah bila perlu.
+4. Otomatis tiap pukul 04.00 WIB: tambahkan cron di cPanel, _Cron Jobs_, tiap menit:
+   `* * * * * /usr/local/bin/php /home/USERNAME/laravel/artisan schedule:run >> /dev/null 2>&1`
+   (sesuaikan folder Laravel dan path PHP). Tanpa cron, pakai tombol di dashboard.
+
+### Lupa kata sandi
+
+- Halaman `/inner-circle/lupa-sandi`, tautan berlaku 60 menit dan sekali pakai.
+- Jawaban selalu sama untuk semua email (tidak membocorkan siapa yang punya akun); email dikirim setelah respons.
+- Akun yang dibuat lewat Google menerima email yang mengarahkan **masuk dengan Google**.
+- Memakai tautan memverifikasi email, mengganti token "ingat saya", dan mengeluarkan semua sesi lama.
+- Dibatasi 3x/menit dan 5x/jam per email.
+
+### Email
+
+- Semua email memakai satu format (`resources/views/emails/inner-circle/pesan.blade.php`): atur ulang sandi, akun Google,
+  selamat datang (anggota baru lewat Google), dan status hadiah berubah.
+- Dashboard, tab **Email**: pratinjau tiap jenis dan tombol **Kirim email tes**.
+- Isi `MAIL_*` di `.env` server (contoh di `.env.production.example`). Selama `MAIL_MAILER=log` email tidak terkirim.
+- Email tidak memakai antrean (hosting tanpa worker): dikirim langsung setelah respons ke browser.
+- Atur SPF dan DKIM di cPanel (_Email Deliverability_) agar email tidak masuk spam.
+
+### Audit
+
+- Kolom link CMS (banner, header, album, berita, merchandise) kini wajib URL `http(s)://` (menutup `javascript:` tersimpan).
+- `.env` lokal berisi `APP_ENV=local`, `APP_DEBUG=true`, `IC_SEED_CONTOH=true`: **jangan pernah** ikut terunggah ke server.
