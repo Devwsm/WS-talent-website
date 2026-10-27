@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\InnerCircle;
 
 use App\Http\Controllers\Controller;
+use App\Services\InnerCircle\EmailService;
 use App\Services\InnerCircle\GoogleAkun;
 use App\Services\InnerCircle\GoogleGagal;
 use App\Services\InnerCircle\GoogleOAuth;
@@ -26,7 +27,7 @@ class googleController extends Controller
         return redirect()->away($google->mulai($request));
     }
 
-    public function callback(Request $request, GoogleOAuth $google, GoogleAkun $akun): RedirectResponse
+    public function callback(Request $request, GoogleOAuth $google, GoogleAkun $akun, EmailService $email): RedirectResponse
     {
         abort_unless(GoogleOAuth::tersedia(), 404);
 
@@ -44,6 +45,11 @@ class googleController extends Controller
         // regenerate() mengganti ID sesi tanpa menghapus isinya (cegah session fixation, sesi admin tetap aman).
         $request->session()->regenerate();
         $request->session()->put('ic_sesi_versi', (int) $anggota->sesi_versi);
+
+        // Sambutan hanya untuk anggota baru (emailnya sudah terverifikasi Google); gagal kirim tidak mengganggu login.
+        if ($status === GoogleAkun::BARU) {
+            $email->kirimSelamatDatang($anggota);
+        }
 
         $pesan = match ($status) {
             GoogleAkun::BARU => 'Selamat datang di WS Inner Circle!',

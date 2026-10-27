@@ -110,6 +110,14 @@ return [
             'expire' => 60,
             'throttle' => 60,
         ],
+
+        // Lupa kata sandi anggota WS Inner Circle (guard `member`). Memakai tabel token yang sama; token dikunci per email.
+        'members' => [
+            'provider' => 'members',
+            'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
+            'expire' => 60,
+            'throttle' => 60,
+        ],
     ],
 
     /*

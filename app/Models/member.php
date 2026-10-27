@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\InnerCircle\EmailService;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -42,6 +43,15 @@ class member extends Authenticatable
             // Alias hasil withMax() di tab Anggota dashboard.
             'terakhir_checkin' => 'datetime',
         ];
+    }
+
+    /**
+     * Dipanggil broker kata sandi `members` saat anggota meminta tautan atur ulang.
+     * Email dikirim dengan format Inner Circle (EmailService), bukan notifikasi bawaan Laravel.
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        app(EmailService::class)->kirimResetSandi($this, (string) $token);
     }
 
     /** Avatar bawaan selama anggota belum mengunggah foto (kolom `avatar`, Fase 6): emoji seperti di prototype. */

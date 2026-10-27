@@ -4,10 +4,12 @@ use App\Http\Controllers\dashboardController;
 use App\Http\Controllers\homeController;
 use App\Http\Controllers\InnerCircle\adminController;
 use App\Http\Controllers\InnerCircle\akunController;
+use App\Http\Controllers\InnerCircle\emailAdminController;
 use App\Http\Controllers\InnerCircle\authController;
 use App\Http\Controllers\InnerCircle\fotoProfilController;
 use App\Http\Controllers\InnerCircle\googleController;
 use App\Http\Controllers\InnerCircle\kenanganController;
+use App\Http\Controllers\InnerCircle\lupaSandiController;
 use App\Http\Controllers\InnerCircle\memberController;
 use App\Http\Controllers\loginController;
 use App\Http\Controllers\profileController;
@@ -42,6 +44,12 @@ Route::prefix('/inner-circle')->middleware('icAktif')->name('ic.')->group(functi
     Route::post('/masuk', [authController::class, 'prosesMasuk'])->name('masuk.proses')->middleware('throttle:ic-masuk');
     Route::get('/daftar', [authController::class, 'daftar'])->name('daftar');
     Route::post('/daftar', [authController::class, 'prosesDaftar'])->name('daftar.proses')->middleware('throttle:ic-daftar');
+
+    // Lupa kata sandi (Fase 9): jawaban selalu sama untuk semua email, lihat lupaSandiController.
+    Route::get('/lupa-sandi', [lupaSandiController::class, 'form'])->name('sandi.lupa');
+    Route::post('/lupa-sandi', [lupaSandiController::class, 'kirim'])->name('sandi.kirim')->middleware('throttle:ic-lupa');
+    Route::get('/atur-ulang/{token}', [lupaSandiController::class, 'formAtur'])->whereAlphaNumeric('token')->name('sandi.atur');
+    Route::post('/atur-ulang', [lupaSandiController::class, 'proses'])->name('sandi.atur.proses')->middleware('throttle:ic-atur');
 
     // Masuk/daftar dengan Google (Fase 8): 404 bila belum diaktifkan (flag + kredensial), lihat googleController.
     Route::get('/google/masuk', [googleController::class, 'mulai'])->name('google.masuk')->middleware('throttle:ic-google');
@@ -79,6 +87,9 @@ Route::prefix('/dashboard')->middleware('cekLogin')->group(function () {
         Route::get('/acara', [adminController::class, 'acara'])->name('acara');
         Route::post('/acara', [adminController::class, 'simpanAcara'])->name('acara.simpan')->middleware('throttle:10,1');
         Route::post('/acara/impor', [adminController::class, 'imporAcara'])->name('acara.impor')->middleware('throttle:10,1');
+        // Fase 9: jadwal dari Bandsintown, dan perbaikan token QR yang tidak terbaca (APP_KEY berbeda).
+        Route::post('/acara/sinkron-bandsintown', [adminController::class, 'sinkronBandsintown'])->name('acara.bandsintown')->middleware('throttle:3,1');
+        Route::post('/acara/perbaiki-token', [adminController::class, 'perbaikiToken'])->name('acara.perbaiki')->middleware('throttle:5,1');
         Route::put('/acara/{kode}', [adminController::class, 'ubahAcara'])->name('acara.ubah')->middleware('throttle:10,1');
         Route::delete('/acara/{kode}', [adminController::class, 'hapusAcara'])->name('acara.hapus')->middleware('throttle:10,1');
         Route::post('/acara/{kode}/token', [adminController::class, 'tokenBaru'])->name('acara.token')->middleware('throttle:10,1');
@@ -94,6 +105,11 @@ Route::prefix('/dashboard')->middleware('cekLogin')->group(function () {
         Route::delete('/pengumuman/{id}', [adminController::class, 'hapusPengumuman'])->whereNumber('id')->name('pengumuman.hapus')->middleware('throttle:10,1');
         Route::get('/kenangan', [adminController::class, 'kenangan'])->name('kenangan');
         Route::patch('/kenangan/{id}', [adminController::class, 'moderasiKenangan'])->whereNumber('id')->name('kenangan.moderasi')->middleware('throttle:30,1');
+
+        // Fase 9: format email notifikasi, pratinjau, dan email tes.
+        Route::get('/email', [emailAdminController::class, 'index'])->name('email');
+        Route::get('/email/pratinjau/{jenis}', [emailAdminController::class, 'pratinjau'])->where('jenis', '[a-z-]+')->name('email.pratinjau');
+        Route::post('/email/tes', [emailAdminController::class, 'tes'])->name('email.tes')->middleware('throttle:5,1');
     });
 
     Route::prefix('/color_pages')->group(function () {

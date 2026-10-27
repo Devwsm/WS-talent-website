@@ -18,12 +18,15 @@ use App\Models\ic_reward;
 use App\Models\ic_stempel;
 use App\Models\member;
 use App\Services\InnerCircle\AcaraService;
+use App\Services\InnerCircle\BandsintownService;
+use App\Services\InnerCircle\EmailService;
 use App\Services\InnerCircle\CheckinService;
 use App\Services\InnerCircle\ClaimService;
 use App\Services\InnerCircle\KenanganService;
 use App\Services\InnerCircle\KlaimGagal;
 use App\Services\InnerCircle\PengumumanService;
 use App\Services\InnerCircle\QrService;
+use App\Services\InnerCircle\SinkronGagal;
 use App\Services\InnerCircle\StempelService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -164,8 +167,12 @@ class adminController extends Controller
             'filter' => $filter,
             'acaraQr' => $acaraQr,
             'acaraDipilih' => $acaraDipilih,
-            'qrSvg' => $acaraDipilih ? $qr->svgInline($acaraDipilih, 400) : null,
-            'tautanQr' => $acaraDipilih ? $qr->tautan($acaraDipilih) : null,
+            // Token yang tidak terbaca (APP_KEY berbeda) tidak bisa dijadikan QR: tampilkan peringatan, bukan galat.
+            'qrSvg' => $acaraDipilih && ! $acaraDipilih->tokenRusak() ? $qr->svgInline($acaraDipilih, 400) : null,
+            'tautanQr' => $acaraDipilih && ! $acaraDipilih->tokenRusak() ? $qr->tautan($acaraDipilih) : null,
+            'jumlahTokenRusak' => ic_event::query()->get()->filter(fn(ic_event $e) => $e->tokenRusak())->count(),
+            'bitTersedia' => BandsintownService::tersedia(),
+            'bitTerakhir' => ($terakhir = ic_event::query()->max('disinkron_pada')) ? \Carbon\Carbon::parse($terakhir) : null,
             'ikonPeta' => $this->ikonPeta(),
         ]);
     }
@@ -183,7 +190,17 @@ class adminController extends Controller
         $event = ic_event::query()->where('kode', $kode)->firstOrFail();
 
         // Token dan kode tidak ikut berubah: QR yang sudah dicetak tetap berlaku.
-        $event->update($request->validated());
+        $data = $request->validated();
+
+        // Begitu admin mengubah tanggal, kota, atau venue acara hasil Bandsintown, sinkron berikutnya tidak menimpanya lagi.
+        if (
+            $event->sumber === 'bandsintown'
+            && ($event->tanggal->toDateString() !== $data['tanggal'] || $event->kota !== $data['kota'] || $event->venue !== $data['venue'])
+        ) {
+            $data['sumber'] = 'manual';
+        }
+
+        $event->update($data);
 
         return back()->with('success', 'Acara ' . ($event->venue ?? $event->kode) . ' diperbarui.');
     }
@@ -199,6 +216,47 @@ class adminController extends Controller
         $event->delete();
 
         return back()->with('success', 'Acara dihapus.');
+    }
+
+    /**
+     * Token acara yang tersimpan tetapi tidak bisa dibuka (biasanya APP_KEY berbeda dari saat dibuat) diganti baru.
+     * Token lama memang tidak bisa dipulihkan tanpa kunci aslinya; QR acara itu harus dicetak ulang.
+     */
+    public function perbaikiToken(): RedirectResponse
+    {
+        $jumlah = 0;
+
+        ic_event::query()->get()->each(function (ic_event $event) use (&$jumlah) {
+            if ($event->tokenRusak()) {
+                $event->forceFill(['token' => ic_event::buatToken(), 'token_dibuat_pada' => now()])->save();
+                $jumlah++;
+            }
+        });
+
+        return redirect(route('ic.admin.acara') . '#qr')->with('success', $jumlah > 0
+            ? "{$jumlah} token acara diperbaiki. Unduh atau cetak ulang QR untuk acara tersebut."
+            : 'Semua token acara sudah terbaca, tidak ada yang perlu diperbaiki.');
+    }
+
+    /** Tarik jadwal tour dari Bandsintown. Hasilnya dirangkum dalam satu pesan. */
+    public function sinkronBandsintown(BandsintownService $bit): RedirectResponse
+    {
+        if (! BandsintownService::tersedia()) {
+            return back()->with('error', 'BANDSINTOWN_APP_ID belum diisi di .env (lihat README, bagian Bandsintown).');
+        }
+
+        try {
+            $hasil = $bit->sinkron();
+        } catch (SinkronGagal $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        $pesan = "Bandsintown: {$hasil['total']} acara dibaca, {$hasil['dibuat']} baru, {$hasil['diperbarui']} diperbarui, {$hasil['terhubung']} ditautkan ke acara yang sudah ada.";
+        if ($hasil['hilang']) {
+            $pesan .= ' Tidak lagi ada di Bandsintown (cek manual, tidak dihapus otomatis): ' . implode('; ', array_slice($hasil['hilang'], 0, 5)) . '.';
+        }
+
+        return redirect(route('ic.admin.acara') . '#jadwal')->with('success', $pesan);
     }
 
     /** Ganti token: QR lama langsung tidak berlaku. */
@@ -294,7 +352,7 @@ class adminController extends Controller
     }
 
     /** Lanjutkan, tolak, atau ubah catatan satu pengajuan. Aturan alurnya di ClaimService. */
-    public function ubahKlaim(int $id, ubahKlaimRequest $request, ClaimService $klaim): RedirectResponse
+    public function ubahKlaim(int $id, ubahKlaimRequest $request, ClaimService $klaim, EmailService $email): RedirectResponse
     {
         $pengajuan = ic_claim::query()->findOrFail($id);
 
@@ -308,6 +366,11 @@ class adminController extends Controller
             );
         } catch (KlaimGagal $e) {
             return back()->with('error', $e->getMessage());
+        }
+
+        // Anggota diberi kabar saat status berubah (lanjut atau tolak). Mengubah catatan saja tidak mengirim email.
+        if (in_array($request->validated('aksi'), ['lanjut', 'tolak'], true)) {
+            $email->kirimStatusKlaim($hasil);
         }
 
         $nama = $hasil->nama_member;
@@ -447,6 +510,7 @@ class adminController extends Controller
     {
         $event = ic_event::query()->where('kode', $kode)->firstOrFail();
         abort_unless($event->bisa_checkin, 404);
+        abort_if($event->tokenRusak(), 409, 'Token acara ini tidak terbaca. Buka Acara & QR lalu pakai tombol Perbaiki token.');
 
         return $event;
     }

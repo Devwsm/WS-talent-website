@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\TokenAcara;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
@@ -27,6 +28,10 @@ class ic_event extends Model
         'kota',
         'venue',
         'tipe',
+        'sumber',
+        'bit_id',
+        'bit_url',
+        'disinkron_pada',
         'token',
         'token_dibuat_pada',
         'jendela_mulai',
@@ -39,7 +44,8 @@ class ic_event extends Model
     {
         return [
             'tanggal' => 'date',
-            'token' => 'encrypted',
+            'token' => TokenAcara::class,
+            'disinkron_pada' => 'datetime',
             'token_dibuat_pada' => 'datetime',
             'jendela_mulai' => 'datetime',
             'jendela_selesai' => 'datetime',
@@ -56,6 +62,15 @@ class ic_event extends Model
         }
 
         return 'WS-' . $token;
+    }
+
+    /**
+     * Token tersimpan tetapi tidak bisa dibuka: hampir selalu karena APP_KEY di server berbeda dari saat token dibuat.
+     * QR acara ini tidak bisa dibuat sampai tokennya diganti (dashboard: Acara & QR, tombol Perbaiki token).
+     */
+    public function tokenRusak(): bool
+    {
+        return filled($this->attributes['token'] ?? null) && $this->token === null;
     }
 
     /** Event privat dan event tanpa venue tampil di jadwal tetapi tidak bisa dipakai check-in. */

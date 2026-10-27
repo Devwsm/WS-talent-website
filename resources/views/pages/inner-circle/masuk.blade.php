@@ -32,6 +32,8 @@
             Tampilkan kata sandi
         </label>
 
+        <p class="ic-bantuan"><a class="ic-tautan" href="{{ route('ic.sandi.lupa') }}">Lupa kata sandi?</a></p>
+
         <button type="submit" class="ic-tombol ic-tombol--penuh">Masuk <i class="bi bi-arrow-right"
                 aria-hidden="true"></i></button>
     </form>

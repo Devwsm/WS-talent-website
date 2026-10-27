@@ -36,6 +36,28 @@
             @include('components/errors')
             @include('components/success')
 
+            {{-- Token terenkripsi yang tidak bisa dibuka (APP_KEY server berbeda dari saat token dibuat). --}}
+            @if (($jumlahTokenRusak ?? 0) > 0)
+                <div role="alert"
+                    class="flex flex-col sm:flex-row sm:items-center gap-4 rounded-2xl border border-red-400/30 bg-red-950/30 px-5 py-4 text-sm text-red-100">
+                    <i class="bi bi-exclamation-octagon text-lg shrink-0" aria-hidden="true"></i>
+                    <p class="flex-1">Token QR <b>{{ $jumlahTokenRusak }} acara</b> tidak bisa dibaca, biasanya karena
+                        <code>APP_KEY</code> di server berbeda dari saat token dibuat. QR acara itu belum bisa dipakai
+                        check-in. Perbaiki dengan membuat token baru, lalu cetak ulang QR-nya.
+                    </p>
+                    <form method="POST" action="{{ route('ic.admin.acara.perbaiki') }}" data-ic-konfirmasi
+                        data-judul="Perbaiki token?"
+                        data-teks="Token yang tidak terbaca diganti baru. QR lama dari acara itu memang sudah tidak berfungsi."
+                        data-tombol="Ya, perbaiki">
+                        @csrf
+                        <button type="submit"
+                            class="h-11 px-5 inline-flex items-center gap-2 text-white font-bold uppercase tracking-widest text-xs bg-red-950 hover:bg-red-900 active:scale-95 transition rounded-lg">
+                            <i class="bi bi-wrench" aria-hidden="true"></i> Perbaiki token
+                        </button>
+                    </form>
+                </div>
+            @endif
+
             {{-- ============ 1. PEMBUAT QR ============ --}}
             <section id="qr" aria-labelledby="judul-qr" class="flex flex-col gap-4 scroll-mt-8">
                 <h2 id="judul-qr" class="font-bold uppercase tracking-wide text-sm flex items-center gap-2">
@@ -78,15 +100,17 @@
                                         <i class="bi bi-arrow-repeat" aria-hidden="true"></i> Buat QR baru
                                     </button>
                                 </form>
-                                <a href="{{ route('ic.admin.acara.qr', $acaraDipilih->kode) }}" download
-                                    class="h-11 px-5 inline-flex items-center gap-2 rounded-lg border border-white/15 text-xs font-semibold uppercase tracking-widest text-white/70 hover:bg-white/10 hover:text-white transition-colors">
-                                    <i class="bi bi-download" aria-hidden="true"></i> Unduh
-                                </a>
-                                <a href="{{ route('ic.admin.acara.cetak', $acaraDipilih->kode) }}" target="_blank"
-                                    rel="noopener"
-                                    class="h-11 px-5 inline-flex items-center gap-2 rounded-lg border border-white/15 text-xs font-semibold uppercase tracking-widest text-white/70 hover:bg-white/10 hover:text-white transition-colors">
-                                    <i class="bi bi-printer" aria-hidden="true"></i> Cetak
-                                </a>
+                                @unless ($acaraDipilih->tokenRusak())
+                                    <a href="{{ route('ic.admin.acara.qr', $acaraDipilih->kode) }}" download
+                                        class="h-11 px-5 inline-flex items-center gap-2 rounded-lg border border-white/15 text-xs font-semibold uppercase tracking-widest text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+                                        <i class="bi bi-download" aria-hidden="true"></i> Unduh
+                                    </a>
+                                    <a href="{{ route('ic.admin.acara.cetak', $acaraDipilih->kode) }}" target="_blank"
+                                        rel="noopener"
+                                        class="h-11 px-5 inline-flex items-center gap-2 rounded-lg border border-white/15 text-xs font-semibold uppercase tracking-widest text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+                                        <i class="bi bi-printer" aria-hidden="true"></i> Cetak
+                                    </a>
+                                @endunless
                             </div>
 
                             <dl class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
@@ -136,7 +160,7 @@
                                         {{ $tipeEvent[$acaraDipilih->tipe]['label'] }}</p>
                                     <p id="qr-token"
                                         class="inline-block mt-3 rounded-xl bg-neutral-900 px-4 py-2 font-mono text-sm font-bold tracking-widest text-white">
-                                        {{ $acaraDipilih->token }}</p>
+                                        {{ $acaraDipilih->token ?? 'Token tidak terbaca' }}</p>
                                 </div>
                             </div>
                             <p class="px-6 pb-6 text-xs text-black/50 break-all">
@@ -238,6 +262,35 @@
                                 Simpan acara
                             </button>
                         </form>
+
+                        {{-- Bandsintown --}}
+                        <div class="mt-6 pt-6 border-t border-white/10 flex flex-col gap-2">
+                            <p class="text-sm font-semibold uppercase tracking-widest text-white/60">Jadwal dari
+                                Bandsintown
+                            </p>
+                            @if ($bitTersedia)
+                                <p class="text-xs text-white/30">Menarik jadwal tour yang sama dengan widget Tour di situs
+                                    publik. Acara baru dibuat dengan QR sendiri, acara yang sudah ada tidak ditimpa dan
+                                    tidak dihapus. Tipe acara tebakan (festival atau club), ubah bila perlu.
+                                    @if ($bitTerakhir)
+                                        Terakhir sinkron:
+                                        {{ $bitTerakhir->locale('id')->translatedFormat('j M Y H.i') }} WIB.
+                                    @endif
+                                </p>
+                                <form method="POST" action="{{ route('ic.admin.acara.bandsintown') }}">
+                                    @csrf
+                                    <button type="submit"
+                                        class="h-11 px-5 inline-flex items-center gap-2 rounded-lg border border-white/15 text-xs font-semibold uppercase tracking-widest text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+                                        <i class="bi bi-arrow-repeat" aria-hidden="true"></i> Sinkron sekarang
+                                    </button>
+                                </form>
+                            @else
+                                <p class="text-xs text-white/40">Belum aktif. Isi <code
+                                        class="text-white/60">BANDSINTOWN_APP_ID</code> di <code
+                                        class="text-white/60">.env</code> server untuk menarik jadwal otomatis (lihat
+                                    README, bagian Bandsintown).</p>
+                            @endif
+                        </div>
 
                         {{-- Impor CSV --}}
                         <form method="POST" action="{{ route('ic.admin.acara.impor') }}" enctype="multipart/form-data"

@@ -25,6 +25,15 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    /*
+    | Bandsintown (Fase 9): jadwal acara WS Inner Circle bisa ditarik dari sini (tombol di dashboard Acara & QR, dan
+    | perintah `ic:sinkron-bandsintown`). `artist` boleh nama artis atau `id_<ID Bandsintown>`.
+    */
+    'bandsintown' => [
+        'app_id' => env('BANDSINTOWN_APP_ID'),
+        'artist' => env('BANDSINTOWN_ARTIST', 'id_6784724'),
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],

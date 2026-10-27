@@ -179,6 +179,7 @@ return [
         'hadiah' => ['label' => 'Hadiah', 'ikon' => 'bi-gift-fill', 'route' => 'ic.admin.hadiah', 'fase' => 5],
         'pengumuman' => ['label' => 'Pengumuman', 'ikon' => 'bi-megaphone-fill', 'route' => 'ic.admin.pengumuman', 'fase' => 6],
         'kenangan' => ['label' => 'Kenangan', 'ikon' => 'bi-images', 'route' => 'ic.admin.kenangan', 'fase' => 6],
+        'email' => ['label' => 'Email', 'ikon' => 'bi-envelope-fill', 'route' => 'ic.admin.email', 'fase' => 6],
     ],
 
 ];

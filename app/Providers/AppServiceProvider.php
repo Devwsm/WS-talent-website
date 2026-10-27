@@ -61,6 +61,24 @@ class AppServiceProvider extends ServiceProvider
         // Hapus akun per ANGGOTA: pemeriksaan kata sandi di sini tidak boleh dipakai untuk menebak sandi.
         RateLimiter::for('ic-akun', fn(Request $request) => Limit::perMinute(5)->by('akun:' . (Auth::guard('member')->id() ?? $request->ip())));
 
+        // Lupa kata sandi: per EMAIL (cegah membanjiri kotak masuk orang lain) dan per IP. Hitungannya sama untuk email
+        // terdaftar maupun tidak, jadi pembatasan tidak membocorkan apakah sebuah email punya akun.
+        RateLimiter::for('ic-lupa', function (Request $request) {
+            $email = mb_strtolower(trim((string) $request->input('email')));
+            $galat = fn() => back()
+                ->withErrors(['email' => 'Terlalu banyak permintaan. Tunggu beberapa saat lalu coba lagi.'])
+                ->onlyInput('email');
+
+            return [
+                Limit::perMinute(3)->by('lupa:' . sha1($email . '|' . $request->ip()))->response($galat),
+                Limit::perHour(5)->by('lupa-email:' . sha1($email))->response($galat),
+                Limit::perMinute(30)->by('lupa-ip:' . $request->ip())->response($galat),
+            ];
+        });
+
+        // Menyimpan kata sandi baru dari tautan email, per IP.
+        RateLimiter::for('ic-atur', fn(Request $request) => Limit::perMinute(10)->by('atur:' . $request->ip()));
+
         // Alur Google (mulai + callback) per IP, longgar karena penonton satu venue berbagi IP.
         RateLimiter::for('ic-google', fn(Request $request) => Limit::perMinute(60)->by('google:' . $request->ip()));
 
