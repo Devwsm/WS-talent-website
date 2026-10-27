@@ -68,6 +68,15 @@ php artisan test
 
 Perintah ini menjalankan semua tes otomatis (database SQLite di memori, tidak menyentuh database lokalmu). `ImageProcessorTest` otomatis dilewati bila ekstensi PHP `gd` dan `exif` tidak aktif, jadi jalankan sekali di mesin yang memilikinya. Tes tidak menguji kunci baris MySQL (klik ganda klaim dan suka): coba manual di MySQL.
 
+Tes **tidak bergantung pada `.env`**: nilai yang bisa berbeda antar mesin (kunci aplikasi, kredensial admin dan Google, flag, cookie) dipaku di `phpunit.xml`, dan tes yang butuh nilai tertentu mengaturnya lewat `config()`. Jadi hasilnya sama di komputermu dan di GitHub Actions. Di CI, salin dulu contoh env lalu jalankan tes:
+
+```bash
+cp .env.example .env
+php artisan test
+```
+
+Tes yang menyentuh berkas di disk memakai `Storage::fake()` dan memeriksa lewat `Storage::disk('public')->exists()`. Tes teks halaman memakai teks yang spasinya dilipat, supaya pemformat Blade/Prettier yang memecah satu kalimat jadi dua baris tidak membuat tes gagal.
+
 ## Audit keamanan dan kesiapan produksi
 
 Audit dilakukan pada kode di commit `b18c7ea` (Fase 7). **Cakupan:** konfigurasi dan `.env`, login admin dan anggota, middleware, validasi dan unggahan, semua keluaran tanpa escape (`{!! !!}`), SQL mentah, redirect, mass assignment, `HtmlSanitizer` (diuji dengan payload XSS), `npm audit`, dan pencocokan `composer.lock` dengan database advisory FriendsOfPHP (snapshot 20 Oktober 2026). **Di luar cakupan:** uji penetrasi, server dan hosting sungguhan, konfigurasi cPanel, dan `composer audit` resmi (Packagist tidak terjangkau dari lingkungan audit, jadi jalankan sendiri, lihat checklist). Audit ini mengurangi risiko, bukan menjamin situs bebas celah.

@@ -19,6 +19,20 @@
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <!-- Kunci khusus tes (bukan rahasia): suite harus jalan tanpa file .env, mis. di GitHub Actions. -->
+        <env name="APP_KEY" value="base64:RWRkrsP8j5z2Ms5e12+uRKT/njkxbNxsJO9CqFbnjEE="/>
+        <!-- Nilai yang bisa berbeda di .env lokal dipaku di sini supaya hasil tes sama di semua mesin. -->
+        <env name="INNER_CIRCLE_GOOGLE_AKTIF" value="false"/>
+        <env name="GOOGLE_CLIENT_ID" value=""/>
+        <env name="GOOGLE_CLIENT_SECRET" value=""/>
+        <env name="GOOGLE_REDIRECT_URI" value=""/>
+        <env name="ADMIN_USERNAME" value=""/>
+        <env name="ADMIN_PASSWORD" value=""/>
+        <env name="KONTAK_PRIVASI_EMAIL" value=""/>
+        <env name="TRUSTED_PROXIES" value=""/>
+        <env name="SESSION_SECURE_COOKIE" value="false"/>
+        <env name="SESSION_ENCRYPT" value="false"/>
+        <env name="LOG_CHANNEL" value="null"/>
         <env name="INNER_CIRCLE_AKTIF" value="true"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>

@@ -11,6 +11,7 @@ use App\Services\InnerCircle\StempelService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 /**
@@ -25,6 +26,20 @@ class InnerCircleAkunPrivasiTest extends TestCase
         parent::setUp();
         config(['inner_circle.aktif' => true, 'site.kontak_privasi' => null]);
         Storage::fake('public');
+    }
+
+    /**
+     * Teks halaman tanpa tag HTML dengan spasi dan baris baru dilipat jadi satu spasi. Pemformat Blade/Prettier
+     * boleh memecah "Hapus akunku" jadi dua baris tanpa membuat tes gagal.
+     */
+    private function teks(TestResponse $respons): string
+    {
+        return trim(preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags($respons->getContent()), ENT_QUOTES | ENT_HTML5)));
+    }
+
+    private function adaBerkas(string $path): bool
+    {
+        return Storage::disk('public')->exists($path);
     }
 
     private function anggota(string $email = 'a@contoh.test', ?string $sandi = 'sandi-benar-123'): member
@@ -72,13 +87,13 @@ class InnerCircleAkunPrivasiTest extends TestCase
     {
         config(['inner_circle.aktif' => false]);
 
-        $this->get('/privasi')
+        $respons = $this->get('/privasi')
             ->assertOk()
-            ->assertSee('Kebijakan Privasi')
-            ->assertSee('Masuk dengan Google')
-            ->assertSee('Google API Services User Data Policy')
-            ->assertSee('Hapus akunku')
             ->assertSee('<title>Kebijakan Privasi — Whisnu Santika</title>', false);
+
+        foreach (['Kebijakan Privasi', 'Masuk dengan Google', 'Google API Services User Data Policy', 'Hapus akunku'] as $kalimat) {
+            $this->assertStringContainsString($kalimat, $this->teks($respons));
+        }
     }
 
     public function test_kontak_privasi_tampil_bila_diisi_dan_ada_alternatif_bila_kosong(): void
@@ -92,7 +107,8 @@ class InnerCircleAkunPrivasiTest extends TestCase
     public function test_privasi_ada_di_sitemap_footer_dan_halaman_masuk_daftar(): void
     {
         $this->get('/sitemap.xml')->assertOk()->assertSee(url('/privasi'), false);
-        $this->get('/')->assertOk()->assertSee(route('privasi'), false)->assertSee('Kebijakan Privasi');
+        $beranda = $this->get('/')->assertOk()->assertSee(route('privasi'), false);
+        $this->assertStringContainsString('Kebijakan Privasi', $this->teks($beranda));
         $this->get(route('ic.masuk'))->assertOk()->assertSee(route('privasi'), false);
         $this->get(route('ic.daftar'))->assertOk()->assertSee(route('privasi'), false);
     }
@@ -192,14 +208,14 @@ class InnerCircleAkunPrivasiTest extends TestCase
         $this->assertSame(0, DB::table('ic_claim_logs')->count());
         $this->assertSame(0, ic_memory::where('member_id', $m->id_member)->count());
         $this->assertSame(0, DB::table('ic_memory_likes')->count(), 'Tanda suka dari dan untuk akun ini ikut terhapus.');
-        Storage::disk('public')->assertMissing('inner-circle/avatar/saya.webp');
-        Storage::disk('public')->assertMissing('inner-circle/kenangan/saya.webp');
+        $this->assertFalse($this->adaBerkas('inner-circle/avatar/saya.webp'), 'Avatar ikut terhapus dari disk.');
+        $this->assertFalse($this->adaBerkas('inner-circle/kenangan/saya.webp'), 'Foto kenangan ikut terhapus dari disk.');
 
         // Milik orang lain: utuh.
         $this->assertDatabaseHas('members', ['id_member' => $lain->id_member, 'stempel_total' => 3]);
         $this->assertSame(1, DB::table('ic_stempel')->where('member_id', $lain->id_member)->count());
         $this->assertDatabaseHas('ic_memories', ['id_memory' => $kenanganLain->id_memory]);
-        Storage::disk('public')->assertExists('inner-circle/kenangan/lain.webp');
+        $this->assertTrue($this->adaBerkas('inner-circle/kenangan/lain.webp'), 'Foto milik anggota lain tetap ada.');
     }
 
     public function test_klaim_menunggu_menahan_penghapusan_dan_semua_data_aman(): void
@@ -215,7 +231,7 @@ class InnerCircleAkunPrivasiTest extends TestCase
 
             $this->assertDatabaseHas('members', ['id_member' => $m->id_member]);
             $this->assertSame(1, ic_claim::where('member_id', $m->id_member)->count());
-            Storage::disk('public')->assertExists("inner-circle/kenangan/{$status}.webp");
+            $this->assertTrue($this->adaBerkas("inner-circle/kenangan/{$status}.webp"));
         }
     }
 
@@ -235,22 +251,24 @@ class InnerCircleAkunPrivasiTest extends TestCase
     {
         $m = $this->anggota();
 
-        $this->actingAs($m, 'member')->get(route('ic.profil'))
+        $respons = $this->actingAs($m, 'member')->get(route('ic.profil'))
             ->assertOk()
-            ->assertSee('Akun dan privasi')
-            ->assertSee('Hapus akunku')
-            ->assertSee(route('ic.akun.hapus'), false)
-            ->assertSee('Kata sandi saat ini');
+            ->assertSee(route('ic.akun.hapus'), false);
+
+        foreach (['Akun dan privasi', 'Hapus akunku', 'Kata sandi saat ini'] as $kalimat) {
+            $this->assertStringContainsString($kalimat, $this->teks($respons));
+        }
     }
 
     public function test_form_hapus_untuk_akun_google_tanpa_kolom_sandi(): void
     {
         $m = $this->anggota('g@contoh.test', null);
 
-        $this->actingAs($m, 'member')->get(route('ic.profil'))
+        $respons = $this->actingAs($m, 'member')->get(route('ic.profil'))
             ->assertOk()
-            ->assertSee('name="konfirmasi"', false)
-            ->assertDontSee('Kata sandi saat ini');
+            ->assertSee('name="konfirmasi"', false);
+
+        $this->assertStringNotContainsString('Kata sandi saat ini', $this->teks($respons));
     }
 
     public function test_profil_dengan_klaim_menunggu_menampilkan_penjelasan_bukan_form(): void
@@ -258,10 +276,11 @@ class InnerCircleAkunPrivasiTest extends TestCase
         $m = $this->anggota();
         $this->klaim($m, 'diajukan');
 
-        $this->actingAs($m, 'member')->get(route('ic.profil'))
+        $respons = $this->actingAs($m, 'member')->get(route('ic.profil'))
             ->assertOk()
-            ->assertSee('pengajuan hadiah yang belum selesai')
             ->assertDontSee('name="konfirmasi"', false);
+
+        $this->assertStringContainsString('pengajuan hadiah yang belum selesai', $this->teks($respons));
     }
 
     public function test_hapus_akun_dibatasi_per_anggota(): void

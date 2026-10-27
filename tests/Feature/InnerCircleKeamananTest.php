@@ -18,13 +18,6 @@ class InnerCircleKeamananTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected function tearDown(): void
-    {
-        putenv('ADMIN_USERNAME');
-        putenv('ADMIN_PASSWORD');
-        parent::tearDown();
-    }
-
     /**
      * Seeder dijalankan langsung, bukan lewat `$this->seed()` (perintah `db:seed`): di env production perintah itu
      * meminta konfirmasi interaktif, sehingga hasil tes bergantung pada terminal yang dipakai (lolos di Linux,
@@ -101,8 +94,7 @@ class InnerCircleKeamananTest extends TestCase
     public function test_seeder_admin_berhenti_di_produksi_tanpa_kredensial_env(): void
     {
         $this->app['env'] = 'production';
-        putenv('ADMIN_USERNAME');
-        putenv('ADMIN_PASSWORD');
+        config(['site.admin_username' => null, 'site.admin_password' => null]);
 
         $this->jalankanSeeder();
 
@@ -111,15 +103,14 @@ class InnerCircleKeamananTest extends TestCase
 
     public function test_seeder_admin_memakai_kredensial_dari_env_dan_tidak_menimpa(): void
     {
-        putenv('ADMIN_USERNAME=admin-env');
-        putenv('ADMIN_PASSWORD=sandi-panjang-yang-kuat-1');
+        config(['site.admin_username' => 'admin-env', 'site.admin_password' => 'sandi-panjang-yang-kuat-1']);
 
         $this->jalankanSeeder();
 
         $akun = account::where('username', 'admin-env')->firstOrFail();
         $this->assertTrue(Hash::check('sandi-panjang-yang-kuat-1', $akun->password));
 
-        putenv('ADMIN_PASSWORD=sandi-baru-yang-lain-123');
+        config(['site.admin_password' => 'sandi-baru-yang-lain-123']);
         $this->jalankanSeeder();
 
         $this->assertSame(1, account::count());
@@ -128,8 +119,7 @@ class InnerCircleKeamananTest extends TestCase
 
     public function test_seeder_admin_menolak_sandi_pendek(): void
     {
-        putenv('ADMIN_USERNAME=admin-env');
-        putenv('ADMIN_PASSWORD=pendek');
+        config(['site.admin_username' => 'admin-env', 'site.admin_password' => 'pendek']);
 
         $this->jalankanSeeder();
 

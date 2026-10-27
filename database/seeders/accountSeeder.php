@@ -11,7 +11,8 @@ use Illuminate\Support\Str;
  * Membuat akun admin CMS pertama.
  *
  * Kredensial TIDAK lagi ditulis di kode (sebelumnya username dan sandi ada di repo, jadi siapa pun yang
- * pernah melihat repo bisa masuk). Isi ADMIN_USERNAME dan ADMIN_PASSWORD di .env sebelum `db:seed`.
+ * pernah melihat repo bisa masuk). Isi ADMIN_USERNAME dan ADMIN_PASSWORD di .env sebelum `db:seed`
+ * (dibaca lewat config('site.admin_username') dan config('site.admin_password')).
  * - Produksi: wajib diisi, kalau kosong seeder berhenti dengan pesan galat.
  * - Lokal/testing: kalau kosong, dibuat akun `admin` dengan sandi acak yang dicetak sekali di terminal.
  * Idempoten: bila username sudah ada, akun dibiarkan (sandi lama tidak ditimpa).
@@ -20,8 +21,8 @@ class accountSeeder extends Seeder
 {
     public function run(): void
     {
-        $username = trim((string) env('ADMIN_USERNAME', ''));
-        $password = (string) env('ADMIN_PASSWORD', '');
+        $username = trim((string) config('site.admin_username'));
+        $password = (string) config('site.admin_password');
 
         if ($username === '' || $password === '') {
             if (app()->environment('production')) {
