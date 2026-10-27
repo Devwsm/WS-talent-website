@@ -58,6 +58,9 @@ class AppServiceProvider extends ServiceProvider
             ];
         });
 
+        // Hapus akun per ANGGOTA: pemeriksaan kata sandi di sini tidak boleh dipakai untuk menebak sandi.
+        RateLimiter::for('ic-akun', fn(Request $request) => Limit::perMinute(5)->by('akun:' . (Auth::guard('member')->id() ?? $request->ip())));
+
         // Alur Google (mulai + callback) per IP, longgar karena penonton satu venue berbagi IP.
         RateLimiter::for('ic-google', fn(Request $request) => Limit::perMinute(60)->by('google:' . $request->ip()));
 

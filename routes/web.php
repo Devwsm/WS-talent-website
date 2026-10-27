@@ -3,6 +3,7 @@
 use App\Http\Controllers\dashboardController;
 use App\Http\Controllers\homeController;
 use App\Http\Controllers\InnerCircle\adminController;
+use App\Http\Controllers\InnerCircle\akunController;
 use App\Http\Controllers\InnerCircle\authController;
 use App\Http\Controllers\InnerCircle\fotoProfilController;
 use App\Http\Controllers\InnerCircle\googleController;
@@ -16,6 +17,8 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('/')->group(function () {
     Route::get('/', [homeController::class, 'index'])->name('home');
     Route::get('/profile', [homeController::class, 'profile'])->name('profile');
+    // Kebijakan privasi: publik dan selalu aktif (tidak ikut flag Inner Circle), dipakai juga oleh layar izin Google.
+    Route::view('/privasi', 'pages.privasi')->name('privasi');
 });
 
 // SEO — robots.txt & sitemap.xml digenerate dinamis (lihat SeoController)
@@ -59,6 +62,7 @@ Route::prefix('/inner-circle')->middleware('icAktif')->name('ic.')->group(functi
         Route::get('/profil', [memberController::class, 'profil'])->name('profil');
         Route::post('/profil/foto', [fotoProfilController::class, 'simpan'])->name('profil.foto')->middleware('throttle:ic-foto');
         Route::delete('/profil/foto', [fotoProfilController::class, 'hapus'])->name('profil.foto.hapus')->middleware('throttle:ic-foto');
+        Route::delete('/profil/akun', [akunController::class, 'hapus'])->name('akun.hapus')->middleware('throttle:ic-akun');
     });
 });
 

@@ -9,7 +9,7 @@ Website publik profil artis **Whisnu Santika**, dashboard CMS-nya, dan komunitas
 - [Konfigurasi `.env`](#konfigurasi-env)
 - [Tes](#tes)
 - [Audit keamanan dan kesiapan produksi](#audit-keamanan-dan-kesiapan-produksi)
-- [Deploy dan rilis](#deploy-dan-rilis)
+- [Panduan rilis ke produksi](#panduan-rilis-ke-produksi)
 - [Fase 8: login dengan Google](#fase-8-login-dengan-google)
 - [Lampiran A: Rencana dan catatan WS Inner Circle](#lampiran-a-rencana-dan-catatan-ws-inner-circle)
 
@@ -52,6 +52,7 @@ php artisan serve                   # membuka situs di http://127.0.0.1:8000
 | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
 | `INNER_CIRCLE_AKTIF`                                                                           | Menyalakan seluruh fitur Inner Circle (default `false`)                                    |
 | `INNER_CIRCLE_GOOGLE_AKTIF`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI` | Login dengan Google (Fase 8). Tombol muncul hanya bila flag `true` dan ID + rahasia terisi |
+| `KONTAK_PRIVASI_EMAIL`                                                                         | Email kontak yang tampil di halaman `/privasi` (kosong = mengarah ke Profil)               |
 | `IC_SEED_CONTOH`                                                                               | Mengisi jadwal acara contoh saat `db:seed`. Hanya lokal/preview                            |
 | `ADMIN_USERNAME`, `ADMIN_PASSWORD`                                                             | Akun admin pertama untuk seeder (sandi min. 12 karakter). Wajib di produksi                |
 | `TRUSTED_PROXIES`                                                                              | Isi bila di belakang proxy/CDN (mis. Cloudflare); kosong = tidak ada proxy                 |
@@ -85,6 +86,7 @@ Audit dilakukan pada kode di commit `b18c7ea` (Fase 7). **Cakupan:** konfigurasi
 | 8   | Rendah  | Login admin: waktu respons membedakan username yang ada dan tidak ada                                                                                                              | Hash selalu dicek (hash bcrypt pengganti)                                                          |
 | 9   | Rendah  | `.env.example` berisi `APP_DEBUG=true`, tidak ada contoh `.env` server                                                                                                             | `.env.production.example` ditambah                                                                 |
 | 10  | Info    | Zip kerja memuat `.env` dan `public/hot` (keduanya di luar git). `public/hot` membuat situs rusak bila terunggah; `.env` memuat kredensial                                         | Jangan unggah/kirim keduanya                                                                       |
+| 11  | Rendah  | Kata sandi yang diketik di form daftar/masuk ikut tersimpan di sesi ("old input") saat validasi gagal                                                                              | `dontFlash` untuk `sandi` di `bootstrap/app.php`, diuji                                            |
 
 Hasil pencocokan Composer: 110 paket, 0 cocok dengan advisory yang dikenal (termasuk `laravel/framework` v13.38.0 dan Symfony 8.1.x).
 
@@ -109,23 +111,102 @@ Sandi admin lama pernah tertulis di repo, jadi anggap bocor. Lakukan di **setiap
 6. **HTTPS paksa** (cPanel: Domains, Force HTTPS Redirect) dan sertifikat AutoSSL aktif.
 7. Periksa `composer audit` dan `npm audit` rutin (misal tiap bulan atau di workflow deploy).
 
-## Deploy dan rilis
+## Panduan rilis ke produksi
 
-Keadaan saat ini: server hanya menayangkan halaman profil artis (deploy manual, belum ada auto deploy). Inner Circle naik saat project diunggah ulang bersamaan dengan setting auto deploy.
+Panduan kerja untuk memasang situs (dengan Inner Circle) ke hosting cPanel **tanpa terminal**. Kerjakan berurutan.
 
-Checklist (urut):
+| #   | Tahap                    | Hasil                                       |
+| --- | ------------------------ | ------------------------------------------- |
+| 1   | Server siap              | PHP 8.4+, ekstensi, HTTPS                   |
+| 2   | `.env` server            | Konfigurasi aman                            |
+| 3   | Build dan unggah         | Kode terbaru di server                      |
+| 4   | Database                 | Tabel Inner Circle ada, sandi admin diganti |
+| 5   | Preview dan uji          | Teruji di HTTPS dan ponsel                  |
+| 6   | Google produksi          | Login Google untuk publik                   |
+| 7   | Data awal dan menyalakan | Inner Circle tayang                         |
+| 8   | Verifikasi               | Semua tercek                                |
 
-1. **Server:** PHP **8.4 atau lebih** (cPanel: MultiPHP Manager), ekstensi `gd` (dengan WebP), `exif`, `mbstring`, `pdo_mysql` aktif, `upload_max_filesize` dan `post_max_size` minimal **6M** (MultiPHP INI Editor). HTTPS aktif.
-2. **`.env` server:** buat dari `.env.production.example` (jangan salin `.env` lokal). Pastikan `APP_DEBUG=false`, `APP_ENV=production`, `APP_URL` berawalan `https://`, `INNER_CIRCLE_AKTIF=false`, `IC_SEED_CONTOH=false`.
-3. **Build:** `npm ci` lalu `npm run build` di mesin build (lokal atau workflow), dengan PHP 8.4 untuk `composer install --no-dev --optimize-autoloader`. Unggah `vendor/` dan `public/build/`. **Jangan** unggah `.env` lokal, `public/hot`, `node_modules`, `storage/logs`.
-4. **Database:** tabel baru (`members` dan semua `ic_*`, migration Fase 4 sampai 6 dan `members_google` dari Fase 8) harus dibuat di database server. Tanpa terminal, `php artisan migrate` tidak bisa dijalankan, jadi pilih salah satu: (a) migrasikan database lokal kosong lalu ekspor strukturnya dan impor lewat phpMyAdmin; atau (b) jalankan migrasi dari langkah di workflow auto deploy. Keputusannya diambil saat auto deploy disiapkan.
-5. **Akun admin:** pastikan sandinya sudah diganti (bagian _Tindakan wajib_ di atas).
-6. **Storage:** tautan `public/storage` ke `storage/app/public` harus berfungsi (foto dan avatar). Cek dengan membuka salah satu gambar berita.
-7. **`robots.txt`:** pastikan `public/robots.txt` tidak ada di server, lalu buka `https://domain/robots.txt` dan cek ada `Disallow: /inner-circle`.
-8. **Isi data asli** lewat CMS: jadwal acara (atau impor CSV), hadiah, satu pengumuman.
-9. **Uji perangkat nyata** di preview HTTPS (daftar di Fase 7).
-10. **Nyalakan:** set `INNER_CIRCLE_AKTIF=true` di `.env` server, lalu hapus cache tampilan dan konfigurasi (tanpa terminal: hapus isi `storage/framework/views/` dan berkas `bootstrap/cache/config.php` bila ada).
-11. **Pasca rilis:** buka header respons di browser (DevTools, tab Network) dan cek `X-Frame-Options` dan `Strict-Transport-Security` muncul; jalankan `composer audit` dan `npm audit` dari lokal.
+### 1. Server
+
+- cPanel **MultiPHP Manager**: PHP **8.4 atau lebih**. **MultiPHP INI Editor**: `upload_max_filesize` dan `post_max_size` minimal `6M`.
+- Ekstensi aktif: `gd` (dengan WebP), `exif`, `mbstring`, `pdo_mysql`.
+- HTTPS aktif (AutoSSL, gembok muncul) dan **Force HTTPS Redirect** menyala.
+- Disarankan satu subdomain **preview** (mis. `preview.whisnusantika.com`) dengan database sendiri.
+
+### 2. `.env` server
+
+- **Server baru (mis. preview):** unggah `.env.production.example` ke folder utama Laravel, ubah namanya jadi `.env` (cPanel **File Manager**, klik kanan, **Rename**), lalu **Edit** dan isi semua baris `GANTI`. Isi `APP_KEY` dari perintah `php artisan key:generate --show` yang dijalankan di komputer lokal (hasilnya diawali `base64:`), dan pakai kunci yang berbeda untuk tiap server.
+- **Server utama (sudah live):** jangan ditimpa. Tambahkan hanya variabel yang belum ada, di bagian bawah.
+
+| Variabel                                          | Nilai produksi                                                      |
+| ------------------------------------------------- | ------------------------------------------------------------------- |
+| `APP_ENV`, `APP_DEBUG`                            | `production`, `false`                                               |
+| `APP_URL`                                         | `https://domain-server` (wajib https)                               |
+| `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`       | Dari cPanel **MySQL Databases** (nama biasanya berawalan nama akun) |
+| `SESSION_SECURE_COOKIE`, `SESSION_ENCRYPT`        | `true` (hanya bila HTTPS sudah aktif)                               |
+| `KONTAK_PRIVASI_EMAIL`                            | Email yang dipantau, tampil di `/privasi`                           |
+| `INNER_CIRCLE_AKTIF`, `INNER_CIRCLE_GOOGLE_AKTIF` | `false` sampai langkah 7                                            |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`        | Kosong sampai langkah 6                                             |
+| `ADMIN_USERNAME`, `ADMIN_PASSWORD`                | Hanya untuk seeder; kosongkan sandinya setelah akun admin ada       |
+| `TRUSTED_PROXIES`                                 | Kosong, kecuali di belakang proxy/CDN                               |
+
+Aturan penulisan: buang komentar `#` di baris yang kamu isi; beri tanda kutip pada nilai yang mengandung spasi, `#`, `$`, atau `"` (mis. `DB_PASSWORD="sandi#ku"`).
+
+Cek setelah menyimpan: buka `https://domain/.env` di browser (harus 404 atau 403) dan hapus `bootstrap/cache/config.php` bila ada.
+
+### 3. Build dan unggah
+
+1. Di mesin build (lokal atau workflow) dengan PHP 8.4: `composer install --no-dev --optimize-autoloader`, lalu `npm ci` dan `npm run build`.
+2. Unggah semua, **termasuk** `vendor/` dan `public/build/`, **kecuali**: `.env`, `.git`, `node_modules`, `public/hot`, `storage/logs/*`, dan `tests`.
+3. Pastikan `public/robots.txt` **tidak ada** di server dan `public/storage` tertaut ke `storage/app/public` (foto muncul).
+4. Auto deploy: `.env` harus dikecualikan dari unggahan agar tidak tertimpa.
+
+### 4. Database
+
+1. Buat tabel baru di database server: `members`, semua `ic_*`, plus `sessions`, `cache`, dan `jobs` (migration Fase 4 sampai 8).
+2. Tanpa terminal, pilih salah satu: **(a)** di lokal jalankan `php artisan migrate` pada database kosong, lalu di phpMyAdmin pilih **Export > Custom**: struktur semua tabel, dan **struktur + data** untuk `migrations` dan `ic_rewards` (lima tahapan hadiah diisi oleh migration); impor hasilnya lewat **Import** di database server. **(b)** jalankan migrasi dari langkah workflow auto deploy.
+3. Ganti sandi admin lama (lihat [Tindakan wajib](#tindakan-wajib-ganti-sandi-admin)).
+
+### 5. Preview dan uji
+
+Di preview (HTTPS) uji di ponsel: login Google dan email, kamera pindai QR, unggah foto dari galeri HP, tampilan 375 px, klaim hadiah dua kali cepat (kunci MySQL), hapus akun, halaman `/privasi`, dan header keamanan (DevTools, tab Network).
+
+### 6. Google Cloud untuk produksi
+
+Gratis: login dengan scope dasar (`openid`, `email`, `profile`) tidak ditagih dan tidak butuh akun penagihan. Abaikan tawaran **Try for free**; bila Console meminta kartu, berhenti dan periksa dulu.
+
+1. Buat **project terpisah** untuk produksi (mis. `WS Inner Circle Produksi`), dengan akun Google organisasi.
+2. Cari **Google Auth Platform**, klik **Get started**: nama aplikasi, email dukungan, audiens **External**, email kontak.
+3. **Branding:** beranda `https://whisnusantika.com`, kebijakan privasi `https://whisnusantika.com/privasi`, authorized domain `whisnusantika.com`. Kosongkan logo dulu (setahu saya, logo memicu verifikasi merek).
+4. **Data Access:** tambah hanya `openid`, `.../auth/userinfo.email`, `.../auth/userinfo.profile`.
+5. **Clients > Create client:** **Web application**, redirect URI `https://whisnusantika.com/inner-circle/google/callback` (tulis tanpa spasi). Salin **Client ID** dan **Client secret** sekarang (secret hanya tampil sekali).
+6. **Audience > Publish app** untuk mengubah status dari _Testing_ ke _In production_. Bila Console meminta verifikasi domain, lakukan lewat Google Search Console.
+7. Isi `GOOGLE_CLIENT_ID` dan `GOOGLE_CLIENT_SECRET` di `.env` server. Rahasia hanya di `.env` server dan secret manager, tidak di repo atau chat.
+
+| Galat dari Google       | Penyebab dan solusi                                                                        |
+| ----------------------- | ------------------------------------------------------------------------------------------ |
+| `redirect_uri_mismatch` | Alamat callback tidak sama persis dengan yang terdaftar (cek `https`, garis miring, spasi) |
+| `access_denied`         | Status masih _Testing_ dan akun belum jadi penguji, atau pengguna menekan batal            |
+| `invalid_client`        | Client ID/secret salah atau belum terbaca (hapus cache konfigurasi)                        |
+
+### 7. Data awal dan menyalakan
+
+1. Isi CMS: jadwal acara, hadiah, dan satu pengumuman. Pastikan `IC_SEED_CONTOH` tidak `true`.
+2. Isi `KONTAK_PRIVASI_EMAIL`, dan tinjau teks `/privasi` (lihat Fase 8).
+3. Set `INNER_CIRCLE_GOOGLE_AKTIF=true`, lalu `INNER_CIRCLE_AKTIF=true`.
+4. Tanpa terminal, hapus cache: kosongkan isi `storage/framework/views/` dan hapus `bootstrap/cache/config.php` bila ada.
+
+**Mematikan darurat:** set `INNER_CIRCLE_AKTIF=false` lalu hapus cache seperti di atas. Semua halaman Inner Circle kembali 404, situs publik tidak terpengaruh.
+
+### 8. Verifikasi pasca rilis
+
+- [ ] `/robots.txt` memuat `Disallow: /inner-circle`; `/sitemap.xml` memuat `/privasi`.
+- [ ] `https://domain/.env` tidak terbuka; header `X-Frame-Options` dan `Strict-Transport-Security` ada.
+- [ ] Login Google dengan akun yang **bukan** penguji berhasil, dari ponsel.
+- [ ] Alur QR: tamu scan, masuk lewat Google, kembali ke check-in.
+- [ ] `/privasi` terbuka tanpa login dan email kontak benar.
+- [ ] Hapus akun uji berhasil (foto ikut hilang).
+- [ ] `composer audit` dan `npm audit` dari lokal bersih.
 
 ## Fase 8: login dengan Google
 
@@ -191,19 +272,17 @@ Tampilan Google Cloud Console sering berubah; nama menu di bawah bisa sedikit be
 3. Jalankan `php artisan serve` dan `npm run dev`, buka `http://127.0.0.1:8000/inner-circle/masuk` (alamat yang sama dengan yang didaftarkan di Google), lalu klik tombol Google dengan akun penguji.
 4. Uji tiga skenario: (a) email Google belum pernah terdaftar (akun baru dibuat), (b) email yang sudah terdaftar lewat sandi (akun dikaitkan dan sandi lama tidak berlaku), (c) klik "Batal" di halaman Google (kembali dengan pesan, tanpa error).
 
-### Rilis ke preview dan produksi
+### Halaman privasi dan hapus akun
 
-- Migration baru ikut dalam kumpulan tabel Inner Circle yang dibuat di database server (lihat _Deploy dan rilis_, langkah 4). Karena Inner Circle belum tayang, tidak ada data anggota lama yang perlu dimigrasikan.
-- Isi `.env` server (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `INNER_CIRCLE_GOOGLE_AKTIF=true`) hanya setelah client OAuth untuk domain itu dibuat. Tanpa kredensial, tombol otomatis tidak muncul.
-- **Sebelum produksi:** ubah status aplikasi dari _Testing_ ke **In production** (Google Auth Platform > Audience). Untuk itu Google meminta **tautan beranda** dan **tautan kebijakan privasi** yang publik, jadi halaman kebijakan privasi (mis. `/privasi`: data yang disimpan, tujuan, cara minta hapus akun) perlu dibuat dulu. Ini belum ada di situs. Scope yang dipakai hanya `openid`, `email`, `profile` (tidak sensitif).
-- Pasca rilis, uji dengan akun Google yang **bukan** penguji dan dari ponsel (HTTPS), termasuk alur QR check-in sebagai tamu yang masuk lewat Google.
+- **`/privasi`:** publik dan selalu aktif (tidak ikut flag Inner Circle), ada di sitemap, footer, serta halaman masuk dan daftar. Isinya di `resources/views/pages/privasi.blade.php`; email kontak dari `KONTAK_PRIVASI_EMAIL` (kosong = halaman mengarah ke Profil); ubah `privasi_diperbarui` di `config/site.php` setiap isi berubah. **Teks ini draf: tinjau oleh pengelola (dan penasihat hukum bila perlu) sebelum rilis.**
+- **Hapus akun:** Profil > **Akun dan privasi** > **Hapus akunku**. Anggota mengetik `HAPUS` (dan kata sandi bila akunnya punya sandi; akun hanya-Google cukup `HAPUS`). Terhapus permanen: akun, foto profil, stempel, pengajuan hadiah beserta lognya, kenangan beserta fotonya, dan tanda suka. **Ditahan** bila masih ada pengajuan berstatus `diajukan`, `ditinjau`, atau `disetujui`. Dibatasi 5 percobaan per menit per anggota. Kode: `HapusAkunService`, `akunController`, `hapusAkunRequest`; tes: `InnerCircleAkunPrivasiTest`.
 
 ### Catatan dan batasan
 
-- Foto profil Google **tidak** dipakai; anggota mengunggah foto sendiri (menghindari hotlink dan data pribadi tambahan).
-- Belum ada "lupa kata sandi" dan verifikasi email untuk akun sandi. Akun yang hanya-Google tidak membutuhkannya.
-- Belum ada fitur hapus akun; sebaiknya ditambahkan bersama halaman privasi.
+- Foto profil Google **tidak** dipakai; anggota mengunggah foto sendiri.
+- Belum ada "lupa kata sandi" dan verifikasi email untuk akun sandi. Akun hanya-Google tidak membutuhkannya.
 - Login admin CMS sengaja tidak memakai Google.
+- Rilis ke preview dan produksi: ikuti [Panduan rilis ke produksi](#panduan-rilis-ke-produksi).
 
 ---
 
@@ -211,7 +290,7 @@ Tampilan Google Cloud Console sering berubah; nama menu di bawah bisa sedikit be
 
 > Nomor bagian di lampiran ini (1 sampai 9) berdiri sendiri dan dipakai sebagai rujukan silang di dalamnya.
 
-> Status: **Fase 1 sampai 7 selesai**; Fase 8 (login Google): kode selesai, menunggu setup di Google (lihat bagian _Fase 8_). Fase 1 sampai 3: kerangka UI, 7 layar anggota, dan panel admin 7 tab. Fase 4: akun anggota, check-in QR, dan stempel sudah tersambung ke database. Fase 5: hadiah dan klaim sudah tersambung ke database (tahapan hadiah dikelola di tab Hadiah, antrean klaim di tab Klaim). Fase 6: Komunitas (pengumuman, galeri kenangan, suka) dan foto profil sudah tersambung ke database; semua layar anggota dan 7 tab admin kini memakai data asli. Fase 7: teaser di home, link navbar, robots.txt, pembersihan data dummy, dan daftar rilis. Flag fitur mati secara bawaan. Yang tersisa: uji perangkat nyata (lihat Fase 7), checklist rilis (bagian _Deploy dan rilis_ di atas), dan setup Google (Fase 8).
+> Status: **Fase 1 sampai 7 selesai**; Fase 8 (login Google): kode selesai, menunggu setup di Google (lihat bagian _Fase 8_). Fase 1 sampai 3: kerangka UI, 7 layar anggota, dan panel admin 7 tab. Fase 4: akun anggota, check-in QR, dan stempel sudah tersambung ke database. Fase 5: hadiah dan klaim sudah tersambung ke database (tahapan hadiah dikelola di tab Hadiah, antrean klaim di tab Klaim). Fase 6: Komunitas (pengumuman, galeri kenangan, suka) dan foto profil sudah tersambung ke database; semua layar anggota dan 7 tab admin kini memakai data asli. Fase 7: teaser di home, link navbar, robots.txt, pembersihan data dummy, dan daftar rilis. Flag fitur mati secara bawaan. Yang tersisa: uji perangkat nyata (lihat Fase 7), checklist rilis (bagian _Panduan rilis ke produksi_ di atas), dan setup Google (Fase 8).
 > Dibuat: 21 Oktober 2026.
 > Acuan: `WS_Inner_Circle.html` (prototype native, satu file, data di `localStorage`) dan 19 screenshot UI di `inner-circle-ui-prototype.zip`.
 
@@ -306,7 +385,7 @@ Seluruh Inner Circle berada di belakang satu flag supaya kodenya boleh naik ke s
 - `config/inner_circle.php` dengan `aktif` = `env('INNER_CIRCLE_AKTIF', false)`.
 - Middleware `icAktif` (alias di `bootstrap/app.php`, seperti `cekLogin`) mengembalikan 404 untuk semua route Inner Circle bila flag mati.
 - Link di dashboard, navbar publik, dan teaser home hanya muncul bila flag menyala.
-- `.env` server tetap `INNER_CIRCLE_AKTIF=false` sampai rilis (lihat _Deploy dan rilis_). Lokal dan preview boleh `true`.
+- `.env` server tetap `INNER_CIRCLE_AKTIF=false` sampai rilis (lihat _Panduan rilis ke produksi_). Lokal dan preview boleh `true`.
 
 ### 4.2 Tampilan terpisah dari tema situs
 
@@ -615,7 +694,7 @@ Yang tidak bisa diperiksa tanpa perangkat nyata, jadi lakukan sendiri sebelum ri
 - Tampilan layar 375 px untuk semua layar anggota, dock bawah tidak menutupi tombol terakhir, dan teaser di home.
 - Kunci klik ganda klaim dan suka di MySQL (tes otomatis memakai SQLite).
 
-Rilis: ikuti checklist di bagian _Deploy dan rilis_ (dekat awal README).
+Rilis: ikuti checklist di bagian _Panduan rilis ke produksi_ (dekat awal README).
 
 ## 6. Skema database (dipakai mulai Fase 4)
 

@@ -33,5 +33,9 @@ return Application::configure(basePath: dirname(__DIR__))
         );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        // Kolom kata sandi form Inner Circle bernama `sandi` (bukan `password`), jadi harus didaftarkan di sini; kalau tidak,
+        // isinya ikut tersimpan di sesi sebagai "old input" saat validasi gagal.
+        $exceptions->dontFlash(['sandi', 'sandi_confirmation']);
+
         //
     })->create();

@@ -35,7 +35,7 @@ class SeoController extends Controller
     }
 
     /**
-     * sitemap.xml — cuma 2 halaman publik (home & profile), jadi digenerate
+     * sitemap.xml — halaman publik (home, profile, privasi), jadi digenerate
      * langsung tanpa perlu package tambahan. lastmod diambil dari data yang
      * paling baru diubah di masing-masing halaman, biar search engine tau
      * halaman mana yang paling sering update.
@@ -71,6 +71,11 @@ class SeoController extends Controller
                 'loc' => url('/profile'),
                 'lastmod' => $profileLastmod ? \Illuminate\Support\Carbon::parse($profileLastmod)->toAtomString() : now()->toAtomString(),
                 'priority' => '0.8',
+            ],
+            [
+                'loc' => url('/privasi'),
+                'lastmod' => \Illuminate\Support\Carbon::parse(config('site.privasi_diperbarui'))->toAtomString(),
+                'priority' => '0.3',
             ],
         ];
 

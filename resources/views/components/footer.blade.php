@@ -98,7 +98,11 @@
 
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-6 border-t border-white/10">
         <p class="text-white/50 text-sm">Copyright &copy; {{ date('Y') }} wahsudahmonday. All rights reserved.</p>
-        <a href="{{ route('profile') }}" class="text-sm text-white/60 hover:text-white transition-colors">Profil
-            lengkap →</a>
+        <nav aria-label="Tautan footer" class="flex flex-wrap gap-x-5 gap-y-2">
+            <a href="{{ route('privasi') }}" class="text-sm text-white/60 hover:text-white transition-colors">Kebijakan
+                Privasi</a>
+            <a href="{{ route('profile') }}" class="text-sm text-white/60 hover:text-white transition-colors">Profil
+                lengkap →</a>
+        </nav>
     </div>
 </footer>

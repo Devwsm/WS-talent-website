@@ -97,4 +97,59 @@
                 untuk mengajukan tahapan yang sudah terbuka.</p>
         @endforelse
     </div>
+
+    @php
+        $punyaSandi = $member->password !== null;
+        $klaimMenunggu = app(\App\Services\InnerCircle\HapusAkunService::class)->adaKlaimMenunggu($member);
+    @endphp
+
+    <h2 class="ic-judul-bagian">Akun dan privasi</h2>
+    <div class="ic-panel ic-akun">
+        <p class="ic-bantuan">Datamu hanya dipakai untuk Inner Circle.
+            <a class="ic-tautan" href="{{ route('privasi') }}" target="_blank" rel="noopener">Baca Kebijakan Privasi</a>.
+        </p>
+        @error('akun')
+            <p class="ic-galat ic-galat--blok" role="alert">{{ $message }}</p>
+        @enderror
+        <button type="button" class="ic-tombol ic-tombol--bahaya" data-ic-modal-buka="modal-hapus-akun">Hapus
+            akunku</button>
+    </div>
+
+    <x-inner-circle.modal id="modal-hapus-akun" judul="Hapus akunmu?" eyebrow="Tidak bisa dibatalkan" :terbuka="$errors->hasAny(['konfirmasi', 'sandi'])">
+        @if ($klaimMenunggu)
+            <p class="ic-bantuan">Kamu masih punya pengajuan hadiah yang belum selesai. Akun bisa dihapus setelah
+                pengajuannya selesai atau ditolak, supaya hadiahmu tidak hilang di tengah proses.</p>
+            <div class="ic-aksi-form">
+                <button type="button" class="ic-tombol ic-tombol--terang" data-ic-modal-tutup>Mengerti</button>
+            </div>
+        @else
+            <form method="POST" action="{{ route('ic.akun.hapus') }}" data-ic-sekali novalidate>
+                @csrf
+                @method('DELETE')
+                <p class="ic-bantuan">Yang ikut terhapus permanen: akun dan foto profilmu, riwayat check-in dan stempel,
+                    pengajuan hadiah, serta kenangan beserta fotonya dan tanda suka.</p>
+
+                @if ($punyaSandi)
+                    <label class="ic-label" for="hapus-sandi">Kata sandi saat ini</label>
+                    <input class="ic-input" type="password" id="hapus-sandi" name="sandi" autocomplete="current-password"
+                        required @error('sandi') aria-invalid="true" @enderror>
+                    @error('sandi')
+                        <p class="ic-galat" role="alert">{{ $message }}</p>
+                    @enderror
+                @endif
+
+                <label class="ic-label" for="hapus-konfirmasi">Ketik <b>HAPUS</b> untuk melanjutkan</label>
+                <input class="ic-input" type="text" id="hapus-konfirmasi" name="konfirmasi" autocomplete="off"
+                    autocapitalize="characters" required @error('konfirmasi') aria-invalid="true" @enderror>
+                @error('konfirmasi')
+                    <p class="ic-galat" role="alert">{{ $message }}</p>
+                @enderror
+
+                <div class="ic-aksi-form">
+                    <button type="button" class="ic-tombol ic-tombol--terang" data-ic-modal-tutup>Batal</button>
+                    <button type="submit" class="ic-tombol ic-tombol--bahaya-penuh">Hapus akun permanen</button>
+                </div>
+            </form>
+        @endif
+    </x-inner-circle.modal>
 @endsection

@@ -37,4 +37,6 @@
     </form>
 
     <p class="ic-auth__alih">Belum punya akun? <a href="{{ route('ic.daftar') }}">Daftar sekarang</a></p>
+    <p class="ic-bantuan ic-auth__privasi">Dengan masuk, kamu menyetujui <a class="ic-tautan" href="{{ route('privasi') }}"
+            target="_blank" rel="noopener">Kebijakan Privasi</a> kami.</p>
 @endsection
