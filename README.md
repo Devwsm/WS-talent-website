@@ -48,15 +48,16 @@ php artisan serve                   # membuka situs di http://127.0.0.1:8000
 - Lokal: `.env.example`. Server: `.env.production.example` (debug mati, cookie sesi aman, log harian, kredensial kosong).
 - Variabel yang spesifik project:
 
-| Variabel                                                                                       | Fungsi                                                                                     |
-| ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `INNER_CIRCLE_AKTIF`                                                                           | Menyalakan seluruh fitur Inner Circle (default `false`)                                    |
-| `INNER_CIRCLE_GOOGLE_AKTIF`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI` | Login dengan Google (Fase 8). Tombol muncul hanya bila flag `true` dan ID + rahasia terisi |
-| `KONTAK_PRIVASI_EMAIL`                                                                         | Email kontak yang tampil di halaman `/privasi` (kosong = mengarah ke Profil)               |
-| `IC_SEED_CONTOH`                                                                               | Mengisi jadwal acara contoh saat `db:seed`. Hanya lokal/preview                            |
-| `ADMIN_USERNAME`, `ADMIN_PASSWORD`                                                             | Akun admin pertama untuk seeder (sandi min. 12 karakter). Wajib di produksi                |
-| `TRUSTED_PROXIES`                                                                              | Isi bila di belakang proxy/CDN (mis. Cloudflare); kosong = tidak ada proxy                 |
-| `MAVNUS_URL`                                                                                   | Alamat toko merchandise (default `https://mavnus.com`)                                     |
+| Variabel                                                                                                      | Fungsi                                                                                                      |
+| ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `INNER_CIRCLE_AKTIF`                                                                                          | Menyalakan seluruh fitur Inner Circle (default `false`)                                                     |
+| `INNER_CIRCLE_GOOGLE_AKTIF`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`                | Login dengan Google (Fase 8). Tombol muncul hanya bila flag `true` dan ID + rahasia terisi                  |
+| `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_SCHEME`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM_ADDRESS` | Email lewat SMTP Gmail (lupa kata sandi, notifikasi). Sandi = Sandi Aplikasi Google; `log` = tidak terkirim |
+| `KONTAK_PRIVASI_EMAIL`                                                                                        | Email kontak yang tampil di halaman `/privasi` (kosong = mengarah ke Profil)                                |
+| `IC_SEED_CONTOH`                                                                                              | Mengisi jadwal acara contoh saat `db:seed`. Hanya lokal/preview                                             |
+| `ADMIN_USERNAME`, `ADMIN_PASSWORD`                                                                            | Akun admin pertama untuk seeder (sandi min. 12 karakter). Wajib di produksi                                 |
+| `TRUSTED_PROXIES`                                                                                             | Isi bila di belakang proxy/CDN (mis. Cloudflare); kosong = tidak ada proxy                                  |
+| `MAVNUS_URL`                                                                                                  | Alamat toko merchandise (default `https://mavnus.com`)                                                      |
 
 - `.env` tidak boleh masuk git dan tidak boleh ikut dikirim dalam zip. `APP_DEBUG=true` di server membocorkan isi `.env` lewat halaman galat.
 
@@ -154,6 +155,7 @@ Panduan kerja untuk memasang situs (dengan Inner Circle) ke hosting cPanel **tan
 | `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`       | Dari cPanel **MySQL Databases** (nama biasanya berawalan nama akun) |
 | `SESSION_SECURE_COOKIE`, `SESSION_ENCRYPT`        | `true` (hanya bila HTTPS sudah aktif)                               |
 | `KONTAK_PRIVASI_EMAIL`                            | Email yang dipantau, tampil di `/privasi`                           |
+| `MAIL_*`                                          | SMTP Gmail, lihat bagian [Email](#email) (uji lewat tab Email)      |
 | `INNER_CIRCLE_AKTIF`, `INNER_CIRCLE_GOOGLE_AKTIF` | `false` sampai langkah 7                                            |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`        | Kosong sampai langkah 6                                             |
 | `ADMIN_USERNAME`, `ADMIN_PASSWORD`                | Hanya untuk seeder; kosongkan sandinya setelah akun admin ada       |
@@ -796,9 +798,40 @@ Aturan agar tidak terulang: **`APP_KEY` tiap server dibuat sekali lalu jangan di
 - Semua email memakai satu format (`resources/views/emails/inner-circle/pesan.blade.php`): atur ulang sandi, akun Google,
   selamat datang (anggota baru lewat Google), dan status hadiah berubah.
 - Dashboard, tab **Email**: pratinjau tiap jenis dan tombol **Kirim email tes**.
-- Isi `MAIL_*` di `.env` server (contoh di `.env.production.example`). Selama `MAIL_MAILER=log` email tidak terkirim.
+- Email dikirim lewat **SMTP Gmail** (`smtp.gmail.com`). Selama `MAIL_MAILER=log` email tidak terkirim.
 - Email tidak memakai antrean (hosting tanpa worker): dikirim langsung setelah respons ke browser.
-- Atur SPF dan DKIM di cPanel (_Email Deliverability_) agar email tidak masuk spam.
+
+**Catatan:** SMTP Gmail masuk dengan **Sandi Aplikasi**, bukan OAuth. Client OAuth Google yang dipakai login anggota
+(`GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`) tetap terpisah. Kirim lewat OAuth butuh scope Gmail yang dibatasi Google
+(perlu verifikasi) dan token yang harus diperbarui, jadi sengaja tidak dipakai.
+
+**Setup (sekali):**
+
+1. Pilih akun Google pengirim (mis. akun IT WSM). Buka <https://myaccount.google.com/security>, aktifkan **Verifikasi 2 Langkah**.
+2. Buka <https://myaccount.google.com/apppasswords>, beri nama (mis. `WS Inner Circle`), klik **Buat**. Salin 16 huruf yang tampil (hanya tampil sekali). Bila menu tidak ada: akun Workspace dibatasi admin, atau Verifikasi 2 Langkah belum aktif.
+3. Isi `.env` server:
+
+    ```
+    MAIL_MAILER=smtp
+    MAIL_SCHEME=smtps
+    MAIL_HOST=smtp.gmail.com
+    MAIL_PORT=465
+    MAIL_USERNAME=alamat-gmail-pengirim@gmail.com
+    MAIL_PASSWORD=sandiaplikasi16huruf
+    MAIL_FROM_ADDRESS=alamat-gmail-pengirim@gmail.com
+    MAIL_FROM_NAME="WS Inner Circle"
+    ```
+
+    Tulis Sandi Aplikasi **tanpa spasi** (atau beri tanda kutip). Bila port 465 gagal, coba `MAIL_PORT=587` dan `MAIL_SCHEME=smtp`.
+
+4. Tanpa terminal, hapus `bootstrap/cache/config.php` bila ada, lalu kirim **Email tes** dari dashboard, tab **Email**.
+
+**Batasan:**
+
+- Gmail menimpa alamat pengirim menjadi akun yang masuk. `MAIL_FROM_ADDRESS` harus sama dengan `MAIL_USERNAME`, atau alamat lain yang sudah didaftarkan di Gmail, **Setelan > Akun > Kirim email sebagai**.
+- Kuota kirim: sekitar 500 penerima per hari untuk Gmail biasa, 2.000 untuk Google Workspace. Cukup untuk lupa sandi dan notifikasi, tidak untuk surat massal.
+- Sebagian hosting bersama memblokir sambungan keluar ke port 465/587. Bila email tes gagal dengan galat sambungan (`Connection could not be established`), minta Rumahweb membuka sambungan keluar ke `smtp.gmail.com`.
+- SPF/DKIM di cPanel (_Email Deliverability_) tidak berlaku untuk email lewat Gmail; Google menandatanganinya sendiri.
 
 ### Audit
 
