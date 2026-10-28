@@ -15,6 +15,7 @@ use App\Support\HtmlSanitizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class profileController extends Controller
 {
@@ -167,26 +168,28 @@ class profileController extends Controller
             'judul_singkat' => 'required',
             'nama' => 'required',
             'tagline' => 'required',
-            'foto' => 'nullable|image|mimes:jpg,jpeg,png',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ], [
             'judul_singkat.required' => 'Judul singkat harus diisi.',
             'nama.required' => 'Nama harus diisi.',
             'tagline.required' => 'Tagline harus diisi.',
             'foto.image' => 'File harus berupa gambar.',
+            'foto.max' => 'Foto Hero tidak boleh lebih dari 2MB.',
         ]);
 
         $data = profile_hero::first() ?? new profile_hero();
 
         if ($request->hasFile('foto')) {
-            // Hapus foto lama dari storage kalau ada
-            if ($data->foto && Storage::disk('public')->exists('profile-hero/' . $data->foto)) {
-                Storage::disk('public')->delete('profile-hero/' . $data->foto);
-            }
-
+            // Konversi dan simpan foto baru DULU: kalau gagal (mis. resolusi terlalu besar), foto lama tetap utuh.
             $file     = $request->file('foto');
             $filename = now()->timestamp . '_' . Str::uuid() . '.webp';
             $webpData = $this->convertToWebP($file->getRealPath(), 82);
             Storage::disk('public')->put('profile-hero/' . $filename, $webpData);
+
+            // Baru setelah itu foto lama dihapus dari storage kalau ada
+            if ($data->foto && Storage::disk('public')->exists('profile-hero/' . $data->foto)) {
+                Storage::disk('public')->delete('profile-hero/' . $data->foto);
+            }
 
             $data->foto = $filename; // hanya nama file
         }
@@ -479,12 +482,28 @@ class profileController extends Controller
 
 
     /**
+     * Batas jumlah piksel (lebar x tinggi) gambar yang mau didecode. Berkas kecil di disk bisa mengembang jadi
+     * ratusan MB di memori (bom dekompresi) dan menjatuhkan request dengan error 500 / kehabisan memori.
+     * 16 MP ~ 4000x4000, decode-nya sekitar 64 MB sehingga masih aman di hosting dengan memory_limit 128 MB.
+     */
+    private const MAKS_PIKSEL = 16_000_000;
+
+    /**
      * Convert gambar ke WebP. Sama persis sama helper di dashboardController —
      * sengaja di-duplicate (bukan di-extract ke trait) biar konsisten sama
      * pola project ini (tiap controller berdiri sendiri, lihat statistik/highlight).
      */
     private function convertToWebP(string $sourcePath, int $quality = 82): string
     {
+        // Periksa ukuran SEBELUM didecode. Pelanggaran jadi pesan validasi (bukan error 500).
+        $info = @getimagesize($sourcePath);
+        if ($info === false || $info[0] < 1 || $info[1] < 1) {
+            throw ValidationException::withMessages(['gambar' => 'Berkas ini bukan gambar yang valid. Pilih gambar JPG atau PNG.']);
+        }
+        if ($info[0] * $info[1] > self::MAKS_PIKSEL) {
+            throw ValidationException::withMessages(['gambar' => 'Resolusi gambar terlalu besar (maksimal 16 megapiksel, misalnya 4000x4000 piksel). Kecilkan gambar lalu unggah ulang.']);
+        }
+
         $mime = mime_content_type($sourcePath);
 
         $image = match ($mime) {
@@ -492,6 +511,10 @@ class profileController extends Controller
             'image/png'  => imagecreatefrompng($sourcePath),
             default      => throw new \RuntimeException("Format tidak didukung: {$mime}"),
         };
+
+        if ($image === false) {
+            throw ValidationException::withMessages(['gambar' => 'Gambar tidak bisa dibaca. Coba simpan ulang gambarnya lalu unggah lagi.']);
+        }
 
         if ($mime === 'image/png') {
             imagepalettetotruecolor($image);

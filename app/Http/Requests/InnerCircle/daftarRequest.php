@@ -24,7 +24,8 @@ class daftarRequest extends FormRequest
         return [
             'nama' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'max:150', 'unique:members,email'],
-            'sandi' => ['required', 'string', 'min:8', 'max:100', 'confirmed'],
+            // Maks 72: bcrypt hanya membaca 72 byte pertama, sisanya diam-diam diabaikan.
+            'sandi' => ['required', 'string', 'min:8', 'max:72', 'confirmed'],
         ];
     }
 

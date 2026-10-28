@@ -63,16 +63,23 @@ class AppServiceProvider extends ServiceProvider
 
         // Lupa kata sandi: per EMAIL (cegah membanjiri kotak masuk orang lain) dan per IP. Hitungannya sama untuk email
         // terdaftar maupun tidak, jadi pembatasan tidak membocorkan apakah sebuah email punya akun.
+        // Ditambah batas HARIAN GLOBAL (semua pengunjung digabung): penyerang yang berganti-ganti email dan IP tidak
+        // lagi bisa menghabiskan kuota kirim email hosting atau merusak reputasi pengirim. Diletakkan paling akhir
+        // supaya permintaan yang sudah ditolak batas per email/IP tidak ikut menghabiskan kuota global.
         RateLimiter::for('ic-lupa', function (Request $request) {
             $email = mb_strtolower(trim((string) $request->input('email')));
             $galat = fn() => back()
                 ->withErrors(['email' => 'Terlalu banyak permintaan. Tunggu beberapa saat lalu coba lagi.'])
+                ->onlyInput('email');
+            $galatHarian = fn() => back()
+                ->withErrors(['email' => 'Layanan atur ulang kata sandi sedang padat hari ini. Coba lagi besok, atau hubungi admin.'])
                 ->onlyInput('email');
 
             return [
                 Limit::perMinute(3)->by('lupa:' . sha1($email . '|' . $request->ip()))->response($galat),
                 Limit::perHour(5)->by('lupa-email:' . sha1($email))->response($galat),
                 Limit::perMinute(30)->by('lupa-ip:' . $request->ip())->response($galat),
+                Limit::perDay(100)->by('lupa-global')->response($galatHarian),
             ];
         });
 

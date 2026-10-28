@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 
@@ -77,7 +78,7 @@ class dashboardController extends Controller
         $request->validate([
             'banner_name' => 'required',
             'link_banner' => 'required|url:http,https|max:2048',
-            'banner_cover' => 'required|image|mimes:jpg,jpeg,png',
+            'banner_cover' => 'required|image|mimes:jpg,jpeg,png|max:2048',
         ], [
             'banner_name.required' => 'Judul Banner harus diisi.',
             'link_banner.required' => 'Link Banner harus diisi.',
@@ -85,6 +86,7 @@ class dashboardController extends Controller
             'link_banner.max' => 'Link Banner terlalu panjang (maksimal 2048 karakter).',
             'banner_cover.required' => 'Gambar Banner harus diisi.',
             'banner_cover.image' => 'File harus berupa gambar.',
+            'banner_cover.max' => 'Gambar Banner tidak boleh lebih dari 2MB.',
         ]);
 
         $file     = $request->file('banner_cover');
@@ -109,27 +111,28 @@ class dashboardController extends Controller
         $request->validate([
             'banner_name' => 'required',
             'link_banner' => 'required|url:http,https|max:2048',
-            'banner_cover' => 'nullable|image|mimes:jpg,jpeg,png',
+            'banner_cover' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ], [
             'banner_name.required' => 'Judul Banner harus diisi.',
             'link_banner.required' => 'Link Banner harus diisi.',
             'link_banner.url' => 'Link Banner harus berupa alamat lengkap yang diawali http:// atau https://.',
             'link_banner.max' => 'Link Banner terlalu panjang (maksimal 2048 karakter).',
             'banner_cover.image' => 'File harus berupa gambar.',
+            'banner_cover.max' => 'Gambar Banner tidak boleh lebih dari 2MB.',
         ]);
 
         $data = banner::findOrFail($id);
         if ($request->hasFile('banner_cover')) {
-            // Hapus file lama dari storage
-            if ($data->banner_cover && Storage::disk('public')->exists('banner/' . $data->banner_cover)) {
-                Storage::disk('public')->delete('banner/' . $data->banner_cover);
-            }
-
-            // Konversi dan simpan file baru
+            // Konversi dan simpan file baru DULU: kalau gagal (mis. resolusi terlalu besar), file lama tetap utuh.
             $file     = $request->file('banner_cover');
             $filename = now()->timestamp . '_' . Str::uuid() . '.webp';
             $webpData = $this->convertToWebP($file->getRealPath(), 82);
             Storage::disk('public')->put('banner/' . $filename, $webpData);
+
+            // Baru setelah itu file lama dihapus dari storage
+            if ($data->banner_cover && Storage::disk('public')->exists('banner/' . $data->banner_cover)) {
+                Storage::disk('public')->delete('banner/' . $data->banner_cover);
+            }
 
             $data->banner_cover = $filename;
         }
@@ -170,7 +173,7 @@ class dashboardController extends Controller
     public function tambahHeaders(Request $request)
     {
         $request->validate([
-            'header_color' => 'required',
+            'header_color' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'header_title' => 'required',
             'header_img' => 'required|image|mimes:jpg,jpeg,png|max:1024',
             'header_name' => 'required',
@@ -179,6 +182,7 @@ class dashboardController extends Controller
             'header_background'  => 'required|file|mimes:jpg,jpeg,png,mp4,mov,avi,mkv,webm',
         ], [
             'header_color.required' => 'Warna Header harus diisi.',
+            'header_color.regex' => 'Warna Header tidak valid. Pilih warna lewat pemilih warna.',
             'header_title.required' => 'Judul Header harus diisi.',
             'header_img.required' => 'Gambar Header harus diisi.',
             'header_img.image' => 'File harus berupa gambar.',
@@ -208,37 +212,51 @@ class dashboardController extends Controller
             return back()->withErrors(['header_background' => 'Video Cover Header tidak boleh lebih dari 25MB.'])->withInput();
         }
 
-        $file     = $request->file('header_img');
-        $filename = now()->timestamp . '_' . Str::uuid() . '.webp';
-        // Konversi ke WebP → simpan ke storage/app/public/albums/
-        $webpData = $this->convertToWebP($file->getRealPath(), 82);
-        Storage::disk('public')->put('header/img/' . $filename, $webpData);
-
-        // === header_background (gambar ATAU video) ===
-        if ($isVideo) {
-            $bgFilename = now()->timestamp . '_' . Str::uuid() . '.mp4';
-            $bgType     = 'video';
-            $this->convertVideoToMp4(
-                $bgFile->getRealPath(),
-                Storage::disk('public')->path('header/background/' . $bgFilename)
-            );
-        } else {
-            $bgFilename = now()->timestamp . '_' . Str::uuid() . '.webp';
-            $bgType     = 'image';
-            $webpData   = $this->convertToWebP($bgFile->getRealPath(), 82);
-            Storage::disk('public')->put('header/background/' . $bgFilename, $webpData);
+        // Video butuh ffmpeg. Dicek di awal, sebelum ada berkas yang tersimpan, supaya gagalnya rapi.
+        if ($isVideo && !$this->ffmpegTersedia()) {
+            return back()->withErrors(['header_background' => self::PESAN_TANPA_FFMPEG])->withInput();
         }
 
-        // simpan data ( simple )
-        $data = new header();
-        $data->header_color = $request->header_color;
-        $data->header_title = $request->header_title;
-        $data->header_img = $filename; // hanya nama file
-        $data->header_name = $request->header_name;
-        $data->header_description = $request->header_description;
-        $data->link_header = $request->link_header;
-        $data->header_background = $bgFilename; // hanya nama file
-        $data->save();
+        // Setiap berkas yang sudah ditulis di request ini dicatat; kalau ada langkah yang gagal semuanya
+        // dibersihkan, jadi tidak ada file yatim di storage.
+        $tersimpan = [];
+
+        try {
+            $file     = $request->file('header_img');
+            $filename = now()->timestamp . '_' . Str::uuid() . '.webp';
+            // Konversi ke WebP → simpan ke storage/app/public/header/img/
+            $webpData = $this->convertToWebP($file->getRealPath(), 82);
+            Storage::disk('public')->put('header/img/' . $filename, $webpData);
+            $tersimpan[] = 'header/img/' . $filename;
+
+            // === header_background (gambar ATAU video) ===
+            if ($isVideo) {
+                $bgFilename  = now()->timestamp . '_' . Str::uuid() . '.mp4';
+                $tersimpan[] = 'header/background/' . $bgFilename; // dicatat sebelum konversi: ffmpeg bisa meninggalkan file separuh jadi
+                $this->convertVideoToMp4(
+                    $bgFile->getRealPath(),
+                    Storage::disk('public')->path('header/background/' . $bgFilename)
+                );
+            } else {
+                $bgFilename = now()->timestamp . '_' . Str::uuid() . '.webp';
+                $webpData   = $this->convertToWebP($bgFile->getRealPath(), 82);
+                Storage::disk('public')->put('header/background/' . $bgFilename, $webpData);
+                $tersimpan[] = 'header/background/' . $bgFilename;
+            }
+
+            // simpan data ( simple )
+            $data = new header();
+            $data->header_color = $request->header_color;
+            $data->header_title = $request->header_title;
+            $data->header_img = $filename; // hanya nama file
+            $data->header_name = $request->header_name;
+            $data->header_description = $request->header_description;
+            $data->link_header = $request->link_header;
+            $data->header_background = $bgFilename; // hanya nama file
+            $data->save();
+        } catch (\Throwable $e) {
+            return $this->gagalProsesHeader($e, $tersimpan);
+        }
 
         return redirect()->route('headers')->with('success', 'inputan berhasil ditambahkan');
     }
@@ -248,7 +266,7 @@ class dashboardController extends Controller
         $data = header::findOrFail($id_header);
 
         $request->validate([
-            'header_color'       => 'required',
+            'header_color'       => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'header_title'       => 'required',
             'header_img'         => 'nullable|image|mimes:jpg,jpeg,png|max:1024',
             'header_name'        => 'required',
@@ -257,6 +275,7 @@ class dashboardController extends Controller
             'header_background'  => 'nullable|file|mimes:jpg,jpeg,png,mp4,mov,avi,mkv,webm',
         ], [
             'header_color.required' => 'Warna Header harus diisi.',
+            'header_color.regex' => 'Warna Header tidak valid. Pilih warna lewat pemilih warna.',
             'header_title.required' => 'Judul Header harus diisi.',
             'header_img.image'      => 'File harus berupa gambar.',
             'header_img.max'        => 'Cover Header tidak boleh lebih dari 1MB.',
@@ -270,69 +289,90 @@ class dashboardController extends Controller
             'header_background.mimes' => 'File harus berupa gambar (jpg, jpeg, png) atau video (mp4, mov, avi, mkv, webm).',
         ]);
 
-        // === update header_img (kalau ada file baru) ===
-        if ($request->hasFile('header_img')) {
-            $file = $request->file('header_img');
+        $imgBaru = $request->file('header_img');
+        $bgBaru  = $request->file('header_background');
+        $isVideo = false;
 
-            if ($file->getSize() > 1 * 1024 * 1024) {
-                return back()->withErrors(['header_img' => 'Gambar Header tidak boleh lebih dari 1MB.'])->withInput();
-            }
-
-            // hapus file lama
-            if ($data->header_img && Storage::disk('public')->exists('header/img/' . $data->header_img)) {
-                Storage::disk('public')->delete('header/img/' . $data->header_img);
-            }
-
-            $filename = now()->timestamp . '_' . Str::uuid() . '.webp';
-            $webpData = $this->convertToWebP($file->getRealPath(), 82);
-            Storage::disk('public')->put('header/img/' . $filename, $webpData);
-
-            $data->header_img = $filename;
+        // Semua pemeriksaan dilakukan DULU, sebelum ada berkas yang ditulis atau dihapus.
+        if ($imgBaru && $imgBaru->getSize() > 1 * 1024 * 1024) {
+            return back()->withErrors(['header_img' => 'Gambar Header tidak boleh lebih dari 1MB.'])->withInput();
         }
 
-        // === update header_background (kalau ada file baru, gambar ATAU video) ===
-        if ($request->hasFile('header_background')) {
-            $bgFile  = $request->file('header_background');
-            $bgMime  = $bgFile->getMimeType();
-            $isVideo = str_starts_with($bgMime, 'video/');
+        if ($bgBaru) {
+            $isVideo = str_starts_with($bgBaru->getMimeType(), 'video/');
 
             $maxImageSize = 1 * 1024 * 1024;   // 1MB
             $maxVideoSize = 25 * 1024 * 1024;  // 25MB
 
-            if (!$isVideo && $bgFile->getSize() > $maxImageSize) {
+            if (!$isVideo && $bgBaru->getSize() > $maxImageSize) {
                 return back()->withErrors(['header_background' => 'Gambar Cover Header tidak boleh lebih dari 1MB.'])->withInput();
             }
-            if ($isVideo && $bgFile->getSize() > $maxVideoSize) {
+            if ($isVideo && $bgBaru->getSize() > $maxVideoSize) {
                 return back()->withErrors(['header_background' => 'Video Cover Header tidak boleh lebih dari 25MB.'])->withInput();
             }
-
-            // hapus file lama
-            if ($data->header_background && Storage::disk('public')->exists('header/background/' . $data->header_background)) {
-                Storage::disk('public')->delete('header/background/' . $data->header_background);
+            if ($isVideo && !$this->ffmpegTersedia()) {
+                return back()->withErrors(['header_background' => self::PESAN_TANPA_FFMPEG])->withInput();
             }
-
-            if ($isVideo) {
-                $bgFilename = now()->timestamp . '_' . Str::uuid() . '.mp4';
-                $this->convertVideoToMp4(
-                    $bgFile->getRealPath(),
-                    Storage::disk('public')->path('header/background/' . $bgFilename)
-                );
-            } else {
-                $bgFilename = now()->timestamp . '_' . Str::uuid() . '.webp';
-                $webpData   = $this->convertToWebP($bgFile->getRealPath(), 82);
-                Storage::disk('public')->put('header/background/' . $bgFilename, $webpData);
-            }
-
-            $data->header_background = $bgFilename;
         }
 
-        // update field text (selalu diupdate)
-        $data->header_color       = $request->header_color;
-        $data->header_title       = $request->header_title;
-        $data->header_name        = $request->header_name;
-        $data->header_description = $request->header_description;
-        $data->link_header        = $request->link_header;
-        $data->save();
+        // $tersimpan = berkas baru yang sudah ditulis (dibersihkan kalau ada yang gagal),
+        // $hapusLama = berkas lama (baru dihapus setelah data berhasil disimpan).
+        $tersimpan = [];
+        $hapusLama = [];
+
+        try {
+            // === update header_img (kalau ada file baru) ===
+            if ($imgBaru) {
+                $filename = now()->timestamp . '_' . Str::uuid() . '.webp';
+                $webpData = $this->convertToWebP($imgBaru->getRealPath(), 82);
+                Storage::disk('public')->put('header/img/' . $filename, $webpData);
+                $tersimpan[] = 'header/img/' . $filename;
+
+                if ($data->header_img) {
+                    $hapusLama[] = 'header/img/' . $data->header_img;
+                }
+                $data->header_img = $filename;
+            }
+
+            // === update header_background (kalau ada file baru, gambar ATAU video) ===
+            if ($bgBaru) {
+                if ($isVideo) {
+                    $bgFilename  = now()->timestamp . '_' . Str::uuid() . '.mp4';
+                    $tersimpan[] = 'header/background/' . $bgFilename; // dicatat sebelum konversi: ffmpeg bisa meninggalkan file separuh jadi
+                    $this->convertVideoToMp4(
+                        $bgBaru->getRealPath(),
+                        Storage::disk('public')->path('header/background/' . $bgFilename)
+                    );
+                } else {
+                    $bgFilename = now()->timestamp . '_' . Str::uuid() . '.webp';
+                    $webpData   = $this->convertToWebP($bgBaru->getRealPath(), 82);
+                    Storage::disk('public')->put('header/background/' . $bgFilename, $webpData);
+                    $tersimpan[] = 'header/background/' . $bgFilename;
+                }
+
+                if ($data->header_background) {
+                    $hapusLama[] = 'header/background/' . $data->header_background;
+                }
+                $data->header_background = $bgFilename;
+            }
+
+            // update field text (selalu diupdate)
+            $data->header_color       = $request->header_color;
+            $data->header_title       = $request->header_title;
+            $data->header_name        = $request->header_name;
+            $data->header_description = $request->header_description;
+            $data->link_header        = $request->link_header;
+            $data->save();
+        } catch (\Throwable $e) {
+            return $this->gagalProsesHeader($e, $tersimpan);
+        }
+
+        // Data sudah tersimpan, sekarang aman membuang berkas lama.
+        foreach ($hapusLama as $path) {
+            if (Storage::disk('public')->exists($path)) {
+                Storage::disk('public')->delete($path);
+            }
+        }
 
         return redirect()->route('headers')->with('success', 'Data berhasil diupdate');
     }
@@ -421,16 +461,16 @@ class dashboardController extends Controller
 
         $data = albums::findOrFail($id);
         if ($request->hasFile('albums_cover')) {
-            // Hapus file lama dari storage
-            if ($data->albums_cover && Storage::disk('public')->exists('albums/' . $data->albums_cover)) {
-                Storage::disk('public')->delete('albums/' . $data->albums_cover);
-            }
-
-            // Konversi dan simpan file baru
+            // Konversi dan simpan file baru DULU: kalau gagal (mis. resolusi terlalu besar), file lama tetap utuh.
             $file     = $request->file('albums_cover');
             $filename = now()->timestamp . '_' . Str::uuid() . '.webp';
             $webpData = $this->convertToWebP($file->getRealPath(), 82);
             Storage::disk('public')->put('albums/' . $filename, $webpData);
+
+            // Baru setelah itu file lama dihapus dari storage
+            if ($data->albums_cover && Storage::disk('public')->exists('albums/' . $data->albums_cover)) {
+                Storage::disk('public')->delete('albums/' . $data->albums_cover);
+            }
 
             $data->albums_cover = $filename;
         }
@@ -537,16 +577,16 @@ class dashboardController extends Controller
 
         $data = news::findOrFail($id);
         if ($request->hasFile('news_cover')) {
-            // Hapus file lama dari storage
-            if ($data->news_cover && Storage::disk('public')->exists('news/' . $data->news_cover)) {
-                Storage::disk('public')->delete('news/' . $data->news_cover);
-            }
-
-            // Konversi dan simpan file baru
+            // Konversi dan simpan file baru DULU: kalau gagal (mis. resolusi terlalu besar), file lama tetap utuh.
             $file     = $request->file('news_cover');
             $filename = now()->timestamp . '_' . Str::uuid() . '.webp';
             $webpData = $this->convertToWebP($file->getRealPath(), 82);
             Storage::disk('public')->put('news/' . $filename, $webpData);
+
+            // Baru setelah itu file lama dihapus dari storage
+            if ($data->news_cover && Storage::disk('public')->exists('news/' . $data->news_cover)) {
+                Storage::disk('public')->delete('news/' . $data->news_cover);
+            }
 
             $data->news_cover = $filename;
         }
@@ -641,16 +681,16 @@ class dashboardController extends Controller
 
         $data = merchandise::findOrFail($id);
         if ($request->hasFile('merchandise_cover')) {
-            // Hapus file lama dari storage
-            if ($data->merchandise_cover && Storage::disk('public')->exists('merchandise/' . $data->merchandise_cover)) {
-                Storage::disk('public')->delete('merchandise/' . $data->merchandise_cover);
-            }
-
-            // Konversi dan simpan file baru
+            // Konversi dan simpan file baru DULU: kalau gagal (mis. resolusi terlalu besar), file lama tetap utuh.
             $file     = $request->file('merchandise_cover');
             $filename = now()->timestamp . '_' . Str::uuid() . '.webp';
             $webpData = $this->convertToWebP($file->getRealPath(), 82);
             Storage::disk('public')->put('merchandise/' . $filename, $webpData);
+
+            // Baru setelah itu file lama dihapus dari storage
+            if ($data->merchandise_cover && Storage::disk('public')->exists('merchandise/' . $data->merchandise_cover)) {
+                Storage::disk('public')->delete('merchandise/' . $data->merchandise_cover);
+            }
 
             $data->merchandise_cover = $filename;
         }
@@ -685,6 +725,13 @@ class dashboardController extends Controller
 
 
     /**
+     * Batas jumlah piksel (lebar x tinggi) gambar yang mau didecode. Berkas kecil di disk bisa mengembang jadi
+     * ratusan MB di memori (bom dekompresi) dan menjatuhkan request dengan error 500 / kehabisan memori.
+     * 16 MP ~ 4000x4000, decode-nya sekitar 64 MB sehingga masih aman di hosting dengan memory_limit 128 MB.
+     */
+    private const MAKS_PIKSEL = 16_000_000;
+
+    /**
      * Konversi gambar (JPG/PNG) ke WebP menggunakan PHP GD.
      * Tidak butuh library tambahan — GD sudah aktif by default di cPanel.
      *
@@ -694,6 +741,15 @@ class dashboardController extends Controller
      */
     private function convertToWebP(string $sourcePath, int $quality = 82): string
     {
+        // Periksa ukuran SEBELUM didecode. Pelanggaran jadi pesan validasi (bukan error 500).
+        $info = @getimagesize($sourcePath);
+        if ($info === false || $info[0] < 1 || $info[1] < 1) {
+            throw ValidationException::withMessages(['gambar' => 'Berkas ini bukan gambar yang valid. Pilih gambar JPG atau PNG.']);
+        }
+        if ($info[0] * $info[1] > self::MAKS_PIKSEL) {
+            throw ValidationException::withMessages(['gambar' => 'Resolusi gambar terlalu besar (maksimal 16 megapiksel, misalnya 4000x4000 piksel). Kecilkan gambar lalu unggah ulang.']);
+        }
+
         $mime = mime_content_type($sourcePath);
 
         $image = match ($mime) {
@@ -701,6 +757,10 @@ class dashboardController extends Controller
             'image/png'  => imagecreatefrompng($sourcePath),
             default      => throw new \RuntimeException("Format tidak didukung: {$mime}"),
         };
+
+        if ($image === false) {
+            throw ValidationException::withMessages(['gambar' => 'Gambar tidak bisa dibaca. Coba simpan ulang gambarnya lalu unggah lagi.']);
+        }
 
         if ($mime === 'image/png') {
             imagepalettetotruecolor($image);
@@ -716,6 +776,54 @@ class dashboardController extends Controller
 
         // Intelephense perlu return eksplisit di akhir — ini yang bikin warning hilang
         return $webpData !== false ? $webpData : '';
+    }
+
+    private const PESAN_TANPA_FFMPEG = 'Video belum bisa diproses di server ini karena ffmpeg tidak tersedia. Gunakan gambar (JPG/PNG) sebagai latar header, atau hubungi tim WSM.';
+
+    /** Apakah ffmpeg bisa dijalankan dari PHP di server ini (hosting bersama sering tidak menyediakannya). */
+    private function ffmpegTersedia(): bool
+    {
+        static $tersedia = null;
+
+        if ($tersedia === null) {
+            try {
+                $proses = new Process(['ffmpeg', '-version']);
+                $proses->setTimeout(10);
+                $proses->run();
+                $tersedia = $proses->isSuccessful();
+            } catch (\Throwable) {
+                // proc_open dimatikan, binary tidak ada, dsb.
+                $tersedia = false;
+            }
+        }
+
+        return $tersedia;
+    }
+
+    /**
+     * Pemrosesan berkas header gagal di tengah jalan: buang semua berkas baru yang sudah sempat ditulis
+     * (tidak ada file yatim), lalu kembali ke form dengan pesan yang jelas, bukan error 500.
+     * Pelanggaran validasi (mis. resolusi gambar) dilempar ulang supaya ditangani Laravel seperti biasa.
+     *
+     * @param  string[]  $tersimpan  path di disk 'public' milik berkas yang ditulis request ini
+     */
+    private function gagalProsesHeader(\Throwable $e, array $tersimpan): \Illuminate\Http\RedirectResponse
+    {
+        foreach ($tersimpan as $path) {
+            Storage::disk('public')->delete($path);
+        }
+
+        if ($e instanceof ValidationException) {
+            throw $e;
+        }
+
+        report($e);
+
+        $pesan = $e instanceof ProcessFailedException
+            ? 'Video gagal diproses. Pastikan file videonya tidak rusak, atau coba video lain.'
+            : 'Gagal memproses file. Coba lagi, atau gunakan file lain.';
+
+        return back()->withErrors(['header_background' => $pesan])->withInput();
     }
 
     /**

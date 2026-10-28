@@ -22,7 +22,7 @@ class aturUlangSandiRequest extends FormRequest
             'token' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'max:150'],
             // Aturan sama dengan pendaftaran (daftarRequest).
-            'sandi' => ['required', 'string', 'min:8', 'max:100', 'confirmed'],
+            'sandi' => ['required', 'string', 'min:8', 'max:72', 'confirmed'],
         ];
     }
 
