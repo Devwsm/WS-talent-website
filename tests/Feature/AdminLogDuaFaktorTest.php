@@ -13,6 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
 use ReflectionProperty;
 use RuntimeException;
 use Tests\TestCase;
@@ -146,7 +147,7 @@ class AdminLogDuaFaktorTest extends TestCase
 
     public function test_pencatat_tidak_pernah_melempar_galat_walau_database_rusak(): void
     {
-        \Schema::drop('log_errors');
+        Schema::drop('log_errors');
 
         app(LogErrorService::class)->catat(new RuntimeException('x'));
 
