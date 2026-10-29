@@ -15,7 +15,7 @@ class bannerSeeder extends Seeder
         banner::create([
             'banner_name'  => 'Map of Feelings',
             'link_banner'  => 'https://mapoffeelings.com/',
-            'banner_cover' => 'Banner-mof.jpeg',
+            'banner_cover' => 'Banner-mof.webp',
         ]);
     }
 }

@@ -16,22 +16,22 @@ class merchandiseSeeder extends Seeder
             [
                 'merchandise_name'  => 'Yalla Habibi Tee - Gold (Depan)',
                 'link_merchandise'  => 'https://whisnusantika.com/yalla',
-                'merchandise_cover' => 'Yalla-Front.png',
+                'merchandise_cover' => 'Yalla-Front.webp',
             ],
             [
                 'merchandise_name'  => 'Yalla Habibi Tee - Gold (Belakang)',
                 'link_merchandise'  => 'https://whisnusantika.com/yalla',
-                'merchandise_cover' => 'Yalla-Back.png',
+                'merchandise_cover' => 'Yalla-Back.webp',
             ],
             [
                 'merchandise_name'  => 'Yalla Habibi Tee - Merah (Depan)',
                 'link_merchandise'  => 'https://whisnusantika.com/habibi',
-                'merchandise_cover' => 'Habibi-Front.png',
+                'merchandise_cover' => 'Habibi-Front.webp',
             ],
             [
                 'merchandise_name'  => 'Yalla Habibi Tee - Merah (Belakang)',
                 'link_merchandise'  => 'https://whisnusantika.com/habibi',
-                'merchandise_cover' => 'Habibi-Back.png',
+                'merchandise_cover' => 'Habibi-Back.webp',
             ],
         ];
 

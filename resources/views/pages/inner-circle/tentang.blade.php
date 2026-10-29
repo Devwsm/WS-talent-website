@@ -1,12 +1,13 @@
 @extends('template.innerCirclePublikLayout')
 
 @section('title', 'WS Inner Circle, komunitas penggemar')
-@section('deskripsi', 'Komunitas penggemar resmi DJ Whisnu Santika. Datang ke acara, kumpulkan stempel lewat check-in
+@section('deskripsi',
+    'Komunitas penggemar resmi DJ Whisnu Santika. Datang ke acara, kumpulkan stempel lewat check-in
     QR, dan buka hadiah eksklusif di setiap tahap.')
 
     {{-- Isi di bawah ini draf: ubah teksnya sesuai kebutuhan. Daftar hadiah dan jadwal acara diambil otomatis dari dashboard. --}}
 @section('content')
-    <section class="ic-hero" aria-labelledby="judul-hero">
+    <section class="ic-hero ic-hero--publik" aria-labelledby="judul-hero">
         <p class="ic-eyebrow">Komunitas penggemar resmi</p>
         <h1 class="ic-judul" id="judul-hero">WS Inner Circle<span>.</span></h1>
         <p class="ic-deskripsi">Rumah bagi penggemar Whisnu Santika. Datang ke acaranya, kumpulkan stempel, dan buka
@@ -22,6 +23,8 @@
                 <a href="{{ route('ic.masuk') }}" class="ic-tombol ic-tombol--garis">Sudah punya akun? Masuk</a>
             @endif
         </div>
+        <span class="ic-hero__bintang" aria-hidden="true">✳</span>
+        <span class="ic-hero__cakram" aria-hidden="true"><span>WS</span></span>
     </section>
 
     <div class="ic-bagian-kepala">

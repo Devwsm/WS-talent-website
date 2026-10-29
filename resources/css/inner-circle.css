@@ -1910,11 +1910,47 @@ a.ic-event:hover {
 .ic-konten--publik {
     padding-bottom: 40px;
 }
-.ic-hero {
-    padding: 18px 0 6px;
+/* Hero halaman publik: kartu lilac yang sama dengan Beranda anggota (.ic-hero), tapi lebih lapang.
+   Dulu aturan di sini menimpa .ic-hero secara global (padding kiri/kanan jadi 0), sehingga teks menempel
+   di tepi kartu dan Beranda anggota ikut rusak. Sekarang dibatasi ke .ic-hero--publik. */
+.ic-hero--publik {
+    min-height: 0;
+    padding: clamp(30px, 6vw, 68px) clamp(22px, 5vw, 60px);
 }
-.ic-hero .ic-aksi-baris {
-    margin-top: 24px;
+.ic-hero--publik > :not(.ic-hero__bintang):not(.ic-hero__cakram) {
+    position: relative;
+    z-index: 1;
+    max-width: min(100%, 640px);
+}
+.ic-hero--publik .ic-judul {
+    font-size: clamp(44px, 9vw, 88px);
+    margin: 14px 0 16px;
+}
+.ic-hero--publik .ic-deskripsi {
+    max-width: 560px;
+    font-size: clamp(14px, 1.7vw, 17px);
+    line-height: 1.6;
+    color: #2b2352;
+}
+.ic-hero--publik .ic-aksi-baris {
+    margin-top: 28px;
+}
+.ic-hero--publik .ic-hero__bintang {
+    top: clamp(18px, 3vw, 34px);
+    right: clamp(20px, 4vw, 44px);
+    font-size: clamp(26px, 4vw, 40px);
+}
+.ic-hero--publik .ic-hero__cakram {
+    right: clamp(-40px, -3vw, -20px);
+    bottom: clamp(-40px, -3vw, -20px);
+    width: clamp(120px, 20vw, 230px);
+    height: clamp(120px, 20vw, 230px);
+    border-width: clamp(12px, 2vw, 22px);
+}
+.ic-hero--publik .ic-hero__cakram span {
+    width: 38%;
+    height: 38%;
+    font-size: clamp(16px, 2.4vw, 28px);
 }
 .ic-langkah {
     list-style: none;
@@ -2021,14 +2057,35 @@ a.ic-event:hover {
     text-decoration: underline;
 }
 
-@media (max-width: 780px) {
+@media (max-width: 1024px) {
     .ic-langkah {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
-@media (max-width: 480px) {
+@media (max-width: 520px) {
     .ic-langkah {
         grid-template-columns: 1fr;
+    }
+    /* Hero publik di HP: tombol selebar kartu supaya mudah ditekan, cakram dekoratif disembunyikan. */
+    .ic-hero--publik .ic-aksi-baris {
+        flex-direction: column;
+        align-self: stretch;
+    }
+    .ic-hero--publik .ic-aksi-baris .ic-tombol {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+    }
+    .ic-hero--publik .ic-hero__cakram {
+        display: none;
+    }
+    .ic-cta-akhir .ic-aksi-baris {
+        flex-direction: column;
+    }
+    .ic-cta-akhir .ic-aksi-baris .ic-tombol {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
     }
 }
 

@@ -16,7 +16,7 @@ class headerSeeder extends Seeder
             [
                 'header_color'       => '#191970',
                 'header_title'       => 'Aku Harus pergi',
-                'header_img'         => 'Whisnu-Santika_Logo-2025-2-White.png',
+                'header_img'         => 'Whisnu-Santika_Logo-2025-2-White.webp',
                 'header_name'        => 'Whisnu Santika (Official Lyrics Video)',
                 'header_description' => 'Whisnu Santika, Ari Lesmana',
                 'link_header'        => 'https://youtu.be/PqTRMsd8uRQ?si=nSkFJRWGTxL71F5V',
@@ -25,7 +25,7 @@ class headerSeeder extends Seeder
             [
                 'header_color'       => '#5E0006',
                 'header_title'       => 'New Release',
-                'header_img'         => 'Whisnu-Santika_Logo-2025-2-White.png',
+                'header_img'         => 'Whisnu-Santika_Logo-2025-2-White.webp',
                 'header_name'        => 'Whisnu Santika',
                 'header_description' => 'Pionir Indonesian Bounce',
                 'link_header'        => 'https://www.youtube.com/watch?v=aTXY-jlYXfo',
