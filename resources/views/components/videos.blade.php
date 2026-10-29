@@ -10,8 +10,7 @@
 
                 <div class="swiper-slide relative flex flex-col overflow-hidden">
                     @if ($isVideo)
-                        <video muted loop playsinline data-video="{{ $loop->iteration }}"
-                            preload="{{ $loop->first ? 'auto' : 'none' }}"
+                        <video muted loop playsinline data-video="{{ $loop->iteration }}" preload="none"
                             class="bg-video hero-bg absolute w-full h-full object-cover z-0 bg-black">
                         </video>
                     @else
@@ -101,8 +100,19 @@
             activeVideo.play().catch(() => {});
         }
 
+        // Video latar berukuran besar (belasan MB): mulai diunduh SETELAH halaman selesai dimuat, supaya tidak
+        // berebut bandwidth dengan gambar yang tampil pertama (LCP). Mode Hemat Data: video pertama tidak diputar.
         if (videos.length > 0) {
-            playVideo(1);
+            const hematData = navigator.connection && navigator.connection.saveData;
+            if (!hematData) {
+                if (document.readyState === "complete") {
+                    playVideo(1);
+                } else {
+                    window.addEventListener("load", () => playVideo(1), {
+                        once: true
+                    });
+                }
+            }
         }
 
         const swiper = videosEl.swiper;

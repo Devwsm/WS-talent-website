@@ -40,11 +40,8 @@
     <meta name="twitter:description" content="{{ $seoDescription }}">
     <meta name="twitter:image" content="{{ $seoImage }}">
 
-    {{-- Preconnect lebih awal supaya browser mulai konek ke Google Fonts
-            paralel dengan proses lain, bukan nunggu CSS ke-parse dulu --}}
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap">
+    {{-- Font Sora kini dihosting sendiri lewat resources/css/app.css (@fontsource-variable/sora),
+         jadi tidak perlu lagi preconnect/stylesheet Google Fonts yang memblokir render. --}}
 
     {{-- Warna universal (CMS: Warna Web) sebagai CSS variable — dipakai aksen yang sebelumnya hardcode merah --}}
     <style>

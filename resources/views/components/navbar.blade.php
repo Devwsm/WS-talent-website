@@ -12,8 +12,8 @@
             <!-- Logo -->
             <div class="w-1/3 lg:w-auto flex justify-center lg:justify-start">
                 <a href="{{ route('home') }}" aria-label="Whisnu Santika — beranda">
-                    <img src="{{ asset('aset/logo/Whisnu-Santika_Logo-2025-White.png') }}" loading="lazy"
-                        decoding="async" width="240" height="80" alt="Logo Whisnu Santika"
+                    <img src="{{ asset('aset/logo/Whisnu-Santika_Logo-2025-White.webp') }}" decoding="async"
+                        width="960" height="137" alt="Logo Whisnu Santika"
                         class="object-cover w-32 md:w-40 lg:w-60 rounded-lg">
                 </a>
             </div>

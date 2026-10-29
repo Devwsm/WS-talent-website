@@ -1,6 +1,5 @@
-import "./bootstrap";
-import "./sweetalert";
-
+// Halaman publik hanya butuh Swiper. axios + SweetAlert (±200 KB) pindah ke resources/js/dashboard.js
+// yang hanya dimuat oleh layout dashboard/login (lihat template/dashboardLayout.blade.php).
 import Swiper from "swiper";
 import {
     Navigation,

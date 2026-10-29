@@ -1,4 +1,6 @@
 @import "tailwindcss";
+/* Font Sora dihosting sendiri (bukan Google Fonts): tidak ada request ke domain lain yang memblokir render. */
+@import "@fontsource-variable/sora";
 @import "bootstrap-icons/font/bootstrap-icons.css";
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -13,8 +15,17 @@
         "Noto Color Emoji";
 }
 
+/* Bootstrap Icons bawaan memakai font-display: block, sehingga ikon "tak terlihat" sampai fontnya (±130 KB) selesai
+   diunduh. Aturan di bawah menimpa @font-face itu (yang terakhir menang) dengan swap. */
+@font-face {
+    font-display: swap;
+    font-family: "bootstrap-icons";
+    src: url("../../node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2")
+        format("woff2");
+}
+
 .sora {
-    font-family: "Sora", sans-serif;
+    font-family: "Sora Variable", "Sora", system-ui, sans-serif;
     font-optical-sizing: auto;
     font-weight: 400;
     font-style: normal;
@@ -31,6 +42,10 @@ body {
 /* override global swiper */
 :root {
     --swiper-theme-color: var(--theme-color, #000000);
+    /* Bullet pagination: area sentuh minimal 24px (jarak antar pusat bullet 28px) — syarat Lighthouse "touch targets". */
+    --swiper-pagination-bullet-width: 12px;
+    --swiper-pagination-bullet-height: 12px;
+    --swiper-pagination-bullet-horizontal-gap: 8px;
 }
 
 /* header */
