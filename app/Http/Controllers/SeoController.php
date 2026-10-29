@@ -9,6 +9,8 @@ use App\Models\booking;
 use App\Models\collab;
 use App\Models\genre;
 use App\Models\header;
+use App\Models\ic_event;
+use App\Models\ic_reward;
 use App\Models\media_coverage;
 use App\Models\media_sosial;
 use App\Models\merchandise;
@@ -24,9 +26,12 @@ class SeoController extends Controller
      */
     public function robots(): Response
     {
+        // Halaman penjelasan program (/inner-circle/tentang) dibuka untuk mesin pencari; Allow ditulis lebih dulu
+        // dari Disallow supaya crawler yang membaca berurutan pun memakainya. Area anggota tetap tertutup.
         $content = "User-agent: *\n" .
             "Disallow: /dashboard\n" .
             "Disallow: /login\n" .
+            (config('inner_circle.aktif') ? "Allow: /inner-circle/tentang\n" : '') .
             "Disallow: /inner-circle\n" .
             "Allow: /\n\n" .
             'Sitemap: ' . url('/sitemap.xml') . "\n";
@@ -35,7 +40,7 @@ class SeoController extends Controller
     }
 
     /**
-     * sitemap.xml — halaman publik (home, profile, privasi), jadi digenerate
+     * sitemap.xml — halaman publik (home, profile, privasi, dan penjelasan Inner Circle bila aktif), jadi digenerate
      * langsung tanpa perlu package tambahan. lastmod diambil dari data yang
      * paling baru diubah di masing-masing halaman, biar search engine tau
      * halaman mana yang paling sering update.
@@ -78,6 +83,16 @@ class SeoController extends Controller
                 'priority' => '0.3',
             ],
         ];
+
+        if (config('inner_circle.aktif')) {
+            $icLastmod = collect([ic_reward::max('updated_at'), ic_event::max('updated_at')])->filter()->max();
+
+            $urls[] = [
+                'loc' => route('ic.tentang'),
+                'lastmod' => $icLastmod ? \Illuminate\Support\Carbon::parse($icLastmod)->toAtomString() : now()->toAtomString(),
+                'priority' => '0.6',
+            ];
+        }
 
         $xml = view('sitemap', compact('urls'))->render();
 

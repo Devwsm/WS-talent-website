@@ -19,12 +19,14 @@ Bagian ini untuk semua orang di tim, tanpa istilah teknis. Developer: lanjut ke 
 
 ### Isi website
 
-| Bagian                            | Untuk siapa | Fungsi                                                                                     | Status                                             |
-| --------------------------------- | ----------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------- |
-| Situs publik (`/` dan `/profile`) | Pengunjung  | Profil artis, jadwal tour, album, berita, merchandise                                      | **Sudah tayang**                                   |
-| Dashboard (`/dashboard`)          | Tim WSM     | Mengubah semua isi situs publik                                                            | **Sudah dipakai**                                  |
-| WS Inner Circle (`/inner-circle`) | Penggemar   | Daftar, check-in QR di acara, kumpulkan stempel, klaim hadiah, pengumuman, galeri kenangan | Selesai dan teruji, **belum dinyalakan di server** |
-| Admin Inner Circle (di dashboard) | Tim WSM     | Kelola anggota, acara, klaim, hadiah, pengumuman, kenangan, dan email                      | Sama seperti di atas                               |
+| Bagian                                       | Untuk siapa   | Fungsi                                                                                     | Status                                             |
+| -------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------- |
+| Situs publik (`/` dan `/profile`)            | Pengunjung    | Profil artis, jadwal tour, album, berita, merchandise                                      | **Sudah tayang**                                   |
+| Dashboard (`/dashboard`)                     | Tim WSM       | Mengubah semua isi situs publik                                                            | **Sudah dipakai**                                  |
+| Log (`/dashboard/log`)                       | Tim WSM       | Melihat error di website dan jejak aktivitas admin                                         | Siap, tayang di rilis berikutnya                   |
+| WS Inner Circle (`/inner-circle`)            | Penggemar     | Daftar, check-in QR di acara, kumpulkan stempel, klaim hadiah, pengumuman, galeri kenangan | Selesai dan teruji, **belum dinyalakan di server** |
+| Halaman penjelasan (`/inner-circle/tentang`) | Calon anggota | Menjelaskan program: cara kerja, hadiah, dan jadwal acara terdekat. Teksnya bisa diubah    | Sudah dibuat, tayang bersama Inner Circle          |
+| Admin Inner Circle (di dashboard)            | Tim WSM       | Kelola anggota, acara, klaim, hadiah, pengumuman, kenangan, dan email                      | Sama seperti di atas                               |
 
 ### Cara kerja WS Inner Circle
 
@@ -37,7 +39,7 @@ Bagian ini untuk semua orang di tim, tanpa istilah teknis. Developer: lanjut ke 
 **Aturan yang tidak berubah**
 
 - Stempel tidak berkurang saat klaim dan tidak hangus.
-- Setiap hadiah hanya bisa diklaim satu kali per anggota. Klaim yang ditolak bersifat final.
+- Setiap hadiah hanya bisa diklaim satu kali per anggota. Klaim yang ditolak bisa dibuka kembali oleh tim WSM (kembali ke status Diajukan).
 - Satu anggota hanya mendapat satu stempel per acara.
 - Acara privat dan acara tanpa venue tidak bisa dipakai check-in.
 - Check-in dibuka pada tanggal acara pukul 12.00 sampai esok harinya pukul 06.00 WIB (bisa diatur per acara).
@@ -45,13 +47,13 @@ Bagian ini untuk semua orang di tim, tanpa istilah teknis. Developer: lanjut ke 
 
 ### Tugas rutin tim WSM
 
-| Kapan         | Lakukan                                                                                             | Di mana (dashboard)                     |
-| ------------- | --------------------------------------------------------------------------------------------------- | --------------------------------------- |
-| Kapan saja    | Ubah banner, header, profil, album, berita, merchandise, dan warna situs                            | Menu masing-masing                      |
-| Sebelum acara | Pastikan acara ada (impor CSV atau tombol **Sinkron sekarang** dari Bandsintown), lalu cetak QR-nya | Inner Circle, **Acara & QR**            |
-| Setelah acara | Beri stempel manual bila perlu (mis. kegiatan resmi)                                                | Inner Circle, **Anggota**               |
-| Setiap hari   | Proses klaim hadiah dan isi kode voucher atau alasan penolakan                                      | Inner Circle, **Klaim**                 |
-| Berkala       | Terbitkan pengumuman, sembunyikan kenangan yang tidak pantas, uji kirim email                       | **Pengumuman**, **Kenangan**, **Email** |
+| Kapan         | Lakukan                                                                                                                                                       | Di mana (dashboard)                                          |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Kapan saja    | Ubah banner, header, profil, album, berita, merchandise, dan warna situs                                                                                      | Menu masing-masing                                           |
+| Sebelum acara | Pastikan acara ada (impor CSV atau tombol **Sinkron sekarang** dari Bandsintown), lalu cetak QR-nya                                                           | Inner Circle, **Acara & QR**                                 |
+| Setelah acara | Beri stempel manual bila perlu (mis. kegiatan resmi)                                                                                                          | Inner Circle, **Anggota**                                    |
+| Setiap hari   | Proses klaim hadiah, isi kode voucher atau alasan penolakan, atau **Buka kembali** klaim yang ditolak                                                         | Inner Circle, **Klaim**                                      |
+| Berkala       | Terbitkan atau sembunyikan pengumuman, sembunyikan kenangan yang tidak pantas, tampilkan atau sembunyikan tahap hadiah, uji kirim email, dan cek menu **Log** | **Pengumuman**, **Kenangan**, **Hadiah**, **Email**, **Log** |
 
 **Batas ukuran gambar saat mengunggah**
 
@@ -63,6 +65,12 @@ Bagian ini untuk semua orang di tim, tanpa istilah teknis. Developer: lanjut ke 
 | Foto kenangan anggota / foto profil anggota | 4 MB / 5 MB |
 
 Semua gambar sebaiknya di bawah 16 megapiksel (kira-kira 4000 x 4000 piksel). Video latar header hanya bisa diproses bila server punya program ffmpeg; di hosting bersama biasanya tidak ada, jadi gunakan gambar.
+
+### Log, peringatan error, dan kode login
+
+- **Menu Log** di dashboard punya dua tab. **Error** berisi masalah yang terjadi di website: error yang sama digabung dan dihitung, lalu bisa ditandai selesai. **Aktivitas admin** berisi siapa melakukan apa dan kapan (masuk, ubah konten, proses klaim). Isi form dan kata sandi tidak disimpan.
+- **Peringatan lewat email:** bila alamat tujuan diisi (`LOG_ALERT_EMAIL`), error baru dikabari lewat email. Paling banyak satu email per jenis error per jam, dan sepuluh email per jam secara keseluruhan.
+- **Kode login (2FA, opsional):** setelah memasukkan sandi, admin menerima kode 6 angka di email (berlaku 10 menit). Dinyalakan dengan `ADMIN_2FA_AKTIF=true`, **hanya setelah** email terbukti terkirim dan email admin terisi; kalau tidak, admin tidak bisa masuk. Bila terkunci, pengelola mengubahnya kembali ke `false`.
 
 ### Kondisi saat ini dan langkah menuju tayang
 
@@ -92,14 +100,16 @@ Urutan menyalakan Inner Circle (langkah lengkap di [Panduan rilis ke hosting](#p
 
 ### Masalah yang sering muncul
 
-| Gejala                                                 | Penyebab dan solusi                                                                                          |
-| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
-| Tab Acara & QR menampilkan peringatan "MAC is invalid" | Kunci aplikasi berubah. Klik **Perbaiki token**, lalu cetak ulang QR acara itu                               |
-| Email tidak terkirim                                   | Pengaturan email masih `log` atau sandi aplikasi Google belum diisi. Coba **Email tes** di tab Email         |
-| Unggah video header gagal dengan pesan ffmpeg          | Server tidak punya ffmpeg. Pakai gambar JPG/PNG sebagai latar                                                |
-| Unggah foto gagal dengan halaman "419 Page Expired"    | Batas unggah server terlalu kecil. Naikkan `upload_max_filesize` dan `post_max_size` ke minimal 6M di cPanel |
-| Login Google menampilkan `redirect_uri_mismatch`       | Alamat callback di Google tidak sama persis dengan alamat situs                                              |
-| Pesan "Terlalu banyak permintaan" saat lupa kata sandi | Batas kirim email tercapai. Tunggu beberapa saat; batas harian server 100 permintaan                         |
+| Gejala                                                 | Penyebab dan solusi                                                                                                                        |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Tab Acara & QR menampilkan peringatan "MAC is invalid" | Kunci aplikasi berubah. Klik **Perbaiki token**, lalu cetak ulang QR acara itu                                                             |
+| Email tidak terkirim                                   | Pengaturan email masih `log` atau sandi aplikasi Google belum diisi. Coba **Email tes** di tab Email                                       |
+| Unggah video header gagal dengan pesan ffmpeg          | Server tidak punya ffmpeg. Pakai gambar JPG/PNG sebagai latar                                                                              |
+| Unggah foto gagal dengan halaman "419 Page Expired"    | Batas unggah server terlalu kecil. Naikkan `upload_max_filesize` dan `post_max_size` ke minimal 6M di cPanel                               |
+| Login Google menampilkan `redirect_uri_mismatch`       | Alamat callback di Google tidak sama persis dengan alamat situs                                                                            |
+| Pesan "Terlalu banyak permintaan" saat lupa kata sandi | Batas kirim email tercapai. Tunggu beberapa saat; batas harian server 100 permintaan                                                       |
+| Kode login tidak sampai ke email                       | Email Gmail belum disetel atau email admin belum diisi. Pengelola bisa mematikan kode login lewat `ADMIN_2FA_AKTIF=false` di `.env` server |
+| Menu Log menulis "Email peringatan belum aktif"        | `LOG_ALERT_EMAIL` belum diisi di `.env` server                                                                                             |
 
 ---
 
@@ -141,17 +151,19 @@ php artisan serve                   # http://127.0.0.1:8000
 
 Lokal memakai `.env.example`; server memakai `.env.production.example` (debug mati, cookie sesi aman, log harian, kredensial kosong).
 
-| Variabel                                                                                                                        | Fungsi                                                                         |
-| ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `INNER_CIRCLE_AKTIF`                                                                                                            | Menyalakan seluruh Inner Circle (bawaan `false`)                               |
-| `INNER_CIRCLE_GOOGLE_AKTIF`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`                                  | Login Google. Tombol tampil hanya bila flag `true` dan ID + rahasia terisi     |
-| `MAIL_MAILER`, `MAIL_SCHEME`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME` | SMTP Gmail ([Email Gmail](#email-gmail)); `log` = tidak terkirim               |
-| `BANDSINTOWN_APP_ID`, `BANDSINTOWN_ARTIST`                                                                                      | Sinkron jadwal acara                                                           |
-| `KONTAK_PRIVASI_EMAIL`                                                                                                          | Email kontak di `/privasi` (kosong = mengarah ke Profil)                       |
-| `IC_SEED_CONTOH`                                                                                                                | Mengisi jadwal contoh saat `db:seed`. Hanya lokal/preview                      |
-| `ADMIN_USERNAME`, `ADMIN_PASSWORD`                                                                                              | Akun admin pertama untuk seeder (sandi minimal 12 karakter). Wajib di produksi |
-| `TRUSTED_PROXIES`                                                                                                               | Isi bila di belakang proxy/CDN; kosong = tanpa proxy                           |
-| `MAVNUS_URL`                                                                                                                    | Alamat toko merchandise (bawaan `https://mavnus.com`)                          |
+| Variabel                                                                                                                        | Fungsi                                                                                                                    |
+| ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `INNER_CIRCLE_AKTIF`                                                                                                            | Menyalakan seluruh Inner Circle (bawaan `false`)                                                                          |
+| `INNER_CIRCLE_GOOGLE_AKTIF`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`                                  | Login Google. Tombol tampil hanya bila flag `true` dan ID + rahasia terisi                                                |
+| `MAIL_MAILER`, `MAIL_SCHEME`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME` | SMTP Gmail ([Email Gmail](#email-gmail)); `log` = tidak terkirim                                                          |
+| `BANDSINTOWN_APP_ID`, `BANDSINTOWN_ARTIST`                                                                                      | Sinkron jadwal acara                                                                                                      |
+| `KONTAK_PRIVASI_EMAIL`                                                                                                          | Email kontak di `/privasi` (kosong = mengarah ke Profil)                                                                  |
+| `IC_SEED_CONTOH`                                                                                                                | Mengisi jadwal contoh saat `db:seed`. Hanya lokal/preview                                                                 |
+| `ADMIN_USERNAME`, `ADMIN_PASSWORD`                                                                                              | Akun admin pertama untuk seeder (sandi minimal 12 karakter). Wajib di produksi                                            |
+| `ADMIN_EMAIL`, `ADMIN_2FA_AKTIF`                                                                                                | Email admin (tujuan kode OTP login; diisi ke akun hanya bila kolomnya masih kosong) dan saklar kode login. Bawaan `false` |
+| `LOG_ALERT_EMAIL`                                                                                                               | Tujuan email peringatan error (halaman Log). Kosong = tanpa email                                                         |
+| `TRUSTED_PROXIES`                                                                                                               | Isi bila di belakang proxy/CDN; kosong = tanpa proxy                                                                      |
+| `MAVNUS_URL`                                                                                                                    | Alamat toko merchandise (bawaan `https://mavnus.com`)                                                                     |
 
 `.env` tidak boleh masuk git atau zip. `.env` lokal (`APP_ENV=local`, `APP_DEBUG=true`, `IC_SEED_CONTOH=true`) jangan pernah terunggah ke server. `APP_KEY` dibuat sekali per server dan tidak diubah: token QR acara disimpan terenkripsi dengan kunci ini, dan sesi ikut terenkripsi.
 
@@ -161,7 +173,7 @@ Lokal memakai `.env.example`; server memakai `.env.production.example` (debug ma
 php artisan test
 ```
 
-Terakhir **184 tes lulus**. Database SQLite di memori; tes **tidak bergantung pada `.env`** (kunci aplikasi, kredensial, flag, dan cookie dipaku di `phpunit.xml`), jadi hasilnya sama di lokal dan di CI. Di CI: `cp .env.example .env` lalu `php artisan test`.
+Terakhir **223 tes** (semua lulus; 15 tes gambar dilewati otomatis di mesin tanpa ekstensi `gd`). Database SQLite di memori; tes **tidak bergantung pada `.env`** (kunci aplikasi, kredensial, flag, dan cookie dipaku di `phpunit.xml`), jadi hasilnya sama di lokal dan di CI. Di CI: `cp .env.example .env` lalu `php artisan test`.
 
 - `ImageProcessorTest` otomatis dilewati bila ekstensi `gd` dan `exif` tidak aktif; jalankan sekali di mesin yang memilikinya.
 - SQLite tidak menguji kunci baris (`lockForUpdate`): coba klik ganda klaim dan suka secara manual di MySQL.
@@ -169,17 +181,19 @@ Terakhir **184 tes lulus**. Database SQLite di memori; tes **tidak bergantung pa
 
 ### Peta kode
 
-| Bagian                   | Lokasi                                                                                                                                                                                                                                                        |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| CMS dan situs publik     | `dashboardController` (banner, header, album, berita, merchandise, warna), `profileController`, `homeController`, `loginController`                                                                                                                           |
-| Login admin              | Tabel `accounts`, `session('login')`, middleware `cekLogin`, pembatas 5 percobaan/menit                                                                                                                                                                       |
-| Inner Circle: controller | `app/Http/Controllers/InnerCircle/` (auth, member, admin, kenangan, fotoProfil, akun, google, lupaSandi, emailAdmin)                                                                                                                                          |
-| Inner Circle: logika     | `app/Services/InnerCircle/` (`CheckinService`, `ClaimService`, `StempelService`, `AcaraService`, `QrService`, `KenanganService`, `PengumumanService`, `AvatarService`, `GoogleOAuth`, `GoogleAkun`, `EmailService`, `HapusAkunService`, `BandsintownService`) |
-| Validasi                 | `app/Http/Requests/InnerCircle/` (satu Form Request per aksi tulis, pesan Bahasa Indonesia)                                                                                                                                                                   |
-| Gambar                   | `app/Support/ImageProcessor.php` (area anggota); `convertToWebP()` di dua controller CMS (JPEG/PNG, tanpa mengubah ukuran)                                                                                                                                    |
-| Konfigurasi              | `config/inner_circle.php` (flag, ikon, batas, status klaim), `config/site.php`                                                                                                                                                                                |
-| Tampilan                 | Layout `innerCircleLayout`, `innerCircleAuthLayout`; komponen `components/inner-circle/`; `resources/css/inner-circle.css` dan `resources/js/inner-circle.js`                                                                                                 |
-| Jadwal                   | `routes/console.php` (`ic:sinkron-bandsintown` tiap 04.00, hanya bila Inner Circle aktif dan App ID terisi)                                                                                                                                                   |
+| Bagian                      | Lokasi                                                                                                                                                                                                                                                        |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CMS dan situs publik        | `dashboardController` (banner, header, album, berita, merchandise, warna), `profileController`, `homeController`, `loginController`                                                                                                                           |
+| Login admin                 | Tabel `accounts` (kolom `email` untuk kode OTP), `session('login')`, middleware `cekLogin`, `AdminOtpService`, pembatas 5 percobaan/menit                                                                                                                     |
+| Log                         | `logController` (halaman), `LogErrorService` (error; dipasang di `bootstrap/app.php`), `AktivitasService` + middleware `CatatAktivitas` (aktivitas admin), `config/log_admin.php`                                                                             |
+| Halaman publik Inner Circle | `InnerCircle/tentangController`, layout `innerCirclePublikLayout`, view `pages/inner-circle/tentang` (teks draf, ubah langsung di berkas ini)                                                                                                                 |
+| Inner Circle: controller    | `app/Http/Controllers/InnerCircle/` (auth, member, admin, kenangan, fotoProfil, akun, google, lupaSandi, emailAdmin)                                                                                                                                          |
+| Inner Circle: logika        | `app/Services/InnerCircle/` (`CheckinService`, `ClaimService`, `StempelService`, `AcaraService`, `QrService`, `KenanganService`, `PengumumanService`, `AvatarService`, `GoogleOAuth`, `GoogleAkun`, `EmailService`, `HapusAkunService`, `BandsintownService`) |
+| Validasi                    | `app/Http/Requests/InnerCircle/` (satu Form Request per aksi tulis, pesan Bahasa Indonesia)                                                                                                                                                                   |
+| Gambar                      | `app/Support/ImageProcessor.php` (area anggota); `convertToWebP()` di dua controller CMS (JPEG/PNG, tanpa mengubah ukuran)                                                                                                                                    |
+| Konfigurasi                 | `config/inner_circle.php` (flag, ikon, batas, status klaim), `config/site.php`                                                                                                                                                                                |
+| Tampilan                    | Layout `innerCircleLayout`, `innerCircleAuthLayout`; komponen `components/inner-circle/`; `resources/css/inner-circle.css` dan `resources/js/inner-circle.js`                                                                                                 |
+| Jadwal                      | `routes/console.php` (`ic:sinkron-bandsintown` tiap 04.00, hanya bila Inner Circle aktif dan App ID terisi)                                                                                                                                                   |
 
 Konvensi: nama model dan tabel huruf kecil (`member`, `ic_event`), primary key `id_<nama>`, controller `lowerCamel`, controller tipis dengan logika di service. Nama model huruf kecil tidak ditemukan penemuan otomatis policy, jadi `MemoryPolicy` didaftarkan manual di `AppServiceProvider`.
 
@@ -188,6 +202,11 @@ Konvensi: nama model dan tabel huruf kecil (`member`, `ic_event`), primary key `
 - **Flag fitur:** semua route di belakang middleware `icAktif` (404 bila `INNER_CIRCLE_AKTIF` mati). Link di dashboard, navbar, dan teaser home hanya muncul bila flag menyala.
 - **Tampilan terpisah:** layout dan CSS sendiri; semua class berprefix `ic-` di bawah `.ic-app` supaya tidak bocor ke halaman lain. CSS biasa (tanpa Tailwind), JavaScript vanilla, SweetAlert2 bertema lavender sendiri. Satu layar = satu route = satu Blade = satu `<h1>`.
 - **Autentikasi anggota:** model `member`, guard `member`, provider `members`. Login admin tidak disentuh. Logout anggota memakai `Auth::guard('member')->logout()` dan `regenerateToken()`, **bukan** `session()->invalidate()`, agar sesi admin di browser yang sama tidak ikut terhapus.
+- **Halaman penjelasan publik:** `/inner-circle/tentang` (`ic.tentang`), tanpa login. Satu-satunya halaman Inner Circle yang boleh diindeks: `robots.txt` memberi `Allow` sebelum `Disallow`, dan halaman ada di sitemap bila flag menyala. Tamu yang membuka `/inner-circle` dialihkan ke sini oleh `redirectGuestsTo`; area anggota lain tetap ke Masuk. Hanya tahap hadiah aktif dan acara mendatang yang tidak privat dan sudah punya venue yang ditampilkan.
+- **Log error:** `Exceptions::report()` memanggil `LogErrorService`. Hanya error tak terduga yang sampai ke sana (Laravel tidak melaporkan validasi, 404, login, CSRF, dan `abort()`). Error digabung per sidik jari (kelas + berkas:baris) dengan penghitung; URL disimpan tanpa query string, pesan disamarkan dari pola sandi dan token, jejak tanpa argumen fungsi. Pencatat tidak pernah melempar galat. Email peringatan: satu per jenis error per jam dan paling banyak 10 per jam di seluruh situs (cache + `RateLimiter`). Pemangkasan berjalan sendiri sesekali tanpa cron: error 90 hari, aktivitas 180 hari.
+- **Log aktivitas:** middleware `CatatAktivitas` di grup `/dashboard` mencatat request tulis (bukan GET). Label dari `config/log_admin.php`; yang disimpan hanya nama aksi, parameter rute, dan nilai pendek dari daftar putih (`aksi`, `aktif`, `status`, `tahap`). Gagal validasi tidak dicatat (dicek lewat `_flash.new` supaya sisa flash request sebelumnya tidak ikut). Username yang diketik saat login gagal sengaja tidak disimpan, karena kadang yang terketik di kolom itu justru kata sandi.
+- **Kode login admin (OTP email):** sandi benar, lalu `AdminOtpService` mengirim kode 6 angka. Hanya hash HMAC (dengan `APP_KEY`) yang disimpan di cache, berlaku 10 menit, sekali pakai, 5 kali salah menghanguskannya, dan paling banyak 3 kali kirim per 10 menit per akun. Sesi baru dibuat di dua langkah (cegah session fixation) dan `login` baru diset setelah kode benar. **Gagal terbuka** bila email akun kosong (dicatat sebagai "Login tanpa 2FA"; supaya salah konfigurasi tidak mengunci pemilik), **gagal tertutup** bila email gagal terkirim (dashboard tidak terbuka, kesalahan masuk halaman Log). Darurat: `ADMIN_2FA_AKTIF=false`.
+- **Pembatas bernama:** `throttle:N,M` bawaan memakai satu penghitung per IP untuk semua rute tanpa pengguna terautentikasi, jadi rute yang memakainya saling berbagi jatah. Rute baru (OTP, aksi kecil dashboard) memakai pembatas bernama di `AppServiceProvider`. Rute admin lama masih memakai `throttle:N,M`.
 - **Status acara** (lewat, hari ini, akan datang) dihitung dari `now()` saat dibaca; tanpa cron.
 - **Tanpa Socialite:** OAuth 2.0 (authorization code + PKCE, OpenID Connect) ditulis dengan HTTP client bawaan agar tidak ada paket baru untuk diunggah ke hosting tanpa terminal. Bila kelak pindah ke Socialite, hanya `GoogleOAuth` yang diganti.
 - **Email tanpa antrean:** dikirim langsung setelah respons ke browser (`EmailService::tunda`), karena hosting tanpa worker.
@@ -197,7 +216,9 @@ Konvensi: nama model dan tabel huruf kecil (`member`, `ic_event`), primary key `
 
 **Check-in** (`CheckinService`). QR berisi `/inner-circle/check-in?kode=WS-XXXXXXXXXXXX`; dipindai kamera bawaan HP pun sampai ke halaman yang benar setelah login. Server memeriksa: anggota login, acara bisa check-in (bukan privat, ada venue), di dalam jendela waktu (bawaan tanggal show 12.00 sampai H+1 06.00 WIB), token cocok, belum pernah check-in di acara itu. Acara yang sudah punya check-in tidak bisa dihapus. Impor CSV bersifat semua atau tidak sama sekali; kode yang sudah ada diperbarui tanpa mengganti token. Kamera pemindai butuh HTTPS.
 
-**Klaim** (`ClaimService`). Hanya bila `stempel_total >= target_stempel`, sekali per anggota per tahap; baris anggota dikunci dalam transaksi dan kunci unik `(member_id, reward_id)` jadi pengaman terakhir. Tahap bernilai pilihan (50 stempel) wajib memilih salah satu dari tepat 2 opsi. Alur: `diajukan` → `ditinjau` → `disetujui` → `selesai`, atau `ditolak` (alasan wajib, final). Perpindahan status membawa status yang dilihat admin, sehingga klik ganda tidak melompat dua langkah. Setiap perubahan masuk `ic_claim_logs`. Aksi **Catatan** mengubah `catatan_admin` (mis. kode voucher) tanpa mengubah status.
+**Klaim** (`ClaimService`). Hanya bila `stempel_total >= target_stempel`, sekali per anggota per tahap; baris anggota dikunci dalam transaksi dan kunci unik `(member_id, reward_id)` jadi pengaman terakhir. Tahap bernilai pilihan (50 stempel) wajib memilih salah satu dari tepat 2 opsi. Alur: `diajukan` → `ditinjau` → `disetujui` → `selesai`, atau `ditolak` (alasan wajib). Perpindahan status membawa status yang dilihat admin, sehingga klik ganda tidak melompat dua langkah. Setiap perubahan masuk `ic_claim_logs`. Aksi **Catatan** mengubah `catatan_admin` (mis. kode voucher) tanpa mengubah status. Aksi **Buka kembali** hanya untuk `ditolak`: status kembali ke `diajukan` (alur mulai dari awal), catatan lama (alasan penolakan) hilang dari tampilan anggota tetapi tetap ada di `ic_claim_logs`, dan anggota diberi email. `selesai` adalah akhir alur.
+
+**Tampil/sembunyikan.** Tahap hadiah dan pengumuman punya tombol di CMS (kolom `aktif`). Tahap yang disembunyikan hilang dari halaman Hadiah anggota dan halaman penjelasan dan tidak bisa diklaim baru; pengajuan yang sudah masuk tetap diproses, dan minimal satu tahap harus aktif. Pengumuman yang disembunyikan tidak dihapus dan bisa ditampilkan lagi.
 
 **Pengumuman.** Tampil bila `aktif` dan tanggal terbit sudah tiba (tanggal depan = terjadwal). Hanya satu yang boleh **unggulan**; menandai satu otomatis menurunkan yang lama (`PengumumanService`, dalam transaksi). Tujuan tombol hanya `ic.checkin`, `ic.hadiah`, atau `ic.komunitas`. Anggota melihat 20 pengumuman terbaru di luar unggulan. Menyimpan unggulan yang terjadwal jauh ke depan menurunkan unggulan lama sampai tanggalnya tiba.
 
@@ -224,14 +245,19 @@ Konvensi: nama model dan tabel huruf kecil (`member`, `ic_event`), primary key `
 | `ic_broadcasts`   | `id_broadcast`, `judul`, `isi`, `tag`, `ikon`, `warna`, `cta_label`, `cta_tujuan`, `unggulan`, `terbit_pada`, `aktif`                                                                                 |
 | `ic_memories`     | `id_memory`, `member_id`, `caption`, `tempat`, `kategori`, `foto`, `status` (tayang / disembunyikan)                                                                                                  |
 | `ic_memory_likes` | `member_id`, `memory_id` (kunci utama gabungan, tanpa model)                                                                                                                                          |
+| `log_errors`      | `id_log_error`, `fingerprint` (unik), `kelas`, `pesan`, `lokasi`, `jejak`, `url`, `metode`, `ip`, `pengguna`, `jumlah`, `selesai`, `pertama_pada`, `terakhir_pada`                                    |
+| `log_aktivitas`   | `id_log_aktivitas`, `pelaku`, `kategori` (akses / konten / inner-circle), `aksi`, `keterangan`, `rute`, `ip`, `status` (berhasil / gagal), `created_at`                                               |
 
-Check-in bukan tabel sendiri: ia baris `ic_stempel` dengan `sumber = checkin`. `members.stempel_total` hanya cache yang diperbarui di transaksi yang sama. Kolom `aktif` di `ic_rewards` dan `ic_broadcasts` ada tetapi belum punya tombol di CMS. Lima tahap hadiah (10, 25, 50, 100, 250) diisi lewat migration dengan `firstOrCreate`, jadi hasil edit di CMS tidak tertimpa.
+Tabel `accounts` (admin CMS) punya kolom `email` untuk kode OTP login. Check-in bukan tabel sendiri: ia baris `ic_stempel` dengan `sumber = checkin`. `members.stempel_total` hanya cache yang diperbarui di transaksi yang sama. Kolom `aktif` di `ic_rewards` dan `ic_broadcasts` dikendalikan tombol Sembunyikan/Aktifkan di CMS. Lima tahap hadiah (10, 25, 50, 100, 250) diisi lewat migration dengan `firstOrCreate`, jadi hasil edit di CMS tidak tertimpa.
 
 ### Batas unggahan dan pembatas laju
 
 | Pembatas               | Batas                                           | Dihitung per                       |
 | ---------------------- | ----------------------------------------------- | ---------------------------------- |
 | Login admin            | 5/menit                                         | IP                                 |
+| Kode OTP admin         | 10/menit                                        | IP                                 |
+| Kirim ulang kode OTP   | 3/menit; 3 kirim per 10 menit                   | IP; akun admin                     |
+| Aksi kecil dashboard   | 30/menit (tampil/sembunyikan, status error)     | IP                                 |
 | `ic-masuk`             | 5/menit; 60/menit                               | email+IP; IP                       |
 | `ic-daftar`            | 30/menit                                        | IP                                 |
 | `ic-lupa`              | 3/menit; 5/jam; 30/menit; **100/hari (global)** | email+IP; email; IP; seluruh situs |
@@ -300,18 +326,20 @@ Memasang situs (dengan Inner Circle) ke hosting cPanel **tanpa terminal**. Kerja
 - **Server baru (mis. preview):** unggah `.env.production.example` ke folder utama Laravel, ganti namanya jadi `.env` (File Manager, klik kanan, **Rename**), lalu isi semua baris `GANTI`. `APP_KEY` dibuat di komputer lokal dengan `php artisan key:generate --show` (diawali `base64:`); pakai kunci berbeda untuk tiap server.
 - **Server utama (sudah live):** jangan ditimpa. Tambahkan hanya variabel yang belum ada, di bagian bawah.
 
-| Variabel                                          | Nilai produksi                                                 |
-| ------------------------------------------------- | -------------------------------------------------------------- |
-| `APP_ENV`, `APP_DEBUG`                            | `production`, `false`                                          |
-| `APP_URL`                                         | `https://domain-server` (wajib https)                          |
-| `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`       | Dari cPanel **MySQL Databases** (biasanya berawalan nama akun) |
-| `SESSION_SECURE_COOKIE`, `SESSION_ENCRYPT`        | `true` (hanya bila HTTPS sudah aktif)                          |
-| `KONTAK_PRIVASI_EMAIL`                            | Email yang dipantau, tampil di `/privasi`                      |
-| `MAIL_*`                                          | Lihat bagian [Email Gmail](#email-gmail)                       |
-| `INNER_CIRCLE_AKTIF`, `INNER_CIRCLE_GOOGLE_AKTIF` | `false` sampai langkah 7                                       |
-| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`        | Kosong sampai langkah 6                                        |
-| `ADMIN_USERNAME`, `ADMIN_PASSWORD`                | Hanya untuk seeder; kosongkan sandinya setelah akun admin ada  |
-| `TRUSTED_PROXIES`                                 | Kosong, kecuali di belakang proxy/CDN                          |
+| Variabel                                          | Nilai produksi                                                                              |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `APP_ENV`, `APP_DEBUG`                            | `production`, `false`                                                                       |
+| `APP_URL`                                         | `https://domain-server` (wajib https)                                                       |
+| `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`       | Dari cPanel **MySQL Databases** (biasanya berawalan nama akun)                              |
+| `SESSION_SECURE_COOKIE`, `SESSION_ENCRYPT`        | `true` (hanya bila HTTPS sudah aktif)                                                       |
+| `KONTAK_PRIVASI_EMAIL`                            | Email yang dipantau, tampil di `/privasi`                                                   |
+| `MAIL_*`                                          | Lihat bagian [Email Gmail](#email-gmail)                                                    |
+| `INNER_CIRCLE_AKTIF`, `INNER_CIRCLE_GOOGLE_AKTIF` | `false` sampai langkah 7                                                                    |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`        | Kosong sampai langkah 6                                                                     |
+| `ADMIN_USERNAME`, `ADMIN_PASSWORD`                | Hanya untuk seeder; kosongkan sandinya setelah akun admin ada                               |
+| `ADMIN_EMAIL`, `ADMIN_2FA_AKTIF`                  | Email admin dan saklar kode login; `ADMIN_2FA_AKTIF=false` sampai bagian "Kode login admin" |
+| `LOG_ALERT_EMAIL`                                 | Tujuan email peringatan error (kosong = tanpa email)                                        |
+| `TRUSTED_PROXIES`                                 | Kosong, kecuali di belakang proxy/CDN                                                       |
 
 Aturan penulisan: buang komentar `#` di baris yang diisi; beri tanda kutip pada nilai yang mengandung spasi, `#`, `$`, atau `"` (mis. `DB_PASSWORD="sandi#ku"`).
 
@@ -326,11 +354,12 @@ Cek setelah menyimpan: buka `https://domain/.env` di browser (harus 404 atau 403
 
 #### Database
 
-1. Buat tabel baru di database server: `members`, semua `ic_*`, plus `sessions`, `cache`, dan `jobs`.
+1. Buat tabel baru di database server: `members`, semua `ic_*`, `log_errors`, `log_aktivitas`, kolom baru `accounts.email`, plus `sessions`, `cache`, dan `jobs`.
 2. Tanpa terminal, pilih salah satu:
     - **(a)** di lokal jalankan `php artisan migrate` pada database kosong, lalu di phpMyAdmin **Export > Custom**: struktur semua tabel, dan **struktur + data** untuk `migrations` dan `ic_rewards` (lima tahap hadiah terisi lewat migration). Impor hasilnya lewat **Import** di database server.
-    - **(b)** jalankan migrasi dari langkah workflow auto deploy.
+    - **(b)** setelah auto deploy aktif (ada akses SSH): jalankan `php artisan migrate --force` dari workflow, dan phpMyAdmin tidak diperlukan lagi.
 3. Ganti sandi admin lama (lihat [Ganti sandi admin](#ganti-sandi-admin)).
+4. Isi email admin (tujuan kode OTP login) di phpMyAdmin: `UPDATE accounts SET email = 'alamat@email.com' WHERE username = 'username-admin';` Atau isi `ADMIN_EMAIL` lalu jalankan `php artisan db:seed --class=accountSeeder` (email hanya diisi bila masih kosong).
 
 #### Preview dan uji
 
@@ -371,6 +400,13 @@ Uji lokal: isi `.env` (`INNER_CIRCLE_AKTIF=true`, `INNER_CIRCLE_GOOGLE_AKTIF=tru
 
 **Mematikan darurat:** set `INNER_CIRCLE_AKTIF=false` lalu hapus cache seperti di atas.
 
+#### Kode login admin dan peringatan error (opsional)
+
+1. Pastikan email Gmail terbukti terkirim (Inner Circle, tab **Email**, **Email tes**) dan kolom `email` akun admin terisi (lihat Database, langkah 4).
+2. Isi `LOG_ALERT_EMAIL` dengan alamat yang dipantau. Peringatan error baru dikirim ke sana.
+3. Set `ADMIN_2FA_AKTIF=true` lalu hapus cache konfigurasi. **Jangan logout dulu:** buka jendela penyamaran, coba login, dan pastikan kodenya sampai. Baru setelah itu logout dari jendela lama.
+4. Terkunci (kode tidak sampai)? Ubah `ADMIN_2FA_AKTIF=false` di `.env` server, hapus `bootstrap/cache/config.php`, lalu login seperti biasa dan periksa pengaturan email.
+
 #### Verifikasi pasca rilis
 
 - [ ] `/robots.txt` memuat `Disallow: /inner-circle`; `/sitemap.xml` memuat `/privasi`.
@@ -379,6 +415,8 @@ Uji lokal: isi `.env` (`INNER_CIRCLE_AKTIF=true`, `INNER_CIRCLE_GOOGLE_AKTIF=tru
 - [ ] Alur QR: tamu memindai, masuk lewat Google, kembali ke check-in.
 - [ ] `/privasi` terbuka tanpa login dan email kontak benar.
 - [ ] Hapus akun uji berhasil (foto ikut hilang).
+- [ ] `/inner-circle/tentang` terbuka tanpa login, dan `/inner-circle` untuk tamu mengarah ke sana.
+- [ ] Menu **Log** terbuka. Bila 2FA dinyalakan: kode sampai ke email dan login berhasil di jendela penyamaran.
 - [ ] Email tes dari tab Email terkirim.
 - [ ] `composer audit` dan `npm audit` dari lokal bersih.
 
@@ -462,6 +500,12 @@ Sandi admin lama pernah tertulis di `accountSeeder` (ada di riwayat git), jadi a
 - Warna header wajib `#RRGGBB`; banner dan foto hero maks 2 MB; semua gambar CMS maks 16 megapiksel.
 - Kata sandi anggota maksimal 72 karakter. bcrypt hanya membaca 72 **byte**, jadi kata sandi dengan banyak karakter non-Latin atau emoji tetap bisa melewati batas dan sisanya diabaikan; ini tidak merusak login.
 
+**Perbaikan Batch B** (hasil 223 tes):
+
+- Login admin dengan **kode OTP lewat email** (opsional, mati secara bawaan). Lihat [aturannya di Bagian 2](#keputusan-arsitektur-inner-circle).
+- Halaman **Log**: error aplikasi (digabung, disamarkan) dan **jejak aktivitas admin**, plus email peringatan error yang dibatasi (satu per jenis per jam, maksimal 10 per jam).
+- Pembatas bernama untuk rute baru, karena `throttle:N,M` bawaan berbagi satu penghitung per IP.
+
 #### Aturan login Google
 
 Semuanya punya tes otomatis.
@@ -480,8 +524,9 @@ Semuanya punya tes otomatis.
 1. **Cadangan database terjadwal** di cPanel, serta **HTTPS paksa** dan AutoSSL aktif. Wajib sebelum Inner Circle tayang.
 2. **Content-Security-Policy.** Belum dipasang karena widget Bandsintown, Google Fonts, dan embed video bisa mati bila terlalu ketat. Pasang dulu sebagai `Content-Security-Policy-Report-Only` di preview, perbaiki pelanggaran di konsol browser, baru ditegakkan.
 3. **Verifikasi email untuk akun sandi.** Lupa kata sandi sudah ada, tetapi email baru terverifikasi lewat Google atau tautan atur ulang.
-4. **Login admin:** satu bendera sesi tanpa peran, log aktivitas, atau 2FA. Cukup untuk tim kecil; pertimbangkan bila tim bertambah.
+4. **Login admin:** masih satu bendera sesi tanpa peran. Log aktivitas dan kode OTP email sudah ada; peran dengan hak berbeda baru perlu bila tim bertambah.
 5. **`composer audit` dan `npm audit` rutin** (tiap bulan atau di workflow deploy).
+6. **Pembatas lama `throttle:N,M`** di rute admin (hadiah, pengumuman, kenangan, dsb.) berbagi satu penghitung per IP. Dampaknya kecil (admin sendiri), tetapi sebaiknya diganti pembatas bernama sekalian dibersihkan.
 
 ### Riwayat dan keputusan
 
@@ -491,17 +536,18 @@ Catatan bagaimana WS Inner Circle dibangun. Detail per file ada di riwayat git; 
 
 Urutan kerja: **tampilan dulu dengan data contoh, backend menyusul per fitur.** Setelah fase 3, tiap fase hanya mengganti sumber data, bukan tampilannya.
 
-| Fase | Isi                                                                                         | Status  |
-| ---- | ------------------------------------------------------------------------------------------- | ------- |
-| 1    | Fondasi UI: layout, CSS, komponen, flag fitur, 15 ikon WebP                                 | Selesai |
-| 2    | UI anggota (masuk, daftar, beranda, hadiah, check-in, komunitas, profil) dengan data contoh | Selesai |
-| 3    | UI admin di dashboard (7 tab) dengan data contoh                                            | Selesai |
-| 4    | Anggota, check-in QR, dan stempel sungguhan di database                                     | Selesai |
-| 5    | Hadiah dan klaim di database                                                                | Selesai |
-| 6    | Komunitas (pengumuman, kenangan, suka) dan foto profil                                      | Selesai |
-| 7    | Teaser di home, link navbar, `robots.txt`, penghapusan data contoh, QA aksesibilitas        | Selesai |
-| 8    | Login dengan Google, halaman `/privasi`, hapus akun                                         | Selesai |
-| 9    | Perbaikan token QR, sinkron Bandsintown, lupa kata sandi, email Gmail, tab Email            | Selesai |
+| Fase | Isi                                                                                                                                              | Status  |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
+| 1    | Fondasi UI: layout, CSS, komponen, flag fitur, 15 ikon WebP                                                                                      | Selesai |
+| 2    | UI anggota (masuk, daftar, beranda, hadiah, check-in, komunitas, profil) dengan data contoh                                                      | Selesai |
+| 3    | UI admin di dashboard (7 tab) dengan data contoh                                                                                                 | Selesai |
+| 4    | Anggota, check-in QR, dan stempel sungguhan di database                                                                                          | Selesai |
+| 5    | Hadiah dan klaim di database                                                                                                                     | Selesai |
+| 6    | Komunitas (pengumuman, kenangan, suka) dan foto profil                                                                                           | Selesai |
+| 7    | Teaser di home, link navbar, `robots.txt`, penghapusan data contoh, QA aksesibilitas                                                             | Selesai |
+| 8    | Login dengan Google, halaman `/privasi`, hapus akun                                                                                              | Selesai |
+| 9    | Perbaikan token QR, sinkron Bandsintown, lupa kata sandi, email Gmail, tab Email                                                                 | Selesai |
+| 10   | Halaman penjelasan program, buka kembali klaim, tampil/sembunyikan hadiah dan pengumuman, halaman Log dan peringatan error, kode OTP login admin | Selesai |
 
 Yang tersisa bukan kode, melainkan [rilis ke hosting](#panduan-rilis-ke-hosting): uji perangkat nyata, setup Google dan email, auto deploy.
 
@@ -532,8 +578,9 @@ Bawaan di bawah dipakai sampai ada keputusan lain.
 - **Moderasi kenangan:** langsung tayang, admin bisa menyembunyikan. Alternatif: disetujui admin dulu.
 - **Avatar bawaan:** emoji sebelum anggota unggah foto. Alternatif: inisial nama.
 - **Jendela check-in:** tanggal show 12.00 sampai H+1 06.00 WIB. Sesuaikan bila jam show WSM berbeda.
-- **Halaman `/inner-circle` untuk tamu:** dialihkan ke halaman masuk. Landing publik yang menjelaskan program belum ada.
-- **Klaim ditolak:** final. Bila WSM ingin bisa dibuka kembali, perlu aksi "buka kembali" di antrean klaim.
+- **Halaman `/inner-circle` untuk tamu:** dialihkan ke halaman penjelasan `/inner-circle/tentang`. Teksnya draf; sesuaikan di `resources/views/pages/inner-circle/tentang.blade.php`.
+- **Klaim ditolak:** bisa dibuka kembali oleh admin (kembali ke Diajukan, alasan lama tetap di riwayat).
+- **Email admin untuk OTP:** kolom `email` terpisah dari `username`, jadi login tetap memakai username.
 - **Ikon:** memakai Fluent Emoji 3D (lisensi MIT, cek ulang sebelum dipakai) atau ilustrasi buatan tim WSM.
 - **Data acara:** 50 baris di prototype adalah contoh tentatif; jadwal asli diisi tim WSM lewat CMS, impor CSV, atau Bandsintown.
 

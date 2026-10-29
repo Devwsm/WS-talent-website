@@ -61,6 +61,14 @@ class AppServiceProvider extends ServiceProvider
         // Hapus akun per ANGGOTA: pemeriksaan kata sandi di sini tidak boleh dipakai untuk menebak sandi.
         RateLimiter::for('ic-akun', fn(Request $request) => Limit::perMinute(5)->by('akun:' . (Auth::guard('member')->id() ?? $request->ip())));
 
+        // Login admin dengan kode OTP email. Dipisah dari throttle bawaan (yang berbagi satu penghitung per IP untuk semua
+        // rute) supaya memasukkan kode, mengirim ulang, dan login tidak saling menghabiskan jatah.
+        RateLimiter::for('admin-otp', fn(Request $request) => Limit::perMinute(10)->by('admin-otp:' . $request->ip()));
+        RateLimiter::for('admin-otp-ulang', fn(Request $request) => Limit::perMinute(3)->by('admin-otp-ulang:' . $request->ip()));
+
+        // Aksi kecil di dashboard (tampil/sembunyikan, tandai error selesai): jatah sendiri per IP.
+        RateLimiter::for('admin-aksi-kecil', fn(Request $request) => Limit::perMinute(30)->by('admin-aksi-kecil:' . $request->ip()));
+
         // Lupa kata sandi: per EMAIL (cegah membanjiri kotak masuk orang lain) dan per IP. Hitungannya sama untuk email
         // terdaftar maupun tidak, jadi pembatasan tidak membocorkan apakah sebuah email punya akun.
         // Ditambah batas HARIAN GLOBAL (semua pengunjung digabung): penyerang yang berganti-ganti email dan IP tidak

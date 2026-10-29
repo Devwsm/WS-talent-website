@@ -15,7 +15,8 @@ use Illuminate\Support\Str;
  * (dibaca lewat config('site.admin_username') dan config('site.admin_password')).
  * - Produksi: wajib diisi, kalau kosong seeder berhenti dengan pesan galat.
  * - Lokal/testing: kalau kosong, dibuat akun `admin` dengan sandi acak yang dicetak sekali di terminal.
- * Idempoten: bila username sudah ada, akun dibiarkan (sandi lama tidak ditimpa).
+ * ADMIN_EMAIL (opsional) = tujuan kode OTP login. Idempoten: bila username sudah ada, akun dibiarkan (sandi lama tidak ditimpa;
+ * email hanya diisi bila masih kosong).
  */
 class accountSeeder extends Seeder
 {
@@ -40,10 +41,18 @@ class accountSeeder extends Seeder
             return;
         }
 
+        $email = trim((string) config('site.admin_email'));
+
         $akun = account::firstOrCreate(
             ['username' => $username],
-            ['password' => Hash::make($password)]
+            ['password' => Hash::make($password), 'email' => $email !== '' ? $email : null]
         );
+
+        // Akun yang sudah ada tetap utuh, kecuali emailnya masih kosong: diisi dari ADMIN_EMAIL (untuk kode OTP login).
+        if (! $akun->wasRecentlyCreated && $email !== '' && blank($akun->email)) {
+            $akun->update(['email' => $email]);
+            $this->command?->info("Email admin '{$username}' diisi dari ADMIN_EMAIL.");
+        }
 
         $this->command?->info($akun->wasRecentlyCreated
             ? "Akun admin '{$username}' dibuat."

@@ -1903,6 +1903,135 @@ a.ic-event:hover {
     }
 }
 
+/* ---------- Halaman publik penjelasan program (/inner-circle/tentang) ---------- */
+.ic-shell--publik {
+    margin-bottom: 40px;
+}
+.ic-konten--publik {
+    padding-bottom: 40px;
+}
+.ic-hero {
+    padding: 18px 0 6px;
+}
+.ic-hero .ic-aksi-baris {
+    margin-top: 24px;
+}
+.ic-langkah {
+    list-style: none;
+    margin: 18px 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 15px;
+    counter-reset: langkah;
+}
+.ic-langkah li {
+    counter-increment: langkah;
+    background: #fff;
+    border: 1px solid var(--ic-garis-kartu);
+    border-radius: 24px;
+    padding: 18px;
+}
+.ic-langkah li::before {
+    content: counter(langkah);
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    margin-bottom: 12px;
+    border-radius: 50%;
+    background: var(--ic-lilac);
+    color: var(--ic-navy);
+    font-weight: 800;
+}
+.ic-langkah h3 {
+    margin-bottom: 4px;
+    font-size: 16px;
+}
+.ic-faq {
+    display: grid;
+    gap: 10px;
+    margin-top: 18px;
+}
+.ic-faq details {
+    background: #fff;
+    border: 1px solid var(--ic-garis-kartu);
+    border-radius: 20px;
+    padding: 0 18px;
+}
+.ic-faq summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 48px;
+    padding: 8px 0;
+    font-weight: 700;
+    cursor: pointer;
+    list-style: none;
+}
+.ic-faq summary::-webkit-details-marker {
+    display: none;
+}
+.ic-faq summary::after {
+    content: "+";
+    font-size: 22px;
+    line-height: 1;
+    color: var(--ic-eyebrow);
+}
+.ic-faq details[open] summary::after {
+    content: "\2212";
+}
+.ic-faq details p {
+    padding: 0 0 16px;
+    color: var(--ic-redup);
+}
+.ic-cta-akhir {
+    margin-top: 34px;
+    padding: 32px 20px;
+    border-radius: 28px;
+    background: var(--ic-navy);
+    color: #fff;
+    text-align: center;
+}
+.ic-cta-akhir h2 {
+    margin-bottom: 8px;
+    font-family: var(--ic-font-judul);
+    font-size: clamp(22px, 4vw, 32px);
+}
+.ic-cta-akhir p {
+    margin-bottom: 18px;
+    color: #d9d4ee;
+}
+.ic-cta-akhir .ic-aksi-baris {
+    justify-content: center;
+    margin-top: 0;
+}
+.ic-cta-akhir .ic-tombol--garis {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.45);
+}
+.ic-footer-publik {
+    padding: 0 20px 28px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--ic-redup);
+}
+.ic-footer-publik a {
+    text-decoration: underline;
+}
+
+@media (max-width: 780px) {
+    .ic-langkah {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+@media (max-width: 480px) {
+    .ic-langkah {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* ---------- SweetAlert2 (muncul di dalam body.ic-app) ---------- */
 .ic-swal {
     border-radius: 24px;

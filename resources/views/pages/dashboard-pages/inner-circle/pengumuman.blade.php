@@ -226,11 +226,29 @@
                                                 class="shrink-0 rounded-full border border-amber-300/30 bg-amber-300/10 px-2 py-0.5 font-semibold text-amber-200">Kabar
                                                 Pilihan</span>
                                         @endif
+                                        @unless ($p->aktif)
+                                            <span
+                                                class="shrink-0 rounded-full border border-white/20 bg-white/5 px-2 py-0.5 font-semibold text-white/60">Disembunyikan</span>
+                                        @endunless
                                     </div>
                                     <p class="font-semibold text-sm line-clamp-1">{{ $p->judul }}</p>
                                     <p class="text-xs text-white/40 line-clamp-1 mt-0.5">{{ $p->isi }}</p>
                                 </div>
                                 <div class="flex items-center shrink-0">
+                                    <form method="POST"
+                                        action="{{ route('ic.admin.pengumuman.aktif', $p->id_broadcast) }}"
+                                        class="inline-flex">
+                                        @csrf
+                                        @method('PATCH')
+                                        <input type="hidden" name="aktif" value="{{ $p->aktif ? 0 : 1 }}">
+                                        <button type="submit"
+                                            aria-label="{{ $p->aktif ? 'Sembunyikan' : 'Tampilkan' }} pengumuman {{ $p->judul }}"
+                                            title="{{ $p->aktif ? 'Sembunyikan dari anggota' : 'Tampilkan ke anggota' }}"
+                                            class="w-11 h-11 inline-flex items-center justify-center text-white/40 hover:text-white transition">
+                                            <i class="bi {{ $p->aktif ? 'bi-eye-fill' : 'bi-eye-slash-fill' }}"
+                                                aria-hidden="true"></i>
+                                        </button>
+                                    </form>
                                     <a href="{{ route('ic.admin.pengumuman', ['ubah' => $p->id_broadcast, 'page' => $daftar->currentPage() > 1 ? $daftar->currentPage() : null]) }}#form-pengumuman-bagian"
                                         aria-label="Ubah pengumuman {{ $p->judul }}"
                                         class="w-11 h-11 inline-flex items-center justify-center text-white/40 hover:text-white transition">

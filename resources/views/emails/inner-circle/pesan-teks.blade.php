@@ -5,6 +5,9 @@
 {!! $judul !!}
 
 {!! $sapaan !!}
+@isset($kodeBesar)
+    {!! $kodeBesar !!}
+@endisset
 
 @foreach ($paragraf as $baris)
     {!! $baris !!}
@@ -17,5 +20,5 @@
 @endforeach
 
 --
-WS Inner Circle - Whisnu Santika
+{{ $merek ?? 'WS Inner Circle' }} - Whisnu Santika
 Kebijakan Privasi: {!! route('privasi') !!}

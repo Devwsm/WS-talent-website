@@ -60,7 +60,8 @@ class InnerCircleTest extends TestCase
 
     public function test_tamu_diarahkan_ke_masuk_inner_circle(): void
     {
-        $this->get('/inner-circle')->assertRedirect(route('ic.masuk'));
+        // Beranda anggota: tamu dialihkan ke halaman penjelasan program; area anggota lain langsung ke Masuk.
+        $this->get('/inner-circle')->assertRedirect(route('ic.tentang'));
         $this->get('/inner-circle/check-in?kode=WS-ABCDEFGHJKLM')->assertRedirect(route('ic.masuk'));
         $this->get('/dashboard')->assertRedirect(route('login'));
     }

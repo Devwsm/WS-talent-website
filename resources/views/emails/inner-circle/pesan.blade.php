@@ -27,8 +27,7 @@
                     <tr>
                         <td style="background-color:#5e0006;padding:22px 28px;">
                             <span
-                                style="font-size:13px;font-weight:bold;letter-spacing:3px;color:#ffffff;text-transform:uppercase;">WS
-                                Inner Circle</span>
+                                style="font-size:13px;font-weight:bold;letter-spacing:3px;color:#ffffff;text-transform:uppercase;">{{ $merek ?? 'WS Inner Circle' }}</span>
                             <br>
                             <span style="font-size:12px;color:#f3c9cc;">Whisnu Santika</span>
                         </td>
@@ -46,6 +45,12 @@
                             <h1 style="margin:0 0 16px;font-size:22px;line-height:1.3;color:#1a1a1a;">
                                 {{ $judul }}</h1>
                             <p style="margin:0 0 14px;">{{ $sapaan }}</p>
+
+                            @isset($kodeBesar)
+                                <p
+                                    style="margin:0 0 18px;padding:16px;background-color:#faf8f6;border-radius:12px;text-align:center;font-size:34px;font-weight:bold;letter-spacing:10px;color:#5e0006;">
+                                    {{ $kodeBesar }}</p>
+                            @endisset
 
                             @foreach ($paragraf as $baris)
                                 <p style="margin:0 0 14px;">{{ $baris }}</p>
@@ -75,7 +80,8 @@
                     <tr>
                         <td
                             style="padding:18px 28px;background-color:#faf8f6;border-top:1px solid #eeeae6;font-size:12px;line-height:1.5;color:#888888;">
-                            Email ini dikirim otomatis oleh WS Inner Circle. Jangan membalas email ini.<br>
+                            Email ini dikirim otomatis oleh {{ $merek ?? 'WS Inner Circle' }}. Jangan membalas email
+                            ini.<br>
                             <a href="{{ route('privasi') }}" style="color:#5e0006;">Kebijakan Privasi</a>
                             @if (filled(config('site.kontak_privasi')))
                                 &middot; Pertanyaan: <a href="mailto:{{ config('site.kontak_privasi') }}"

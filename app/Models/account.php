@@ -11,7 +11,7 @@ class account extends Model
     protected $primaryKey = 'id_account';
     protected $fillable = [
         'username',
+        'email',
         'password'
     ];
-
 }

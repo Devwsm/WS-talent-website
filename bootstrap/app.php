@@ -22,14 +22,17 @@ return Application::configure(basePath: dirname(__DIR__))
             'cekLogin' => \App\Http\Middleware\CekLogin::class,
             'icAktif' => \App\Http\Middleware\IcAktif::class,
             'icSesi' => \App\Http\Middleware\IcSesiVersi::class,
+            'catatAktivitas' => \App\Http\Middleware\CatatAktivitas::class,
         ]);
 
-        // Pengunjung yang belum login: area anggota ke halaman Masuk Inner Circle,
-        // selain itu tetap ke halaman login admin seperti sebelumnya.
+        // Pengunjung yang belum login: /inner-circle (beranda anggota) ke halaman penjelasan program, area anggota
+        // lainnya (QR check-in, hadiah, dst.) ke halaman Masuk, selain itu tetap ke login admin seperti sebelumnya.
         $middleware->redirectGuestsTo(
-            fn(Request $request) => $request->is('inner-circle', 'inner-circle/*')
-                ? route('ic.masuk')
-                : route('login')
+            fn(Request $request) => match (true) {
+                $request->routeIs('ic.beranda') => route('ic.tentang'),
+                $request->is('inner-circle', 'inner-circle/*') => route('ic.masuk'),
+                default => route('login'),
+            }
         );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
@@ -37,5 +40,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // isinya ikut tersimpan di sesi sebagai "old input" saat validasi gagal.
         $exceptions->dontFlash(['sandi', 'sandi_confirmation']);
 
-        //
+        // Error tak terduga disimpan ke halaman Log di dashboard (dan dikabari lewat email bila LOG_ALERT_EMAIL diisi).
+        // Pencatat ini tidak pernah melempar galat, dan laporan bawaan Laravel ke storage/logs tetap jalan.
+        $exceptions->report(function (\Throwable $e) {
+            app(\App\Services\LogErrorService::class)->catat($e);
+        });
     })->create();

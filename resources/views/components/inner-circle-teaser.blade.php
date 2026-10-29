@@ -53,5 +53,12 @@
                 </a>
             @endif
         </div>
+
+        <div data-motion="fade-up" data-motion-delay="0.2">
+            <a href="{{ route('ic.tentang') }}"
+                class="text-sm text-white/60 underline underline-offset-4 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+                Pelajari cara kerjanya
+            </a>
+        </div>
     </div>
 </section>

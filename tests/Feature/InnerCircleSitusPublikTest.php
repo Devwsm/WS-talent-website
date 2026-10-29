@@ -83,13 +83,20 @@ class InnerCircleSitusPublikTest extends TestCase
         $this->assertStringContainsString('Allow: /', $robots);
     }
 
-    public function test_sitemap_tidak_memuat_halaman_inner_circle(): void
+    public function test_sitemap_hanya_memuat_halaman_penjelasan_inner_circle(): void
     {
         $this->nyala(true);
 
+        // Halaman penjelasan program boleh diindeks; area anggota tidak boleh ada di sitemap.
         $this->get('/sitemap.xml')
             ->assertOk()
-            ->assertDontSee('inner-circle');
+            ->assertSee('/inner-circle/tentang')
+            ->assertDontSee('/inner-circle/masuk')
+            ->assertDontSee('/inner-circle/daftar')
+            ->assertDontSee('/inner-circle/hadiah');
+
+        $this->nyala(false);
+        $this->get('/sitemap.xml')->assertOk()->assertDontSee('inner-circle');
     }
 
     public function test_halaman_inner_circle_tetap_noindex(): void

@@ -15,7 +15,8 @@ use Illuminate\Support\Facades\DB;
  * - klaim hanya bila stempel_total >= target tahap, sekali per anggota per tahap;
  * - tahap yang punya pilihan (mis. 50 stempel) wajib memilih salah satunya;
  * - status bergerak diajukan -> ditinjau -> disetujui -> selesai, atau ditolak (alasan wajib);
- *   selesai dan ditolak adalah akhir alur. Tiap perubahan dicatat di ic_claim_logs.
+ *   selesai adalah akhir alur. Pengajuan yang ditolak bisa dibuka kembali oleh admin (kembali ke diajukan).
+ *   Tiap perubahan dicatat di ic_claim_logs.
  *
  * Stempel tidak berkurang saat klaim: hadiah tidak "membeli" stempel.
  */
@@ -142,6 +143,9 @@ class ClaimService
      *               catatan yang sudah ada dibiarkan.
      * - `tolak`   : status jadi `ditolak`, alasan (catatan) wajib dan tampil di Profil anggota.
      * - `catatan` : hanya mengganti catatan (mis. kode voucher), status tetap. Boleh dikosongkan.
+     * - `buka_kembali` : hanya dari `ditolak`. Status kembali ke `diajukan` dan alur dimulai lagi dari awal. Catatan lama
+     *               (alasan penolakan) dihapus dari tampilan anggota, diganti catatan baru bila diisi; alasan lama tetap
+     *               tersimpan di riwayat (ic_claim_logs).
      *
      * $dariStatus adalah status yang dilihat admin di layarnya. Bila sudah berubah (klik ganda, atau
      * admin lain sudah memprosesnya), perubahan ditolak supaya status tidak melompat dua langkah.
@@ -165,7 +169,9 @@ class ClaimService
             switch ($aksi) {
                 case 'lanjut':
                     if (! isset($alur[$k->status])) {
-                        throw new KlaimGagal('Pengajuan ini sudah selesai atau ditolak, jadi statusnya tidak bisa diubah lagi.');
+                        throw new KlaimGagal($k->status === 'ditolak'
+                            ? 'Pengajuan ini ditolak. Gunakan "Buka kembali" bila ingin memprosesnya lagi.'
+                            : 'Pengajuan ini sudah selesai, jadi statusnya tidak bisa diubah lagi.');
                     }
                     $statusBaru = $alur[$k->status]['berikutnya'];
                     $catatanBaru = $catatan ?? $k->catatan_admin;
@@ -173,7 +179,9 @@ class ClaimService
 
                 case 'tolak':
                     if (! isset($alur[$k->status])) {
-                        throw new KlaimGagal('Pengajuan ini sudah selesai atau ditolak, jadi statusnya tidak bisa diubah lagi.');
+                        throw new KlaimGagal($k->status === 'ditolak'
+                            ? 'Pengajuan ini sudah ditolak.'
+                            : 'Pengajuan ini sudah selesai, jadi statusnya tidak bisa diubah lagi.');
                     }
                     if ($catatan === null) {
                         throw new KlaimGagal('Alasan penolakan wajib diisi.');
@@ -183,6 +191,14 @@ class ClaimService
                     break;
 
                 case 'catatan':
+                    $catatanBaru = $catatan;
+                    break;
+
+                case 'buka_kembali':
+                    if ($k->status !== 'ditolak') {
+                        throw new KlaimGagal('Hanya pengajuan yang ditolak yang bisa dibuka kembali.');
+                    }
+                    $statusBaru = 'diajukan';
                     $catatanBaru = $catatan;
                     break;
 

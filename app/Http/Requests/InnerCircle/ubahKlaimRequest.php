@@ -5,7 +5,7 @@ namespace App\Http\Requests\InnerCircle;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-/** Proses klaim di dashboard: lanjut, tolak, atau ubah catatan. Aturan alurnya dicek di ClaimService. */
+/** Proses klaim di dashboard: lanjut, tolak, ubah catatan, atau buka kembali yang ditolak. Aturan alurnya dicek di ClaimService. */
 class ubahKlaimRequest extends FormRequest
 {
     public function authorize(): bool
@@ -22,7 +22,7 @@ class ubahKlaimRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'aksi' => ['required', Rule::in(['lanjut', 'tolak', 'catatan'])],
+            'aksi' => ['required', Rule::in(['lanjut', 'tolak', 'catatan', 'buka_kembali'])],
             'dari' => ['required', Rule::in(array_keys(config('inner_circle.status_klaim')))],
             'catatan' => ['nullable', 'string', 'max:160'],
         ];

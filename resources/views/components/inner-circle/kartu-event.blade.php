@@ -1,4 +1,4 @@
-@props(['event', 'dipilih' => false, 'href' => null])
+@props(['event', 'dipilih' => false, 'href' => null, 'info' => false])
 @php
     $tipe = config('inner_circle.tipe_event.' . $event->tipe);
     $statusWaktu =
@@ -9,9 +9,10 @@
     $bisaDipilih = $event->bisa_checkin && $href;
     $tag = $bisaDipilih ? 'a' : 'div';
 @endphp
-{{-- Event privat dan event tanpa venue tetap tampil, tapi tidak bisa dipilih untuk check-in. --}}
-<{{ $tag }} @if ($bisaDipilih) href="{{ $href }}" @else aria-disabled="true" @endif
-    class="ic-event ic-warna-{{ $tipe['warna'] }} {{ $dipilih ? 'is-dipilih' : '' }} {{ $bisaDipilih ? '' : 'is-nonaktif' }}"
+{{-- Event privat dan event tanpa venue tetap tampil, tapi tidak bisa dipilih untuk check-in. `info` = kartu informasi biasa (halaman publik): tanpa panah dan tanpa tampilan nonaktif. --}}
+<{{ $tag }}
+    @if ($bisaDipilih) href="{{ $href }}" @elseif (!$info) aria-disabled="true" @endif
+    class="ic-event ic-warna-{{ $tipe['warna'] }} {{ $dipilih ? 'is-dipilih' : '' }} {{ $bisaDipilih || $info ? '' : 'is-nonaktif' }}"
     @if ($dipilih) aria-current="true" @endif>
     <span class="ic-event__seni"><x-inner-circle.ikon :nama="$tipe['ikon']" kelas="ic-ikon--event" /></span>
     <span class="ic-event__isi">
@@ -25,6 +26,8 @@
                     aria-hidden="true"></i> Sudah check-in</span>
         @endif
     </span>
-    <span class="ic-event__panah" aria-hidden="true"><i
-            class="bi {{ $bisaDipilih ? 'bi-chevron-right' : 'bi-dash' }}"></i></span>
+    @unless ($info)
+        <span class="ic-event__panah" aria-hidden="true"><i
+                class="bi {{ $bisaDipilih ? 'bi-chevron-right' : 'bi-dash' }}"></i></span>
+    @endunless
     </{{ $tag }}>

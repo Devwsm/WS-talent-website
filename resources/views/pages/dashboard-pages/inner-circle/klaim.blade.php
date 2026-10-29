@@ -72,7 +72,8 @@
 
             <p class="text-xs text-white/40 -mt-3">
                 Alur status: Diajukan → Ditinjau → Disetujui → Selesai. Pengajuan bisa ditolak selama belum selesai
-                (alasan wajib dan tampil di profil anggota). Catatan, mis. kode voucher, juga tampil di profil anggota.
+                (alasan wajib dan tampil di profil anggota). Yang ditolak bisa <b>dibuka kembali</b> dan kembali ke
+                Diajukan. Catatan, mis. kode voucher, juga tampil di profil anggota.
             </p>
 
             @if ($klaim->isEmpty())
@@ -130,6 +131,12 @@
                                         <button type="button" data-aksi="tolak"
                                             class="h-11 px-4 rounded-full border border-red-400/30 text-red-300 text-xs font-semibold hover:bg-red-400/10 transition-colors">
                                             Tolak
+                                        </button>
+                                    @endif
+                                    @if ($k->status === 'ditolak')
+                                        <button type="button" data-aksi="buka_kembali"
+                                            class="h-11 px-5 rounded-full bg-white text-black text-xs font-semibold hover:bg-white/80 transition-colors">
+                                            Buka kembali
                                         </button>
                                     @endif
                                     <button type="button" data-aksi="catatan"
@@ -199,6 +206,12 @@
                         inputLabel: 'Alasan (tampil di profil anggota)',
                         inputValidator: (nilai) => (nilai.trim() ? undefined : 'Alasan wajib diisi.'),
                         confirmButtonText: 'Ya, tolak',
+                    },
+                    buka_kembali: {
+                        title: 'Buka kembali pengajuan ini?',
+                        inputLabel: 'Catatan untuk anggota (opsional). Alasan penolakan sebelumnya hilang dari profil anggota, tapi tetap ada di riwayat.',
+                        inputValue: '',
+                        confirmButtonText: 'Buka kembali',
                     },
                     catatan: {
                         title: 'Catatan pengajuan',

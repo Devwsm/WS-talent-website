@@ -11,6 +11,8 @@ use App\Http\Controllers\InnerCircle\googleController;
 use App\Http\Controllers\InnerCircle\kenanganController;
 use App\Http\Controllers\InnerCircle\lupaSandiController;
 use App\Http\Controllers\InnerCircle\memberController;
+use App\Http\Controllers\InnerCircle\tentangController;
+use App\Http\Controllers\logController;
 use App\Http\Controllers\loginController;
 use App\Http\Controllers\profileController;
 use App\Http\Controllers\SeoController;
@@ -30,6 +32,10 @@ Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
 Route::prefix('/')->group(function () {
     Route::get('/login', [loginController::class, 'login'])->name('login');
     Route::post('/login', [loginController::class, 'prosesLogin'])->name('login.proses')->middleware('throttle:5,1');
+    // 2FA email (ADMIN_2FA_AKTIF): form kode, verifikasi, dan kirim ulang. Hanya bisa dibuka setelah sandi benar.
+    Route::get('/login/otp', [loginController::class, 'formOtp'])->name('login.otp');
+    Route::post('/login/otp', [loginController::class, 'prosesOtp'])->name('login.otp.proses')->middleware('throttle:admin-otp');
+    Route::post('/login/otp/kirim-ulang', [loginController::class, 'kirimUlangOtp'])->name('login.otp.ulang')->middleware('throttle:admin-otp-ulang');
     // Logout wajib POST (+ CSRF) supaya nggak bisa dipicu dari link/gambar situs lain.
     Route::post('/logout', [loginController::class, 'logout'])->name('logout');
     // Tombol/link lama (GET) nggak error 405 — cukup dialihkan.
@@ -40,6 +46,9 @@ Route::prefix('/')->group(function () {
 // Fase 4-6: akun anggota (guard `member`), check-in, stempel, hadiah, klaim, Komunitas (pengumuman, kenangan),
 // dan foto profil sudah tersambung ke database.
 Route::prefix('/inner-circle')->middleware('icAktif')->name('ic.')->group(function () {
+    // Halaman publik yang menjelaskan program untuk calon anggota (tamu yang membuka /inner-circle dialihkan ke sini).
+    Route::get('/tentang', [tentangController::class, 'index'])->name('tentang');
+
     Route::get('/masuk', [authController::class, 'masuk'])->name('masuk');
     Route::post('/masuk', [authController::class, 'prosesMasuk'])->name('masuk.proses')->middleware('throttle:ic-masuk');
     Route::get('/daftar', [authController::class, 'daftar'])->name('daftar');
@@ -74,8 +83,15 @@ Route::prefix('/inner-circle')->middleware('icAktif')->name('ic.')->group(functi
     });
 });
 
-Route::prefix('/dashboard')->middleware('cekLogin')->group(function () {
+Route::prefix('/dashboard')->middleware(['cekLogin', 'catatAktivitas'])->group(function () {
     Route::get('/', [dashboardController::class, 'dashboard'])->name('dashboard');
+
+    // Log: error aplikasi dan jejak aktivitas admin (tersedia terlepas dari flag Inner Circle).
+    Route::prefix('/log')->name('log.')->group(function () {
+        Route::get('/', [logController::class, 'index'])->name('index');
+        Route::patch('/error/{id}', [logController::class, 'ubahError'])->whereNumber('id')->name('error.ubah')->middleware('throttle:admin-aksi-kecil');
+        Route::delete('/error', [logController::class, 'bersihkanSelesai'])->name('error.bersihkan')->middleware('throttle:admin-aksi-kecil');
+    });
 
     // WS Inner Circle — panel admin di dashboard CMS (7 tab), ikut flag INNER_CIRCLE_AKTIF (404 bila mati).
     // Fase 4-6: semua tab sudah memakai database.
@@ -99,9 +115,11 @@ Route::prefix('/dashboard')->middleware('cekLogin')->group(function () {
         Route::patch('/klaim/{id}', [adminController::class, 'ubahKlaim'])->whereNumber('id')->name('klaim.proses')->middleware('throttle:30,1');
         Route::get('/hadiah', [adminController::class, 'hadiah'])->name('hadiah');
         Route::put('/hadiah/{target}', [adminController::class, 'ubahHadiah'])->whereNumber('target')->name('hadiah.ubah')->middleware('throttle:10,1');
+        Route::patch('/hadiah/{target}/aktif', [adminController::class, 'aktifkanHadiah'])->whereNumber('target')->name('hadiah.aktif')->middleware('throttle:admin-aksi-kecil');
         Route::get('/pengumuman', [adminController::class, 'pengumuman'])->name('pengumuman');
         Route::post('/pengumuman', [adminController::class, 'simpanPengumuman'])->name('pengumuman.simpan')->middleware('throttle:10,1');
         Route::put('/pengumuman/{id}', [adminController::class, 'ubahPengumuman'])->whereNumber('id')->name('pengumuman.ubah')->middleware('throttle:10,1');
+        Route::patch('/pengumuman/{id}/aktif', [adminController::class, 'aktifkanPengumuman'])->whereNumber('id')->name('pengumuman.aktif')->middleware('throttle:admin-aksi-kecil');
         Route::delete('/pengumuman/{id}', [adminController::class, 'hapusPengumuman'])->whereNumber('id')->name('pengumuman.hapus')->middleware('throttle:10,1');
         Route::get('/kenangan', [adminController::class, 'kenangan'])->name('kenangan');
         Route::patch('/kenangan/{id}', [adminController::class, 'moderasiKenangan'])->whereNumber('id')->name('kenangan.moderasi')->middleware('throttle:30,1');

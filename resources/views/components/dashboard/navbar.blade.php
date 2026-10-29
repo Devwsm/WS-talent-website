@@ -7,6 +7,7 @@
         ['route' => 'albums', 'icon' => 'bi-disc-fill', 'label' => 'Albums'],
         ['route' => 'news', 'icon' => 'bi-newspaper', 'label' => 'News'],
         ['route' => 'merchandise', 'icon' => 'bi-basket-fill', 'label' => 'Merchandise'],
+        ['route' => 'log.index', 'pola' => 'log.*', 'icon' => 'bi-journal-text', 'label' => 'Log'],
     ];
     // WS Inner Circle: menu muncul hanya bila flag INNER_CIRCLE_AKTIF menyala (lokal/preview dulu).
     $icAktif = config('inner_circle.aktif');
@@ -26,6 +27,7 @@
         'albums',
         'news',
         'merchandise',
+        'log.*',
         'ic.admin.*',
     ]);
 @endphp

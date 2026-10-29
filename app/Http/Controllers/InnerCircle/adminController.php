@@ -368,8 +368,8 @@ class adminController extends Controller
             return back()->with('error', $e->getMessage());
         }
 
-        // Anggota diberi kabar saat status berubah (lanjut atau tolak). Mengubah catatan saja tidak mengirim email.
-        if (in_array($request->validated('aksi'), ['lanjut', 'tolak'], true)) {
+        // Anggota diberi kabar saat status berubah (lanjut, tolak, atau buka kembali). Mengubah catatan saja tidak mengirim email.
+        if (in_array($request->validated('aksi'), ['lanjut', 'tolak', 'buka_kembali'], true)) {
             $email->kirimStatusKlaim($hasil);
         }
 
@@ -377,6 +377,7 @@ class adminController extends Controller
         $pesan = match ($request->validated('aksi')) {
             'lanjut' => "Pengajuan {$nama} sekarang berstatus " . config('inner_circle.status_klaim.' . $hasil->status . '.label') . '.',
             'tolak' => "Pengajuan {$nama} ditolak. Alasannya tampil di profil anggota.",
+            'buka_kembali' => "Pengajuan {$nama} dibuka kembali dan berstatus Diajukan.",
             default => "Catatan untuk {$nama} disimpan.",
         };
 
@@ -387,7 +388,6 @@ class adminController extends Controller
     public function hadiah(Request $request)
     {
         $rewards = ic_reward::query()
-            ->where('aktif', true)
             ->orderBy('urutan')
             ->orderBy('target_stempel')
             ->get()
@@ -415,6 +415,27 @@ class adminController extends Controller
 
         return redirect(route('ic.admin.hadiah', ['tahap' => $target]))
             ->with('success', "Tahap {$target} stempel diperbarui.");
+    }
+
+    /**
+     * Tampilkan atau sembunyikan satu tahap hadiah dari anggota. Tahap yang disembunyikan tidak tampil di halaman
+     * Hadiah dan tidak bisa diklaim baru; pengajuan yang sudah masuk tetap diproses. Minimal satu tahap harus aktif.
+     */
+    public function aktifkanHadiah(int $target, Request $request): RedirectResponse
+    {
+        $aktif = (bool) $request->validate(['aktif' => ['required', 'boolean']])['aktif'];
+        $reward = ic_reward::query()->where('target_stempel', $target)->firstOrFail();
+
+        if (! $aktif && ! ic_reward::query()->where('aktif', true)->where('id_reward', '!=', $reward->getKey())->exists()) {
+            return redirect(route('ic.admin.hadiah', ['tahap' => $target]))
+                ->with('error', 'Minimal satu tahap hadiah harus tetap aktif.');
+        }
+
+        $reward->update(['aktif' => $aktif]);
+
+        return redirect(route('ic.admin.hadiah', ['tahap' => $target]))->with('success', $aktif
+            ? "Tahap {$target} stempel aktif lagi dan tampil ke anggota."
+            : "Tahap {$target} stempel disembunyikan dari anggota. Pengajuan yang sudah masuk tetap diproses.");
     }
 
     /**
@@ -451,6 +472,18 @@ class adminController extends Controller
         $pengumuman->simpan($request->validated(), ic_broadcast::query()->findOrFail($id));
 
         return redirect()->route('ic.admin.pengumuman')->with('success', 'Pengumuman diperbarui.');
+    }
+
+    /** Sembunyikan pengumuman dari anggota tanpa menghapusnya (atau tampilkan lagi). */
+    public function aktifkanPengumuman(int $id, Request $request): RedirectResponse
+    {
+        $aktif = (bool) $request->validate(['aktif' => ['required', 'boolean']])['aktif'];
+        $p = ic_broadcast::query()->findOrFail($id);
+        $p->update(['aktif' => $aktif]);
+
+        return back()->with('success', $aktif
+            ? "Pengumuman “{$p->judul}” ditampilkan lagi ke anggota."
+            : "Pengumuman “{$p->judul}” disembunyikan dari anggota (tidak dihapus).");
     }
 
     public function hapusPengumuman(int $id, PengumumanService $pengumuman): RedirectResponse

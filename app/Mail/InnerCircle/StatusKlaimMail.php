@@ -22,6 +22,7 @@ class StatusKlaimMail extends PesanIc
     protected function isi(): array
     {
         $kalimat = match ($this->status) {
+            'diajukan' => "Pengajuan hadiah \"{$this->hadiah}\" kami buka kembali dan akan ditinjau lagi oleh tim WSM.",
             'ditolak' => "Pengajuan hadiah \"{$this->hadiah}\" belum bisa kami proses.",
             'selesai' => "Pengajuan hadiah \"{$this->hadiah}\" sudah selesai. Terima kasih sudah jadi bagian dari Inner Circle!",
             default => "Status pengajuan hadiah \"{$this->hadiah}\" sekarang: {$this->labelStatus}.",

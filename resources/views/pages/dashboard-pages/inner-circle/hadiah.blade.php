@@ -56,7 +56,8 @@
             @include('components.dashboard.inner-circle.tabs', [
                 'aktif' => 'hadiah',
                 'judul' => 'Hadiah',
-                'deskripsi' => 'Atur lima tahapan hadiah: judul, deskripsi, ikon, warna, dan pilihan hadiah.',
+                'deskripsi' =>
+                    'Atur lima tahapan hadiah: judul, deskripsi, ikon, warna, pilihan hadiah, dan tampil/sembunyikan.',
             ])
 
             @include('components/errors')
@@ -82,7 +83,8 @@
                                 <button type="button" data-tahap="{{ $r->target_stempel }}"
                                     aria-pressed="{{ $dipilih ? 'true' : 'false' }}"
                                     class="h-11 min-w-16 px-4 rounded-full border text-sm font-semibold transition-colors
-                                {{ $dipilih ? 'bg-white text-black border-white' : 'border-white/10 text-white/60 hover:bg-white/10 hover:text-white' }}">
+                                {{ $dipilih ? 'bg-white text-black border-white' : 'border-white/10 text-white/60 hover:bg-white/10 hover:text-white' }} {{ $r->aktif ? '' : 'opacity-60 border-dashed' }}"
+                                    @unless ($r->aktif) title="Disembunyikan dari anggota" @endunless>
                                     {{ $r->target_stempel }}
                                 </button>
                             @endforeach
@@ -156,6 +158,40 @@
                             <p class="text-xs text-white/30">Simpan dilakukan per tahapan: hanya tahapan yang sedang dibuka
                                 yang tersimpan.</p>
                         </form>
+
+                        {{-- Tampil/sembunyikan tiap tahap. Satu form per tahap (tanpa JavaScript). --}}
+                        <div class="mt-8 pt-6 border-t border-white/10">
+                            <h3 class="font-bold uppercase tracking-wide text-sm mb-1 flex items-center gap-2">
+                                <i class="bi bi-eye text-white/50" aria-hidden="true"></i> Tampil ke anggota
+                            </h3>
+                            <p class="text-xs text-white/40 mb-4">Tahap yang disembunyikan tidak tampil di halaman Hadiah
+                                dan tidak bisa diklaim baru. Pengajuan yang sudah masuk tetap diproses. Minimal satu tahap
+                                harus aktif.</p>
+                            <ul class="flex flex-col gap-2">
+                                @foreach ($rewards as $r)
+                                    <li
+                                        class="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/3 px-4 py-2.5">
+                                        <p class="min-w-0 flex-1 text-sm">
+                                            <b>{{ $r->target_stempel }}</b> stempel
+                                            <span class="text-white/50">· {{ $r->judul }}</span>
+                                        </p>
+                                        <span
+                                            class="shrink-0 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold {{ $r->aktif ? 'border-emerald-300/30 bg-emerald-300/10 text-emerald-200' : 'border-white/15 text-white/50' }}">{{ $r->aktif ? 'Aktif' : 'Disembunyikan' }}</span>
+                                        <form method="POST"
+                                            action="{{ route('ic.admin.hadiah.aktif', $r->target_stempel) }}"
+                                            class="shrink-0">
+                                            @csrf
+                                            @method('PATCH')
+                                            <input type="hidden" name="aktif" value="{{ $r->aktif ? 0 : 1 }}">
+                                            <button type="submit"
+                                                class="h-11 px-4 rounded-full border border-white/15 text-xs font-semibold text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+                                                {{ $r->aktif ? 'Sembunyikan' : 'Aktifkan' }}
+                                            </button>
+                                        </form>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
                     </div>
 
                     {{-- PREVIEW: ubin dan baris klaim yang sama dengan halaman Hadiah anggota --}}
