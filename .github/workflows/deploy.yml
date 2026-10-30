@@ -28,6 +28,17 @@ jobs:
       - name: Pasang dependensi PHP
         run: composer install --no-interaction --prefer-dist --no-progress
 
+      # Tampilan memakai @vite, jadi tes halaman butuh public/build/manifest.json (folder ini tidak ada di repo).
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Build aset (Vite)
+        run: |
+          npm ci
+          npm run build
+
       # phpunit.xml sudah memaku semua env tes (sqlite memori), jadi tidak perlu file .env.
       - name: Jalankan tes
         run: vendor/bin/phpunit
