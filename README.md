@@ -75,13 +75,13 @@ Semua gambar sebaiknya di bawah 16 megapiksel (kira-kira 4000 x 4000 piksel). Vi
 ### Kondisi saat ini dan langkah menuju tayang
 
 - Di server hanya halaman profil artis yang tayang. Inner Circle sudah ada di kode tetapi **sengaja dimatikan**.
-- **Belum ada auto deploy**: pembaruan masih diunggah manual ke hosting.
+- **Auto deploy lewat GitHub Actions + SSH**: setiap push ke `main` dites lalu dikirim ke hosting otomatis (lihat [Auto deploy](#auto-deploy-github-actions--ssh)).
 
 Urutan menyalakan Inner Circle (langkah lengkap di [Panduan rilis ke hosting](#panduan-rilis-ke-hosting)):
 
 1. Siapkan server (PHP 8.4+, HTTPS) dan cadangan database.
 2. Isi pengaturan rahasia (`.env`) di server, termasuk sandi email.
-3. Unggah kode terbaru, atau pasang auto deploy.
+3. Unggah kode terbaru (otomatis lewat auto deploy).
 4. Buat tabel database baru dan **ganti sandi admin lama**.
 5. Uji di alamat preview, lewat ponsel.
 6. Siapkan login Google untuk publik.
@@ -119,13 +119,13 @@ Bagian ini untuk developer.
 
 ### Stack dan hosting
 
-| Bagian   | Isi                                                                                           |
-| -------- | --------------------------------------------------------------------------------------------- |
-| Backend  | Laravel 13, **PHP 8.4+** (`composer.lock` memuat Symfony 8.1 yang butuh PHP >= 8.4.1), MySQL  |
-| Frontend | Tailwind CSS 4, Vite, Swiper, SweetAlert2, Bootstrap Icons, Quill (CMS)                       |
-| Hosting  | cPanel bersama (Rumahweb) tanpa terminal; sesi, antrean, dan cache memakai driver `database`  |
-| Ekstensi | `gd` (dengan WebP), `exif`, `mbstring`, `pdo_mysql`                                           |
-| Lainnya  | Zona waktu `Asia/Jakarta`; video header butuh `ffmpeg` (umumnya tidak ada di hosting bersama) |
+| Bagian   | Isi                                                                                            |
+| -------- | ---------------------------------------------------------------------------------------------- |
+| Backend  | Laravel 13, **PHP 8.4+** (`composer.lock` memuat Symfony 8.1 yang butuh PHP >= 8.4.1), MySQL   |
+| Frontend | Tailwind CSS 4, Vite, Swiper, SweetAlert2, Bootstrap Icons, Quill (CMS)                        |
+| Hosting  | cPanel bersama (Rumahweb) dengan akses SSH; sesi, antrean, dan cache memakai driver `database` |
+| Ekstensi | `gd` (dengan WebP), `exif`, `mbstring`, `pdo_mysql`                                            |
+| Lainnya  | Zona waktu `Asia/Jakarta`; video header butuh `ffmpeg` (umumnya tidak ada di hosting bersama)  |
 
 Route utama: situs publik `/` dan `/profile` (`robots.txt` dan `sitemap.xml` dibuat dinamis oleh `SeoController`), CMS `/dashboard` (login di `/login`), Inner Circle `/inner-circle/*` dan `/dashboard/inner-circle`, halaman `/privasi` (publik, selalu aktif).
 
@@ -371,14 +371,40 @@ Cek setelah menyimpan: buka `https://domain/.env` di browser (harus 404 atau 403
 1. Di mesin build (lokal atau workflow) dengan PHP 8.4: `composer install --no-dev --optimize-autoloader`, lalu `npm ci` dan `npm run build`.
 2. Unggah semua, **termasuk** `vendor/` dan `public/build/`, **kecuali**: `.env`, `.git`, `node_modules`, `public/hot`, `storage/logs/*`, `bootstrap/cache/*` (lihat [Cek sebelum deploy production](#cek-sebelum-deploy-production)), dan `tests`.
 3. Pastikan `public/robots.txt` **tidak ada** di server (route dinamis yang dipakai) dan `public/storage` tertaut ke `storage/app/public` (foto muncul).
-4. Auto deploy (belum ada): saat dibuat, `.env` wajib dikecualikan dari unggahan dan rahasia disimpan di secret manager, bukan repo.
+4. Auto deploy: sudah ada, lihat [Auto deploy](#auto-deploy-github-actions--ssh). `.env` dikecualikan dari unggahan dan rahasia disimpan di GitHub Secrets, bukan di repo.
+
+#### Auto deploy (GitHub Actions + SSH)
+
+Berkas: `.github/workflows/deploy.yml`. Setiap push ke `main` menjalankan dua tahap; bila tes gagal, deploy tidak jalan.
+
+1. **Tes**: `vendor/bin/phpunit` (sqlite memori, tanpa `.env`).
+2. **Deploy**: build di GitHub (`composer install --no-dev`, `npm ci`, `npm run build`), kirim lewat `rsync` ke server, lalu jalankan `migrate --force` dan `optimize:clear`.
+
+Yang **tidak pernah** disentuh di server: `.env`, `storage/`, `bootstrap/cache/`, `.git` server, `node_modules`, `public/hot` (malah dihapus), serta `index.php` dan `.htaccess` di `public_html`.
+
+Yang dikirim ke dua tempat: kode ke folder Laravel (`APP_PATH`), `public/aset` dan `public/build` ke `public_html` (`PUBLIC_PATH`). Folder `public/` di dalam folder Laravel juga ikut terisi karena `public_path()` (dan manifest Vite) membaca dari sana.
+
+**Secrets** (GitHub repo > Settings > Secrets and variables > Actions):
+
+| Nama              | Isi                                                         |
+| ----------------- | ----------------------------------------------------------- |
+| `SSH_HOST`        | Host SSH hosting                                            |
+| `SSH_PORT`        | Port SSH hosting                                            |
+| `SSH_USER`        | Username cPanel                                             |
+| `SSH_PRIVATE_KEY` | Isi kunci privat khusus deploy (seluruh file)               |
+| `APP_PATH`        | Path folder Laravel di server (berisi `artisan` dan `.env`) |
+| `PUBLIC_PATH`     | Path folder web publik di server (berisi `index.php`)       |
+
+Opsional, di tab **Variables**: `PHP_BIN` bila `php` di SSH bukan versi 8.4 (cek dengan `php -v` di server).
+
+**Rollback:** revert commit di GitHub lalu push; deploy jalan lagi dengan kode lama. Migrasi tidak ikut mundur, jadi buat migration baru bila perlu.
 
 #### Database
 
 1. Buat tabel baru di database server: `members`, semua `ic_*`, `log_errors`, `log_aktivitas`, kolom baru `accounts.email`, plus `sessions`, `cache`, dan `jobs`.
 2. Tanpa terminal, pilih salah satu:
     - **(a)** di lokal jalankan `php artisan migrate` pada database kosong, lalu di phpMyAdmin **Export > Custom**: struktur semua tabel, dan **struktur + data** untuk `migrations` dan `ic_rewards` (lima tahap hadiah terisi lewat migration). Impor hasilnya lewat **Import** di database server.
-    - **(b)** setelah auto deploy aktif (ada akses SSH): jalankan `php artisan migrate --force` dari workflow, dan phpMyAdmin tidak diperlukan lagi.
+    - **(b)** lewat auto deploy: workflow menjalankan `php artisan migrate --force` di setiap deploy, jadi phpMyAdmin tidak diperlukan lagi.
 3. Ganti sandi admin lama (lihat [Ganti sandi admin](#ganti-sandi-admin)).
 4. Isi email admin (tujuan kode OTP login) di phpMyAdmin: `UPDATE accounts SET email = 'alamat@email.com' WHERE username = 'username-admin';` Atau isi `ADMIN_EMAIL` lalu jalankan `php artisan db:seed --class=accountSeeder` (email hanya diisi bila masih kosong).
 

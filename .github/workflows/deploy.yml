@@ -1,0 +1,128 @@
+name: Test & Deploy Production
+
+# Setiap push ke branch main: jalankan tes, lalu (bila lulus) deploy ke hosting lewat SSH.
+# Bisa juga dijalankan manual dari tab Actions (workflow_dispatch).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Satu deploy pada satu waktu; deploy berikutnya menunggu, tidak saling menimpa.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: Tes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: mbstring, exif, gd, bcmath, fileinfo, pdo_sqlite, sqlite3
+          coverage: none
+
+      - name: Pasang dependensi PHP
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      # phpunit.xml sudah memaku semua env tes (sqlite memori), jadi tidak perlu file .env.
+      - name: Jalankan tes
+        run: vendor/bin/phpunit
+
+  deploy:
+    name: Deploy ke hosting
+    needs: test
+    runs-on: ubuntu-latest
+    env:
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_PORT: ${{ secrets.SSH_PORT }}
+      SSH_USER: ${{ secrets.SSH_USER }}
+      APP_PATH: ${{ secrets.APP_PATH }} # folder Laravel di server, mis. /home/whim4521/laravel
+      PUBLIC_PATH: ${{ secrets.PUBLIC_PATH }} # folder web publik, mis. /home/whim4521/public_html
+      PHP_BIN: ${{ vars.PHP_BIN || 'php' }} # opsional: path PHP 8.4 di server
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: mbstring, exif, gd, bcmath, fileinfo, pdo_mysql
+          coverage: none
+
+      # Build dilakukan di sini, bukan di hosting: vendor/ dan public/build/ dikirim jadi.
+      - name: Pasang dependensi PHP (tanpa paket dev)
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-progress
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Build aset (Vite)
+        run: |
+          npm ci
+          npm run build
+
+      - name: Siapkan SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p "$SSH_PORT" "$SSH_HOST" >> ~/.ssh/known_hosts
+
+      # Pengaman: pastikan path benar sebelum rsync --delete jalan, supaya tidak menghapus folder yang salah.
+      - name: Cek folder tujuan di server
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            "test -f '$APP_PATH/artisan' && test -f '$APP_PATH/.env' && test -f '$PUBLIC_PATH/index.php'"
+
+      - name: Kirim kode ke folder Laravel
+        run: |
+          set -euo pipefail
+          # .env, storage (foto unggahan, sesi, log), cache bootstrap, dan .git server tidak pernah disentuh.
+          rsync -rlptz --delete --max-delete=2000 --chmod=D755,F644 \
+            --exclude='/.git' --exclude='/.github' \
+            --exclude='/.env' --exclude='/.env.*' \
+            --exclude='/node_modules' --exclude='/tests' \
+            --exclude='/storage' \
+            --exclude='/bootstrap/cache/*' \
+            --exclude='/public/hot' --exclude='/public/storage' \
+            --exclude='/database/*.sqlite' \
+            --exclude='/.phpunit.result.cache' \
+            -e "ssh -i ~/.ssh/deploy_key -p $SSH_PORT" \
+            ./ "$SSH_USER@$SSH_HOST:$APP_PATH/"
+
+      # Server memakai dua folder publik: laravel/public (dibaca Vite manifest) dan public_html (yang diakses browser).
+      # index.php dan .htaccess di public_html milik server, jadi tidak disentuh.
+      - name: Kirim aset ke public_html
+        run: |
+          set -euo pipefail
+          rsync -rlptz --chmod=D755,F644 \
+            -e "ssh -i ~/.ssh/deploy_key -p $SSH_PORT" \
+            public/aset/ "$SSH_USER@$SSH_HOST:$PUBLIC_PATH/aset/"
+          rsync -rlptz --delete --chmod=D755,F644 \
+            -e "ssh -i ~/.ssh/deploy_key -p $SSH_PORT" \
+            public/build/ "$SSH_USER@$SSH_HOST:$PUBLIC_PATH/build/"
+
+      - name: Migrasi database dan bersihkan cache
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" bash -s <<REMOTE
+          set -euo pipefail
+          cd '$APP_PATH'
+          # public/hot membuat situs mencari aset ke komputer pengembang; wajib tidak ada di server.
+          rm -f public/hot '$PUBLIC_PATH/hot'
+          $PHP_BIN artisan migrate --force
+          $PHP_BIN artisan optimize:clear
+          REMOTE
+
+      - name: Bersihkan kunci SSH
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
