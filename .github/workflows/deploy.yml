@@ -39,6 +39,12 @@ jobs:
           npm ci
           npm run build
 
+      # Folder runtime Laravel tidak ikut di git (isinya di-ignore), padahal Blade butuh storage/framework/views.
+      - name: Siapkan folder storage
+        run: |
+          mkdir -p storage/framework/views storage/framework/cache/data storage/framework/sessions storage/framework/testing storage/logs bootstrap/cache
+          chmod -R 775 storage bootstrap/cache
+
       # phpunit.xml sudah memaku semua env tes (sqlite memori), jadi tidak perlu file .env.
       - name: Jalankan tes
         run: vendor/bin/phpunit
