@@ -141,6 +141,11 @@ jobs:
           # Sisanya (artisan, composer.*, bootstrap/*.php, public/aset, dll) ditimpa; .env dan storage tidak ada di paket.
           cp -a "$STAGE/." "$APP_PATH/"
 
+          # Cache bootstrap buatan komputer lokal memuat paket dev (mis. Pail) yang tidak ada di vendor produksi.
+          # Wajib dihapus sebelum artisan jalan; Laravel membuatnya lagi sendiri.
+          rm -f "$APP_PATH"/bootstrap/cache/*.php
+          rm -f "$APP_PATH/public/hot" "$PUBLIC_PATH/hot"
+
           # public_html: aset ditimpa, build diganti utuh. index.php dan .htaccess tidak disentuh.
           mkdir -p "$PUBLIC_PATH/aset"
           cp -a "$APP_PATH/public/aset/." "$PUBLIC_PATH/aset/"
