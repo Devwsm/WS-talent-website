@@ -313,6 +313,21 @@ Memasang situs (dengan Inner Circle) ke hosting cPanel **tanpa terminal**. Kerja
 | 7   | Data awal dan nyalakan | Inner Circle tayang                         |
 | 8   | Verifikasi             | Semua tercek                                |
 
+#### Cek sebelum deploy production
+
+Empat hal ini sering lolos tanpa disadari dan bisa membuat situs putih, bocor, atau email tidak terkirim. Selesaikan sebelum tahap 3.
+
+1. **Cache lokal jangan ikut terunggah.** File di `bootstrap/cache/` (`packages.php`, `services.php`, `config.php`) dibuat di komputer lokal dan memuat paket dev (pail, tinker, collision). Di server yang memakai `composer install --no-dev`, paket itu tidak ada sehingga muncul galat "Class not found" dan halaman putih.
+    - Kecualikan `bootstrap/cache/*` dari unggahan (folder dan `.gitignore`-nya tetap ada), dan hapus file sisa `bootstrap/cache/pac5194.tmp`.
+    - Di server, hapus file cache yang terlanjur ada: cPanel > **File Manager** > folder `bootstrap/cache` > pilih semua file selain `.gitignore` > **Delete**. Setelah ada akses SSH: jalankan `php artisan optimize:clear` di folder Laravel server (perintah ini membersihkan semua cache Laravel).
+2. **`.env` lokal jangan sampai ikut.** Isinya `APP_DEBUG=true`, DB user `root`, dan `IC_SEED_CONTOH=true`. Bila menimpa `.env` server, kode bisa bocor lewat halaman galat dan data contoh masuk produksi.
+    - Kecualikan `.env` dari unggahan dan dari auto deploy.
+    - Di server pakai `.env.production.example` dengan `APP_ENV=production`, `APP_DEBUG=false`, `IC_SEED_CONTOH=false`.
+3. **Email: cek akun pengirim.** Sandi Aplikasi hanya bisa dibuat untuk akun Google sungguhan (Gmail atau Workspace), bukan email domain biasa seperti `noreply@whisnusantika.com` yang dipakai lewat `smtp.gmail.com`.
+    - Pakai Gmail `it.wsm2026@gmail.com` (sesuai `.env.example`), atau SMTP Rumahweb (lihat [Keputusan yang masih terbuka](#keputusan-yang-masih-terbuka)). Tambahkan SPF, DKIM, dan DMARC di DNS domain supaya email tidak masuk spam.
+    - Selama `MAIL_PASSWORD` kosong, pakai `MAIL_MAILER=log` di lokal. Biarkan `ADMIN_2FA_AKTIF=false` sampai email tes terbukti terkirim.
+4. **Login Google: status harus _In production_.** Bila masih _Testing_, hanya akun penguji yang bisa masuk (langkah 6 di [Google Cloud untuk publik](#google-cloud-untuk-publik)). Pastikan `GOOGLE_REDIRECT_URI` (bila diisi) sama persis dengan redirect URI yang didaftarkan di Google Cloud.
+
 #### Server
 
 - cPanel **MultiPHP Manager**: PHP **8.4 atau lebih**. **MultiPHP INI Editor**: `upload_max_filesize` dan `post_max_size` minimal `6M` (bila terlalu kecil, unggah foto gagal dengan "419 Page Expired").
@@ -348,7 +363,7 @@ Cek setelah menyimpan: buka `https://domain/.env` di browser (harus 404 atau 403
 #### Build dan unggah
 
 1. Di mesin build (lokal atau workflow) dengan PHP 8.4: `composer install --no-dev --optimize-autoloader`, lalu `npm ci` dan `npm run build`.
-2. Unggah semua, **termasuk** `vendor/` dan `public/build/`, **kecuali**: `.env`, `.git`, `node_modules`, `public/hot`, `storage/logs/*`, dan `tests`.
+2. Unggah semua, **termasuk** `vendor/` dan `public/build/`, **kecuali**: `.env`, `.git`, `node_modules`, `public/hot`, `storage/logs/*`, `bootstrap/cache/*` (lihat [Cek sebelum deploy production](#cek-sebelum-deploy-production)), dan `tests`.
 3. Pastikan `public/robots.txt` **tidak ada** di server (route dinamis yang dipakai) dan `public/storage` tertaut ke `storage/app/public` (foto muncul).
 4. Auto deploy (belum ada): saat dibuat, `.env` wajib dikecualikan dari unggahan dan rahasia disimpan di secret manager, bukan repo.
 
@@ -582,6 +597,7 @@ Bawaan di bawah dipakai sampai ada keputusan lain.
 - **Klaim ditolak:** bisa dibuka kembali oleh admin (kembali ke Diajukan, alasan lama tetap di riwayat).
 - **Email admin untuk OTP:** kolom `email` terpisah dari `username`, jadi login tetap memakai username.
 - **Ikon:** memakai Fluent Emoji 3D (lisensi MIT, cek ulang sebelum dipakai) atau ilustrasi buatan tim WSM.
+- **SMTP lewat domain sendiri (`mail.whisnusantika.com`):** belum dikerjakan, dicatat untuk nanti. Perlu dipelajari cara membuat akun email di cPanel Rumahweb, lalu mengisi `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, dan `MAIL_PASSWORD` dari akun itu. Sampai diputuskan, pakai SMTP Gmail di [Email Gmail](#email-gmail).
 - **Data acara:** 50 baris di prototype adalah contoh tentatif; jadwal asli diisi tim WSM lewat CMS, impor CSV, atau Bandsintown.
 
 #### Di luar cakupan
