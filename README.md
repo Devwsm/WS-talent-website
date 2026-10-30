@@ -378,7 +378,7 @@ Cek setelah menyimpan: buka `https://domain/.env` di browser (harus 404 atau 403
 Berkas: `.github/workflows/deploy.yml`. Setiap push ke `main` menjalankan dua tahap; bila tes gagal, deploy tidak jalan.
 
 1. **Tes**: `vendor/bin/phpunit` (sqlite memori, tanpa `.env`).
-2. **Deploy**: build di GitHub (`composer install --no-dev`, `npm ci`, `npm run build`), kirim lewat `rsync` ke server, lalu jalankan `migrate --force` dan `optimize:clear`.
+2. **Deploy**: build di GitHub (`composer install --no-dev`, `npm ci`, `npm run build`), kirim lewat SSH (satu berkas tar.gz, karena server tidak punya rsync), lalu jalankan `migrate --force` dan `optimize:clear`.
 
 Yang **tidak pernah** disentuh di server: `.env`, `storage/`, `bootstrap/cache/`, `.git` server, `node_modules`, `public/hot` (malah dihapus), serta `index.php` dan `.htaccess` di `public_html`.
 

@@ -93,40 +93,62 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -p "$SSH_PORT" "$SSH_HOST" >> ~/.ssh/known_hosts
 
-      # Pengaman: pastikan path benar sebelum rsync --delete jalan, supaya tidak menghapus folder yang salah.
+      # Pengaman: pastikan path benar sebelum apa pun dikirim, supaya tidak menimpa folder yang salah.
       - name: Cek folder tujuan di server
         run: |
           set -euo pipefail
           ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
             "test -f '$APP_PATH/artisan' && test -f '$APP_PATH/.env' && test -f '$PUBLIC_PATH/index.php'"
 
-      - name: Kirim kode ke folder Laravel
+      # Server tidak punya rsync, jadi paket dikirim sebagai satu berkas tar.gz lewat SSH.
+      # .env, storage (foto unggahan, sesi, log), cache bootstrap, dan .git server tidak ikut dikirim.
+      - name: Kemas dan kirim paket ke server
         run: |
           set -euo pipefail
-          # .env, storage (foto unggahan, sesi, log), cache bootstrap, dan .git server tidak pernah disentuh.
-          rsync -rlptz --delete --max-delete=2000 --chmod=D755,F644 \
-            --exclude='/.git' --exclude='/.github' \
-            --exclude='/.env' --exclude='/.env.*' \
-            --exclude='/node_modules' --exclude='/tests' \
-            --exclude='/storage' \
-            --exclude='/bootstrap/cache/*' \
-            --exclude='/public/hot' --exclude='/public/storage' \
-            --exclude='/database/*.sqlite' \
-            --exclude='/.phpunit.result.cache' \
-            -e "ssh -i ~/.ssh/deploy_key -p $SSH_PORT" \
-            ./ "$SSH_USER@$SSH_HOST:$APP_PATH/"
+          tar -czf /tmp/deploy.tgz --mode='u+rwX,go+rX,go-w' \
+            --exclude='./.git' --exclude='./.github' \
+            --exclude='./.env' --exclude='./.env.*' \
+            --exclude='./node_modules' --exclude='./tests' \
+            --exclude='./storage' \
+            --exclude='./bootstrap/cache/*' \
+            --exclude='./public/hot' --exclude='./public/storage' \
+            --exclude='./database/*.sqlite' \
+            --exclude='./.phpunit.result.cache' \
+            .
+          ls -lh /tmp/deploy.tgz
+          ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" 'cat > "$HOME/.deploy.tgz"' < /tmp/deploy.tgz
 
       # Server memakai dua folder publik: laravel/public (dibaca Vite manifest) dan public_html (yang diakses browser).
       # index.php dan .htaccess di public_html milik server, jadi tidak disentuh.
-      - name: Kirim aset ke public_html
+      - name: Pasang paket di server
         run: |
           set -euo pipefail
-          rsync -rlptz --chmod=D755,F644 \
-            -e "ssh -i ~/.ssh/deploy_key -p $SSH_PORT" \
-            public/aset/ "$SSH_USER@$SSH_HOST:$PUBLIC_PATH/aset/"
-          rsync -rlptz --delete --chmod=D755,F644 \
-            -e "ssh -i ~/.ssh/deploy_key -p $SSH_PORT" \
-            public/build/ "$SSH_USER@$SSH_HOST:$PUBLIC_PATH/build/"
+          ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            "APP_PATH='$APP_PATH' PUBLIC_PATH='$PUBLIC_PATH' bash -s" <<'REMOTE'
+          set -euo pipefail
+          STAGE="$HOME/.deploy_stage"
+          rm -rf "$STAGE"; mkdir -p "$STAGE"
+          tar -xzf "$HOME/.deploy.tgz" -C "$STAGE" --no-same-owner
+          test -f "$STAGE/artisan" && test -f "$STAGE/vendor/autoload.php" && test -f "$STAGE/public/build/manifest.json"
+
+          # Folder kode diganti utuh (file lama yang sudah dihapus dari repo ikut hilang).
+          for d in app config database resources routes vendor public/build; do
+            rm -rf "$APP_PATH/$d.old"
+            if [ -e "$APP_PATH/$d" ]; then mv "$APP_PATH/$d" "$APP_PATH/$d.old"; fi
+            mv "$STAGE/$d" "$APP_PATH/$d"
+            rm -rf "$APP_PATH/$d.old"
+          done
+          # Sisanya (artisan, composer.*, bootstrap/*.php, public/aset, dll) ditimpa; .env dan storage tidak ada di paket.
+          cp -a "$STAGE/." "$APP_PATH/"
+
+          # public_html: aset ditimpa, build diganti utuh. index.php dan .htaccess tidak disentuh.
+          mkdir -p "$PUBLIC_PATH/aset"
+          cp -a "$APP_PATH/public/aset/." "$PUBLIC_PATH/aset/"
+          rm -rf "$PUBLIC_PATH/build"
+          cp -a "$APP_PATH/public/build" "$PUBLIC_PATH/build"
+
+          rm -rf "$STAGE" "$HOME/.deploy.tgz"
+          REMOTE
 
       - name: Migrasi database dan bersihkan cache
         run: |
