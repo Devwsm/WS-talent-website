@@ -21,6 +21,7 @@ class InnerCircleHadiahTest extends TestCase
     {
         $m = member::create(['nama' => 'Anggota Uji', 'email' => $email, 'password' => 'rahasia123']);
         $m->kode_member = sprintf('IC-%05d', $m->id_member);
+        $m->email_verified_at = now(); // klaim hadiah butuh email terverifikasi (lihat InnerCircleVerifikasiEmailTest)
         $m->save();
         if ($stempel > 0) {
             app(StempelService::class)->tambahManual($m, $stempel, 'Uji', 'admin');

@@ -41,6 +41,16 @@ return [
     'batas_suka_per_menit' => 60,
     'batas_foto_per_menit' => 6,
 
+    /*
+    | Verifikasi email anggota yang daftar dengan kata sandi. Tautan berlaku `verifikasi_jam` jam.
+    | Kirim ulang dibatasi per ANGGOTA (RateLimiter `ic-verifikasi`), dan seluruh situs digabung dibatasi per hari
+    | (EmailService::kirimVerifikasi) supaya pendaftaran massal tidak menghabiskan kuota email hosting.
+    */
+    'verifikasi_jam' => 24,
+    'batas_verifikasi_per_menit' => 2,
+    'batas_verifikasi_per_hari' => 10,
+    'batas_verifikasi_global_per_hari' => 200,
+
     /* Jumlah kenangan per halaman di galeri anggota dan tab Kenangan dashboard; maksimum daftar pengumuman anggota. */
     'kenangan_per_halaman' => 12,
     'pengumuman_maks_anggota' => 20,

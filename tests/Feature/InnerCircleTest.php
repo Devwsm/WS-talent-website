@@ -71,15 +71,15 @@ class InnerCircleTest extends TestCase
         $this->post(route('ic.daftar.proses'), [
             'nama' => 'Rani',
             'email' => 'Rani@Contoh.Test',
-            'sandi' => 'rahasia123',
-            'sandi_confirmation' => 'rahasia123',
+            'sandi' => 'Rahasia123',
+            'sandi_confirmation' => 'Rahasia123',
         ])->assertRedirect(route('ic.beranda'));
 
         $m = member::first();
         $this->assertSame('IC-00001', $m->kode_member);
         $this->assertSame('rani@contoh.test', $m->email);
         $this->assertSame(0, $m->stempel_total);
-        $this->assertNotSame('rahasia123', $m->password);
+        $this->assertNotSame('Rahasia123', $m->password);
         $this->assertAuthenticatedAs($m, 'member');
         $this->get(route('ic.beranda'))->assertOk()->assertSee('IC-00001');
     }

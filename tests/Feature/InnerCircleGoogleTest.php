@@ -358,12 +358,12 @@ class InnerCircleGoogleTest extends TestCase
 
     public function test_login_dan_daftar_biasa_mencatat_sesi_versi_dan_tetap_bisa_dipakai(): void
     {
-        $this->post(route('ic.daftar.proses'), ['nama' => 'Biasa', 'email' => 'biasa@contoh.test', 'sandi' => 'sandi-12345678', 'sandi_confirmation' => 'sandi-12345678']);
+        $this->post(route('ic.daftar.proses'), ['nama' => 'Biasa', 'email' => 'biasa@contoh.test', 'sandi' => 'Sandi-12345678', 'sandi_confirmation' => 'Sandi-12345678']);
         $this->assertSame(0, session('ic_sesi_versi'));
         $this->get(route('ic.beranda'))->assertOk();
 
         $this->post(route('ic.keluar'));
-        $this->post(route('ic.masuk.proses'), ['email' => 'biasa@contoh.test', 'sandi' => 'sandi-12345678']);
+        $this->post(route('ic.masuk.proses'), ['email' => 'biasa@contoh.test', 'sandi' => 'Sandi-12345678']);
         $this->get(route('ic.beranda'))->assertOk();
     }
 }

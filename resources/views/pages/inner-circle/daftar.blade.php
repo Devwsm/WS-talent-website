@@ -30,7 +30,10 @@
         <label class="ic-label" for="sandi">Kata sandi</label>
         <input class="ic-input" type="password" id="sandi" name="sandi" placeholder="Minimal 8 karakter"
             autocomplete="new-password" minlength="8" required
-            @error('sandi') aria-invalid="true" aria-describedby="sandi-galat" @enderror>
+            aria-describedby="sandi-bantuan{{ $errors->has('sandi') ? ' sandi-galat' : '' }}"
+            @error('sandi') aria-invalid="true" @enderror>
+        <p class="ic-bantuan" id="sandi-bantuan">Minimal 8 karakter, memuat huruf besar, huruf kecil, dan angka. Simbol
+            boleh, emoji tidak.</p>
         @error('sandi')
             <p class="ic-galat" id="sandi-galat" role="alert">{{ $message }}</p>
         @enderror

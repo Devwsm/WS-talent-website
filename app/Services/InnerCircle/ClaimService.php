@@ -99,6 +99,12 @@ class ClaimService
             return DB::transaction(function () use ($anggota, $reward, $opsi) {
                 $terkunci = member::query()->whereKey($anggota->getKey())->lockForUpdate()->firstOrFail();
 
+                // Pendaftaran dengan kata sandi tidak membuktikan pemilik email (bisa memakai email orang lain), jadi
+                // hadiah baru bisa diajukan setelah email terverifikasi. Akun Google sudah terverifikasi sejak masuk.
+                if ($terkunci->email_verified_at === null) {
+                    throw new KlaimGagal('Verifikasi email dulu sebelum mengajukan hadiah. Buka email dari WS Inner Circle, atau kirim ulang dari halaman Hadiah.');
+                }
+
                 if ($terkunci->stempel_total < $reward->target_stempel) {
                     throw new KlaimGagal(
                         'Stempelmu belum cukup. Tahap ini butuh ' . $reward->target_stempel

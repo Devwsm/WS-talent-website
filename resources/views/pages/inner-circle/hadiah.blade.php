@@ -5,6 +5,8 @@
 @php
     $semua = collect($rewards);
     $statusKlaim = config('inner_circle.status_klaim');
+    // Hadiah hanya bisa diajukan setelah email terverifikasi (ClaimService menolaknya di server).
+    $terverifikasi = $member->email_verified_at !== null;
 @endphp
 
 @section('content')
@@ -12,6 +14,20 @@
     <h1 class="ic-judul">Hadiah<span>.</span></h1>
     <p class="ic-deskripsi">Setiap stempel membuatmu lebih dekat dengan Whisnu Santika. Buka merchandise eksklusif,
         pengalaman personal, dan akses spesial.</p>
+
+    @unless ($terverifikasi)
+        <section class="ic-panel ic-jarak-atas" aria-labelledby="verifikasi-judul">
+            <h2 class="ic-panel__judul" id="verifikasi-judul">✉ Verifikasi emailmu dulu</h2>
+            <p class="ic-bantuan">Hadiah baru bisa diajukan setelah emailmu terverifikasi. Kami mengirim tautan ke
+                <b>{{ $member->email }}</b>; buka tautannya saat kamu sudah masuk. Tidak ada email? Cek folder spam, atau
+                kirim ulang.
+            </p>
+            <form method="POST" action="{{ route('ic.verifikasi.kirim') }}" data-ic-sekali>
+                @csrf
+                <button type="submit" class="ic-tombol ic-tombol--kecil">Kirim ulang email verifikasi</button>
+            </form>
+        </section>
+    @endunless
 
     <div class="ic-grid ic-grid--2 ic-jarak-atas">
         @foreach ($rewards as $reward)
@@ -37,7 +53,10 @@
                     @endif
                 </div>
 
-                @if ($reward->status_member === 'terbuka')
+                @if ($reward->status_member === 'terbuka' && !$terverifikasi)
+                    <span class="ic-pil ic-pil--redup"><i class="bi bi-envelope-fill" aria-hidden="true"></i> Verifikasi
+                        email dulu</span>
+                @elseif ($reward->status_member === 'terbuka')
                     @if ($reward->opsi)
                         {{-- Hadiah dengan pilihan A/B: buka modal pilihan (bukan prompt() seperti di prototype). --}}
                         <button type="button" class="ic-tombol ic-tombol--kecil"

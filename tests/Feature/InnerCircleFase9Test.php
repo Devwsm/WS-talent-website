@@ -210,12 +210,12 @@ class InnerCircleFase9Test extends TestCase
         $this->post(route('ic.sandi.atur.proses'), [
             'token' => $token,
             'email' => $m->email,
-            'sandi' => 'sandi-baru-456',
-            'sandi_confirmation' => 'sandi-baru-456',
+            'sandi' => 'Sandi-Baru-456',
+            'sandi_confirmation' => 'Sandi-Baru-456',
         ])->assertRedirect(route('ic.masuk'));
 
         $m = $m->fresh();
-        $this->assertTrue(password_verify('sandi-baru-456', $m->password));
+        $this->assertTrue(password_verify('Sandi-Baru-456', $m->password));
         $this->assertNotNull($m->email_verified_at);
         $this->assertSame(1, $m->sesi_versi);
 
@@ -223,8 +223,8 @@ class InnerCircleFase9Test extends TestCase
         $this->post(route('ic.sandi.atur.proses'), [
             'token' => $token,
             'email' => $m->email,
-            'sandi' => 'sandi-lain-789',
-            'sandi_confirmation' => 'sandi-lain-789',
+            'sandi' => 'Sandi-Lain-789',
+            'sandi_confirmation' => 'Sandi-Lain-789',
         ])->assertSessionHasErrors('email');
     }
 
@@ -235,8 +235,8 @@ class InnerCircleFase9Test extends TestCase
         $this->post(route('ic.sandi.atur.proses'), [
             'token' => 'salah',
             'email' => $m->email,
-            'sandi' => 'sandi-baru-456',
-            'sandi_confirmation' => 'sandi-baru-456',
+            'sandi' => 'Sandi-Baru-456',
+            'sandi_confirmation' => 'Sandi-Baru-456',
         ])->assertSessionHasErrors('email');
         $this->assertTrue(password_verify('sandi-lama-123', $m->fresh()->password));
     }

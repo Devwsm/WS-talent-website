@@ -216,7 +216,11 @@ Konvensi: nama model dan tabel huruf kecil (`member`, `ic_event`), primary key `
 
 **Check-in** (`CheckinService`). QR berisi `/inner-circle/check-in?kode=WS-XXXXXXXXXXXX`; dipindai kamera bawaan HP pun sampai ke halaman yang benar setelah login. Server memeriksa: anggota login, acara bisa check-in (bukan privat, ada venue), di dalam jendela waktu (bawaan tanggal show 12.00 sampai H+1 06.00 WIB), token cocok, belum pernah check-in di acara itu. Acara yang sudah punya check-in tidak bisa dihapus. Impor CSV bersifat semua atau tidak sama sekali; kode yang sudah ada diperbarui tanpa mengganti token. Kamera pemindai butuh HTTPS.
 
-**Klaim** (`ClaimService`). Hanya bila `stempel_total >= target_stempel`, sekali per anggota per tahap; baris anggota dikunci dalam transaksi dan kunci unik `(member_id, reward_id)` jadi pengaman terakhir. Tahap bernilai pilihan (50 stempel) wajib memilih salah satu dari tepat 2 opsi. Alur: `diajukan` → `ditinjau` → `disetujui` → `selesai`, atau `ditolak` (alasan wajib). Perpindahan status membawa status yang dilihat admin, sehingga klik ganda tidak melompat dua langkah. Setiap perubahan masuk `ic_claim_logs`. Aksi **Catatan** mengubah `catatan_admin` (mis. kode voucher) tanpa mengubah status. Aksi **Buka kembali** hanya untuk `ditolak`: status kembali ke `diajukan` (alur mulai dari awal), catatan lama (alasan penolakan) hilang dari tampilan anggota tetapi tetap ada di `ic_claim_logs`, dan anggota diberi email. `selesai` adalah akhir alur.
+**Klaim** (`ClaimService`). Hanya bila **email anggota sudah terverifikasi** dan `stempel_total >= target_stempel`, sekali per anggota per tahap; baris anggota dikunci dalam transaksi dan kunci unik `(member_id, reward_id)` jadi pengaman terakhir. Tahap bernilai pilihan (50 stempel) wajib memilih salah satu dari tepat 2 opsi. Alur: `diajukan` → `ditinjau` → `disetujui` → `selesai`, atau `ditolak` (alasan wajib). Perpindahan status membawa status yang dilihat admin, sehingga klik ganda tidak melompat dua langkah. Setiap perubahan masuk `ic_claim_logs`. Aksi **Catatan** mengubah `catatan_admin` (mis. kode voucher) tanpa mengubah status. Aksi **Buka kembali** hanya untuk `ditolak`: status kembali ke `diajukan` (alur mulai dari awal), catatan lama (alasan penolakan) hilang dari tampilan anggota tetapi tetap ada di `ic_claim_logs`, dan anggota diberi email. `selesai` adalah akhir alur.
+
+**Verifikasi email** (`authController`, `EmailService::kirimVerifikasi`). Akun Google otomatis terverifikasi. Akun yang daftar dengan kata sandi menerima tautan bertanda tangan (berlaku 24 jam) dan **wajib membukanya saat sudah masuk**; tamu dialihkan ke Masuk lalu kembali ke tautan itu. Karena itu orang yang mendaftarkan email orang lain tidak bisa mengesahkannya: pemilik email tidak bisa masuk ke akun itu, dan penyerang tidak menerima emailnya. Tautan milik akun lain, kedaluwarsa, atau diubah ditolak. Kirim ulang lewat tombol di halaman Hadiah, dibatasi per anggota (2/menit, 10/hari) dan **200/hari untuk seluruh situs** agar pendaftaran massal tidak menghabiskan kuota email. Tanpa email yang berfungsi, anggota sandi tidak bisa mengajukan hadiah (anggota Google tidak terpengaruh). Pesan "Email ini sudah terdaftar" di form daftar sengaja dibiarkan karena pendaftaran langsung masuk; menyamarkannya butuh alur "cek email dulu".
+
+**Kata sandi anggota** (`App\Rules\SandiAnggota`). Dipakai di daftar manual dan atur ulang: 8 sampai 72 karakter, wajib huruf besar, huruf kecil, dan angka; simbol boleh; hanya karakter keyboard biasa (emoji dan huruf non-ASCII ditolak). Login tidak memeriksa aturan ini sehingga akun lama tetap bisa masuk.
 
 **Tampil/sembunyikan.** Tahap hadiah dan pengumuman punya tombol di CMS (kolom `aktif`). Tahap yang disembunyikan hilang dari halaman Hadiah anggota dan halaman penjelasan dan tidak bisa diklaim baru; pengajuan yang sudah masuk tetap diproses, dan minimal satu tahap harus aktif. Pengumuman yang disembunyikan tidak dihapus dan bisa ditampilkan lagi.
 
@@ -254,7 +258,7 @@ Tabel `accounts` (admin CMS) punya kolom `email` untuk kode OTP login. Check-in 
 
 | Pembatas               | Batas                                           | Dihitung per                       |
 | ---------------------- | ----------------------------------------------- | ---------------------------------- |
-| Login admin            | 5/menit                                         | IP                                 |
+| Login admin            | 5/menit; 10/menit                               | username+IP; IP                    |
 | Kode OTP admin         | 10/menit                                        | IP                                 |
 | Kirim ulang kode OTP   | 3/menit; 3 kirim per 10 menit                   | IP; akun admin                     |
 | Aksi kecil dashboard   | 30/menit (tampil/sembunyikan, status error)     | IP                                 |
@@ -262,6 +266,7 @@ Tabel `accounts` (admin CMS) punya kolom `email` untuk kode OTP login. Check-in 
 | `ic-daftar`            | 30/menit                                        | IP                                 |
 | `ic-lupa`              | 3/menit; 5/jam; 30/menit; **100/hari (global)** | email+IP; email; IP; seluruh situs |
 | `ic-atur`              | 10/menit                                        | IP                                 |
+| `ic-verifikasi`        | 2/menit; 10/hari; **200/hari (global)**         | anggota; anggota; seluruh situs    |
 | `ic-google`            | 60/menit                                        | IP                                 |
 | `ic-checkin`           | 8/menit                                         | anggota                            |
 | `ic-klaim`             | 6/menit                                         | anggota                            |
@@ -272,15 +277,15 @@ Tabel `accounts` (admin CMS) punya kolom `email` untuk kode OTP login. Check-in 
 
 Pembatas anggota tidak memakai IP karena penonton satu venue sering berbagi IP. Batas anggota ada di `config/inner_circle.php`; sisanya di `AppServiceProvider`.
 
-| Unggahan CMS                                                          | Batas                               |
-| --------------------------------------------------------------------- | ----------------------------------- |
-| Banner, foto hero profil                                              | 2 MB                                |
-| Album, berita, merchandise, gambar header, latar header berupa gambar | 1 MB                                |
-| Latar header berupa video (sebelum dikompres)                         | 25 MB                               |
-| Semua gambar CMS                                                      | maks 16 megapiksel                  |
-| Warna header                                                          | harus `#RRGGBB`                     |
-| Foto kenangan / foto profil anggota                                   | 4 MB / 5 MB (maks 40 megapiksel)    |
-| Kata sandi anggota                                                    | 8 sampai 72 karakter (batas bcrypt) |
+| Unggahan CMS                                                          | Batas                                                                                             |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Banner, foto hero profil                                              | 2 MB                                                                                              |
+| Album, berita, merchandise, gambar header, latar header berupa gambar | 1 MB                                                                                              |
+| Latar header berupa video (sebelum dikompres)                         | 50 MB                                                                                             |
+| Semua gambar CMS                                                      | maks 16 megapiksel                                                                                |
+| Warna header                                                          | harus `#RRGGBB`                                                                                   |
+| Foto kenangan / foto profil anggota                                   | 4 MB / 5 MB (maks 40 megapiksel)                                                                  |
+| Kata sandi anggota                                                    | 8 sampai 72 karakter (batas bcrypt); wajib huruf besar + kecil + angka; simbol boleh, emoji tidak |
 
 ### File login Google
 
@@ -325,12 +330,13 @@ Empat hal ini sering lolos tanpa disadari dan bisa membuat situs putih, bocor, a
     - Di server pakai `.env.production.example` dengan `APP_ENV=production`, `APP_DEBUG=false`, `IC_SEED_CONTOH=false`.
 3. **Email: cek akun pengirim.** Sandi Aplikasi hanya bisa dibuat untuk akun Google sungguhan (Gmail atau Workspace), bukan email domain biasa seperti `noreply@whisnusantika.com` yang dipakai lewat `smtp.gmail.com`.
     - Pakai Gmail `it.wsm2026@gmail.com` (sesuai `.env.example`), atau SMTP Rumahweb (lihat [Keputusan yang masih terbuka](#keputusan-yang-masih-terbuka)). Tambahkan SPF, DKIM, dan DMARC di DNS domain supaya email tidak masuk spam.
+    - Email juga dipakai verifikasi akun sandi: tanpa email yang berfungsi, anggota yang daftar dengan sandi tidak bisa mengajukan hadiah.
     - Selama `MAIL_PASSWORD` kosong, pakai `MAIL_MAILER=log` di lokal. Biarkan `ADMIN_2FA_AKTIF=false` sampai email tes terbukti terkirim.
 4. **Login Google: status harus _In production_.** Bila masih _Testing_, hanya akun penguji yang bisa masuk (langkah 6 di [Google Cloud untuk publik](#google-cloud-untuk-publik)). Pastikan `GOOGLE_REDIRECT_URI` (bila diisi) sama persis dengan redirect URI yang didaftarkan di Google Cloud.
 
 #### Server
 
-- cPanel **MultiPHP Manager**: PHP **8.4 atau lebih**. **MultiPHP INI Editor**: `upload_max_filesize` dan `post_max_size` minimal `6M` (bila terlalu kecil, unggah foto gagal dengan "419 Page Expired").
+- cPanel **MultiPHP Manager**: PHP **8.4 atau lebih**. **MultiPHP INI Editor**: `upload_max_filesize` dan `post_max_size` minimal `6M` (bila terlalu kecil, unggah foto gagal dengan "419 Page Expired"). Untuk mengunggah **video latar header** (batas 50 MB) naikkan keduanya ke `52M`; bila batas server lebih kecil dari 50 MB, unggahan video gagal sebelum sampai ke aplikasi.
 - Ekstensi aktif: `gd` (dengan WebP), `exif`, `mbstring`, `pdo_mysql`.
 - HTTPS aktif (AutoSSL) dan **Force HTTPS Redirect** menyala.
 - Disarankan satu subdomain **preview** (mis. `preview.whisnusantika.com`) dengan database sendiri.
@@ -437,7 +443,7 @@ Uji lokal: isi `.env` (`INNER_CIRCLE_AKTIF=true`, `INNER_CIRCLE_GOOGLE_AKTIF=tru
 
 ### Email Gmail
 
-Email (lupa kata sandi, akun Google, selamat datang, status hadiah) dikirim lewat **SMTP Gmail** dengan **Sandi Aplikasi**, langsung setelah respons ke browser (tanpa antrean). Selama `MAIL_MAILER=log`, email tidak terkirim.
+Email (lupa kata sandi, akun Google, selamat datang, verifikasi email, status hadiah) dikirim lewat **SMTP Gmail** dengan **Sandi Aplikasi**, langsung setelah respons ke browser (tanpa antrean). Selama `MAIL_MAILER=log`, email tidak terkirim.
 
 1. Pilih akun Google pengirim. Di <https://myaccount.google.com/security> aktifkan **Verifikasi 2 Langkah**.
 2. Di <https://myaccount.google.com/apppasswords> buat sandi aplikasi (mis. `WS Inner Circle`) dan salin 16 hurufnya (hanya tampil sekali). Bila menu tidak ada: akun Workspace dibatasi admin, atau Verifikasi 2 Langkah belum aktif.
@@ -521,6 +527,14 @@ Sandi admin lama pernah tertulis di `accountSeeder` (ada di riwayat git), jadi a
 - Halaman **Log**: error aplikasi (digabung, disamarkan) dan **jejak aktivitas admin**, plus email peringatan error yang dibatasi (satu per jenis per jam, maksimal 10 per jam).
 - Pembatas bernama untuk rute baru, karena `throttle:N,M` bawaan berbagi satu penghitung per IP.
 
+**Perbaikan Batch C** (hasil 240 tes):
+
+- **Verifikasi email** untuk akun sandi sebelum klaim hadiah (aturannya di Bagian 2, bagian Aturan check-in, klaim, dan konten).
+- **Login admin** memakai pembatas bernama `admin-login`: 5/menit per username+IP dan 10/menit per IP, tidak lagi berbagi penghitung dengan rute `throttle:N,M` lain. `ADMIN_PASSWORD` minimal 12 karakter sudah dicek seeder. Nyalakan `ADMIN_2FA_AKTIF=true` setelah email terbukti terkirim.
+- **Kata sandi anggota** wajib huruf besar + kecil + angka, tanpa emoji (daftar manual dan atur ulang).
+- **Batas video latar header** dinaikkan dari 25 MB ke 50 MB (dicek di controller; batas upload server harus ikut naik).
+- Catatan temuan, **belum diperbaiki**: `ic-kenangan` memakai dua batas (per menit dan per hari) dengan kunci yang sama, sehingga keduanya berbagi satu penghitung dan batas harian tidak pernah berlaku. Pembatas baru `ic-verifikasi` memakai kunci berbeda untuk tiap batas.
+
 #### Aturan login Google
 
 Semuanya punya tes otomatis.
@@ -538,7 +552,7 @@ Semuanya punya tes otomatis.
 
 1. **Cadangan database terjadwal** di cPanel, serta **HTTPS paksa** dan AutoSSL aktif. Wajib sebelum Inner Circle tayang.
 2. **Content-Security-Policy.** Belum dipasang karena widget Bandsintown, Google Fonts, dan embed video bisa mati bila terlalu ketat. Pasang dulu sebagai `Content-Security-Policy-Report-Only` di preview, perbaiki pelanggaran di konsol browser, baru ditegakkan.
-3. **Verifikasi email untuk akun sandi.** Lupa kata sandi sudah ada, tetapi email baru terverifikasi lewat Google atau tautan atur ulang.
+3. ~~Verifikasi email untuk akun sandi~~ Selesai (Batch C).
 4. **Login admin:** masih satu bendera sesi tanpa peran. Log aktivitas dan kode OTP email sudah ada; peran dengan hak berbeda baru perlu bila tim bertambah.
 5. **`composer audit` dan `npm audit` rutin** (tiap bulan atau di workflow deploy).
 6. **Pembatas lama `throttle:N,M`** di rute admin (hadiah, pengumuman, kenangan, dsb.) berbagi satu penghitung per IP. Dampaknya kecil (admin sendiri), tetapi sebaiknya diganti pembatas bernama sekalian dibersihkan.

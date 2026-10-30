@@ -203,13 +203,13 @@ class dashboardController extends Controller
         $isVideo  = str_starts_with($bgMime, 'video/');
 
         $maxImageSize = 1 * 1024 * 1024;   // 1MB
-        $maxVideoSize = 25 * 1024 * 1024;  // 25MB (raw, sebelum dikompres)
+        $maxVideoSize = 50 * 1024 * 1024;  // 50MB (raw, sebelum dikompres)
 
         if (!$isVideo && $bgFile->getSize() > $maxImageSize) {
             return back()->withErrors(['header_background' => 'Gambar Cover Header tidak boleh lebih dari 1MB.'])->withInput();
         }
         if ($isVideo && $bgFile->getSize() > $maxVideoSize) {
-            return back()->withErrors(['header_background' => 'Video Cover Header tidak boleh lebih dari 25MB.'])->withInput();
+            return back()->withErrors(['header_background' => 'Video Cover Header tidak boleh lebih dari 50MB.'])->withInput();
         }
 
         // Video butuh ffmpeg. Dicek di awal, sebelum ada berkas yang tersimpan, supaya gagalnya rapi.
@@ -302,13 +302,13 @@ class dashboardController extends Controller
             $isVideo = str_starts_with($bgBaru->getMimeType(), 'video/');
 
             $maxImageSize = 1 * 1024 * 1024;   // 1MB
-            $maxVideoSize = 25 * 1024 * 1024;  // 25MB
+            $maxVideoSize = 50 * 1024 * 1024;  // 50MB
 
             if (!$isVideo && $bgBaru->getSize() > $maxImageSize) {
                 return back()->withErrors(['header_background' => 'Gambar Cover Header tidak boleh lebih dari 1MB.'])->withInput();
             }
             if ($isVideo && $bgBaru->getSize() > $maxVideoSize) {
-                return back()->withErrors(['header_background' => 'Video Cover Header tidak boleh lebih dari 25MB.'])->withInput();
+                return back()->withErrors(['header_background' => 'Video Cover Header tidak boleh lebih dari 50MB.'])->withInput();
             }
             if ($isVideo && !$this->ffmpegTersedia()) {
                 return back()->withErrors(['header_background' => self::PESAN_TANPA_FFMPEG])->withInput();

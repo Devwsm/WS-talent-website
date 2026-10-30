@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\InnerCircle;
 
+use App\Rules\SandiAnggota;
 use Illuminate\Foundation\Http\FormRequest;
 
 class aturUlangSandiRequest extends FormRequest
@@ -21,8 +22,8 @@ class aturUlangSandiRequest extends FormRequest
         return [
             'token' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'max:150'],
-            // Aturan sama dengan pendaftaran (daftarRequest).
-            'sandi' => ['required', 'string', 'min:8', 'max:72', 'confirmed'],
+            // Aturan sama dengan pendaftaran (daftarRequest), termasuk SandiAnggota.
+            'sandi' => ['required', 'string', 'min:8', 'max:72', new SandiAnggota(), 'confirmed'],
         ];
     }
 

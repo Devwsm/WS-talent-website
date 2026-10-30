@@ -31,7 +31,7 @@ Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
 
 Route::prefix('/')->group(function () {
     Route::get('/login', [loginController::class, 'login'])->name('login');
-    Route::post('/login', [loginController::class, 'prosesLogin'])->name('login.proses')->middleware('throttle:5,1');
+    Route::post('/login', [loginController::class, 'prosesLogin'])->name('login.proses')->middleware('throttle:admin-login');
     // 2FA email (ADMIN_2FA_AKTIF): form kode, verifikasi, dan kirim ulang. Hanya bisa dibuka setelah sandi benar.
     Route::get('/login/otp', [loginController::class, 'formOtp'])->name('login.otp');
     Route::post('/login/otp', [loginController::class, 'prosesOtp'])->name('login.otp.proses')->middleware('throttle:admin-otp');
@@ -66,6 +66,11 @@ Route::prefix('/inner-circle')->middleware('icAktif')->name('ic.')->group(functi
 
     Route::middleware(['auth:member', 'icSesi'])->group(function () {
         Route::post('/keluar', [authController::class, 'keluar'])->name('keluar');
+
+        // Verifikasi email (akun yang daftar dengan kata sandi): tautan bertanda tangan dari email, wajib dibuka saat
+        // sudah masuk (tamu dialihkan ke Masuk, lalu kembali ke tautan ini). Kirim ulang dibatasi per anggota.
+        Route::get('/verifikasi/{id}/{hash}', [authController::class, 'verifikasiEmail'])->whereNumber('id')->where('hash', '[a-f0-9]{40}')->name('verifikasi');
+        Route::post('/verifikasi/kirim', [authController::class, 'kirimUlangVerifikasi'])->name('verifikasi.kirim')->middleware('throttle:ic-verifikasi');
 
         Route::get('/', [memberController::class, 'beranda'])->name('beranda');
         Route::get('/hadiah', [memberController::class, 'hadiah'])->name('hadiah');

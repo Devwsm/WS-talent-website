@@ -7,12 +7,15 @@ use App\Mail\InnerCircle\PesanIc;
 use App\Mail\InnerCircle\ResetSandiMail;
 use App\Mail\InnerCircle\SelamatDatangMail;
 use App\Mail\InnerCircle\StatusKlaimMail;
+use App\Mail\InnerCircle\VerifikasiEmailMail;
 use App\Models\ic_claim;
 use App\Models\member;
 use Closure;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\URL;
 use Throwable;
 
 /**
@@ -40,6 +43,11 @@ class EmailService
             'ikon' => 'bi-stars',
             'kapan' => 'Dikirim sekali saat anggota baru mendaftar lewat Google (emailnya sudah terverifikasi Google). Pendaftaran dengan kata sandi tidak mengirim email ini.',
         ],
+        'verifikasi' => [
+            'label' => 'Verifikasi email',
+            'ikon' => 'bi-patch-check-fill',
+            'kapan' => 'Dikirim saat anggota mendaftar dengan kata sandi, dan saat ia menekan "Kirim ulang email verifikasi" di halaman Hadiah. Tautan berlaku 24 jam dan harus dibuka saat sudah masuk. Hadiah baru bisa diajukan setelah email terverifikasi (akun Google sudah otomatis terverifikasi).',
+        ],
         'klaim' => [
             'label' => 'Status hadiah berubah',
             'ikon' => 'bi-gift-fill',
@@ -54,6 +62,7 @@ class EmailService
             'reset' => new ResetSandiMail('Contoh Anggota', url('/inner-circle/atur-ulang/contoh-token'), self::menitBerlakuReset()),
             'google' => new AkunGoogleMail('Contoh Anggota', route('ic.masuk'), GoogleOAuth::tersedia()),
             'selamat-datang' => new SelamatDatangMail('Contoh Anggota', 'IC-00001', route('ic.beranda')),
+            'verifikasi' => new VerifikasiEmailMail('Contoh Anggota', url('/inner-circle/verifikasi/1/contoh'), self::jamBerlakuVerifikasi()),
             'klaim' => new StatusKlaimMail('Contoh Anggota', 'Merch Eksklusif', 'ditolak', 'Ditolak', 'Stok tahap ini sudah habis, hubungi tim WSM untuk alternatif.', route('ic.hadiah')),
         };
     }
@@ -114,6 +123,47 @@ class EmailService
         )));
     }
 
+    /**
+     * Kirim tautan verifikasi email ke anggota yang mendaftar dengan kata sandi (juga saat ia meminta kirim ulang).
+     *
+     * Mengembalikan false bila batas harian seluruh situs sudah habis: pendaftaran massal tidak boleh menghabiskan
+     * kuota email hosting atau membanjiri kotak masuk orang lain. Gagal kirim setelahnya hanya dicatat di log.
+     */
+    public function kirimVerifikasi(member $anggota): bool
+    {
+        $kunci = 'ic-verifikasi-global';
+
+        if (RateLimiter::tooManyAttempts($kunci, (int) config('inner_circle.batas_verifikasi_global_per_hari', 200))) {
+            return false;
+        }
+        RateLimiter::hit($kunci, 86400);
+
+        // Alamat dibuat sekarang (bukan di dalam tunda) supaya memakai alamat situs dari permintaan yang sedang berjalan.
+        $url = self::urlVerifikasi($anggota);
+
+        $this->tunda(fn() => Mail::to($anggota->email)->send(new VerifikasiEmailMail(
+            $anggota->nama,
+            $url,
+            self::jamBerlakuVerifikasi(),
+        )));
+
+        return true;
+    }
+
+    /**
+     * Tautan verifikasi: bertanda tangan dan kedaluwarsa. `hash` mengikatnya ke alamat email saat ini.
+     * Tautan hanya bisa diselesaikan oleh anggota yang SEDANG MASUK ke akun itu (lihat authController::verifikasiEmail),
+     * jadi orang yang mendaftarkan email orang lain tidak bisa mengesahkannya lewat email korban.
+     */
+    public static function urlVerifikasi(member $anggota): string
+    {
+        return URL::temporarySignedRoute(
+            'ic.verifikasi',
+            now()->addHours(self::jamBerlakuVerifikasi()),
+            ['id' => $anggota->getKey(), 'hash' => sha1(mb_strtolower((string) $anggota->email))],
+        );
+    }
+
     public function kirimStatusKlaim(ic_claim $klaim): void
     {
         $klaim->loadMissing(['member', 'reward']);
@@ -148,6 +198,11 @@ class EmailService
         };
 
         app()->runningInConsole() ? $jalankan() : app()->terminating($jalankan);
+    }
+
+    public static function jamBerlakuVerifikasi(): int
+    {
+        return max(1, (int) config('inner_circle.verifikasi_jam', 24));
     }
 
     private static function menitBerlakuReset(): int

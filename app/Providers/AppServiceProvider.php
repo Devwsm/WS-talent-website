@@ -58,6 +58,35 @@ class AppServiceProvider extends ServiceProvider
             ];
         });
 
+        // Login admin CMS: dibatasi per USERNAME+IP (menebak sandi satu akun) dan per IP (mencoba banyak username).
+        // Dipisah dari `throttle:N,M` bawaan, yang berbagi satu penghitung per IP dengan semua rute lain.
+        RateLimiter::for('admin-login', function (Request $request) {
+            $username = mb_strtolower(trim((string) $request->input('username')));
+            $galat = fn() => back()
+                ->withErrors(['login' => 'Terlalu banyak percobaan masuk. Tunggu semenit lalu coba lagi.'])
+                ->onlyInput('username');
+
+            return [
+                Limit::perMinute(5)->by('admin-login:' . sha1($username . '|' . $request->ip()))->response($galat),
+                Limit::perMinute(10)->by('admin-login-ip:' . $request->ip())->response($galat),
+            ];
+        });
+
+        // Kirim ulang email verifikasi per ANGGOTA, per menit dan per hari. Kunci kedua batas sengaja berbeda: dua batas
+        // dengan kunci sama dalam satu pembatas berbagi satu penghitung, sehingga batas hariannya tidak pernah berlaku.
+        RateLimiter::for('ic-verifikasi', function (Request $request) {
+            $id = Auth::guard('member')->id();
+            $kunci = $id ? 'member:' . $id : 'ip:' . $request->ip();
+            $galat = fn() => redirect()
+                ->route('ic.hadiah')
+                ->with('ic_toast_galat', 'Terlalu banyak permintaan email verifikasi. Tunggu sebentar lalu coba lagi.');
+
+            return [
+                Limit::perMinute((int) config('inner_circle.batas_verifikasi_per_menit', 2))->by('menit:' . $kunci)->response($galat),
+                Limit::perDay((int) config('inner_circle.batas_verifikasi_per_hari', 10))->by('hari:' . $kunci)->response($galat),
+            ];
+        });
+
         // Hapus akun per ANGGOTA: pemeriksaan kata sandi di sini tidak boleh dipakai untuk menebak sandi.
         RateLimiter::for('ic-akun', fn(Request $request) => Limit::perMinute(5)->by('akun:' . (Auth::guard('member')->id() ?? $request->ip())));
 

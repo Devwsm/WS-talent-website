@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\InnerCircle\daftarRequest;
 use App\Http\Requests\InnerCircle\masukRequest;
 use App\Models\member;
+use App\Services\InnerCircle\EmailService;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -56,7 +57,7 @@ class authController extends Controller
         return redirect()->intended(route('ic.beranda'))->with('ic_toast', 'Selamat datang kembali!');
     }
 
-    public function prosesDaftar(daftarRequest $request): RedirectResponse
+    public function prosesDaftar(daftarRequest $request, EmailService $email): RedirectResponse
     {
         try {
             $anggota = DB::transaction(function () use ($request) {
@@ -83,7 +84,60 @@ class authController extends Controller
         $request->session()->regenerate();
         $request->session()->put('ic_sesi_versi', (int) $anggota->sesi_versi);
 
-        return redirect()->intended(route('ic.beranda'))->with('ic_toast', 'Selamat datang di WS Inner Circle!');
+        // Email belum terbukti milik pendaftar: kirim tautan verifikasi (hadiah baru bisa diajukan setelah terverifikasi).
+        // Gagal kirim tidak menggagalkan pendaftaran; anggota bisa meminta kirim ulang dari halaman Hadiah.
+        $email->kirimVerifikasi($anggota);
+
+        return redirect()->intended(route('ic.beranda'))
+            ->with('ic_toast', 'Selamat datang di WS Inner Circle! Cek emailmu untuk verifikasi sebelum mengajukan hadiah.');
+    }
+
+    /**
+     * Menyelesaikan verifikasi dari tautan email. Hanya sah bila tanda tangan dan masa berlakunya benar DAN tautan itu
+     * milik anggota yang sedang masuk. Rute ini di belakang `auth:member`, jadi orang yang mendaftarkan email orang
+     * lain tidak bisa mengesahkannya: kata sandi yang ia pasang tidak diketahui pemilik email, dan pemilik email tidak
+     * bisa masuk ke akun itu untuk membuka tautannya.
+     */
+    public function verifikasiEmail(Request $request, int $id, string $hash): RedirectResponse
+    {
+        $anggota = Auth::guard('member')->user();
+
+        if (! $request->hasValidSignature()) {
+            return redirect()->route('ic.hadiah')
+                ->with('ic_toast_galat', 'Tautan verifikasi sudah kedaluwarsa atau tidak valid. Kirim ulang email verifikasi dari halaman ini.');
+        }
+
+        if ((int) $anggota->getKey() !== $id || ! hash_equals(sha1(mb_strtolower((string) $anggota->email)), $hash)) {
+            return redirect()->route('ic.hadiah')
+                ->with('ic_toast_galat', 'Tautan ini bukan untuk akun yang sedang masuk. Masuk dengan akun yang benar, lalu buka tautannya lagi.');
+        }
+
+        if ($anggota->email_verified_at !== null) {
+            return redirect()->route('ic.hadiah')->with('ic_toast', 'Emailmu sudah terverifikasi.');
+        }
+
+        $anggota->forceFill(['email_verified_at' => now()])->save();
+
+        return redirect(route('ic.hadiah') . '#klaim')
+            ->with('ic_toast', 'Email terverifikasi. Sekarang kamu bisa mengajukan hadiah.');
+    }
+
+    /** Kirim ulang email verifikasi (tombol di halaman Hadiah). Dibatasi per anggota lewat pembatas `ic-verifikasi`. */
+    public function kirimUlangVerifikasi(EmailService $email): RedirectResponse
+    {
+        $anggota = Auth::guard('member')->user();
+
+        if ($anggota->email_verified_at !== null) {
+            return redirect()->route('ic.hadiah')->with('ic_toast', 'Emailmu sudah terverifikasi.');
+        }
+
+        if (! $email->kirimVerifikasi($anggota)) {
+            return redirect()->route('ic.hadiah')
+                ->with('ic_toast_galat', 'Layanan email verifikasi sedang padat hari ini. Coba lagi besok, atau hubungi admin.');
+        }
+
+        return redirect()->route('ic.hadiah')
+            ->with('ic_toast', 'Email verifikasi dikirim ke ' . $anggota->email . '. Cek juga folder spam.');
     }
 
     public function keluar(Request $request): RedirectResponse

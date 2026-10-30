@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\InnerCircle;
 
+use App\Rules\SandiAnggota;
 use Illuminate\Foundation\Http\FormRequest;
 
 class daftarRequest extends FormRequest
@@ -25,7 +26,8 @@ class daftarRequest extends FormRequest
             'nama' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'max:150', 'unique:members,email'],
             // Maks 72: bcrypt hanya membaca 72 byte pertama, sisanya diam-diam diabaikan.
-            'sandi' => ['required', 'string', 'min:8', 'max:72', 'confirmed'],
+            // SandiAnggota: wajib huruf besar + kecil + angka, simbol boleh, emoji tidak.
+            'sandi' => ['required', 'string', 'min:8', 'max:72', new SandiAnggota(), 'confirmed'],
         ];
     }
 
