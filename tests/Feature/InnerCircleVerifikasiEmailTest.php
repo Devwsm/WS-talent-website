@@ -7,6 +7,7 @@ use App\Models\ic_claim;
 use App\Models\member;
 use App\Services\InnerCircle\EmailService;
 use App\Services\InnerCircle\StempelService;
+use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
@@ -19,6 +20,12 @@ use Tests\TestCase;
 class InnerCircleVerifikasiEmailTest extends TestCase
 {
     use RefreshDatabase;
+
+    /** Broker kata sandi anggota, bertipe konkret supaya editor mengenali createToken(). */
+    private function broker(): PasswordBroker
+    {
+        return Password::broker('members');
+    }
 
     private function anggota(string $email = 'a@contoh.test', int $stempel = 0): member
     {
@@ -211,7 +218,7 @@ class InnerCircleVerifikasiEmailTest extends TestCase
     public function test_atur_ulang_memakai_aturan_sandi_yang_sama(): void
     {
         $m = $this->anggota();
-        $token = Password::broker('members')->createToken($m);
+        $token = $this->broker()->createToken($m);
         $kirim = fn(string $sandi) => $this->post(route('ic.sandi.atur.proses'), [
             'token' => $token,
             'email' => $m->email,

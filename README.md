@@ -149,7 +149,7 @@ php artisan serve                   # http://127.0.0.1:8000
 
 ### Konfigurasi `.env`
 
-Lokal memakai `.env.example`; server memakai `.env.production.example` (debug mati, cookie sesi aman, log harian, kredensial kosong).
+`.env.example` berisi nilai yang aman untuk **server** (debug mati, cookie sesi aman, log harian, kredensial kosong, Inner Circle dan Google mati). Untuk lokal, salin ke `.env` lalu ubah `APP_ENV=local`, `APP_DEBUG=true`, `APP_URL`, `DB_*`, dan `SESSION_SECURE_COOKIE=false` bila tidak memakai HTTPS. `.env` lokal jangan dipakai mentah-mentah di server.
 
 | Variabel                                                                                                                        | Fungsi                                                                                                                    |
 | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
@@ -327,7 +327,7 @@ Empat hal ini sering lolos tanpa disadari dan bisa membuat situs putih, bocor, a
     - Di server, hapus file cache yang terlanjur ada: cPanel > **File Manager** > folder `bootstrap/cache` > pilih semua file selain `.gitignore` > **Delete**. Setelah ada akses SSH: jalankan `php artisan optimize:clear` di folder Laravel server (perintah ini membersihkan semua cache Laravel).
 2. **`.env` lokal jangan sampai ikut.** Isinya `APP_DEBUG=true`, DB user `root`, dan `IC_SEED_CONTOH=true`. Bila menimpa `.env` server, kode bisa bocor lewat halaman galat dan data contoh masuk produksi.
     - Kecualikan `.env` dari unggahan dan dari auto deploy.
-    - Di server pakai `.env.production.example` dengan `APP_ENV=production`, `APP_DEBUG=false`, `IC_SEED_CONTOH=false`.
+    - Di server pakai isi `.env.example` dengan `APP_ENV=production`, `APP_DEBUG=false`, `IC_SEED_CONTOH=false`.
 3. **Email: cek akun pengirim.** Sandi Aplikasi hanya bisa dibuat untuk akun Google sungguhan (Gmail atau Workspace), bukan email domain biasa seperti `noreply@whisnusantika.com` yang dipakai lewat `smtp.gmail.com`.
     - Pakai Gmail `it.wsm2026@gmail.com` (sesuai `.env.example`), atau SMTP Rumahweb (lihat [Keputusan yang masih terbuka](#keputusan-yang-masih-terbuka)). Tambahkan SPF, DKIM, dan DMARC di DNS domain supaya email tidak masuk spam.
     - Email juga dipakai verifikasi akun sandi: tanpa email yang berfungsi, anggota yang daftar dengan sandi tidak bisa mengajukan hadiah.
@@ -344,7 +344,7 @@ Empat hal ini sering lolos tanpa disadari dan bisa membuat situs putih, bocor, a
 
 #### `.env` server
 
-- **Server baru (mis. preview):** unggah `.env.production.example` ke folder utama Laravel, ganti namanya jadi `.env` (File Manager, klik kanan, **Rename**), lalu isi semua baris `GANTI`. `APP_KEY` dibuat di komputer lokal dengan `php artisan key:generate --show` (diawali `base64:`); pakai kunci berbeda untuk tiap server.
+- **Server baru (mis. preview):** unggah `.env.example` ke folder utama Laravel, ganti namanya jadi `.env` (File Manager, klik kanan, **Rename**), lalu isi semua baris `GANTI`. `APP_KEY` dibuat di komputer lokal dengan `php artisan key:generate --show` (diawali `base64:`); pakai kunci berbeda untuk tiap server.
 - **Server utama (sudah live):** jangan ditimpa. Tambahkan hanya variabel yang belum ada, di bagian bawah.
 
 | Variabel                                          | Nilai produksi                                                                              |
@@ -509,7 +509,7 @@ Sandi admin lama pernah tertulis di `accountSeeder` (ada di riwayat git), jadi a
 | Sedang  | Tidak ada header keamanan                                                                         | Middleware `SecurityHeaders` (nosniff, frame, referrer, permissions, HSTS di produksi)                |
 | Sedang  | Login anggota hanya dibatasi per IP                                                               | Pembatas per email+IP dan per IP (lihat [batas dan pembatas laju](#batas-unggahan-dan-pembatas-laju)) |
 | Rendah  | Waktu respons login admin membedakan username yang ada                                            | Hash selalu dicek (hash pengganti)                                                                    |
-| Rendah  | `.env.example` berisi `APP_DEBUG=true`, tanpa contoh `.env` server                                | `.env.production.example` ditambah                                                                    |
+| Rendah  | `.env.example` berisi `APP_DEBUG=true`, tanpa contoh `.env` server                                | `.env.example` kini berisi nilai aman untuk server                                                    |
 | Info    | Zip kerja memuat `.env` dan `public/hot`                                                          | Jangan unggah atau kirim keduanya                                                                     |
 | Rendah  | Kata sandi di form daftar/masuk ikut tersimpan di sesi saat validasi gagal                        | `dontFlash` untuk `sandi`, dites                                                                      |
 | Sedang  | Kolom link CMS menerima `javascript:`                                                             | Wajib URL `http(s)://`                                                                                |

@@ -7,6 +7,7 @@ use App\Mail\InnerCircle\ResetSandiMail;
 use App\Models\ic_event;
 use App\Models\member;
 use App\Services\InnerCircle\AcaraService;
+use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -19,6 +20,12 @@ use Tests\TestCase;
 class InnerCircleFase9Test extends TestCase
 {
     use RefreshDatabase;
+
+    /** Broker kata sandi anggota, bertipe konkret supaya editor mengenali createToken(). */
+    private function broker(): PasswordBroker
+    {
+        return Password::broker('members');
+    }
 
     private function admin(): static
     {
@@ -203,7 +210,7 @@ class InnerCircleFase9Test extends TestCase
     {
         $m = $this->anggota();
         $this->assertNull($m->email_verified_at);
-        $token = Password::broker('members')->createToken($m);
+        $token = $this->broker()->createToken($m);
 
         $this->get(route('ic.sandi.atur', ['token' => $token, 'email' => $m->email]))->assertOk()->assertSee('Buat kata sandi baru');
 

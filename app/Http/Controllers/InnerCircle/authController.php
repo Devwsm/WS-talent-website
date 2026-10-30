@@ -100,7 +100,7 @@ class authController extends Controller
      */
     public function verifikasiEmail(Request $request, int $id, string $hash): RedirectResponse
     {
-        $anggota = Auth::guard('member')->user();
+        $anggota = $this->anggota();
 
         if (! $request->hasValidSignature()) {
             return redirect()->route('ic.hadiah')
@@ -125,7 +125,7 @@ class authController extends Controller
     /** Kirim ulang email verifikasi (tombol di halaman Hadiah). Dibatasi per anggota lewat pembatas `ic-verifikasi`. */
     public function kirimUlangVerifikasi(EmailService $email): RedirectResponse
     {
-        $anggota = Auth::guard('member')->user();
+        $anggota = $this->anggota();
 
         if ($anggota->email_verified_at !== null) {
             return redirect()->route('ic.hadiah')->with('ic_toast', 'Emailmu sudah terverifikasi.');
@@ -146,5 +146,11 @@ class authController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('ic.masuk')->with('ic_toast', 'Kamu sudah keluar.');
+    }
+
+    /** Anggota yang sedang masuk (semua rute pemanggil di belakang `auth:member`). */
+    private function anggota(): member
+    {
+        return Auth::guard('member')->user();
     }
 }
