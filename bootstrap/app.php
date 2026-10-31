@@ -22,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'cekLogin' => \App\Http\Middleware\CekLogin::class,
             'icAktif' => \App\Http\Middleware\IcAktif::class,
             'icSesi' => \App\Http\Middleware\IcSesiVersi::class,
+            'icVerif' => \App\Http\Middleware\IcTerverifikasi::class,
             'catatAktivitas' => \App\Http\Middleware\CatatAktivitas::class,
         ]);
 

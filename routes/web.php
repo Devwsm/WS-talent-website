@@ -84,11 +84,11 @@ Route::prefix('/innercircle')->middleware('icAktif')->name('ic.')->group(functio
         Route::get('/hadiah', [memberController::class, 'hadiah'])->name('hadiah');
         Route::post('/hadiah/{target}/klaim', [memberController::class, 'ajukanKlaim'])->whereNumber('target')->name('hadiah.klaim')->middleware('throttle:ic-klaim');
         Route::get('/check-in', [memberController::class, 'checkin'])->name('checkin');
-        Route::post('/check-in', [memberController::class, 'prosesCheckin'])->name('checkin.proses')->middleware('throttle:ic-checkin');
+        Route::post('/check-in', [memberController::class, 'prosesCheckin'])->name('checkin.proses')->middleware(['icVerif', 'throttle:ic-checkin']);
         Route::get('/komunitas', [memberController::class, 'komunitas'])->name('komunitas');
-        Route::post('/kenangan', [kenanganController::class, 'simpan'])->name('kenangan.simpan')->middleware('throttle:ic-kenangan');
+        Route::post('/kenangan', [kenanganController::class, 'simpan'])->name('kenangan.simpan')->middleware(['icVerif', 'throttle:ic-kenangan']);
         Route::delete('/kenangan/{id}', [kenanganController::class, 'hapus'])->whereNumber('id')->name('kenangan.hapus')->middleware('throttle:30,1');
-        Route::post('/kenangan/{id}/suka', [kenanganController::class, 'suka'])->whereNumber('id')->name('kenangan.suka')->middleware('throttle:ic-suka');
+        Route::post('/kenangan/{id}/suka', [kenanganController::class, 'suka'])->whereNumber('id')->name('kenangan.suka')->middleware(['icVerif', 'throttle:ic-suka']);
         Route::get('/profil', [memberController::class, 'profil'])->name('profil');
         Route::post('/profil/foto', [fotoProfilController::class, 'simpan'])->name('profil.foto')->middleware('throttle:ic-foto');
         Route::delete('/profil/foto', [fotoProfilController::class, 'hapus'])->name('profil.foto.hapus')->middleware('throttle:ic-foto');

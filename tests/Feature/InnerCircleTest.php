@@ -32,6 +32,7 @@ class InnerCircleTest extends TestCase
     {
         $m = member::create(['nama' => 'Anggota Uji', 'email' => $email, 'password' => 'rahasia123']);
         $m->kode_member = sprintf('IC-%05d', $m->id_member);
+        $m->email_verified_at = now(); // check-in, kenangan, dan suka butuh email terverifikasi
         $m->save();
 
         return $m;
@@ -74,6 +75,36 @@ class InnerCircleTest extends TestCase
         $this->get('/inner-circle/check-in?kode=WS-ABCDEFGHJKLM')
             ->assertStatus(301)
             ->assertRedirect('/innercircle/check-in?kode=WS-ABCDEFGHJKLM');
+    }
+
+    public function test_email_belum_terverifikasi_bisa_masuk_tapi_tidak_bisa_beraktivitas(): void
+    {
+        $e = $this->acara();
+        $m = member::create(['nama' => 'Belum Verifikasi', 'email' => 'belum@contoh.test', 'password' => 'rahasia123']);
+        $m->kode_member = sprintf('IC-%05d', $m->id_member);
+        $m->save();
+
+        // Boleh membuka halaman dan melihat-lihat; panel verifikasi tampil.
+        $this->actingAs($m, 'member')->get(route('ic.beranda'))->assertOk()->assertSee('Verifikasi emailmu dulu');
+        $this->actingAs($m, 'member')->get(route('ic.checkin'))->assertOk()->assertSee('Verifikasi emailmu dulu');
+        $this->actingAs($m, 'member')->get(route('ic.komunitas'))->assertOk()->assertSee('Verifikasi emailmu dulu');
+
+        // Check-in, unggah kenangan, dan suka ditolak di server.
+        $this->checkin($m, $e->token, $e->kode)
+            ->assertRedirect(route('ic.beranda'))
+            ->assertSessionHas('ic_toast_galat');
+        $this->actingAs($m, 'member')->post(route('ic.kenangan.simpan'), ['caption' => 'Seru banget', 'kategori' => 'festival'])
+            ->assertRedirect(route('ic.beranda'))
+            ->assertSessionHas('ic_toast_galat');
+        $this->actingAs($m, 'member')->postJson(route('ic.kenangan.suka', 1))->assertForbidden();
+
+        $this->assertSame(0, ic_stempel::count());
+        $this->assertSame(0, \App\Models\ic_memory::count());
+
+        // Setelah terverifikasi, check-in yang sama berhasil.
+        $m->forceFill(['email_verified_at' => now()])->save();
+        $this->checkin($m->fresh(), $e->token, $e->kode)->assertRedirect(route('ic.beranda'))->assertSessionMissing('ic_toast_galat');
+        $this->assertSame(1, ic_stempel::count());
     }
 
     public function test_daftar_memberi_kode_member_dan_stempel_nol(): void

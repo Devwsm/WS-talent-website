@@ -12,6 +12,8 @@
     <p class="ic-deskripsi">Jadilah bagian dari perjalanan ini. Temukan kegiatan Inner Circle dan kumpulkan stempel
         ketika hadir.</p>
 
+    <x-inner-circle.panel-verifikasi />
+
     <section class="ic-filter" aria-labelledby="judul-jadwal">
         <div>
             <h2 class="ic-filter__judul" id="judul-jadwal">Jadwal Pertunjukan WS · Kuartal IV 2026</h2>

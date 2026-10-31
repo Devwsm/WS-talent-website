@@ -3,6 +3,27 @@
 <?php $__env->startSection('title', 'Beranda'); ?>
 
 <?php $__env->startSection('content'); ?>
+    <?php if (isset($component)) { $__componentOriginalf877d07c4fe1a01e26f53be775598596 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginalf877d07c4fe1a01e26f53be775598596 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.inner-circle.panel-verifikasi','data' => []] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('inner-circle.panel-verifikasi'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes([]); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginalf877d07c4fe1a01e26f53be775598596)): ?>
+<?php $attributes = $__attributesOriginalf877d07c4fe1a01e26f53be775598596; ?>
+<?php unset($__attributesOriginalf877d07c4fe1a01e26f53be775598596); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginalf877d07c4fe1a01e26f53be775598596)): ?>
+<?php $component = $__componentOriginalf877d07c4fe1a01e26f53be775598596; ?>
+<?php unset($__componentOriginalf877d07c4fe1a01e26f53be775598596); ?>
+<?php endif; ?>
+
     <div class="ic-beranda">
         <section class="ic-hero" aria-labelledby="judul-beranda">
             <p class="ic-eyebrow">Musik seru. Teman baru.</p>

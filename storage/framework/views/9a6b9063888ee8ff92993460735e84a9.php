@@ -8,13 +8,34 @@
     <p class="ic-deskripsi">Semua cerita dimulai dari hadir. Update langsung dari WSM, lalu simpan momen yang layak
         diingat.</p>
 
+    <?php if (isset($component)) { $__componentOriginalf877d07c4fe1a01e26f53be775598596 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginalf877d07c4fe1a01e26f53be775598596 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.inner-circle.panel-verifikasi','data' => []] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('inner-circle.panel-verifikasi'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes([]); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginalf877d07c4fe1a01e26f53be775598596)): ?>
+<?php $attributes = $__attributesOriginalf877d07c4fe1a01e26f53be775598596; ?>
+<?php unset($__attributesOriginalf877d07c4fe1a01e26f53be775598596); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginalf877d07c4fe1a01e26f53be775598596)): ?>
+<?php $component = $__componentOriginalf877d07c4fe1a01e26f53be775598596; ?>
+<?php unset($__componentOriginalf877d07c4fe1a01e26f53be775598596); ?>
+<?php endif; ?>
+
     <section class="ic-banner" aria-labelledby="judul-banner">
         <div>
             <span class="ic-banner__stiker">✦ WS INNER CIRCLE ✦</span>
             <h2 id="judul-banner">Lebih banyak musik.<br>Teman yang sama.</h2>
             <p>Lebih dekat dengan musik. Lebih akrab satu sama lain.</p>
-            <button type="button" class="ic-tombol" data-ic-modal-buka="modal-kenangan">+ Bagikan kenangan <i
-                    class="bi bi-arrow-up-right" aria-hidden="true"></i></button>
+            <button type="button" class="ic-tombol" data-ic-modal-buka="modal-kenangan" <?php if($member->email_verified_at === null): echo 'disabled'; endif; ?>>+ Bagikan
+                kenangan <i class="bi bi-arrow-up-right" aria-hidden="true"></i></button>
         </div>
         <div class="ic-banner__orbit" aria-hidden="true">
             <?php if (isset($component)) { $__componentOriginalcfa42609bd5a05d39e3b6fd21eebb83b = $component; } ?>
@@ -158,7 +179,8 @@
                 <p class="ic-eyebrow">Penggemar, foto &amp; cerita</p>
                 <h2 class="ic-judul-bagian">Galeri kenangan ♡</h2>
             </div>
-            <button type="button" class="ic-tombol" data-ic-modal-buka="modal-kenangan">+ Tambah kenangan</button>
+            <button type="button" class="ic-tombol" data-ic-modal-buka="modal-kenangan" <?php if($member->email_verified_at === null): echo 'disabled'; endif; ?>>+
+                Tambah kenangan</button>
         </div>
 
         <p class="ic-intro-kenangan"><b>Simpan momen terbaikmu.</b> Bagikan momen favorit, dukung sesama penggemar,

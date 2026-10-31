@@ -62,6 +62,7 @@ class InnerCircleKomunitasTest extends TestCase
     {
         $m = member::create(['nama' => $nama, 'email' => $email, 'password' => 'rahasia123']);
         $m->kode_member = sprintf('IC-%05d', $m->id_member);
+        $m->email_verified_at = now(); // check-in, kenangan, dan suka butuh email terverifikasi
         $m->save();
 
         return $m->fresh();

@@ -3,6 +3,8 @@
 @section('title', 'Beranda')
 
 @section('content')
+    <x-inner-circle.panel-verifikasi />
+
     <div class="ic-beranda">
         <section class="ic-hero" aria-labelledby="judul-beranda">
             <p class="ic-eyebrow">Musik seru. Teman baru.</p>

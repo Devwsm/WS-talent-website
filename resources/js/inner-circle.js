@@ -234,6 +234,13 @@ document.addEventListener("click", async (e) => {
             window.location.reload();
             return;
         }
+        if (respons.status === 403) {
+            window.icToast(
+                "Verifikasi emailmu dulu untuk menyukai kenangan.",
+                "info",
+            );
+            return;
+        }
         if (respons.status === 404) {
             window.icToast("Kenangan ini sudah tidak tersedia.", "info");
             return;

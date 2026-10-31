@@ -8,13 +8,15 @@
     <p class="ic-deskripsi">Semua cerita dimulai dari hadir. Update langsung dari WSM, lalu simpan momen yang layak
         diingat.</p>
 
+    <x-inner-circle.panel-verifikasi />
+
     <section class="ic-banner" aria-labelledby="judul-banner">
         <div>
             <span class="ic-banner__stiker">✦ WS INNER CIRCLE ✦</span>
             <h2 id="judul-banner">Lebih banyak musik.<br>Teman yang sama.</h2>
             <p>Lebih dekat dengan musik. Lebih akrab satu sama lain.</p>
-            <button type="button" class="ic-tombol" data-ic-modal-buka="modal-kenangan">+ Bagikan kenangan <i
-                    class="bi bi-arrow-up-right" aria-hidden="true"></i></button>
+            <button type="button" class="ic-tombol" data-ic-modal-buka="modal-kenangan" @disabled($member->email_verified_at === null)>+ Bagikan
+                kenangan <i class="bi bi-arrow-up-right" aria-hidden="true"></i></button>
         </div>
         <div class="ic-banner__orbit" aria-hidden="true">
             <x-inner-circle.ikon nama="mirror-ball" kelas="ic-ikon--sampul" />
@@ -63,7 +65,8 @@
                 <p class="ic-eyebrow">Penggemar, foto &amp; cerita</p>
                 <h2 class="ic-judul-bagian">Galeri kenangan ♡</h2>
             </div>
-            <button type="button" class="ic-tombol" data-ic-modal-buka="modal-kenangan">+ Tambah kenangan</button>
+            <button type="button" class="ic-tombol" data-ic-modal-buka="modal-kenangan" @disabled($member->email_verified_at === null)>+
+                Tambah kenangan</button>
         </div>
 
         <p class="ic-intro-kenangan"><b>Simpan momen terbaikmu.</b> Bagikan momen favorit, dukung sesama penggemar,

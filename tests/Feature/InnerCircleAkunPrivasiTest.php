@@ -46,6 +46,7 @@ class InnerCircleAkunPrivasiTest extends TestCase
     {
         $m = member::create(['nama' => 'Anggota Uji', 'email' => $email, 'password' => $sandi]);
         $m->kode_member = sprintf('IC-%05d', $m->id_member);
+        $m->email_verified_at = now(); // check-in, kenangan, dan suka butuh email terverifikasi
         $m->save();
 
         return $m->fresh();

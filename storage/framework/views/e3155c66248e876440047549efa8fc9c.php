@@ -12,6 +12,27 @@
     <p class="ic-deskripsi">Jadilah bagian dari perjalanan ini. Temukan kegiatan Inner Circle dan kumpulkan stempel
         ketika hadir.</p>
 
+    <?php if (isset($component)) { $__componentOriginalf877d07c4fe1a01e26f53be775598596 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginalf877d07c4fe1a01e26f53be775598596 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.inner-circle.panel-verifikasi','data' => []] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('inner-circle.panel-verifikasi'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes([]); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginalf877d07c4fe1a01e26f53be775598596)): ?>
+<?php $attributes = $__attributesOriginalf877d07c4fe1a01e26f53be775598596; ?>
+<?php unset($__attributesOriginalf877d07c4fe1a01e26f53be775598596); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginalf877d07c4fe1a01e26f53be775598596)): ?>
+<?php $component = $__componentOriginalf877d07c4fe1a01e26f53be775598596; ?>
+<?php unset($__componentOriginalf877d07c4fe1a01e26f53be775598596); ?>
+<?php endif; ?>
+
     <section class="ic-filter" aria-labelledby="judul-jadwal">
         <div>
             <h2 class="ic-filter__judul" id="judul-jadwal">Jadwal Pertunjukan WS · Kuartal IV 2026</h2>
