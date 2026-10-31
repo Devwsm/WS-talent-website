@@ -154,10 +154,16 @@ class memberController extends Controller
         $anggota = $this->anggota();
         $kodeAcara = $request->validated('acara');
 
+        // Posisi HP hanya dikirim bila browser berhasil membacanya; acara dengan titik lokasi yang tidak menerimanya akan menolak.
+        $lokasi = $request->filled('lat') && $request->filled('lng')
+            ? ['lat' => $request->validated('lat'), 'lng' => $request->validated('lng'), 'akurasi' => $request->validated('akurasi')]
+            : null;
+
         try {
-            $stempel = $checkin->checkin($anggota, $request->validated('kode'), $kodeAcara);
+            $stempel = $checkin->checkin($anggota, $request->validated('kode'), $kodeAcara, null, $lokasi);
         } catch (CheckinGagal $e) {
-            return redirect(route('ic.checkin', array_filter(['acara' => $kodeAcara])) . '#kode-kehadiran')
+            // Kembali ke halaman yang sama dengan acaranya terpilih: lembar check-in terbuka lagi dan menampilkan galatnya.
+            return redirect(route('ic.checkin', array_filter(['acara' => $kodeAcara])))
                 ->withErrors(['kode' => $e->getMessage()])
                 ->withInput(['kode' => $request->validated('kode')]);
         }

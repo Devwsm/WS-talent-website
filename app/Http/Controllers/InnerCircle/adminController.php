@@ -7,6 +7,7 @@ use App\Http\Requests\InnerCircle\imporEventRequest;
 use App\Http\Requests\InnerCircle\moderasiKenanganRequest;
 use App\Http\Requests\InnerCircle\simpanEventRequest;
 use App\Http\Requests\InnerCircle\simpanHadiahRequest;
+use App\Http\Requests\InnerCircle\simpanLokasiRequest;
 use App\Http\Requests\InnerCircle\simpanPengumumanRequest;
 use App\Http\Requests\InnerCircle\stempelManualRequest;
 use App\Http\Requests\InnerCircle\ubahKlaimRequest;
@@ -22,12 +23,15 @@ use App\Services\InnerCircle\BandsintownService;
 use App\Services\InnerCircle\EmailService;
 use App\Services\InnerCircle\CheckinService;
 use App\Services\InnerCircle\ClaimService;
+use App\Services\InnerCircle\GeocodeService;
+use App\Services\InnerCircle\LokasiService;
 use App\Services\InnerCircle\KenanganService;
 use App\Services\InnerCircle\KlaimGagal;
 use App\Services\InnerCircle\PengumumanService;
 use App\Services\InnerCircle\QrService;
 use App\Services\InnerCircle\SinkronGagal;
 use App\Services\InnerCircle\StempelService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -269,6 +273,80 @@ class adminController extends Controller
 
         return redirect(route('ic.admin.acara', ['acara' => $event->kode]) . '#qr')
             ->with('success', 'QR baru dibuat. QR yang lama sudah tidak berlaku.');
+    }
+
+    /**
+     * Simpan titik lokasi check-in. Titik dan radius milik ACARA: satu akun CMS yang dipakai banyak petugas tidak bikin
+     * radius ganda, karena yang tersimpan hanya satu titik per acara (yang terakhir disimpan berlaku).
+     * Memindahkan titik yang sudah ada ke tempat yang jauh harus ditegaskan, supaya petugas yang sedang tidak di venue
+     * tidak menimpa titik yang benar tanpa sengaja.
+     */
+    public function simpanLokasi(string $kode, simpanLokasiRequest $request): RedirectResponse
+    {
+        $event = ic_event::query()->where('kode', $kode)->firstOrFail();
+        abort_unless($event->bisa_checkin, 404);
+
+        $d = $request->validated();
+        $lat = round((float) $d['lat'], 7);
+        $lng = round((float) $d['lng'], 7);
+
+        if ($event->lokasi_aktif && ! $d['konfirmasi_geser']) {
+            $geser = LokasiService::jarakMeter((float) $event->lokasi_lat, (float) $event->lokasi_lng, $lat, $lng);
+            if ($geser > (float) config('inner_circle.lokasi.geser_konfirmasi_m')) {
+                return back()->withInput()->withErrors([
+                    'lat' => 'Titik baru berjarak ' . LokasiService::formatJarak($geser) . ' dari titik yang sudah tersimpan. '
+                        . 'Bila memang ingin memindahkannya, centang konfirmasi pemindahan lalu simpan lagi.',
+                ]);
+            }
+        }
+
+        $event->update([
+            'lokasi_lat' => $lat,
+            'lokasi_lng' => $lng,
+            'lokasi_radius' => (int) $d['radius'],
+            'lokasi_sumber' => $d['sumber'],
+            'lokasi_diatur_oleh' => $d['petugas'] ?? null,
+            'lokasi_diatur_pada' => now(),
+        ]);
+
+        return redirect(route('ic.admin.acara', ['acara' => $event->kode]) . '#lokasi')
+            ->with('success', 'Titik lokasi check-in ' . ($event->venue ?? $event->kode) . ' disimpan (radius ' . $event->radius_efektif . ' m).');
+    }
+
+    /** Matikan pemeriksaan lokasi untuk satu acara: QR-nya kembali bisa dipakai dari mana saja. */
+    public function hapusLokasi(string $kode): RedirectResponse
+    {
+        $event = ic_event::query()->where('kode', $kode)->firstOrFail();
+
+        $event->update([
+            'lokasi_lat' => null,
+            'lokasi_lng' => null,
+            'lokasi_radius' => null,
+            'lokasi_sumber' => null,
+            'lokasi_diatur_oleh' => null,
+            'lokasi_diatur_pada' => null,
+        ]);
+
+        return redirect(route('ic.admin.acara', ['acara' => $event->kode]) . '#lokasi')
+            ->with('success', 'Titik lokasi dihapus. Check-in acara ini tidak lagi memeriksa lokasi.');
+    }
+
+    /** Cari koordinat dari nama venue (atau alamat yang diketik petugas). Hasilnya hanya saran, JSON untuk tombol di panel. */
+    public function cariLokasi(string $kode, Request $request, GeocodeService $geo): JsonResponse
+    {
+        $event = ic_event::query()->where('kode', $kode)->firstOrFail();
+        abort_unless($event->bisa_checkin, 404);
+
+        $alamat = mb_substr(trim((string) $request->input('alamat')), 0, 150);
+        $kueri = $alamat !== '' ? $alamat : trim(($event->venue ?? '') . ', ' . ($event->kota ?? ''), ', ');
+
+        try {
+            $hasil = $geo->cari($kueri);
+        } catch (SinkronGagal $e) {
+            return response()->json(['pesan' => $e->getMessage()], 502);
+        }
+
+        return response()->json(['kueri' => $kueri, 'hasil' => $hasil]);
     }
 
     public function imporAcara(imporEventRequest $request, AcaraService $acara): RedirectResponse

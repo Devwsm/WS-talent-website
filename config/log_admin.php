@@ -51,6 +51,9 @@ return [
         'ic.admin.acara.ubah' => 'Ubah acara',
         'ic.admin.acara.hapus' => 'Hapus acara',
         'ic.admin.acara.token' => 'Buat QR baru',
+        'ic.admin.acara.lokasi' => 'Atur titik lokasi check-in',
+        'ic.admin.acara.lokasi.hapus' => 'Hapus titik lokasi check-in',
+        'ic.admin.acara.lokasi.cari' => 'Cari alamat lokasi acara',
         'ic.admin.klaim.proses' => 'Proses klaim hadiah',
         'ic.admin.hadiah.ubah' => 'Ubah tahap hadiah',
         'ic.admin.hadiah.aktif' => 'Aktif/nonaktifkan tahap hadiah',
@@ -65,7 +68,7 @@ return [
     ],
 
     /* Isi form yang boleh ikut dicatat (nilai pendek dan tidak sensitif). Selain ini TIDAK pernah disimpan. */
-    'input_dicatat' => ['aksi', 'aktif', 'status', 'tahap'],
+    'input_dicatat' => ['aksi', 'aktif', 'status', 'tahap', 'petugas'],
 
     'kategori' => [
         'akses' => 'Masuk & keluar',

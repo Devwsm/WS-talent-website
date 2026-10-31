@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Header keamanan dasar untuk semua halaman web.
  *
- * - kamera hanya boleh dipakai halaman sendiri (pemindai QR check-in), mikrofon/lokasi/dll dimatikan
+ * - kamera (pemindai QR) dan lokasi (check-in di venue) hanya boleh dipakai halaman sendiri, mikrofon/dll dimatikan
  * - X-Frame-Options mencegah clickjacking (situs ini tidak pernah di-embed di situs lain)
  * - HSTS hanya dikirim lewat HTTPS dan di produksi (jangan di lokal: browser akan "mengunci" localhost ke HTTPS)
  *
@@ -27,7 +27,7 @@ class SecurityHeaders
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $response->headers->set(
             'Permissions-Policy',
-            'camera=(self), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()'
+            'camera=(self), microphone=(), geolocation=(self), payment=(), usb=(), interest-cohort=()'
         );
         $response->headers->set('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
 

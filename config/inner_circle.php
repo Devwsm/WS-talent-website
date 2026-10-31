@@ -29,6 +29,24 @@ return [
     /* Batas percobaan check-in per anggota per menit (lihat RateLimiter `ic-checkin` di AppServiceProvider). */
     'batas_checkin_per_menit' => 8,
 
+    /*
+    | Check-in dengan lokasi. Acara yang punya titik lokasi (dashboard > Acara & QR) hanya bisa check-in bila HP
+    | anggota berada di dalam radius titik itu; acara tanpa titik tetap bisa check-in seperti sebelumnya.
+    | - radius_bawaan_m: radius bila petugas tidak mengisi (meter), selalu dijepit antara radius_min_m dan radius_maks_m.
+    | - akurasi_maks_m: tolak bila HP melaporkan akurasi GPS lebih buruk dari ini (sinyal terlalu kasar untuk dipercaya).
+    | - toleransi_akurasi_m: keringanan untuk GPS kasar di dalam gedung. Jarak dikurangi akurasi HP (paling banyak sebesar
+    |   angka ini) sebelum dibandingkan dengan radius.
+    | - geser_konfirmasi_m: titik yang sudah tersimpan hanya bisa dipindah lebih jauh dari ini bila petugas menegaskannya.
+    */
+    'lokasi' => [
+        'radius_bawaan_m' => 150,
+        'radius_min_m' => 30,
+        'radius_maks_m' => 2000,
+        'akurasi_maks_m' => 150,
+        'toleransi_akurasi_m' => 50,
+        'geser_konfirmasi_m' => 1000,
+    ],
+
     /* Batas pengajuan hadiah per anggota per menit (RateLimiter `ic-klaim`). Pengaman klik ganda dan skrip. */
     'batas_klaim_per_menit' => 6,
 

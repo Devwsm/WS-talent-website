@@ -23,8 +23,10 @@ class StempelService
         ?ic_event $event = null,
         ?string $catatan = null,
         ?string $dicatatOleh = null,
+        ?int $jarakM = null,
+        ?int $akurasiM = null,
     ): ic_stempel {
-        return DB::transaction(function () use ($anggota, $jumlah, $sumber, $judul, $ikon, $event, $catatan, $dicatatOleh) {
+        return DB::transaction(function () use ($anggota, $jumlah, $sumber, $judul, $ikon, $event, $catatan, $dicatatOleh, $jarakM, $akurasiM) {
             $baris = ic_stempel::create([
                 'member_id' => $anggota->getKey(),
                 'jumlah' => $jumlah,
@@ -33,6 +35,8 @@ class StempelService
                 'judul' => $judul,
                 'ikon' => $ikon,
                 'catatan' => $catatan,
+                'jarak_m' => $jarakM,
+                'akurasi_m' => $akurasiM,
                 'dicatat_oleh' => $dicatatOleh,
             ]);
 

@@ -36,6 +36,12 @@ class ic_event extends Model
         'token_dibuat_pada',
         'jendela_mulai',
         'jendela_selesai',
+        'lokasi_lat',
+        'lokasi_lng',
+        'lokasi_radius',
+        'lokasi_sumber',
+        'lokasi_diatur_oleh',
+        'lokasi_diatur_pada',
     ];
 
     protected $hidden = ['token'];
@@ -49,7 +55,28 @@ class ic_event extends Model
             'token_dibuat_pada' => 'datetime',
             'jendela_mulai' => 'datetime',
             'jendela_selesai' => 'datetime',
+            'lokasi_lat' => 'float',
+            'lokasi_lng' => 'float',
+            'lokasi_radius' => 'integer',
+            'lokasi_diatur_pada' => 'datetime',
         ];
+    }
+
+    /** Acara ini punya titik lokasi, jadi check-in hanya sah dari dalam radiusnya. */
+    protected function lokasiAktif(): Attribute
+    {
+        return Attribute::get(fn() => $this->lokasi_lat !== null && $this->lokasi_lng !== null);
+    }
+
+    /** Radius yang dipakai (meter): isian petugas, atau bawaan dari config; selalu di dalam batas config. */
+    protected function radiusEfektif(): Attribute
+    {
+        return Attribute::get(function () {
+            $cfg = config('inner_circle.lokasi');
+            $radius = $this->lokasi_radius ?: (int) $cfg['radius_bawaan_m'];
+
+            return max((int) $cfg['radius_min_m'], min((int) $cfg['radius_maks_m'], $radius));
+        });
     }
 
     /** Token acak 12 karakter (tanpa huruf/angka yang mudah tertukar), mis. WS-7K2MQ9XH4TBD. */
@@ -101,6 +128,59 @@ class ic_event extends Model
     protected function jendelaTutup(): Attribute
     {
         return Attribute::get(fn() => $this->jendela_selesai ?? $this->tanggal->copy()->addDay()->setTime(6, 0));
+    }
+
+    /**
+     * Keadaan check-in untuk lembar check-in anggota: siap | belum | tutup | sudah.
+     * `sudah` dibaca dari properti `sudah_checkin` yang diisi controller per anggota (bukan kolom).
+     */
+    public function statusCheckin(?Carbon $sekarang = null): string
+    {
+        $sekarang ??= now();
+
+        if ($this->getAttribute('sudah_checkin')) {
+            return 'sudah';
+        }
+        if ($sekarang->lessThan($this->jendela_buka)) {
+            return 'belum';
+        }
+
+        return $sekarang->greaterThan($this->jendela_tutup) ? 'tutup' : 'siap';
+    }
+
+    /** Kalimat siap tampil untuk tiap keadaan check-in. */
+    public function pesanCheckin(string $status): string
+    {
+        $format = fn(Carbon $w) => $w->locale('id')->translatedFormat('D, j M Y \p\u\k\u\l H.i') . ' WIB';
+
+        return match ($status) {
+            'sudah' => 'Kamu sudah check-in di acara ini. Satu acara hanya memberi satu stempel.',
+            'belum' => 'Check-in belum dibuka. Dibuka ' . $format($this->jendela_buka) . '.',
+            'tutup' => 'Check-in untuk acara ini sudah ditutup.',
+            default => 'Check-in dibuka sampai ' . $format($this->jendela_tutup) . '.',
+        };
+    }
+
+    /**
+     * Atribut data-* yang dibaca JavaScript untuk mengisi lembar check-in tanpa memuat ulang halaman.
+     * Titik lokasi acara sengaja TIDAK ikut: anggota hanya tahu apakah lokasinya diperiksa, bukan di mana titiknya.
+     *
+     * @return array<string, string>
+     */
+    public function atributCheckin(): array
+    {
+        $tipe = config('inner_circle.tipe_event.' . $this->tipe);
+
+        return [
+            'data-kode' => (string) $this->kode,
+            'data-venue' => (string) $this->venue,
+            'data-kota' => (string) $this->kota,
+            'data-tanggal' => $this->tanggal->locale('id')->translatedFormat('D, j M Y'),
+            'data-tipe' => (string) ($tipe['label'] ?? ''),
+            'data-status' => $this->statusCheckin(),
+            'data-pesan' => $this->pesanCheckin($this->statusCheckin()),
+            'data-lokasi' => $this->lokasi_aktif ? '1' : '0',
+        ];
     }
 
     /** Apakah jendela check-in sedang terbuka pada waktu $sekarang (bawaan: saat ini). */

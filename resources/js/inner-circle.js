@@ -50,23 +50,31 @@ window.icKonfirmasi = (opsi) =>
     });
 
 // ---------- Modal ----------
-let pemicuTerakhir = null;
+// Modal bisa bertumpuk (lembar check-in membuka pemindai QR di atasnya): yang dicatat adalah urutan buka beserta
+// pemicunya, kunci gulir halaman baru dilepas saat modal terakhir tertutup, dan Esc/Tab hanya berlaku di yang paling atas.
+const tumpukModal = [];
 
 function bukaModal(id, pemicu) {
     const modal = document.getElementById(id);
-    if (!modal) return;
-    pemicuTerakhir = pemicu ?? document.activeElement;
+    if (!modal || !modal.hidden) return;
+    tumpukModal.push({ modal, pemicu: pemicu ?? document.activeElement });
     modal.hidden = false;
     document.body.classList.add("ic-modal-terbuka");
     modal.querySelector(".ic-modal__dialog")?.focus();
+    modal.dispatchEvent(new CustomEvent("ic:modal-buka"));
 }
 
 function tutupModal(modal) {
     if (!modal || modal.hidden) return;
     modal.hidden = true;
+    const urutan = tumpukModal.findIndex((m) => m.modal === modal);
+    const entri = urutan >= 0 ? tumpukModal.splice(urutan, 1)[0] : null;
     if (modal.id === "modal-pindai") hentikanPemindai();
-    document.body.classList.remove("ic-modal-terbuka");
-    pemicuTerakhir?.focus?.();
+    if (tumpukModal.length === 0) {
+        document.body.classList.remove("ic-modal-terbuka");
+    }
+    entri?.pemicu?.focus?.();
+    modal.dispatchEvent(new CustomEvent("ic:modal-tutup"));
 }
 
 document.addEventListener("click", (e) => {
@@ -90,15 +98,38 @@ document.addEventListener("click", (e) => {
 });
 
 document.addEventListener("keydown", (e) => {
+    const atas = tumpukModal[tumpukModal.length - 1]?.modal;
+    if (!atas) return;
+
     if (e.key === "Escape") {
-        tutupModal(document.querySelector(".ic-modal:not([hidden])"));
+        tutupModal(atas);
+        return;
+    }
+
+    // Fokus keyboard berputar di dalam modal paling atas, tidak lari ke halaman di belakangnya.
+    if (e.key === "Tab") {
+        const dialog = atas.querySelector(".ic-modal__dialog");
+        const dapatFokus = Array.from(
+            atas.querySelectorAll(
+                'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled])',
+            ),
+        ).filter((el) => !el.hidden && el.offsetParent !== null);
+        if (dapatFokus.length === 0) return;
+        const pertama = dapatFokus[0];
+        const terakhir = dapatFokus[dapatFokus.length - 1];
+        if (
+            e.shiftKey &&
+            (document.activeElement === pertama ||
+                document.activeElement === dialog)
+        ) {
+            e.preventDefault();
+            terakhir.focus();
+        } else if (!e.shiftKey && document.activeElement === terakhir) {
+            e.preventDefault();
+            pertama.focus();
+        }
     }
 });
-
-// Modal yang diminta terbuka oleh server (atribut data-ic-buka-awal), mis. form unggah dengan galat validasi.
-document
-    .querySelectorAll("[data-ic-buka-awal]")
-    .forEach((modal) => bukaModal(modal.id));
 
 // ---------- Toast dari flash sesi ----------
 // Layout menaruh pesan flash di <body data-ic-toast="...">, mis. setelah masuk.
@@ -316,8 +347,7 @@ function ambilToken(teks) {
 
 function terapkanHasilQr(teks) {
     const token = ambilToken(teks);
-    const input = document.getElementById("kode");
-    if (!token || !input) {
+    if (!token) {
         // Kamera membaca banyak bingkai per detik: batasi pemberitahuan galat agar tidak menumpuk.
         if (Date.now() - galatTerakhirPada > 3000) {
             galatTerakhirPada = Date.now();
@@ -328,10 +358,24 @@ function terapkanHasilQr(teks) {
         }
         return false;
     }
-    input.value = token;
-    window.icToast("QR terbaca. Tekan Verifikasi untuk mendapat stempel.");
-    input.form?.querySelector("button[type=submit]")?.focus();
-    return true;
+
+    const lembar = document.getElementById("modal-checkin");
+    const input = document.getElementById("kode");
+    if (lembar && !lembar.hidden && input) {
+        // Lembar check-in sudah terbuka untuk satu acara: cukup isi kodenya.
+        input.value = token;
+        window.icToast("QR terbaca. Tekan Check-in sekarang.");
+        document.getElementById("ic-checkin-kirim")?.focus();
+        return true;
+    }
+
+    // Belum ada acara terpilih: server mencari acaranya dari token, lalu lembar check-in terbuka sendiri.
+    const dasar = lembar?.dataset.icUrlCheckin;
+    if (dasar) {
+        window.location.assign(`${dasar}?kode=${encodeURIComponent(token)}`);
+        return true;
+    }
+    return false;
 }
 
 async function mulaiPemindai() {
@@ -405,3 +449,335 @@ document.addEventListener("change", async (e) => {
         input.value = "";
     }
 });
+
+// ---------- Check-in: lembar bawah + lokasi ----------
+// Anggota memilih acara (kartu) atau memindai QR; lembar check-in naik dari bawah dengan acaranya sudah terisi.
+// Acara yang punya titik lokasi (data-lokasi="1") memeriksa posisi HP: browser membaca GPS, server yang menilai jaraknya.
+// Titik acara tidak pernah dikirim ke browser anggota, dan koordinat anggota tidak disimpan (hanya jarak dan akurasi).
+const LOKASI_TARGET_M = 40; // berhenti mencari bila akurasi sudah sebaik ini
+const LOKASI_BATAS_MS = 12000; // paling lama mencari sinyal
+const LOKASI_UMUR_MAKS_MS = 90000; // lebih tua dari ini, posisi dibaca ulang sebelum dikirim
+
+const lembarCheckin = document.getElementById("modal-checkin");
+const formCheckin = document.getElementById("ic-checkin-form");
+let lokasiTerbaca = null;
+let lokasiJanji = null;
+let hentikanBaca = null;
+
+function perluLokasi() {
+    return (
+        lembarCheckin?.dataset.lokasi === "1" &&
+        lembarCheckin?.dataset.status === "siap"
+    );
+}
+
+function lokasiSegar() {
+    return (
+        lokasiTerbaca !== null &&
+        Date.now() - lokasiTerbaca.waktu < LOKASI_UMUR_MAKS_MS
+    );
+}
+
+function isiLokasiTersembunyi() {
+    const nilai = lokasiTerbaca;
+    document.getElementById("ic-checkin-lat").value = nilai ? nilai.lat : "";
+    document.getElementById("ic-checkin-lng").value = nilai ? nilai.lng : "";
+    document.getElementById("ic-checkin-akurasi").value = nilai
+        ? nilai.akurasi
+        : "";
+}
+
+const IKON_LOKASI = {
+    diam: "bi-geo-alt",
+    cari: "bi-geo-alt",
+    ok: "bi-geo-alt-fill",
+    gagal: "bi-exclamation-triangle-fill",
+    ditolak: "bi-slash-circle-fill",
+};
+
+function tampilLokasi(keadaan, judul, detail = "") {
+    const kotak = document.getElementById("ic-lokasi");
+    if (!kotak) return;
+    kotak.dataset.state = keadaan;
+    document.getElementById("ic-lokasi-judul").textContent = judul;
+    document.getElementById("ic-lokasi-detail").textContent = detail;
+    const ikon = kotak.querySelector(".ic-lokasi__ikon i");
+    if (ikon) ikon.className = `bi ${IKON_LOKASI[keadaan] ?? "bi-geo-alt"}`;
+    const ulang = kotak.querySelector("[data-ic-lokasi-ulang]");
+    if (ulang) ulang.hidden = keadaan === "cari";
+}
+
+function pesanGalatLokasi(kode) {
+    switch (kode) {
+        case "aman":
+            return [
+                "Lokasi butuh koneksi aman (HTTPS)",
+                "Buka halaman ini lewat alamat https:// resmi WS Inner Circle.",
+            ];
+        case "tidak-ada":
+            return [
+                "Browser ini tidak bisa membaca lokasi",
+                "Coba Chrome atau Safari versi terbaru.",
+            ];
+        case "ditolak":
+            return [
+                "Izin lokasi ditolak",
+                "Ketuk ikon gembok di kolom alamat, pilih Izin lalu Lokasi, izinkan, kemudian tekan Cek lokasi lagi.",
+            ];
+        case "waktu":
+            return [
+                "Lokasi belum terbaca",
+                "Sinyal GPS lemah. Pindah ke area terbuka atau dekat jendela, lalu tekan Cek lokasi lagi.",
+            ];
+        default:
+            return [
+                "Lokasi tidak tersedia",
+                "Nyalakan GPS (layanan lokasi) di HP, lalu tekan Cek lokasi lagi.",
+            ];
+    }
+}
+
+// Mengumpulkan beberapa bacaan GPS dan memakai yang paling akurat: bacaan pertama sering kasar (berbasis jaringan).
+function bacaPosisi(progres) {
+    return new Promise((selesai, gagal) => {
+        if (!window.isSecureContext) return gagal({ kode: "aman" });
+        if (!navigator.geolocation) return gagal({ kode: "tidak-ada" });
+
+        let terbaik = null;
+        let id = null;
+        let batas = null;
+        let usai = false;
+
+        const akhiri = (aksi) => {
+            if (usai) return;
+            usai = true;
+            if (id !== null) navigator.geolocation.clearWatch(id);
+            clearTimeout(batas);
+            hentikanBaca = null;
+            aksi();
+        };
+        hentikanBaca = () => akhiri(() => gagal({ kode: "batal" }));
+        batas = setTimeout(
+            () =>
+                akhiri(() =>
+                    terbaik ? selesai(terbaik) : gagal({ kode: "waktu" }),
+                ),
+            LOKASI_BATAS_MS,
+        );
+
+        id = navigator.geolocation.watchPosition(
+            (posisi) => {
+                const c = posisi.coords;
+                const kini = {
+                    lat: c.latitude,
+                    lng: c.longitude,
+                    akurasi: Math.max(1, Math.round(c.accuracy)),
+                    waktu: Date.now(),
+                };
+                if (!terbaik || kini.akurasi < terbaik.akurasi) terbaik = kini;
+                progres?.(terbaik);
+                if (terbaik.akurasi <= LOKASI_TARGET_M) {
+                    akhiri(() => selesai(terbaik));
+                }
+            },
+            (galat) =>
+                akhiri(() =>
+                    terbaik && galat.code !== 1
+                        ? selesai(terbaik)
+                        : gagal({
+                              kode:
+                                  galat.code === 1
+                                      ? "ditolak"
+                                      : galat.code === 3
+                                        ? "waktu"
+                                        : "tidak-tersedia",
+                          }),
+                ),
+            {
+                enableHighAccuracy: true,
+                maximumAge: 0,
+                timeout: LOKASI_BATAS_MS,
+            },
+        );
+    });
+}
+
+async function izinLokasiDitolak() {
+    try {
+        const status = await navigator.permissions?.query({
+            name: "geolocation",
+        });
+        return status?.state === "denied";
+    } catch {
+        return false;
+    }
+}
+
+function jalankanLokasi() {
+    if (lokasiJanji) return lokasiJanji;
+    tampilLokasi(
+        "cari",
+        "Mencari lokasimu…",
+        "Setujui bila browser meminta izin lokasi. Pastikan GPS menyala.",
+    );
+
+    lokasiJanji = (async () => {
+        if (await izinLokasiDitolak()) throw { kode: "ditolak" };
+        return bacaPosisi((p) =>
+            tampilLokasi(
+                "cari",
+                "Mencari lokasimu…",
+                `Akurasi saat ini sekitar ${p.akurasi} m. Menunggu sinyal yang lebih baik.`,
+            ),
+        );
+    })()
+        .then((posisi) => {
+            lokasiTerbaca = posisi;
+            isiLokasiTersembunyi();
+            tampilLokasi(
+                "ok",
+                "Lokasi terbaca",
+                `Akurasi sekitar ${posisi.akurasi} m. Lokasimu hanya dipakai untuk memeriksa jarak ke venue, koordinatnya tidak disimpan.`,
+            );
+            return true;
+        })
+        .catch((galat) => {
+            lokasiTerbaca = null;
+            isiLokasiTersembunyi();
+            if (galat?.kode === "batal") return false;
+            const [judul, detail] = pesanGalatLokasi(galat?.kode);
+            tampilLokasi(
+                galat?.kode === "ditolak" ? "ditolak" : "gagal",
+                judul,
+                detail,
+            );
+            return false;
+        })
+        .finally(() => {
+            lokasiJanji = null;
+        });
+
+    return lokasiJanji;
+}
+
+function setelUlangLokasi() {
+    hentikanBaca?.();
+    lokasiTerbaca = null;
+    isiLokasiTersembunyi();
+    tampilLokasi(
+        "diam",
+        "Lokasi belum dicek",
+        "Lokasi dicek saat kamu menekan Check-in sekarang.",
+    );
+}
+
+// Mengisi lembar dari atribut data-* kartu acara (atau dari #ic-checkin-awal bila server yang membukanya).
+function isiCheckin(d, { awal = false } = {}) {
+    if (!lembarCheckin) return;
+    const acaraBerganti = lembarCheckin.dataset.kode !== d.kode;
+
+    lembarCheckin.dataset.kode = d.kode;
+    lembarCheckin.dataset.status = d.status;
+    lembarCheckin.dataset.lokasi = d.lokasi;
+
+    lembarCheckin
+        .querySelectorAll("[data-ic-isi]")
+        .forEach((el) => (el.textContent = d[el.dataset.icIsi] ?? ""));
+    document.getElementById("modal-checkin-judul").textContent =
+        d.venue || "Check-in";
+    document.getElementById("ic-checkin-acara").value = d.kode;
+    document.getElementById("ic-checkin-pesan").dataset.status = d.status;
+
+    const siap = d.status === "siap";
+    document.getElementById("ic-checkin-isi").hidden = !siap;
+    document.getElementById("ic-checkin-tutup").hidden = siap;
+    document.getElementById("ic-lokasi").hidden = d.lokasi !== "1";
+
+    if (acaraBerganti && !awal) {
+        // Kode dan posisi milik acara sebelumnya tidak boleh terbawa.
+        document.getElementById("kode").value = "";
+        document.getElementById("kode-galat-js").hidden = true;
+        document.getElementById("ic-checkin-galat")?.remove();
+        setelUlangLokasi();
+    }
+}
+
+document.addEventListener("click", (e) => {
+    const kartu = e.target.closest("[data-ic-checkin-buka]");
+    if (kartu && lembarCheckin) {
+        // Ctrl/Cmd+klik dan klik tengah tetap membuka tautan biasa di tab baru.
+        if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey) return;
+        e.preventDefault();
+        isiCheckin(kartu.dataset);
+        bukaModal("modal-checkin", kartu);
+        return;
+    }
+
+    if (e.target.closest("[data-ic-lokasi-ulang]")) {
+        setelUlangLokasi();
+        if (perluLokasi()) jalankanLokasi();
+    }
+});
+
+if (lembarCheckin) {
+    lembarCheckin.addEventListener("ic:modal-buka", () => {
+        // Izin lokasi diminta tepat saat lembar terbuka: anggota baru saja memilih acara, jadi konteksnya jelas.
+        if (perluLokasi() && !lokasiSegar()) jalankanLokasi();
+    });
+    lembarCheckin.addEventListener("ic:modal-tutup", () => {
+        hentikanBaca?.();
+    });
+}
+
+function kunciKirimCheckin() {
+    const tombol = document.getElementById("ic-checkin-kirim");
+    if (tombol) setTimeout(() => (tombol.disabled = true), 0);
+}
+
+// Satu pintu pengiriman: kode diperiksa dulu, lalu posisi (bila acara memeriksa lokasi), baru form dikirim.
+// Tombol dikunci hanya saat benar-benar terkirim, jadi klik ganda tidak mengirim dua kali.
+formCheckin?.addEventListener("submit", (e) => {
+    const kode = document.getElementById("kode");
+    const galatKode = document.getElementById("kode-galat-js");
+    if (!kode.value.trim()) {
+        e.preventDefault();
+        galatKode.textContent =
+            "Masukkan kode check-in dari panitia atau pindai QR di lokasi.";
+        galatKode.hidden = false;
+        kode.setAttribute("aria-invalid", "true");
+        kode.focus();
+        return;
+    }
+    galatKode.hidden = true;
+    kode.removeAttribute("aria-invalid");
+
+    if (!perluLokasi()) {
+        kunciKirimCheckin();
+        return;
+    }
+    if (lokasiSegar()) {
+        isiLokasiTersembunyi();
+        kunciKirimCheckin();
+        return;
+    }
+
+    e.preventDefault();
+    jalankanLokasi().then((berhasil) => {
+        if (berhasil) formCheckin.requestSubmit();
+    });
+});
+
+// Kembali lewat tombol "back": halaman dipulihkan dari cache dengan tombol masih terkunci.
+window.addEventListener("pageshow", (e) => {
+    if (!e.persisted) return;
+    const tombol = document.getElementById("ic-checkin-kirim");
+    if (tombol) tombol.disabled = false;
+});
+
+// Modal yang diminta terbuka oleh server (atribut data-ic-buka-awal), mis. form unggah dengan galat validasi, atau
+// lembar check-in yang acaranya sudah terpilih lewat QR. Dijalankan paling akhir supaya semua fungsi di atas sudah siap.
+const awalCheckin = document.getElementById("ic-checkin-awal");
+if (awalCheckin) isiCheckin(awalCheckin.dataset, { awal: true });
+document
+    .querySelectorAll("[data-ic-buka-awal]")
+    .forEach((modal) => bukaModal(modal.id));

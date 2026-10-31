@@ -172,6 +172,173 @@
                             </p>
                         </div>
                     </div>
+
+                    {{-- Lokasi check-in: titik + radius milik ACARA ini (bukan milik akun CMS), jadi banyak petugas boleh memakai satu akun. --}}
+                    @php
+                        $punyaLokasi = $acaraDipilih->lokasi_aktif;
+                        $labelSumber = [
+                            'petugas' => 'GPS HP petugas',
+                            'alamat' => 'Hasil cari alamat',
+                            'manual' => 'Koordinat diketik',
+                        ];
+                        $latIsi = old('lat', $punyaLokasi ? $acaraDipilih->lokasi_lat : '');
+                        $lngIsi = old('lng', $punyaLokasi ? $acaraDipilih->lokasi_lng : '');
+                        $kelasInput =
+                            'w-full min-w-0 bg-white/5 border border-white/15 text-white p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition';
+                        $kelasLabel = 'text-sm font-semibold uppercase tracking-widest text-white/60';
+                        $kelasTombol =
+                            'h-11 px-5 inline-flex items-center justify-center gap-2 rounded-lg border border-white/15 text-xs font-semibold uppercase tracking-widest text-white/70 hover:bg-white/10 hover:text-white transition-colors';
+                    @endphp
+                    <div id="lokasi" data-lokasi-kartu
+                        data-url-cari="{{ route('ic.admin.acara.lokasi.cari', $acaraDipilih->kode) }}"
+                        data-titik-lat="{{ $punyaLokasi ? $acaraDipilih->lokasi_lat : '' }}"
+                        data-titik-lng="{{ $punyaLokasi ? $acaraDipilih->lokasi_lng : '' }}"
+                        class="scroll-mt-8 mt-6 rounded-3xl border border-white/10 bg-white/3 p-5 sm:p-6 md:p-8 flex flex-col gap-5">
+                        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                            <div class="min-w-0">
+                                <h3 class="font-bold uppercase tracking-wide text-sm flex items-center gap-2">
+                                    <i class="bi bi-geo-alt text-white/50" aria-hidden="true"></i> Lokasi check-in
+                                </h3>
+                                <p class="text-xs text-white/40 mt-1 max-w-prose">Anggota hanya bisa check-in bila HP-nya
+                                    berada
+                                    di dalam radius titik ini. Titik dan radius milik <b>acara</b>, bukan milik akun: banyak
+                                    petugas boleh memakai satu akun CMS, dan yang berlaku hanya titik yang terakhir
+                                    disimpan.</p>
+                            </div>
+                            @if ($punyaLokasi)
+                                <span
+                                    class="self-start shrink-0 rounded-full bg-emerald-500/15 text-emerald-200 px-3 py-1 text-xs font-bold">
+                                    Aktif · radius {{ $acaraDipilih->radius_efektif }} m</span>
+                            @else
+                                <span
+                                    class="self-start shrink-0 rounded-full bg-amber-500/15 text-amber-200 px-3 py-1 text-xs font-bold">
+                                    Belum diatur</span>
+                            @endif
+                        </div>
+
+                        @unless ($punyaLokasi)
+                            <p class="rounded-2xl border border-amber-400/30 bg-amber-950/30 px-4 py-3 text-xs text-amber-100">
+                                Selama titik belum diatur, QR acara ini bisa dipakai check-in dari mana saja (termasuk dari
+                                foto QR yang dikirim ke orang yang tidak hadir). Atur titik di bawah, sebaiknya saat petugas
+                                sudah berada di venue.</p>
+                        @else
+                            <p class="text-xs text-white/40">
+                                Diatur {{ $labelSumber[$acaraDipilih->lokasi_sumber] ?? 'manual' }}
+                                @if ($acaraDipilih->lokasi_diatur_pada)
+                                    · {{ $acaraDipilih->lokasi_diatur_pada->locale('id')->translatedFormat('D, j M Y H.i') }}
+                                    WIB
+                                @endif
+                                @if ($acaraDipilih->lokasi_diatur_oleh)
+                                    · oleh {{ $acaraDipilih->lokasi_diatur_oleh }}
+                                @endif
+                            </p>
+                        @endunless
+
+                        <form method="POST" action="{{ route('ic.admin.acara.lokasi', $acaraDipilih->kode) }}"
+                            class="flex flex-col gap-4">
+                            @csrf
+                            @method('PUT')
+                            <input type="hidden" name="sumber" id="lokasi-sumber"
+                                value="{{ old('sumber', $acaraDipilih->lokasi_sumber ?: 'manual') }}">
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="flex flex-col gap-1.5 min-w-0">
+                                    <label for="lokasi-lat" class="{{ $kelasLabel }}">Latitude</label>
+                                    <input id="lokasi-lat" name="lat" inputmode="decimal" autocomplete="off"
+                                        value="{{ $latIsi }}" placeholder="-6.2088" class="{{ $kelasInput }}"
+                                        required>
+                                    @error('lat')
+                                        <p class="text-xs text-red-300" role="alert">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                                <div class="flex flex-col gap-1.5 min-w-0">
+                                    <label for="lokasi-lng" class="{{ $kelasLabel }}">Longitude</label>
+                                    <input id="lokasi-lng" name="lng" inputmode="decimal" autocomplete="off"
+                                        value="{{ $lngIsi }}" placeholder="106.8456" class="{{ $kelasInput }}"
+                                        required>
+                                    @error('lng')
+                                        <p class="text-xs text-red-300" role="alert">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                                <div class="flex flex-col gap-1.5 min-w-0">
+                                    <label for="lokasi-radius" class="{{ $kelasLabel }}">Radius (meter)</label>
+                                    <input id="lokasi-radius" name="radius" type="number" inputmode="numeric"
+                                        min="{{ config('inner_circle.lokasi.radius_min_m') }}"
+                                        max="{{ config('inner_circle.lokasi.radius_maks_m') }}"
+                                        value="{{ old('radius', $acaraDipilih->lokasi_radius ?: config('inner_circle.lokasi.radius_bawaan_m')) }}"
+                                        class="{{ $kelasInput }}" required>
+                                    <p class="text-xs text-white/30">Klub: 100-200 m. Festival atau area luas: 300-800 m.
+                                    </p>
+                                    @error('radius')
+                                        <p class="text-xs text-red-300" role="alert">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                                <div class="flex flex-col gap-1.5 min-w-0">
+                                    <label for="lokasi-petugas" class="{{ $kelasLabel }}">Nama petugas
+                                        (opsional)</label>
+                                    <input id="lokasi-petugas" name="petugas" maxlength="40" autocomplete="off"
+                                        value="{{ old('petugas') }}" placeholder="Siapa yang mengatur titik ini"
+                                        class="{{ $kelasInput }}">
+                                    <p class="text-xs text-white/30">Ikut tercatat di Log, karena akun CMS dipakai bersama.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-wrap gap-2">
+                                <button type="button" data-lokasi-hp class="{{ $kelasTombol }}">
+                                    <i class="bi bi-phone" aria-hidden="true"></i> Pakai lokasi HP ini</button>
+                                <button type="button" data-lokasi-cari class="{{ $kelasTombol }}">
+                                    <i class="bi bi-search" aria-hidden="true"></i> Cari dari alamat venue</button>
+                                @if ($punyaLokasi)
+                                    <button type="button" data-lokasi-uji class="{{ $kelasTombol }}">
+                                        <i class="bi bi-rulers" aria-hidden="true"></i> Uji jarak HP ini</button>
+                                @endif
+                                <a href="#" target="_blank" rel="noopener" id="lokasi-peta" hidden
+                                    class="{{ $kelasTombol }}">
+                                    <i class="bi bi-map" aria-hidden="true"></i> Cek di Google Maps</a>
+                            </div>
+
+                            <div class="flex flex-col gap-2 sm:flex-row">
+                                <label for="lokasi-alamat" class="sr-only">Alamat untuk dicari</label>
+                                <input id="lokasi-alamat" maxlength="150" autocomplete="off"
+                                    placeholder="Alamat venue (opsional)" class="{{ $kelasInput }}">
+                            </div>
+
+                            <div id="lokasi-hasil" role="status" aria-live="polite"
+                                class="flex flex-col gap-2 text-sm text-white/70"></div>
+
+                            @if ($punyaLokasi)
+                                <label class="flex items-start gap-3 text-xs text-white/50 cursor-pointer">
+                                    <input type="checkbox" name="konfirmasi_geser" value="1"
+                                        class="mt-0.5 size-4 accent-red-700" @checked(old('konfirmasi_geser'))>
+                                    <span>Saya sengaja memindahkan titik ini lebih dari
+                                        {{ number_format(config('inner_circle.lokasi.geser_konfirmasi_m'), 0, ',', '.') }}
+                                        m dari titik
+                                        yang tersimpan. (Pengaman bila petugas yang sedang tidak di venue menekan tombol
+                                        lokasi.)</span>
+                                </label>
+                            @endif
+
+                            <div class="flex flex-wrap gap-2">
+                                <button type="submit"
+                                    class="h-11 px-5 inline-flex items-center gap-2 text-white font-bold uppercase tracking-widest text-xs bg-red-950 hover:bg-red-900 active:scale-95 transition rounded-lg">
+                                    <i class="bi bi-check2-circle" aria-hidden="true"></i> Simpan lokasi</button>
+                            </div>
+                        </form>
+
+                        @if ($punyaLokasi)
+                            <form method="POST" action="{{ route('ic.admin.acara.lokasi.hapus', $acaraDipilih->kode) }}"
+                                data-ic-konfirmasi data-judul="Hapus titik lokasi?"
+                                data-teks="QR acara ini kembali bisa dipakai check-in dari mana saja."
+                                data-tombol="Ya, hapus titik">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit"
+                                    class="text-xs text-red-300 underline underline-offset-4 hover:text-red-200 min-h-11">
+                                    Hapus titik lokasi (matikan pemeriksaan lokasi)</button>
+                            </form>
+                        @endif
+                    </div>
                 @else
                     @include('components/dashboard/card/empty-state', [
                         'message' => 'Belum ada acara yang bisa dipakai check-in.',
@@ -625,6 +792,190 @@
                 $(id)?.addEventListener('input', perbaruiKartu);
             });
             perbaruiKartu();
+        </script>
+    @endpush
+
+    @push('scripts')
+        <script>
+            // Lokasi check-in (panel admin): ambil titik dari GPS HP petugas, cari dari alamat, atau ketik koordinat.
+            (function() {
+                const kartu = document.querySelector('[data-lokasi-kartu]');
+                if (!kartu) return;
+                const $ = (id) => document.getElementById(id);
+                const lat = $('lokasi-lat'),
+                    lng = $('lokasi-lng'),
+                    sumber = $('lokasi-sumber');
+                const hasil = $('lokasi-hasil'),
+                    peta = $('lokasi-peta');
+                const tokenCsrf = kartu.querySelector('input[name=_token]')?.value ?? '';
+
+                const jarak = (a, b, c, d) => {
+                    const r = Math.PI / 180,
+                        p = Math.sin((c - a) * r / 2) ** 2 +
+                        Math.cos(a * r) * Math.cos(c * r) * Math.sin((d - b) * r / 2) ** 2;
+                    return 2 * 6371008.8 * Math.asin(Math.min(1, Math.sqrt(p)));
+                };
+                const teks = (t) => {
+                    hasil.replaceChildren(Object.assign(document.createElement('p'), {
+                        textContent: t
+                    }));
+                };
+                const perbaruiPeta = () => {
+                    const a = parseFloat(String(lat.value).replace(',', '.')),
+                        b = parseFloat(String(lng.value).replace(',', '.'));
+                    peta.hidden = !(isFinite(a) && isFinite(b));
+                    if (!peta.hidden) peta.href = 'https://www.google.com/maps?q=' + a + ',' + b;
+                };
+
+                // Koordinat dari Google Maps ("-6.2088, 106.8456") boleh ditempel di kolom latitude saja.
+                lat.addEventListener('change', () => {
+                    const m = lat.value.trim().match(/^(-?\d+(?:\.\d+)?)\s*[,;\s]\s*(-?\d+(?:\.\d+)?)$/);
+                    if (m && !lng.value.trim()) {
+                        lat.value = m[1];
+                        lng.value = m[2];
+                    }
+                    sumber.value = 'manual';
+                    perbaruiPeta();
+                });
+                lng.addEventListener('change', () => {
+                    sumber.value = 'manual';
+                    perbaruiPeta();
+                });
+                perbaruiPeta();
+
+                // Bacaan GPS terbaik dalam beberapa detik (bacaan pertama sering kasar).
+                function bacaGps(progres) {
+                    return new Promise((ok, gagal) => {
+                        if (!window.isSecureContext || !navigator.geolocation) return gagal(new Error(
+                            'Browser ini tidak bisa membaca lokasi (butuh HTTPS).'));
+                        let terbaik = null,
+                            id = null,
+                            selesai = false;
+                        const akhir = (f) => {
+                            if (selesai) return;
+                            selesai = true;
+                            navigator.geolocation.clearWatch(id);
+                            clearTimeout(t);
+                            f();
+                        };
+                        const t = setTimeout(() => akhir(() => terbaik ? ok(terbaik) : gagal(new Error(
+                            'Sinyal GPS belum terbaca. Coba di area terbuka.'))), 12000);
+                        id = navigator.geolocation.watchPosition((p) => {
+                            const c = p.coords,
+                                k = {
+                                    lat: c.latitude,
+                                    lng: c.longitude,
+                                    akurasi: Math.round(c.accuracy)
+                                };
+                            if (!terbaik || k.akurasi < terbaik.akurasi) terbaik = k;
+                            progres(terbaik);
+                            if (terbaik.akurasi <= 25) akhir(() => ok(terbaik));
+                        }, (e) => akhir(() => terbaik && e.code !== 1 ? ok(terbaik) : gagal(new Error(e
+                            .code === 1 ?
+                            'Izin lokasi ditolak. Izinkan lokasi untuk situs ini lalu coba lagi.' :
+                            'Lokasi tidak tersedia. Nyalakan GPS di HP.'))), {
+                            enableHighAccuracy: true,
+                            maximumAge: 0,
+                            timeout: 12000
+                        });
+                    });
+                }
+
+                kartu.querySelector('[data-lokasi-hp]').addEventListener('click', async () => {
+                    teks('Membaca lokasi HP…');
+                    try {
+                        const p = await bacaGps((k) => teks('Membaca lokasi HP… akurasi sekitar ' + k.akurasi +
+                            ' m'));
+                        lat.value = p.lat.toFixed(7);
+                        lng.value = p.lng.toFixed(7);
+                        sumber.value = 'petugas';
+                        perbaruiPeta();
+                        teks('Titik diisi dari HP ini (akurasi sekitar ' + p.akurasi + ' m).' +
+                            (p.akurasi > 50 ?
+                                ' Akurasi kurang baik: pindah ke area terbuka lalu ulangi untuk titik yang lebih tepat.' :
+                                '') +
+                            ' Tekan Simpan lokasi untuk memakainya.');
+                    } catch (e) {
+                        teks(e.message);
+                    }
+                });
+
+                kartu.querySelector('[data-lokasi-uji]')?.addEventListener('click', async () => {
+                    const a = parseFloat(kartu.dataset.titikLat),
+                        b = parseFloat(kartu.dataset.titikLng);
+                    const r = parseFloat($('lokasi-radius').value) || 0;
+                    teks('Membaca lokasi HP…');
+                    try {
+                        const p = await bacaGps((k) => teks('Membaca lokasi HP… akurasi sekitar ' + k.akurasi +
+                            ' m'));
+                        const d = Math.round(jarak(a, b, p.lat, p.lng));
+                        teks('HP ini berjarak sekitar ' + d + ' m dari titik tersimpan (akurasi ' + p.akurasi +
+                            ' m). ' +
+                            (d <= r ? 'Di dalam radius ' + r + ' m: check-in akan diterima.' :
+                                'Di luar radius ' + r + ' m: check-in akan ditolak.') +
+                            ' Ini hanya uji, tidak mengubah apa pun.');
+                    } catch (e) {
+                        teks(e.message);
+                    }
+                });
+
+                kartu.querySelector('[data-lokasi-cari]').addEventListener('click', async () => {
+                    teks('Mencari alamat…');
+                    try {
+                        const r = await fetch(kartu.dataset.urlCari, {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                Accept: 'application/json',
+                                'X-CSRF-TOKEN': tokenCsrf
+                            },
+                            body: JSON.stringify({
+                                alamat: $('lokasi-alamat').value
+                            }),
+                        });
+                        const data = await r.json().catch(() => ({}));
+                        if (!r.ok) return teks(data.pesan || 'Pencarian alamat gagal (status ' + r.status +
+                            ').');
+                        if (!data.hasil.length) return teks('Tidak ada hasil untuk "' + data.kueri +
+                            '". Coba alamat yang lebih lengkap, atau pakai lokasi HP.');
+                        const daftar = document.createElement('div');
+                        daftar.className = 'flex flex-col gap-2';
+                        daftar.appendChild(Object.assign(document.createElement('p'), {
+                            textContent: 'Pilih yang benar (periksa lewat Google Maps sebelum menyimpan):'
+                        }));
+                        data.hasil.forEach((h) => {
+                            const baris = document.createElement('div');
+                            baris.className =
+                                'flex flex-col sm:flex-row sm:items-center gap-2 rounded-xl border border-white/10 p-3';
+                            const pilih = document.createElement('button');
+                            pilih.type = 'button';
+                            pilih.className =
+                                'text-left text-sm text-white hover:underline min-w-0 flex-1 break-words';
+                            pilih.textContent = h.nama;
+                            pilih.addEventListener('click', () => {
+                                lat.value = h.lat;
+                                lng.value = h.lng;
+                                sumber.value = 'alamat';
+                                perbaruiPeta();
+                                teks(
+                                    'Titik diisi dari alamat. Periksa lewat Cek di Google Maps, lalu tekan Simpan lokasi.');
+                            });
+                            const tautan = document.createElement('a');
+                            tautan.href = 'https://www.google.com/maps?q=' + h.lat + ',' + h.lng;
+                            tautan.target = '_blank';
+                            tautan.rel = 'noopener';
+                            tautan.className = 'text-xs text-white/60 underline shrink-0';
+                            tautan.textContent = 'Lihat di Maps';
+                            baris.append(pilih, tautan);
+                            daftar.appendChild(baris);
+                        });
+                        hasil.replaceChildren(daftar);
+                    } catch {
+                        teks('Pencarian alamat gagal. Periksa koneksi lalu coba lagi.');
+                    }
+                });
+            })();
         </script>
     @endpush
 @endsection

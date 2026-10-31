@@ -119,6 +119,10 @@ Route::prefix('/dashboard')->middleware(['cekLogin', 'catatAktivitas'])->group(f
         // Fase 9: jadwal dari Bandsintown, dan perbaikan token QR yang tidak terbaca (APP_KEY berbeda).
         Route::post('/acara/sinkron-bandsintown', [adminController::class, 'sinkronBandsintown'])->name('acara.bandsintown')->middleware('throttle:3,1');
         Route::post('/acara/perbaiki-token', [adminController::class, 'perbaikiToken'])->name('acara.perbaiki')->middleware('throttle:5,1');
+        // Titik lokasi check-in per acara: simpan, hapus, dan cari dari alamat venue (JSON).
+        Route::put('/acara/{kode}/lokasi', [adminController::class, 'simpanLokasi'])->name('acara.lokasi')->middleware('throttle:20,1');
+        Route::delete('/acara/{kode}/lokasi', [adminController::class, 'hapusLokasi'])->name('acara.lokasi.hapus')->middleware('throttle:10,1');
+        Route::post('/acara/{kode}/lokasi/cari', [adminController::class, 'cariLokasi'])->name('acara.lokasi.cari')->middleware('throttle:10,1');
         Route::put('/acara/{kode}', [adminController::class, 'ubahAcara'])->name('acara.ubah')->middleware('throttle:10,1');
         Route::delete('/acara/{kode}', [adminController::class, 'hapusAcara'])->name('acara.hapus')->middleware('throttle:10,1');
         Route::post('/acara/{kode}/token', [adminController::class, 'tokenBaru'])->name('acara.token')->middleware('throttle:10,1');

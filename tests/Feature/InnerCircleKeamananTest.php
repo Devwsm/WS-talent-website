@@ -36,7 +36,7 @@ class InnerCircleKeamananTest extends TestCase
         $respons->assertHeader('X-Frame-Options', 'SAMEORIGIN');
         $respons->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
         $this->assertStringContainsString('camera=(self)', $respons->headers->get('Permissions-Policy'));
-        $this->assertStringContainsString('geolocation=()', $respons->headers->get('Permissions-Policy'));
+        $this->assertStringContainsString('geolocation=(self)', $respons->headers->get('Permissions-Policy'));
     }
 
     public function test_hsts_hanya_di_produksi_lewat_https(): void

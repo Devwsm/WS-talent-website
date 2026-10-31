@@ -11,7 +11,7 @@
 @endphp
 {{-- Event privat dan event tanpa venue tetap tampil, tapi tidak bisa dipilih untuk check-in. `info` = kartu informasi biasa (halaman publik): tanpa panah dan tanpa tampilan nonaktif. --}}
 <{{ $tag }}
-    @if ($bisaDipilih) href="{{ $href }}" @elseif (!$info) aria-disabled="true" @endif
+    @if ($bisaDipilih) href="{{ $href }}" data-ic-checkin-buka {{ new \Illuminate\View\ComponentAttributeBag($event->atributCheckin()) }} @elseif (!$info) aria-disabled="true" @endif
     class="ic-event ic-warna-{{ $tipe['warna'] }} {{ $dipilih ? 'is-dipilih' : '' }} {{ $bisaDipilih || $info ? '' : 'is-nonaktif' }}"
     @if ($dipilih) aria-current="true" @endif>
     <span class="ic-event__seni"><x-inner-circle.ikon :nama="$tipe['ikon']" kelas="ic-ikon--event" /></span>

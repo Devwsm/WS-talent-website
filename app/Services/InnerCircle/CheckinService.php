@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\DB;
  */
 class CheckinService
 {
-    public function __construct(private StempelService $stempel) {}
+    public function __construct(private StempelService $stempel, private LokasiService $lokasi) {}
 
     /**
      * Ambil token WS-XXXXXXXXXXXX dari teks bebas (kode ketikan, URL hasil pindai QR, atau hasil tempel).
@@ -81,8 +81,9 @@ class CheckinService
      * Catat check-in. Melempar CheckinGagal (pesan siap tampil) bila ada aturan yang tidak terpenuhi.
      *
      * @param  string|null  $kodeAcara  kode acara yang dipilih anggota di halaman (WS26-1008), opsional
+     * @param  array{lat?: mixed, lng?: mixed, akurasi?: mixed}|null  $lokasi  posisi HP anggota; wajib bila acara punya titik lokasi
      */
-    public function checkin(member $anggota, string $masukanKode, ?string $kodeAcara = null, ?Carbon $sekarang = null): ic_stempel
+    public function checkin(member $anggota, string $masukanKode, ?string $kodeAcara = null, ?Carbon $sekarang = null, ?array $lokasi = null): ic_stempel
     {
         $sekarang ??= now();
 
@@ -93,8 +94,11 @@ class CheckinService
 
         $event = $this->tentukanEvent($token, $kodeAcara, $sekarang);
 
+        // Acara dengan titik lokasi: HP harus di dalam radius. Yang dicatat hanya jarak dan akurasi, bukan koordinat anggota.
+        $ukuran = $this->lokasi->periksa($event, $lokasi);
+
         try {
-            return DB::transaction(function () use ($anggota, $event) {
+            return DB::transaction(function () use ($anggota, $event, $ukuran) {
                 // Kunci baris anggota supaya dua permintaan bersamaan diproses bergantian.
                 $terkunci = member::query()->whereKey($anggota->getKey())->lockForUpdate()->firstOrFail();
 
@@ -115,6 +119,8 @@ class CheckinService
                     'Check-in di ' . $event->venue,
                     $tipe['ikon'] ?? 'ticket',
                     $event,
+                    jarakM: $ukuran['jarak'] ?? null,
+                    akurasiM: $ukuran['akurasi'] ?? null,
                 );
             });
         } catch (UniqueConstraintViolationException) {

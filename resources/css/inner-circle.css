@@ -63,6 +63,12 @@
     display: block;
 }
 
+/* Atribut hidden harus selalu menang: .ic-tombol dan kawan-kawan memakai display sendiri, sehingga tombol yang
+   disembunyikan JavaScript tetap tampil. */
+.ic-app [hidden] {
+    display: none !important;
+}
+
 .ic-app :focus-visible {
     outline: 3px solid var(--ic-aksen);
     outline-offset: 2px;
@@ -970,7 +976,9 @@ a.ic-event:hover {
 .ic-modal__dialog {
     width: min(550px, 100%);
     max-height: 92vh;
+    max-height: 92dvh;
     overflow: auto;
+    overscroll-behavior: contain;
     padding: 28px;
     background: var(--ic-krem);
     border-radius: 29px;
@@ -1002,6 +1010,156 @@ a.ic-event:hover {
 }
 .ic-app.ic-modal-terbuka {
     overflow: hidden;
+}
+
+/* Lembar bawah (bottom sheet): di HP naik dari dasar layar, di layar lebar tetap kotak di tengah. */
+.ic-modal__pegangan {
+    display: none;
+}
+.ic-modal--lembar .ic-modal__dialog {
+    animation: ic-naik 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes ic-naik {
+    from {
+        transform: translateY(40px);
+        opacity: 0;
+    }
+    to {
+        transform: none;
+        opacity: 1;
+    }
+}
+@media (max-width: 640px) {
+    .ic-modal--lembar {
+        place-items: end center;
+        padding: 0;
+    }
+    .ic-modal--lembar .ic-modal__dialog {
+        width: 100%;
+        max-height: 90vh;
+        max-height: 90dvh;
+        padding: 10px 20px calc(24px + env(safe-area-inset-bottom, 0px));
+        border-radius: 28px 28px 0 0;
+        animation-name: ic-naik-penuh;
+    }
+    .ic-modal--lembar .ic-modal__pegangan {
+        display: block;
+        width: 44px;
+        height: 5px;
+        margin: 0 auto 14px;
+        border-radius: 99px;
+        background: #d6d0ea;
+    }
+    .ic-modal--lembar .ic-modal__judul {
+        font-size: 24px;
+        overflow-wrap: anywhere;
+    }
+}
+@keyframes ic-naik-penuh {
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: none;
+    }
+}
+
+/* Isi lembar check-in */
+.ic-ringkas {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 14px;
+    margin: 0 0 12px;
+    padding: 0;
+    list-style: none;
+    font-size: 13px;
+    color: var(--ic-redup);
+}
+.ic-ringkas li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+.ic-checkin__pesan {
+    margin: 0 0 4px;
+    padding: 12px 14px;
+    border-radius: 16px;
+    background: #f1eefb;
+    font-size: 13px;
+    font-weight: 700;
+}
+.ic-checkin__pesan[data-status="siap"],
+.ic-checkin__pesan[data-status="sudah"] {
+    background: #e6f8ef;
+}
+.ic-checkin__pesan[data-status="belum"] {
+    background: #fdeec6;
+}
+.ic-checkin__pesan[data-status="tutup"] {
+    background: #ffe9e6;
+}
+.ic-galat--halaman {
+    margin: 18px 0 0;
+}
+
+/* Status lokasi */
+.ic-lokasi {
+    display: grid;
+    gap: 10px;
+    margin-top: 16px;
+}
+.ic-lokasi[hidden] {
+    display: none;
+}
+.ic-lokasi__status {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid var(--ic-garis);
+    border-radius: 18px;
+    background: #f1eefb;
+}
+.ic-lokasi__ikon {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #fff;
+    font-size: 18px;
+}
+.ic-lokasi__teks {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+    font-size: 13px;
+}
+.ic-lokasi__detail {
+    font-size: 12px;
+    color: var(--ic-redup);
+    overflow-wrap: anywhere;
+}
+.ic-lokasi[data-state="ok"] .ic-lokasi__status {
+    border-color: #bfe9d2;
+    background: #e6f8ef;
+}
+.ic-lokasi[data-state="gagal"] .ic-lokasi__status,
+.ic-lokasi[data-state="ditolak"] .ic-lokasi__status {
+    border-color: #ffd0c9;
+    background: #fff0ee;
+}
+.ic-lokasi[data-state="cari"] .ic-lokasi__ikon {
+    animation: ic-denyut 1.2s ease-in-out infinite;
+}
+@keyframes ic-denyut {
+    50% {
+        transform: scale(1.12);
+    }
 }
 
 /* Pemindai QR check-in (Fase 4) */
@@ -2096,4 +2254,83 @@ a.ic-event:hover {
 }
 .ic-swal__aksi {
     gap: 9px;
+}
+
+/* ---------- Perbaikan responsif (diletakkan paling akhir supaya menang atas aturan sebelumnya) ---------- */
+/* 100vh di HP termasuk area bar alamat browser, sehingga halaman terpotong atau bisa digulir sedikit; dvh mengikuti tinggi yang terlihat. */
+.ic-app--auth {
+    min-height: 100dvh;
+}
+@media (max-width: 780px) {
+    .ic-shell {
+        min-height: 100dvh;
+    }
+}
+
+/* Judul ubin hadiah tidak boleh menabrak ikon 3D di pojok kanan. */
+.ic-ubin__judul {
+    max-width: calc(100% - 120px);
+}
+.ic-ubin--lebar .ic-ubin__judul {
+    max-width: calc(100% - 170px);
+}
+
+@media (max-width: 480px) {
+    /* Hero Beranda: tombol berada di atas lingkaran dekoratif, bintang tidak menimpa eyebrow. */
+    .ic-hero .ic-eyebrow {
+        padding-right: 40px;
+    }
+    .ic-hero__stiker {
+        position: relative;
+        z-index: 1;
+        max-width: 100%;
+    }
+    .ic-hero__cakram {
+        width: 120px;
+        height: 120px;
+        right: -34px;
+        bottom: -34px;
+        border-width: 12px;
+    }
+    .ic-hero__cakram span {
+        width: 46px;
+        height: 46px;
+        font-size: 16px;
+    }
+
+    /* Dock: 5 menu di layar 320 px harus muat tanpa label terpotong atau terpecah dua baris. */
+    .ic-dock {
+        bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+        width: calc(100% - 16px);
+        padding: 8px 6px;
+        gap: 2px;
+        border-radius: 26px;
+    }
+    .ic-dock__item {
+        padding: 8px 0;
+        font-size: 10px;
+    }
+    .ic-dock__item span {
+        white-space: nowrap;
+    }
+
+    /* Filter jadwal: satu kolom supaya isi dropdown terbaca penuh. */
+    .ic-filter__form {
+        grid-template-columns: 1fr;
+    }
+
+    /* Tab Komunitas: label boleh turun baris, lencana tidak menimpa ikon. */
+    .ic-tab {
+        flex-wrap: wrap;
+        gap: 4px 6px;
+        padding: 8px 6px;
+        font-size: 13px;
+        line-height: 1.2;
+        text-align: center;
+    }
+}
+@media (max-width: 360px) {
+    .ic-tab .ic-ikon--mini {
+        display: none;
+    }
 }

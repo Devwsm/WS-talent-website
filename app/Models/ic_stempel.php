@@ -25,6 +25,8 @@ class ic_stempel extends Model
         'judul',
         'ikon',
         'catatan',
+        'jarak_m',
+        'akurasi_m',
         'dicatat_oleh',
     ];
 

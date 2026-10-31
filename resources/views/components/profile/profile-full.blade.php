@@ -21,7 +21,7 @@
             'jobTitle' => 'DJ & Produser Musik',
             'description' => isset($bio->konten) ? trim(strip_tags($bio->konten)) : null,
             'sameAs' => $mediaSosial->pluck('url')->values(),
-        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) !!}
     </script>
     @endpush
 

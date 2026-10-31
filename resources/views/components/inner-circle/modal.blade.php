@@ -1,8 +1,13 @@
-@props(['id', 'judul', 'eyebrow' => null, 'terbuka' => false])
-{{-- `terbuka`: dibuka otomatis saat halaman dimuat (inner-circle.js), mis. supaya galat validasi form terlihat. --}}
-<div class="ic-modal" id="{{ $id }}" hidden @if ($terbuka) data-ic-buka-awal @endif>
+@props(['id', 'judul', 'eyebrow' => null, 'terbuka' => false, 'lembar' => false])
+{{-- `terbuka`: dibuka otomatis saat halaman dimuat (inner-circle.js), mis. supaya galat validasi form terlihat.
+     `lembar`: di HP naik dari bawah layar (bottom sheet), di layar lebar tetap kotak di tengah. --}}
+<div {{ $attributes->merge(['class' => 'ic-modal' . ($lembar ? ' ic-modal--lembar' : '')]) }} id="{{ $id }}"
+    hidden @if ($terbuka) data-ic-buka-awal @endif>
     <div class="ic-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="{{ $id }}-judul"
         tabindex="-1">
+        @if ($lembar)
+            <span class="ic-modal__pegangan" aria-hidden="true"></span>
+        @endif
         <div class="ic-modal__kepala">
             <div>
                 @if ($eyebrow)

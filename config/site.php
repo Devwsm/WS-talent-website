@@ -20,7 +20,7 @@ return [
     */
     'admin_username' => env('ADMIN_USERNAME'),
     'admin_password' => env('ADMIN_PASSWORD'),
-    'privasi_diperbarui' => '2026-10-26',
+    'privasi_diperbarui' => '2026-10-31',
 
     /*
     | Login admin dengan kode OTP lewat email (2FA). Mati secara bawaan: nyalakan (ADMIN_2FA_AKTIF=true) HANYA setelah

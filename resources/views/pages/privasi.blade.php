@@ -1,7 +1,8 @@
 @extends('template.layout')
 
 @section('title', 'Kebijakan Privasi — Whisnu Santika')
-@section('meta_description', 'Kebijakan privasi situs whisnusantika.com dan komunitas WS Inner Circle: data apa yang
+@section('meta_description',
+    'Kebijakan privasi situs whisnusantika.com dan komunitas WS Inner Circle: data apa yang
     dikumpulkan, untuk apa, dan cara menghapus akunmu.')
 
 @section('content')
@@ -44,6 +45,9 @@
                     suka. Kenangan yang tayang bisa dilihat anggota lain dengan nama yang disingkat.</li>
                 <li><b>Data sesi:</b> cookie sesi supaya kamu tetap masuk, serta alamat IP dan jenis peramban yang
                     tercatat pada sesi tersebut.</li>
+                <li><b>Lokasi saat check-in:</b> untuk acara yang memeriksa lokasi, browser-mu membaca posisi HP sekali saat
+                    kamu check-in (hanya bila kamu mengizinkannya). Posisi itu dipakai untuk memastikan kamu berada di venue
+                    dan <b>tidak disimpan</b>; yang tercatat hanya jarak ke venue dan tingkat akurasinya.</li>
             </ul>
 
             <h2 class="{{ $h2 }}">3. Masuk dengan Google</h2>

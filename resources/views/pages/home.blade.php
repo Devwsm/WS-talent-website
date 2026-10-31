@@ -27,7 +27,7 @@
                 'https://youtube.com/@whisnusantika',
                 'https://open.spotify.com/artist/6gvsmDZKW5wRvjKCPnbHDh',
             ],
-        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) !!}
     </script>
     @endpush
 
