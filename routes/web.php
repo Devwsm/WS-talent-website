@@ -42,11 +42,19 @@ Route::prefix('/')->group(function () {
     Route::get('/logout', fn() => redirect()->route('dashboard'));
 });
 
+// Alamat lama /inner-circle/... (QR check-in yang sudah dicetak, tautan email, bookmark) dialihkan permanen ke /innercircle/...,
+// lengkap dengan query string. Hanya GET; formulir lama tidak perlu dilayani.
+Route::get('/inner-circle/{path?}', function (\Illuminate\Http\Request $request, ?string $path = null) {
+    $tujuan = '/innercircle' . ($path !== null && $path !== '' ? '/' . $path : '');
+    $query = $request->getQueryString();
+    return redirect($tujuan . ($query ? '?' . $query : ''), 301);
+})->where('path', '.*')->name('ic.alamat-lama');
+
 // WS Inner Circle — dibungkus flag INNER_CIRCLE_AKTIF (404 bila mati, lihat middleware IcAktif).
 // Fase 4-6: akun anggota (guard `member`), check-in, stempel, hadiah, klaim, Komunitas (pengumuman, kenangan),
 // dan foto profil sudah tersambung ke database.
-Route::prefix('/inner-circle')->middleware('icAktif')->name('ic.')->group(function () {
-    // Halaman publik yang menjelaskan program untuk calon anggota (tamu yang membuka /inner-circle dialihkan ke sini).
+Route::prefix('/innercircle')->middleware('icAktif')->name('ic.')->group(function () {
+    // Halaman publik yang menjelaskan program untuk calon anggota (tamu yang membuka /innercircle dialihkan ke sini).
     Route::get('/tentang', [tentangController::class, 'index'])->name('tentang');
 
     Route::get('/masuk', [authController::class, 'masuk'])->name('masuk');

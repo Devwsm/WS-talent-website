@@ -4,7 +4,7 @@ return [
 
     /*
     | Flag fitur WS Inner Circle.
-    | Selama false, semua route /inner-circle mengembalikan 404 (lihat middleware IcAktif).
+    | Selama false, semua route /innercircle mengembalikan 404 (lihat middleware IcAktif).
     | Nyalakan lewat INNER_CIRCLE_AKTIF=true di .env (lokal/preview dulu, produksi belakangan).
     */
     'aktif' => (bool) env('INNER_CIRCLE_AKTIF', false),

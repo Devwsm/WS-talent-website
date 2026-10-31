@@ -295,7 +295,7 @@ if (inputFoto) {
 }
 
 // ---------- Pindai QR check-in ----------
-// QR berisi URL .../inner-circle/check-in?kode=WS-XXXXXXXXXXXX. Yang diambil hanya tokennya; anggota tetap
+// QR berisi URL .../innercircle/check-in?kode=WS-XXXXXXXXXXXX. Yang diambil hanya tokennya; anggota tetap
 // menekan Verifikasi sendiri. Kamera butuh HTTPS (atau localhost) dan izin dari pengguna.
 let pemindai = null;
 let galatTerakhirPada = 0;

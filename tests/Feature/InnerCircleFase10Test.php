@@ -103,23 +103,23 @@ class InnerCircleFase10Test extends TestCase
 
     public function test_tamu_di_beranda_dialihkan_ke_penjelasan_dan_anggota_tetap_ke_beranda(): void
     {
-        $this->get('/inner-circle')->assertRedirect(route('ic.tentang'));
+        $this->get('/innercircle')->assertRedirect(route('ic.tentang'));
         $this->get(route('ic.hadiah'))->assertRedirect(route('ic.masuk'));
 
         $m = $this->anggota();
-        $this->actingAs($m, 'member')->get('/inner-circle')->assertOk();
+        $this->actingAs($m, 'member')->get('/innercircle')->assertOk();
         $this->actingAs($m, 'member')->get(route('ic.tentang'))->assertOk()->assertSee('Buka Inner Circle');
     }
 
     public function test_halaman_penjelasan_mati_bersama_flag_dan_robots_membukanya(): void
     {
         $robots = $this->get('/robots.txt')->getContent();
-        $this->assertStringContainsString('Allow: /inner-circle/tentang', $robots);
-        $this->assertLessThan(strpos($robots, 'Disallow: /inner-circle'), strpos($robots, 'Allow: /inner-circle/tentang'), 'Allow harus ditulis sebelum Disallow.');
+        $this->assertStringContainsString('Allow: /innercircle/tentang', $robots);
+        $this->assertLessThan(strpos($robots, 'Disallow: /innercircle'), strpos($robots, 'Allow: /innercircle/tentang'), 'Allow harus ditulis sebelum Disallow.');
 
         config(['inner_circle.aktif' => false]);
         $this->get(route('ic.tentang'))->assertNotFound();
-        $this->assertStringNotContainsString('/inner-circle/tentang', $this->get('/robots.txt')->getContent());
+        $this->assertStringNotContainsString('/innercircle/tentang', $this->get('/robots.txt')->getContent());
     }
 
     // ---------- buka kembali klaim ----------

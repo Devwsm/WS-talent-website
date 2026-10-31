@@ -78,7 +78,7 @@ class InnerCircleSitusPublikTest extends TestCase
     {
         $robots = $this->get('/robots.txt')->assertOk()->getContent();
 
-        $this->assertStringContainsString('Disallow: /inner-circle', $robots);
+        $this->assertStringContainsString('Disallow: /innercircle', $robots);
         $this->assertStringContainsString('Disallow: /dashboard', $robots);
         $this->assertStringContainsString('Allow: /', $robots);
     }
@@ -90,10 +90,10 @@ class InnerCircleSitusPublikTest extends TestCase
         // Halaman penjelasan program boleh diindeks; area anggota tidak boleh ada di sitemap.
         $this->get('/sitemap.xml')
             ->assertOk()
-            ->assertSee('/inner-circle/tentang')
-            ->assertDontSee('/inner-circle/masuk')
-            ->assertDontSee('/inner-circle/daftar')
-            ->assertDontSee('/inner-circle/hadiah');
+            ->assertSee('/innercircle/tentang')
+            ->assertDontSee('/innercircle/masuk')
+            ->assertDontSee('/innercircle/daftar')
+            ->assertDontSee('/innercircle/hadiah');
 
         $this->nyala(false);
         $this->get('/sitemap.xml')->assertOk()->assertDontSee('inner-circle');

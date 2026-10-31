@@ -11,7 +11,7 @@ use BaconQrCode\Writer;
 
 /**
  * QR check-in dirender di server sebagai SVG (tajam di layar maupun cetak, tanpa ekstensi GD/Imagick).
- * Isi QR adalah URL /inner-circle/check-in?kode=WS-XXXXXXXXXXXX, jadi kamera bawaan HP pun
+ * Isi QR adalah URL /innercircle/check-in?kode=WS-XXXXXXXXXXXX, jadi kamera bawaan HP pun
  * membuka halaman Check-in yang benar dengan kode sudah terisi.
  */
 class QrService

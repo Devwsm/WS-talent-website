@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 /**
  * Halaman publik yang menjelaskan WS Inner Circle untuk calon anggota (tanpa login, boleh diindeks mesin pencari).
- * Tamu yang membuka /inner-circle dialihkan ke sini (lihat bootstrap/app.php). Hanya data yang memang boleh dilihat
+ * Tamu yang membuka /innercircle dialihkan ke sini (lihat bootstrap/app.php). Hanya data yang memang boleh dilihat
  * publik yang ditampilkan: tahap hadiah aktif dan jadwal acara mendatang yang tidak privat.
  */
 class tentangController extends Controller

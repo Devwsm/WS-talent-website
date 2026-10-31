@@ -119,12 +119,12 @@ class InnerCircleGoogleTest extends TestCase
 
     public function test_redirect_uri_bisa_ditimpa_lewat_config(): void
     {
-        config(['services.google.redirect' => 'https://whisnusantika.com/inner-circle/google/callback']);
+        config(['services.google.redirect' => 'https://whisnusantika.com/innercircle/google/callback']);
 
         $respons = $this->get(route('ic.google.masuk'));
         parse_str(parse_url($respons->headers->get('Location'), PHP_URL_QUERY), $q);
 
-        $this->assertSame('https://whisnusantika.com/inner-circle/google/callback', $q['redirect_uri']);
+        $this->assertSame('https://whisnusantika.com/innercircle/google/callback', $q['redirect_uri']);
     }
 
     public function test_anggota_yang_sudah_masuk_tidak_diteruskan_ke_google(): void

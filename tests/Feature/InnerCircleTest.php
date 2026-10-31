@@ -55,15 +55,25 @@ class InnerCircleTest extends TestCase
     public function test_flag_mati_membuat_route_404(): void
     {
         config(['inner_circle.aktif' => false]);
-        $this->get('/inner-circle/masuk')->assertNotFound();
+        $this->get('/innercircle/masuk')->assertNotFound();
     }
 
     public function test_tamu_diarahkan_ke_masuk_inner_circle(): void
     {
         // Beranda anggota: tamu dialihkan ke halaman penjelasan program; area anggota lain langsung ke Masuk.
-        $this->get('/inner-circle')->assertRedirect(route('ic.tentang'));
-        $this->get('/inner-circle/check-in?kode=WS-ABCDEFGHJKLM')->assertRedirect(route('ic.masuk'));
+        $this->get('/innercircle')->assertRedirect(route('ic.tentang'));
+        $this->get('/innercircle/check-in?kode=WS-ABCDEFGHJKLM')->assertRedirect(route('ic.masuk'));
         $this->get('/dashboard')->assertRedirect(route('login'));
+    }
+
+    public function test_alamat_lama_inner_circle_dialihkan_permanen_ke_innercircle(): void
+    {
+        // QR check-in yang sudah dicetak dan tautan email lama memakai /inner-circle; query string ikut terbawa.
+        $this->get('/inner-circle')->assertStatus(301)->assertRedirect('/innercircle');
+        $this->get('/inner-circle/tentang')->assertStatus(301)->assertRedirect('/innercircle/tentang');
+        $this->get('/inner-circle/check-in?kode=WS-ABCDEFGHJKLM')
+            ->assertStatus(301)
+            ->assertRedirect('/innercircle/check-in?kode=WS-ABCDEFGHJKLM');
     }
 
     public function test_daftar_memberi_kode_member_dan_stempel_nol(): void

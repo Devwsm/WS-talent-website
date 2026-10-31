@@ -59,10 +59,10 @@ class EmailService
     public static function contoh(string $jenis): PesanIc
     {
         return match ($jenis) {
-            'reset' => new ResetSandiMail('Contoh Anggota', url('/inner-circle/atur-ulang/contoh-token'), self::menitBerlakuReset()),
+            'reset' => new ResetSandiMail('Contoh Anggota', url('/innercircle/atur-ulang/contoh-token'), self::menitBerlakuReset()),
             'google' => new AkunGoogleMail('Contoh Anggota', route('ic.masuk'), GoogleOAuth::tersedia()),
             'selamat-datang' => new SelamatDatangMail('Contoh Anggota', 'IC-00001', route('ic.beranda')),
-            'verifikasi' => new VerifikasiEmailMail('Contoh Anggota', url('/inner-circle/verifikasi/1/contoh'), self::jamBerlakuVerifikasi()),
+            'verifikasi' => new VerifikasiEmailMail('Contoh Anggota', url('/innercircle/verifikasi/1/contoh'), self::jamBerlakuVerifikasi()),
             'klaim' => new StatusKlaimMail('Contoh Anggota', 'Merch Eksklusif', 'ditolak', 'Ditolak', 'Stok tahap ini sudah habis, hubungi tim WSM untuk alternatif.', route('ic.hadiah')),
         };
     }

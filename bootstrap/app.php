@@ -25,12 +25,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'catatAktivitas' => \App\Http\Middleware\CatatAktivitas::class,
         ]);
 
-        // Pengunjung yang belum login: /inner-circle (beranda anggota) ke halaman penjelasan program, area anggota
+        // Pengunjung yang belum login: /innercircle (beranda anggota) ke halaman penjelasan program, area anggota
         // lainnya (QR check-in, hadiah, dst.) ke halaman Masuk, selain itu tetap ke login admin seperti sebelumnya.
         $middleware->redirectGuestsTo(
             fn(Request $request) => match (true) {
                 $request->routeIs('ic.beranda') => route('ic.tentang'),
-                $request->is('inner-circle', 'inner-circle/*') => route('ic.masuk'),
+                $request->is('innercircle', 'innercircle/*') => route('ic.masuk'),
                 default => route('login'),
             }
         );

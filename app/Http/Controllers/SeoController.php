@@ -26,13 +26,13 @@ class SeoController extends Controller
      */
     public function robots(): Response
     {
-        // Halaman penjelasan program (/inner-circle/tentang) dibuka untuk mesin pencari; Allow ditulis lebih dulu
+        // Halaman penjelasan program (/innercircle/tentang) dibuka untuk mesin pencari; Allow ditulis lebih dulu
         // dari Disallow supaya crawler yang membaca berurutan pun memakainya. Area anggota tetap tertutup.
         $content = "User-agent: *\n" .
             "Disallow: /dashboard\n" .
             "Disallow: /login\n" .
-            (config('inner_circle.aktif') ? "Allow: /inner-circle/tentang\n" : '') .
-            "Disallow: /inner-circle\n" .
+            (config('inner_circle.aktif') ? "Allow: /innercircle/tentang\n" : '') .
+            "Disallow: /innercircle\n" .
             "Allow: /\n\n" .
             'Sitemap: ' . url('/sitemap.xml') . "\n";
 
