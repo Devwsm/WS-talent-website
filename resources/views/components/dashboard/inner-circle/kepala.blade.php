@@ -1,14 +1,13 @@
 {{--
-    Kepala bersama semua tab dashboard Inner Circle: judul halaman (satu <h1> per tab), bar tab,
-    catatan "data contoh", dan skrip kecil yang dipakai bersama (notifikasi "segera aktif" dan
-    pembuat ikon untuk preview).
+    Kepala bersama semua halaman CMS Inner Circle: judul halaman (satu <h1> per halaman), catatan
+    "data contoh", dan skrip kecil yang dipakai bersama (notifikasi "segera aktif" dan pembuat ikon untuk
+    preview). Navigasi antarhalaman ada di navbar bawah (components/dashboard/navbar), bukan di sini.
 
     Variabel:
-    - $aktif       : kunci tab yang sedang dibuka (lihat config('inner_circle.tab_admin'))
+    - $aktif       : kunci halaman yang sedang dibuka (lihat config('inner_circle.tab_admin'))
     - $judul       : teks <h1>
     - $deskripsi   : teks di bawah judul
-    - $pakaiCss    : opsional (bawaan true). false bila tab tidak punya preview bergaya anggota
-    - $jumlahKlaimMenunggu : angka lencana di tab Klaim (dikirim adminController)
+    - $pakaiCss    : opsional (bawaan true). false bila halaman tidak punya preview bergaya anggota
 --}}
 @php
     $tabs = config('inner_circle.tab_admin');
@@ -33,28 +32,6 @@
     <h1 class="text-2xl lg:text-3xl font-bold uppercase">{{ $judul }}</h1>
     <p class="text-white/50 mt-1">{{ $deskripsi }}</p>
 </div>
-
-{{-- Bar tab: bisa digeser ke samping di HP --}}
-<nav aria-label="Bagian Inner Circle" class="-mx-5 md:mx-0 overflow-x-auto md:overflow-visible">
-    <ul class="flex md:flex-wrap gap-2 px-5 md:px-0 w-max md:w-auto">
-        @foreach ($tabs as $kunci => $tab)
-            @php $dipilih = $kunci === $aktif; @endphp
-            <li>
-                <a href="{{ route($tab['route']) }}" @if ($dipilih) aria-current="page" @endif
-                    class="inline-flex items-center gap-2 h-11 px-4 rounded-full border text-sm font-semibold whitespace-nowrap transition-colors
-                    {{ $dipilih ? 'bg-white text-black border-white' : 'border-white/10 text-white/60 hover:bg-white/10 hover:text-white' }}">
-                    <i class="bi {{ $tab['ikon'] }}" aria-hidden="true"></i>
-                    {{ $tab['label'] }}
-                    @if ($kunci === 'klaim' && ($jumlahKlaimMenunggu ?? 0) > 0)
-                        <span
-                            class="min-w-5 h-5 px-1.5 inline-flex items-center justify-center rounded-full text-[11px] font-bold
-                            {{ $dipilih ? 'bg-black text-white' : 'bg-red-950 text-white' }}">{{ $jumlahKlaimMenunggu }}</span>
-                    @endif
-                </a>
-            </li>
-        @endforeach
-    </ul>
-</nav>
 
 @if ($dataContoh)
     <div

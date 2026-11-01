@@ -1,14 +1,14 @@
-@extends('template/dashboardLayout')
+@extends('template/icDashboardLayout')
 @section('content')
     <div class="relative w-full flex flex-col justify-center items-center overflow-hidden">
         @include('components/dashboard/navbar')
 
         <div aria-hidden="true" class="pointer-events-none absolute -top-32 -right-24 w-96 h-96 rounded-full blur-3xl z-0"
-            style="background: radial-gradient(circle, #5e0006 0%, transparent 70%); opacity: 0.35;"></div>
+            style="background: radial-gradient(circle, var(--cms-glow, #5e0006) 0%, transparent 70%); opacity: 0.35;"></div>
 
         <div class="relative z-10 w-full max-w-7xl mx-auto flex flex-col gap-8 px-5 md:px-10 pt-8 pb-28 text-white">
 
-            @include('components.dashboard.inner-circle.tabs', [
+            @include('components.dashboard.inner-circle.kepala', [
                 'aktif' => 'email',
                 'judul' => 'Email',
                 'deskripsi' =>
@@ -103,7 +103,7 @@
                     </div>
 
                     {{-- Kanan: pratinjau (iframe tersandbox: skrip dan tautan keluar dimatikan) --}}
-                    <div class="lg:sticky lg:top-8 rounded-3xl border border-white/10 overflow-hidden bg-white">
+                    <div class="cms-asli lg:sticky lg:top-8 rounded-3xl border border-white/10 overflow-hidden bg-white">
                         <div class="flex items-center gap-2 px-5 py-3 border-b border-black/10 bg-black/3 text-black">
                             <i class="bi bi-eye text-black/40" aria-hidden="true"></i>
                             <span class="text-xs uppercase tracking-widest text-black/40">Pratinjau:

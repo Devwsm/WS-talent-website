@@ -1,9 +1,14 @@
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
 
+// CMS Inner Circle memakai tema terang lembut (class cms-ic di <body>); CMS Artis tetap gelap.
+const temaIc = document.body.classList.contains("cms-ic");
+const latarPopup = temaIc ? "#f6f3fd" : "#252525";
+const warnaTeks = temaIc ? "#27233f" : "#ffffff";
+
 const swal = Swal.mixin({
-    background: "#252525",
-    color: "#ffffff",
+    background: latarPopup,
+    color: warnaTeks,
     buttonsStyling: false,
 
     customClass: {
@@ -12,7 +17,7 @@ const swal = Swal.mixin({
         htmlContainer: "text-white/60",
 
         confirmButton:
-            "px-4 py-2 rounded-lg bg-[#5E0006] hover:bg-[#5E0006]/80 text-white font-semibold transition",
+            "px-4 py-2 rounded-lg bg-(--cms-aksen) hover:bg-(--cms-aksen)/80 text-white font-semibold transition",
 
         cancelButton:
             "px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 font-semibold transition ml-2",
@@ -26,8 +31,8 @@ const Toast = Swal.mixin({
     timer: 3000,
     timerProgressBar: true,
 
-    background: "#252525",
-    color: "#ffffff",
+    background: latarPopup,
+    color: warnaTeks,
 
     customClass: {
         popup: "rounded-2xl border border-white/10",

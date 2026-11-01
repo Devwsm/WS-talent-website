@@ -126,8 +126,10 @@ class adminController extends Controller
         $bulan = $this->teks($request, 'bulan');
         $tipe = $this->teks($request, 'tipe');
 
+        $bulanPilihan = ic_event::pilihanBulan();
+
         $filter = [
-            'bulan' => array_key_exists((int) $bulan, config('inner_circle.bulan_event')) ? (string) (int) $bulan : 'all',
+            'bulan' => $bulanPilihan->has($bulan) ? $bulan : 'all',
             'tipe' => array_key_exists($tipe, config('inner_circle.tipe_event')) ? $tipe : 'all',
             'q' => mb_substr(trim($this->teks($request, 'q')), 0, 60),
         ];
@@ -151,7 +153,7 @@ class adminController extends Controller
             ->orderBy('tanggal')
             ->orderBy('id_event');
         if ($filter['bulan'] !== 'all') {
-            $jadwal->whereMonth('tanggal', (int) $filter['bulan']);
+            $jadwal->diBulan($filter['bulan']);
         }
         if ($filter['tipe'] !== 'all') {
             $jadwal->where('tipe', $filter['tipe']);
@@ -169,6 +171,7 @@ class adminController extends Controller
             'jadwal' => $jadwal->paginate(self::PER_HALAMAN_ACARA)->withQueryString()->fragment('jadwal'),
             'totalAcara' => ic_event::query()->count(),
             'filter' => $filter,
+            'bulanPilihan' => $bulanPilihan,
             'acaraQr' => $acaraQr,
             'acaraDipilih' => $acaraDipilih,
             // Token yang tidak terbaca (APP_KEY berbeda) tidak bisa dijadikan QR: tampilkan peringatan, bukan galat.

@@ -74,8 +74,11 @@ class memberController extends Controller
         $bulan = $this->teks($request, 'bulan');
         $tipe = $this->teks($request, 'tipe');
 
+        // Pilihan bulan dari tanggal acara yang ada (format 2026-10). Nilai lain, termasuk ?bulan=10 dari tautan lama, dianggap "semua".
+        $bulanPilihan = ic_event::pilihanBulan();
+
         $filter = [
-            'bulan' => array_key_exists((int) $bulan, config('inner_circle.bulan_event')) ? (string) (int) $bulan : 'all',
+            'bulan' => $bulanPilihan->has($bulan) ? $bulan : 'all',
             'tipe' => array_key_exists($tipe, config('inner_circle.tipe_event')) ? $tipe : 'all',
             'q' => mb_substr(trim($this->teks($request, 'q')), 0, 60),
         ];
@@ -89,7 +92,7 @@ class memberController extends Controller
 
         $query = ic_event::query()->orderBy('tanggal')->orderBy('id_event');
         if ($filter['bulan'] !== 'all') {
-            $query->whereMonth('tanggal', (int) $filter['bulan']);
+            $query->diBulan($filter['bulan']);
         }
         if ($filter['tipe'] !== 'all') {
             $query->where('tipe', $filter['tipe']);
@@ -142,6 +145,7 @@ class memberController extends Controller
             'events' => $events,
             'totalEvents' => ic_event::query()->count(),
             'filter' => $filter,
+            'bulanPilihan' => $bulanPilihan,
             'parameterFilter' => $parameterFilter,
             'eventDipilih' => $eventDipilih,
             'kodeIsian' => $tokenQr ?? '',

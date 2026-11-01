@@ -1,4 +1,4 @@
-@extends('template/dashboardLayout')
+@extends('template/icDashboardLayout')
 @section('content')
     @php
         $tipeEvent = config('inner_circle.tipe_event');
@@ -23,11 +23,11 @@
 
         {{-- Dekorasi abstrak, senada sama halaman lain --}}
         <div aria-hidden="true" class="pointer-events-none absolute -top-32 -right-24 w-96 h-96 rounded-full blur-3xl z-0"
-            style="background: radial-gradient(circle, #5e0006 0%, transparent 70%); opacity: 0.35;"></div>
+            style="background: radial-gradient(circle, var(--cms-glow, #5e0006) 0%, transparent 70%); opacity: 0.35;"></div>
 
         <div class="relative z-10 w-full max-w-7xl mx-auto flex flex-col gap-8 px-5 md:px-10 pt-8 pb-28 text-white">
 
-            @include('components.dashboard.inner-circle.tabs', [
+            @include('components.dashboard.inner-circle.kepala', [
                 'aktif' => 'acara',
                 'judul' => 'Acara & QR',
                 'deskripsi' => 'Kelola jadwal pertunjukan dan buat QR check-in untuk tiap acara.',
@@ -137,7 +137,7 @@
 
                         {{-- Kanan: kertas QR (sticky) --}}
                         <div
-                            class="lg:sticky lg:top-8 rounded-3xl border border-white/10 bg-white overflow-hidden text-black">
+                            class="cms-asli lg:sticky lg:top-8 rounded-3xl border border-white/10 bg-white overflow-hidden text-black">
                             <div class="flex items-center gap-2 px-5 py-3 border-b border-black/10 bg-black/3">
                                 <i class="bi bi-eye text-black/40" aria-hidden="true"></i>
                                 <span class="text-xs uppercase tracking-widest text-black/40">Kertas QR di venue</span>
@@ -511,9 +511,9 @@
                             class="text-sm font-semibold uppercase tracking-widest text-white/60">Bulan</label>
                         <select id="f-bulan" name="bulan"
                             class="bg-white/5 border border-white/15 text-white p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition scheme-dark">
-                            <option class="bg-neutral-900" value="all">Okt–Des 2026</option>
-                            @foreach (config('inner_circle.bulan_event') as $no => $nama)
-                                <option class="bg-neutral-900" value="{{ $no }}" @selected($filter['bulan'] === (string) $no)>
+                            <option class="bg-neutral-900" value="all">Semua bulan</option>
+                            @foreach ($bulanPilihan as $ym => $nama)
+                                <option class="bg-neutral-900" value="{{ $ym }}" @selected($filter['bulan'] === $ym)>
                                     {{ $nama }}</option>
                             @endforeach
                         </select>
@@ -959,7 +959,8 @@
                                 sumber.value = 'alamat';
                                 perbaruiPeta();
                                 teks(
-                                    'Titik diisi dari alamat. Periksa lewat Cek di Google Maps, lalu tekan Simpan lokasi.');
+                                    'Titik diisi dari alamat. Periksa lewat Cek di Google Maps, lalu tekan Simpan lokasi.'
+                                    );
                             });
                             const tautan = document.createElement('a');
                             tautan.href = 'https://www.google.com/maps?q=' + h.lat + ',' + h.lng;

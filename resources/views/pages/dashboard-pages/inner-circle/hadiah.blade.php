@@ -1,4 +1,4 @@
-@extends('template/dashboardLayout')
+@extends('template/icDashboardLayout')
 @section('content')
     @php
         // Data awal untuk form dan preview JavaScript: satu entri per tahapan, kunci = target stempel.
@@ -49,11 +49,11 @@
 
         {{-- Dekorasi abstrak, senada sama halaman lain --}}
         <div aria-hidden="true" class="pointer-events-none absolute -top-32 -right-24 w-96 h-96 rounded-full blur-3xl z-0"
-            style="background: radial-gradient(circle, #5e0006 0%, transparent 70%); opacity: 0.35;"></div>
+            style="background: radial-gradient(circle, var(--cms-glow, #5e0006) 0%, transparent 70%); opacity: 0.35;"></div>
 
         <div class="relative z-10 w-full max-w-7xl mx-auto flex flex-col gap-6 px-5 md:px-10 pt-8 pb-28 text-white">
 
-            @include('components.dashboard.inner-circle.tabs', [
+            @include('components.dashboard.inner-circle.kepala', [
                 'aktif' => 'hadiah',
                 'judul' => 'Hadiah',
                 'deskripsi' =>

@@ -139,13 +139,6 @@ return [
         'ditolak' => ['label' => 'Ditolak', 'warna' => 'merah'],
     ],
 
-    /* Pilihan bulan di filter jadwal Check-in (Kuartal IV). Kunci = nomor bulan. */
-    'bulan_event' => [
-        10 => 'Oktober',
-        11 => 'November',
-        12 => 'Desember',
-    ],
-
     /*
     | Pilihan ikon untuk form admin (hadiah dan pengumuman): kunci = nama ikon di atas, nilai = label.
     | Ikon `lock`, `sunglasses`, dan `ok-hand` sengaja tidak ada: dipakai khusus oleh komponen lain.

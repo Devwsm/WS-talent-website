@@ -23,16 +23,16 @@
 
     <section class="ic-filter" aria-labelledby="judul-jadwal">
         <div>
-            <h2 class="ic-filter__judul" id="judul-jadwal">Jadwal Pertunjukan WS · Kuartal IV 2026</h2>
+            <h2 class="ic-filter__judul" id="judul-jadwal">Jadwal Pertunjukan WS</h2>
             <p class="ic-bantuan">Jadwal berdasarkan rencana WSM dan bersifat tentatif. Tidak semua acara otomatis
                 memberi stempel.</p>
         </div>
         <form class="ic-filter__form" method="GET" action="{{ route('ic.checkin') }}" role="search">
             <label class="ic-sr-saja" for="filter-bulan">Bulan</label>
             <select class="ic-input" id="filter-bulan" name="bulan" data-ic-otomatis>
-                <option value="all">Okt–Des 2026</option>
-                @foreach (config('inner_circle.bulan_event') as $nomor => $nama)
-                    <option value="{{ $nomor }}" @selected($filter['bulan'] === (string) $nomor)>{{ $nama }}</option>
+                <option value="all">Semua bulan</option>
+                @foreach ($bulanPilihan as $ym => $nama)
+                    <option value="{{ $ym }}" @selected($filter['bulan'] === $ym)>{{ $nama }}</option>
                 @endforeach
             </select>
 

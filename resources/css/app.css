@@ -572,3 +572,48 @@ scroll buat mereka. Autoplay carousel sendiri udah dimatiin lewat JS
 body.dash-theme {
     --color-black: #252525;
 }
+
+/* ---- Tema CMS Inner Circle: lavender seperti area anggota, tapi lembut di mata ----
+    Dipasang lewat class .cms-ic di <body> icDashboardLayout. Memakai teknik yang sama dengan .dash-theme:
+    Tailwind v4 membaca warna dari variabel --color-*, jadi menimpa variabel di sini mengubah seluruh halaman
+    tanpa mengedit view. "Putih" dibalik jadi tinta ungu-tua dan "hitam" jadi latar lavender lembut (bukan putih
+    murni, supaya tidak silau), sehingga bg-white/5, border-white/10, text-white/60 dst. otomatis mengikuti.
+    Aksen merah tua CMS Artis (red-950 untuk tombol, red-900 untuk hover dan fokus) diganti lilac dan ungu. */
+body.cms-ic {
+    color-scheme: light;
+    --color-white: #27233f;
+    --color-black: #ebe7f7;
+    --color-red-950: #c8b2ff;
+    --color-red-900: #8d73ff;
+    /* Latar opsi dropdown (bg-neutral-900) */
+    --color-neutral-900: #f6f3fd;
+    /* Warna teks yang dirancang untuk latar gelap digelapkan supaya terbaca di latar terang. */
+    --color-red-100: #7a1d17;
+    --color-red-200: #8e231c;
+    --color-red-300: #a3281f;
+    --color-red-400: #b42a20;
+    --color-amber-100: #5c3d00;
+    --color-amber-200: #7a5200;
+    --color-amber-950: #f3dca8;
+    --color-emerald-200: #0a6847;
+    --color-sky-200: #0b5b8c;
+}
+/* Input tanggal/pilihan bawaan browser memakai class scheme-dark: di tema terang harus terang. */
+body.cms-ic .scheme-dark {
+    color-scheme: light;
+}
+/* Bagian yang sengaja tetap memakai warna asli: dock navigasi (gelap), kartu QR, dan pratinjau email (putih). */
+body.cms-ic .cms-dock,
+body.cms-ic .cms-asli {
+    --color-white: #fff;
+    --color-black: #000;
+    --color-neutral-900: #171717;
+}
+/* Warna tombol konfirmasi SweetAlert mengikuti tema (merah tua di CMS Artis, lilac di CMS Inner Circle). */
+:root {
+    --cms-aksen: #5e0006;
+}
+body.cms-ic {
+    --cms-aksen: #c8b2ff;
+    --cms-glow: #a58bff;
+}

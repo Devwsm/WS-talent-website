@@ -1,46 +1,72 @@
 @php
-    $navLinks = [
-        ['route' => 'banner', 'icon' => 'bi-images', 'label' => 'Banner'],
-        ['route' => 'headers', 'icon' => 'bi-card-image', 'label' => 'Headers'],
-        ['route' => 'dashboard.profile', 'icon' => 'bi-person-fill', 'label' => 'Profile'],
-        ['route' => 'color_pages.index', 'icon' => 'bi-palette-fill', 'label' => 'Warna Web'],
-        ['route' => 'albums', 'icon' => 'bi-disc-fill', 'label' => 'Albums'],
-        ['route' => 'news', 'icon' => 'bi-newspaper', 'label' => 'News'],
-        ['route' => 'merchandise', 'icon' => 'bi-basket-fill', 'label' => 'Merchandise'],
-        ['route' => 'log.index', 'pola' => 'log.*', 'icon' => 'bi-journal-text', 'label' => 'Log'],
-    ];
-    // WS Inner Circle: menu muncul hanya bila flag INNER_CIRCLE_AKTIF menyala (lokal/preview dulu).
+    /*
+     * Navbar bersama CMS Artis dan CMS Inner Circle: bentuknya sama persis, yang beda hanya isi menu dan tema warna.
+     * Mode ditentukan dari route (ic.admin.* = CMS Inner Circle), tidak disimpan di sesi.
+     */
     $icAktif = config('inner_circle.aktif');
-    if ($icAktif) {
-        $navLinks[] = [
-            'route' => 'ic.admin.ringkasan',
-            'pola' => 'ic.admin.*',
-            'icon' => 'bi-people-fill',
-            'label' => 'Inner Circle',
+    $modeIc = $icAktif && request()->routeIs('ic.admin.*');
+
+    if ($modeIc) {
+        // Menu CMS Inner Circle diambil dari config('inner_circle.tab_admin'); Ringkasan jadi tombol rumah.
+        $navLinks = [];
+        foreach (config('inner_circle.tab_admin') as $kunci => $tab) {
+            if ($kunci === 'ringkasan') {
+                continue;
+            }
+            $navLinks[] = [
+                'route' => $tab['route'],
+                'pola' => $tab['route'] . '*',
+                'icon' => $tab['ikon'],
+                'label' => $tab['label'],
+                'lencana' => $kunci === 'klaim' ? (int) ($jumlahKlaimMenunggu ?? 0) : 0,
+            ];
+        }
+        $rumah = ['route' => 'ic.admin.ringkasan', 'label' => 'Ringkasan Inner Circle'];
+        $judulMenu = 'Menu CMS Inner Circle';
+        $saklar = [
+            'route' => 'dashboard',
+            'icon' => 'bi-music-note-beamed',
+            'label' => 'CMS Artis',
+            'judul' => 'Pindah ke CMS Artis',
         ];
+    } else {
+        $navLinks = [
+            ['route' => 'banner', 'icon' => 'bi-images', 'label' => 'Banner'],
+            ['route' => 'headers', 'icon' => 'bi-card-image', 'label' => 'Headers'],
+            ['route' => 'dashboard.profile', 'icon' => 'bi-person-fill', 'label' => 'Profile'],
+            ['route' => 'color_pages.index', 'icon' => 'bi-palette-fill', 'label' => 'Warna Web'],
+            ['route' => 'albums', 'icon' => 'bi-disc-fill', 'label' => 'Albums'],
+            ['route' => 'news', 'icon' => 'bi-newspaper', 'label' => 'News'],
+            ['route' => 'merchandise', 'icon' => 'bi-basket-fill', 'label' => 'Merchandise'],
+            ['route' => 'log.index', 'pola' => 'log.*', 'icon' => 'bi-journal-text', 'label' => 'Log'],
+        ];
+        $rumah = ['route' => 'dashboard', 'label' => 'Dashboard'];
+        $judulMenu = 'Menu Dashboard';
+        // Saklar ke CMS Inner Circle hanya ada bila flag INNER_CIRCLE_AKTIF menyala.
+        $saklar = $icAktif
+            ? [
+                'route' => 'ic.admin.ringkasan',
+                'icon' => 'bi-people-fill',
+                'label' => 'CMS Inner Circle',
+                'judul' => 'Pindah ke CMS Inner Circle',
+            ]
+            : null;
     }
-    $isKontenActive = request()->routeIs([
-        'banner',
-        'headers',
-        'dashboard.profile',
-        'color_pages.index',
-        'albums',
-        'news',
-        'merchandise',
-        'log.*',
-        'ic.admin.*',
-    ]);
+
+    $polaAktif = array_map(fn($l) => $l['pola'] ?? $l['route'], $navLinks);
+    $isKontenActive = request()->routeIs($polaAktif);
+    $rumahAktif = request()->routeIs($rumah['route']);
 @endphp
 
 {{-- ============== DESKTOP: dock bawah-tengah, tema gelap, beda dari background halaman ============== --}}
 <div
-    class="hidden lg:flex fixed bottom-5 left-1/2 -translate-x-1/2 z-50 items-center
+    class="cms-dock hidden lg:flex fixed bottom-5 left-1/2 -translate-x-1/2 z-50 items-center
     rounded-2xl bg-neutral-900 border border-white/10 ring-1 ring-red-950/50
     p-1.5 shadow-2xl shadow-black/70">
 
-    <a href="{{ route('dashboard') }}" aria-label="Dashboard"
+    <a href="{{ route($rumah['route']) }}" aria-label="{{ $rumah['label'] }}" title="{{ $rumah['label'] }}"
         class="flex justify-center items-center h-12 w-12 rounded-xl shrink-0 text-xl transition-colors
-        {{ request()->routeIs('dashboard') ? 'bg-white text-black' : 'text-white/60 hover:bg-white/10 hover:text-white' }}">
+        {{ $rumahAktif ? 'bg-white text-black' : 'text-white/60 hover:bg-white/10 hover:text-white' }}">
         <i class="bi bi-house-door-fill" aria-hidden="true"></i>
     </a>
 
@@ -62,11 +88,24 @@
                 {{ request()->routeIs($link['pola'] ?? $link['route']) ? 'bg-white text-black' : 'text-white/60 hover:bg-white/10 hover:text-white' }}">
                 <i class="bi {{ $link['icon'] }} text-base" aria-hidden="true"></i>
                 <span class="{{ $icAktif ? 'hidden xl:inline' : '' }}">{{ $link['label'] }}</span>
+                @if (($link['lencana'] ?? 0) > 0)
+                    <span
+                        class="min-w-5 h-5 px-1.5 inline-flex items-center justify-center rounded-full bg-red-500 text-white text-[11px] font-bold">{{ $link['lencana'] }}</span>
+                @endif
             </a>
         @endforeach
 
         <div class="w-px h-8 bg-white/10 mx-1 shrink-0"></div>
     </div>
+
+    {{-- Saklar mode: di sebelah tombol Keluar. Menampilkan CMS tujuan; label disembunyikan di 1024-1279px. --}}
+    @if ($saklar)
+        <a href="{{ route($saklar['route']) }}" title="{{ $saklar['judul'] }}" aria-label="{{ $saklar['judul'] }}"
+            class="flex items-center gap-2 h-12 px-3.5 mr-1 rounded-xl border border-white/15 text-sm font-semibold whitespace-nowrap text-white/80 hover:bg-white/10 hover:text-white transition-colors">
+            <i class="bi bi-arrow-left-right text-base" aria-hidden="true"></i>
+            <span class="hidden xl:inline">{{ $saklar['label'] }}</span>
+        </a>
+    @endif
 
     <form action="{{ route('logout') }}" method="POST" class="contents">
         @csrf
@@ -80,15 +119,15 @@
 {{-- ============== MOBILE & TABLET: burger + bottom sheet setengah layar ============== --}}
 <button id="dashOpenBtn" type="button" aria-label="Buka menu dashboard" aria-expanded="false"
     aria-controls="dashMobileMenu"
-    class="fixed z-50 bottom-5 right-5 lg:hidden flex justify-center items-center h-14 w-14 rounded-full bg-white text-black text-2xl shadow-lg shadow-black/40">
+    class="cms-dock fixed z-50 bottom-5 right-5 lg:hidden flex justify-center items-center h-14 w-14 rounded-full bg-white text-black text-2xl shadow-lg shadow-black/40">
     <i class="bi bi-list" aria-hidden="true"></i>
 </button>
 
 <div id="dashSheetOverlay" aria-hidden="true"
-    class="fixed inset-0 bg-black/60 z-40 opacity-0 invisible transition-opacity duration-300 lg:hidden"></div>
+    class="cms-dock fixed inset-0 bg-black/60 z-40 opacity-0 invisible transition-opacity duration-300 lg:hidden"></div>
 
 <nav id="dashMobileMenu" aria-label="Navigasi dashboard"
-    class="fixed inset-x-0 bottom-0 z-50 lg:hidden bg-black border-t border-white/10 rounded-t-3xl
+    class="cms-dock text-white fixed inset-x-0 bottom-0 z-50 lg:hidden bg-black border-t border-white/10 rounded-t-3xl
     h-3/5 overflow-y-auto translate-y-full transition-transform duration-300 pb-8">
 
     {{-- drag handle --}}
@@ -97,7 +136,7 @@
     </div>
 
     <div class="flex items-center justify-between px-5 pt-2 pb-4">
-        <h1 class="text-lg font-bold uppercase">Menu Dashboard</h1>
+        <h1 class="text-lg font-bold uppercase">{{ $judulMenu }}</h1>
         <button id="dashCloseBtn" type="button" aria-label="Tutup menu dashboard"
             class="flex justify-center items-center h-9 w-9 rounded-full bg-white/10 text-white text-xl">
             <i class="bi bi-x" aria-hidden="true"></i>
@@ -105,11 +144,11 @@
     </div>
 
     <div class="grid grid-cols-3 gap-3 px-5">
-        <a href="{{ route('dashboard') }}"
+        <a href="{{ route($rumah['route']) }}"
             class="menu-link flex flex-col items-center justify-center gap-2 rounded-xl border border-white/10 py-4
-            {{ request()->routeIs('dashboard') ? 'bg-white text-black' : 'text-white/70' }}">
+            {{ $rumahAktif ? 'bg-white text-black' : 'text-white/70' }}">
             <i class="bi bi-house-door-fill text-2xl" aria-hidden="true"></i>
-            <span class="text-xs font-semibold uppercase text-center">Dashboard</span>
+            <span class="text-xs font-semibold uppercase text-center">{{ $modeIc ? 'Ringkasan' : 'Dashboard' }}</span>
         </a>
 
         @foreach ($navLinks as $link)
@@ -117,9 +156,23 @@
                 class="menu-link flex flex-col items-center justify-center gap-2 rounded-xl border border-white/10 py-4
                 {{ request()->routeIs($link['pola'] ?? $link['route']) ? 'bg-white text-black' : 'text-white/70' }}">
                 <i class="bi {{ $link['icon'] }} text-2xl" aria-hidden="true"></i>
-                <span class="text-xs font-semibold uppercase text-center">{{ $link['label'] }}</span>
+                <span class="text-xs font-semibold uppercase text-center">{{ $link['label'] }}
+                    @if (($link['lencana'] ?? 0) > 0)
+                        <span
+                            class="ml-0.5 inline-flex min-w-5 h-5 px-1.5 items-center justify-center rounded-full bg-red-500 text-white text-[11px] font-bold align-middle">{{ $link['lencana'] }}</span>
+                    @endif
+                </span>
             </a>
         @endforeach
+
+        {{-- Saklar mode: bersebelahan dengan tombol Logout. --}}
+        @if ($saklar)
+            <a href="{{ route($saklar['route']) }}"
+                class="menu-link flex flex-col items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 py-4 text-white/80">
+                <i class="bi {{ $saklar['icon'] }} text-2xl" aria-hidden="true"></i>
+                <span class="text-xs font-semibold uppercase text-center">{{ $saklar['label'] }}</span>
+            </a>
+        @endif
 
         <form action="{{ route('logout') }}" method="POST" class="contents">
             @csrf

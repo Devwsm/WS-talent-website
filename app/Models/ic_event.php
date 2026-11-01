@@ -62,6 +62,29 @@ class ic_event extends Model
         ];
     }
 
+    /**
+     * Pilihan filter bulan dari tanggal acara yang ada: '2026-10' => 'Oktober 2026', urut naik. Bukan daftar tetap,
+     * jadi acara tahun berikutnya otomatis ikut bisa difilter.
+     *
+     * @return \Illuminate\Support\Collection<string, string>
+     */
+    public static function pilihanBulan(): \Illuminate\Support\Collection
+    {
+        return static::query()->pluck('tanggal')
+            ->map(fn($t) => Carbon::parse($t)->format('Y-m'))
+            ->unique()
+            ->sort()
+            ->mapWithKeys(fn($ym) => [$ym => Carbon::createFromFormat('Y-m-d', $ym . '-01')->locale('id')->translatedFormat('F Y')]);
+    }
+
+    /** Acara pada satu bulan; $ym berformat '2026-10' dan harus sudah divalidasi lewat pilihanBulan(). */
+    public function scopeDiBulan($query, string $ym)
+    {
+        $awal = Carbon::createFromFormat('Y-m-d', $ym . '-01')->startOfMonth();
+
+        return $query->whereBetween('tanggal', [$awal->toDateString(), $awal->copy()->endOfMonth()->toDateString()]);
+    }
+
     /** Acara ini punya titik lokasi, jadi check-in hanya sah dari dalam radiusnya. */
     protected function lokasiAktif(): Attribute
     {
