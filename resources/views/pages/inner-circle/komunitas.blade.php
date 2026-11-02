@@ -3,20 +3,20 @@
 @section('title', 'Komunitas')
 
 @section('content')
-    <p class="ic-eyebrow">Lebih banyak musik • Teman yang sama</p>
+    <p class="ic-eyebrow">{{ ic_teks('komunitas.eyebrow') }}</p>
     <h1 class="ic-judul">Komunitas kita<span>.</span></h1>
-    <p class="ic-deskripsi">Semua cerita dimulai dari hadir. Update langsung dari WSM, lalu simpan momen yang layak
-        diingat.</p>
+    <p class="ic-deskripsi">{{ ic_html('komunitas.deskripsi') }}</p>
 
     <x-inner-circle.panel-verifikasi />
 
     <section class="ic-banner" aria-labelledby="judul-banner">
         <div>
-            <span class="ic-banner__stiker">✦ WS INNER CIRCLE ✦</span>
-            <h2 id="judul-banner">Lebih banyak musik.<br>Teman yang sama.</h2>
-            <p>Lebih dekat dengan musik. Lebih akrab satu sama lain.</p>
-            <button type="button" class="ic-tombol" data-ic-modal-buka="modal-kenangan" @disabled($member->email_verified_at === null)>+ Bagikan
-                kenangan <i class="bi bi-arrow-up-right" aria-hidden="true"></i></button>
+            <span class="ic-banner__stiker">{{ ic_teks('komunitas.banner.stiker') }}</span>
+            <h2 id="judul-banner">{{ ic_html('komunitas.banner.judul') }}</h2>
+            <p>{{ ic_html('komunitas.banner.deskripsi') }}</p>
+            <button type="button" class="ic-tombol" data-ic-modal-buka="modal-kenangan"
+                @disabled($member->email_verified_at === null)>{{ ic_teks('komunitas.banner.tombol') }}
+                <i class="bi bi-arrow-up-right" aria-hidden="true"></i></button>
         </div>
         <div class="ic-banner__orbit" aria-hidden="true">
             <x-inner-circle.ikon nama="mirror-ball" kelas="ic-ikon--sampul" />
@@ -40,10 +40,10 @@
     @if ($tab === 'pengumuman')
         <div class="ic-bagian-kepala">
             <div>
-                <p class="ic-eyebrow">Langsung dari komunitas</p>
-                <h2 class="ic-judul-bagian">Kabar terbaru ✳</h2>
+                <p class="ic-eyebrow">{{ ic_teks('komunitas.pengumuman.eyebrow') }}</p>
+                <h2 class="ic-judul-bagian">{{ ic_teks('komunitas.pengumuman.judul') }}</h2>
             </div>
-            <span class="ic-pil">✦ Kabar resmi</span>
+            <span class="ic-pil">{{ ic_teks('komunitas.pengumuman.pil') }}</span>
         </div>
         @if ($unggulan)
             <x-inner-circle.pengumuman-unggulan :pengumuman="$unggulan" />
@@ -55,22 +55,22 @@
         </div>
         @if (!$unggulan && $pengumuman->isEmpty())
             <div class="ic-panel ic-kosong">
-                <b>Belum ada pengumuman.</b>
-                <p class="ic-bantuan">Kabar resmi dari WSM akan muncul di sini.</p>
+                <b>{{ ic_teks('komunitas.pengumuman.kosong.judul') }}</b>
+                <p class="ic-bantuan">{{ ic_html('komunitas.pengumuman.kosong.deskripsi') }}</p>
             </div>
         @endif
     @else
         <div class="ic-bagian-kepala">
             <div>
-                <p class="ic-eyebrow">Penggemar, foto &amp; cerita</p>
-                <h2 class="ic-judul-bagian">Galeri kenangan ♡</h2>
+                <p class="ic-eyebrow">{{ ic_teks('komunitas.galeri.eyebrow') }}</p>
+                <h2 class="ic-judul-bagian">{{ ic_teks('komunitas.galeri.judul') }}</h2>
             </div>
-            <button type="button" class="ic-tombol" data-ic-modal-buka="modal-kenangan" @disabled($member->email_verified_at === null)>+
-                Tambah kenangan</button>
+            <button type="button" class="ic-tombol" data-ic-modal-buka="modal-kenangan"
+                @disabled($member->email_verified_at === null)>{{ ic_teks('komunitas.galeri.tombol') }}</button>
         </div>
 
-        <p class="ic-intro-kenangan"><b>Simpan momen terbaikmu.</b> Bagikan momen favorit, dukung sesama penggemar,
-            dan kumpulkan kenangan seru.</p>
+        <p class="ic-intro-kenangan"><b>{{ ic_teks('komunitas.galeri.intro_tebal') }}</b>
+            {{ ic_html('komunitas.galeri.intro') }}</p>
 
         <nav class="ic-chip-daftar" aria-label="Filter kategori kenangan">
             <a class="ic-chip {{ $kategori === 'all' ? 'is-aktif' : '' }}"
@@ -90,8 +90,8 @@
                 <x-inner-circle.kartu-kenangan :kenangan="$k" />
             @empty
                 <div class="ic-panel ic-kosong ic-grid__penuh">
-                    <b>Belum ada kenangan di kategori ini.</b>
-                    <p class="ic-bantuan">Jadilah yang pertama membagikan momenmu.</p>
+                    <b>{{ ic_teks('komunitas.galeri.kosong.judul') }}</b>
+                    <p class="ic-bantuan">{{ ic_html('komunitas.galeri.kosong.deskripsi') }}</p>
                 </div>
             @endforelse
         </div>
@@ -117,7 +117,7 @@
             </nav>
         @endif
 
-        <p class="ic-catatan">Tim WSM dapat menyembunyikan kenangan yang melanggar aturan komunitas.</p>
+        <p class="ic-catatan">{{ ic_html('komunitas.galeri.catatan') }}</p>
     @endif
 @endsection
 

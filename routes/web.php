@@ -6,6 +6,7 @@ use App\Http\Controllers\InnerCircle\adminController;
 use App\Http\Controllers\InnerCircle\akunController;
 use App\Http\Controllers\InnerCircle\emailAdminController;
 use App\Http\Controllers\InnerCircle\kontenController;
+use App\Http\Controllers\InnerCircle\kontenDaftarController;
 use App\Http\Controllers\InnerCircle\authController;
 use App\Http\Controllers\InnerCircle\fotoProfilController;
 use App\Http\Controllers\InnerCircle\googleController;
@@ -146,6 +147,15 @@ Route::prefix('/dashboard')->middleware(['cekLogin', 'catatAktivitas'])->group(f
         Route::get('/konten', [kontenController::class, 'index'])->name('konten');
         Route::post('/konten/{grup}', [kontenController::class, 'simpan'])->where('grup', '[a-z_]+')->name('konten.simpan')->middleware('throttle:20,1');
         Route::post('/konten/{grup}/reset/{kunci}', [kontenController::class, 'reset'])->where('grup', '[a-z_]+')->name('konten.reset')->middleware('throttle:20,1');
+        // Daftar berurutan di tab Konten (langkah, FAQ, poin teaser): tambah, ubah, urutkan, tampil/sembunyikan, hapus.
+        Route::prefix('/konten-daftar/{daftar}')->where(['daftar' => '[a-z_]+'])->name('konten.item.')->group(function () {
+            Route::post('/', [kontenDaftarController::class, 'tambah'])->name('tambah')->middleware('throttle:20,1');
+            Route::post('/bawaan', [kontenDaftarController::class, 'bawaan'])->name('bawaan')->middleware('throttle:10,1');
+            Route::put('/{id}', [kontenDaftarController::class, 'ubah'])->whereNumber('id')->name('ubah')->middleware('throttle:20,1');
+            Route::patch('/{id}/geser', [kontenDaftarController::class, 'geser'])->whereNumber('id')->name('geser')->middleware('throttle:admin-aksi-kecil');
+            Route::patch('/{id}/aktif', [kontenDaftarController::class, 'aktif'])->whereNumber('id')->name('aktif')->middleware('throttle:admin-aksi-kecil');
+            Route::delete('/{id}', [kontenDaftarController::class, 'hapus'])->whereNumber('id')->name('hapus')->middleware('throttle:20,1');
+        });
 
         // Fase 9: format email notifikasi, pratinjau, dan email tes.
         Route::get('/email', [emailAdminController::class, 'index'])->name('email');

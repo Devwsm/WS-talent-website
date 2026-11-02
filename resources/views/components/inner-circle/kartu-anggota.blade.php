@@ -2,7 +2,7 @@
 <div class="ic-kartu-anggota">
     <div>
         <x-inner-circle.logo ukuran="lg" />
-        <p class="ic-sub">KARTU KEANGGOTAAN DIGITAL</p>
+        <p class="ic-sub">{{ ic_teks('beranda.kartu.label') }}</p>
     </div>
     <div>
         <p class="ic-kartu-anggota__nama">{{ $member->nama }}</p>

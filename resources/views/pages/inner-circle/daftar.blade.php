@@ -3,8 +3,8 @@
 @section('title', 'Daftar')
 
 @section('content')
-    <h1 class="ic-auth__judul">Gabung WS Inner Circle</h1>
-    <p class="ic-auth__intro">Buat akun untuk mulai mengumpulkan stempel dan membuka hadiah.</p>
+    <h1 class="ic-auth__judul">{{ ic_teks('daftar.judul') }}</h1>
+    <p class="ic-auth__intro">{{ ic_html('daftar.intro') }}</p>
 
     <x-inner-circle.tombol-google teks="Daftar dengan Google" />
 

@@ -38,28 +38,39 @@ class simpanKontenRequest extends FormRequest
         return str_replace('.', '__', $kunci);
     }
 
+    /**
+     * Aturan satu isian teks biasa: batas panjang, tanpa < dan >, dan hanya placeholder yang diizinkan. Dipakai juga
+     * oleh simpanItemRequest (butir daftar), supaya dua tempat ini tidak pernah berbeda aturan.
+     *
+     * @param  list<string>  $diizinkan nama placeholder/tautan yang boleh dipakai (tanpa kurung kurawal)
+     */
+    public static function aturanTeks(int $maks, array $diizinkan, bool $wajib = false): array
+    {
+        return [
+            $wajib ? 'required' : 'nullable',
+            'string',
+            'max:' . $maks,
+            // Teks biasa saja: < dan > ditolak (bukan dibuang diam-diam) supaya admin tahu kenapa.
+            'regex:/^[^<>]*$/u',
+            function (string $atribut, mixed $nilai, \Closure $gagal) use ($diizinkan) {
+                preg_match_all('/\{([A-Za-z_]+)\}/', (string) $nilai, $cocok);
+                $asing = array_values(array_diff($cocok[1], $diizinkan));
+                if ($asing) {
+                    $gagal('Placeholder {' . $asing[0] . '} tidak dikenal. Yang boleh dipakai: ' .
+                        implode(', ', array_map(fn($p) => '{' . $p . '}', $diizinkan)) . '.');
+                }
+            },
+        ];
+    }
+
     public function rules(): array
     {
         $rules = ['k' => ['required', 'array']];
 
         foreach ($this->kunciGrup() as $kolom => $def) {
-            $diizinkan = array_merge(['program'], $def['placeholder'] ?? []);
+            $diizinkan = array_merge(['program'], $def['placeholder'] ?? [], $def['tautan'] ?? []);
 
-            $rules['k.' . $kolom] = [
-                'nullable',
-                'string',
-                'max:' . (int) $def['maks'],
-                // Teks biasa saja: < dan > ditolak (bukan dibuang diam-diam) supaya admin tahu kenapa.
-                'regex:/^[^<>]*$/u',
-                function (string $atribut, mixed $nilai, \Closure $gagal) use ($diizinkan) {
-                    preg_match_all('/\{([A-Za-z_]+)\}/', (string) $nilai, $cocok);
-                    $asing = array_values(array_diff($cocok[1], $diizinkan));
-                    if ($asing) {
-                        $gagal('Placeholder {' . $asing[0] . '} tidak dikenal. Yang boleh dipakai: ' .
-                            implode(', ', array_map(fn($p) => '{' . $p . '}', $diizinkan)) . '.');
-                    }
-                },
-            ];
+            $rules['k.' . $kolom] = self::aturanTeks((int) $def['maks'], $diizinkan);
         }
 
         return $rules;

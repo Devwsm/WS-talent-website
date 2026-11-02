@@ -1,6 +1,6 @@
 @props(['pengumuman'])
 <div class="ic-unggulan">
-    <p class="ic-unggulan__label">● KABAR PILIHAN</p>
+    <p class="ic-unggulan__label">{{ ic_teks('komunitas.unggulan.label') }}</p>
     <h3 class="ic-unggulan__judul">{{ $pengumuman->judul }}</h3>
     <p class="ic-unggulan__isi">{{ $pengumuman->isi }}</p>
     <a class="ic-tombol" href="{{ $pengumuman->cta_url ?? route($pengumuman->cta_tujuan) }}">{{ $pengumuman->cta_label }}

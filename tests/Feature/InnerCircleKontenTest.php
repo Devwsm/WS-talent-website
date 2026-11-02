@@ -163,17 +163,18 @@ class InnerCircleKontenTest extends TestCase
 
     public function test_daftar_item_aktif_berurutan_dan_ikut_diperbarui(): void
     {
-        ic_item::create(['grup' => 'langkah', 'urutan' => 2, 'judul' => 'Kedua']);
-        ic_item::create(['grup' => 'langkah', 'urutan' => 1, 'judul' => 'Pertama']);
-        ic_item::create(['grup' => 'langkah', 'urutan' => 3, 'judul' => 'Tersembunyi', 'aktif' => false]);
-        ic_item::create(['grup' => 'faq', 'urutan' => 1, 'judul' => 'Lain grup']);
+        // Grup khusus tes: daftar langkah/faq/teaser_poin sudah berisi bawaan dari migrasi (Fase 3).
+        ic_item::create(['grup' => 'uji', 'urutan' => 2, 'judul' => 'Kedua']);
+        ic_item::create(['grup' => 'uji', 'urutan' => 1, 'judul' => 'Pertama']);
+        ic_item::create(['grup' => 'uji', 'urutan' => 3, 'judul' => 'Tersembunyi', 'aktif' => false]);
+        ic_item::create(['grup' => 'uji_lain', 'urutan' => 1, 'judul' => 'Lain grup']);
 
-        $this->assertSame(['Pertama', 'Kedua'], $this->konten()->daftar('langkah')->pluck('judul')->all());
+        $this->assertSame(['Pertama', 'Kedua'], $this->konten()->daftar('uji')->pluck('judul')->all());
         $this->assertSame([], $this->konten()->daftar('tidak-ada')->all());
 
         ic_item::where('judul', 'Kedua')->update(['judul' => 'Kedua (ubah)']);
         $this->konten()->lupakan();
-        $this->assertSame('Kedua (ubah)', $this->konten()->daftar('langkah')[1]->judul);
+        $this->assertSame('Kedua (ubah)', $this->konten()->daftar('uji')[1]->judul);
     }
 
     public function test_setiap_kunci_di_view_terdaftar_dan_setiap_kunci_config_dipakai_view(): void
@@ -184,7 +185,7 @@ class InnerCircleKontenTest extends TestCase
             if (! str_ends_with((string) $berkas, '.blade.php')) {
                 continue;
             }
-            preg_match_all("/ic_teks\\(\\s*'([^']+)'/", file_get_contents((string) $berkas), $cocok);
+            preg_match_all("/ic_(?:teks|html)\\(\\s*'([^']+)'/", file_get_contents((string) $berkas), $cocok);
             foreach ($cocok[1] as $kunci) {
                 $dipakai[$kunci] = (string) $berkas;
             }

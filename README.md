@@ -2,7 +2,7 @@
 
 Situs resmi DJ **Whisnu Santika** (`whisnusantika.com`) beserta komunitas penggemarnya, **WS Inner Circle**. Satu project Laravel yang berisi dua produk: situs artis dengan CMS-nya, dan komunitas Inner Circle dengan CMS-nya.
 
-Status: tayang di production dengan auto deploy (GitHub Actions + SSH). Terakhir **285 tes lulus**.
+Status: tayang di production dengan auto deploy (GitHub Actions + SSH). Terakhir **301 tes lulus**.
 
 ## Daftar isi
 
@@ -102,17 +102,17 @@ CMS dibagi dua **mode** dengan navbar bawah yang identik (dock di desktop, botto
 
 Tema lavender seperti area anggota, tetapi dibuat lembut di mata (latar lavender muda, teks ungu-tua, bukan putih murni). Menu CMS ini ada di dock: Anggota, Acara & QR, Klaim (dengan lencana jumlah yang menunggu), Hadiah, Pengumuman, Kenangan, Konten, Email; tombol rumah membuka Ringkasan.
 
-| Tab        | Fungsi                                                                                                                                                         |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Ringkasan  | Angka ringkas komunitas                                                                                                                                        |
-| Anggota    | Daftar anggota, tambah stempel manual (untuk anggota yang gagal check-in)                                                                                      |
-| Acara & QR | Tambah/ubah/hapus acara, impor CSV, sinkron Bandsintown, QR cetak, perbaiki token, **titik lokasi check-in**                                                   |
-| Klaim      | Proses pengajuan hadiah per status                                                                                                                             |
-| Hadiah     | Ubah tahap hadiah, tampil/sembunyikan                                                                                                                          |
-| Pengumuman | CRUD, unggulan (hanya satu), terjadwal, tampil/sembunyikan                                                                                                     |
-| Kenangan   | Moderasi (sembunyikan/tayangkan)                                                                                                                               |
-| Konten     | Ubah teks halaman anggota (judul, penjelasan, dst.) tanpa menyentuh kode; kosongkan = teks bawaan. Saat ini baru halaman Check-in, grup lain menyusul bertahap |
-| Email      | Pratinjau format email, cek pengaturan kirim, email tes                                                                                                        |
+| Tab        | Fungsi                                                                                                                                                                                                                                                                                                                         |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Ringkasan  | Angka ringkas komunitas                                                                                                                                                                                                                                                                                                        |
+| Anggota    | Daftar anggota, tambah stempel manual (untuk anggota yang gagal check-in)                                                                                                                                                                                                                                                      |
+| Acara & QR | Tambah/ubah/hapus acara, impor CSV, sinkron Bandsintown, QR cetak, perbaiki token, **titik lokasi check-in**                                                                                                                                                                                                                   |
+| Klaim      | Proses pengajuan hadiah per status                                                                                                                                                                                                                                                                                             |
+| Hadiah     | Ubah tahap hadiah, tampil/sembunyikan                                                                                                                                                                                                                                                                                          |
+| Pengumuman | CRUD, unggulan (hanya satu), terjadwal, tampil/sembunyikan                                                                                                                                                                                                                                                                     |
+| Kenangan   | Moderasi (sembunyikan/tayangkan)                                                                                                                                                                                                                                                                                               |
+| Konten     | Ubah teks halaman Tentang, teaser beranda artis, dan semua layar anggota (beranda, check-in, hadiah, komunitas, profil, masuk/daftar) tanpa menyentuh kode; kosongkan = teks bawaan. Juga mengelola daftar berurutan: langkah "Cara kerjanya", FAQ, poin teaser (tambah, ubah, urutkan, sembunyikan, hapus, kembalikan bawaan) |
+| Email      | Pratinjau format email, cek pengaturan kirim, email tes                                                                                                                                                                                                                                                                        |
 
 ### 3.5 Fitur lintas
 
@@ -302,9 +302,9 @@ Aturan penulisan: buang komentar `#` di baris yang diisi; beri tanda kutip pada 
 php artisan test
 ```
 
-285 tes. Database SQLite di memori; tes **tidak bergantung pada `.env`** (semua env dipaku di `phpunit.xml`), jadi hasilnya sama di lokal dan di GitHub. `ImageProcessorTest` dilewati otomatis bila ekstensi `gd`/`exif` tidak aktif. SQLite tidak menguji kunci baris (`lockForUpdate`): coba klik ganda klaim dan suka secara manual di MySQL.
+301 tes. Database SQLite di memori; tes **tidak bergantung pada `.env`** (semua env dipaku di `phpunit.xml`), jadi hasilnya sama di lokal dan di GitHub. `ImageProcessorTest` dilewati otomatis bila ekstensi `gd`/`exif` tidak aktif. SQLite tidak menguji kunci baris (`lockForUpdate`): coba klik ganda klaim dan suka secara manual di MySQL.
 
-Berkas tes: `InnerCircleTest` (inti), `...Lokasi`, `...Hadiah`, `...Komunitas`, `...Keamanan`, `...Google`, `...VerifikasiEmail`, `...AkunPrivasi`, `...SitusPublik`, `...Fase9`, `...Fase10`, `...FilterBulan`, `...Konten`, `CmsMode`, `AdminLogDuaFaktor`, dan `Unit/` (`HtmlSanitizer`, `ImageProcessor`).
+Berkas tes: `InnerCircleTest` (inti), `...Lokasi`, `...Hadiah`, `...Komunitas`, `...Keamanan`, `...Google`, `...VerifikasiEmail`, `...AkunPrivasi`, `...SitusPublik`, `...Fase9`, `...Fase10`, `...FilterBulan`, `...Konten`, `...Fase3`, `...Fase4`, `CmsMode`, `AdminLogDuaFaktor`, dan `Unit/` (`HtmlSanitizer`, `ImageProcessor`).
 
 ### 4.8 Keamanan (ringkas)
 
@@ -333,7 +333,7 @@ Berkas tes: `InnerCircleTest` (inti), `...Lokasi`, `...Hadiah`, `...Komunitas`, 
 
 **Pembatas laju dan unggahan.** Anggota: check-in 8/menit, klaim 6/menit, kenangan 4/menit, suka 60/menit, foto 6/menit, hapus akun 5/menit (per anggota, bukan IP, karena penonton satu venue sering berbagi IP). Lupa sandi punya batas harian global 100. Unggahan CMS: banner dan hero 2 MB; album, berita, merchandise, header 1 MB; video header 50 MB (batas upload server harus ikut naik); semua gambar maks 16 megapiksel. Foto anggota: kenangan 4 MB, profil 5 MB.
 
-**Menambah teks yang bisa diubah dari CMS.** (1) Daftarkan kunci di `config/ic_konten.php`: `grup`, `label`, `bawaan` (teks yang tampil sekarang, persis), `maks`, dan `baris` bila beberapa baris. (2) Ganti teks di view dengan `{{ ic_teks('grup.kunci') }}` (selalu `{{ }}`, jangan `{!! !!}`). (3) Bila grupnya baru, tambahkan di `grup` pada config itu. Form di tab Konten, validasi, dan label Log otomatis ikut. Kunci yang salah ketik melempar galat saat pengembangan dan tes; di produksi mengembalikan teks kosong. Tes `InnerCircleKontenTest` memastikan setiap kunci di view terdaftar **dan** setiap kunci di config dipakai view (tidak ada isian CMS yang tidak berpengaruh). Teks bersifat biasa: `<` dan `>` ditolak; placeholder yang boleh: `{program}` dan yang didaftarkan per kunci.
+**Menambah teks yang bisa diubah dari CMS.** (1) Daftarkan kunci di `config/ic_konten.php`: `grup`, `label`, `bawaan` (teks yang tampil sekarang, persis), `maks`, dan `baris` bila beberapa baris. (2) Ganti teks di view dengan `{{ ic_teks('grup.kunci') }}` (selalu `{{ }}`, jangan `{!! !!}`). (3) Bila grupnya baru, tambahkan di `grup` pada config itu. Form di tab Konten, validasi, dan label Log otomatis ikut. Kunci yang salah ketik melempar galat saat pengembangan dan tes; di produksi mengembalikan teks kosong. Tes `InnerCircleKontenTest` memastikan setiap kunci di view terdaftar **dan** setiap kunci di config dipakai view (tidak ada isian CMS yang tidak berpengaruh). Teks bersifat biasa: `<` dan `>` ditolak; placeholder yang boleh: `{program}` dan yang didaftarkan per kunci (`placeholder` atau `tautan`). Isian beberapa baris atau yang memuat tautan ditulis `{{ ic_html('kunci') }}`. Daftar berurutan baru: tambah definisinya di `daftar` pada config yang sama (judul/isi/ikon, `maks_item`, `bawaan`), daftarkan di `grup.<nama>.daftar`, lalu pakai `ic_daftar('nama')` di view dan tanam isi awalnya lewat migrasi `IcDaftar::tanamBawaanBilaKosong()`.
 
 **Keputusan arsitektur yang masih berlaku:** logout anggota memakai `Auth::guard('member')->logout()` + `regenerateToken()` (bukan `session()->invalidate()`) supaya sesi admin di browser yang sama tidak terhapus; OAuth Google ditulis dengan HTTP client bawaan (tanpa Socialite) karena hosting tanpa terminal; email tanpa antrean (dikirim setelah respons) karena hosting tanpa worker; status acara (lewat/hari ini/akan datang) dihitung dari `now()` tanpa cron.
 
@@ -443,7 +443,7 @@ Tulis sandi tanpa spasi. `MAIL_FROM_ADDRESS` harus sama dengan `MAIL_USERNAME`. 
 
 > Bagian ini hanya selama pengerjaan. Setelah semua fase selesai: **hapus bagian 6 ini**, lalu perbarui poin lain (lihat [Fase 8](#fase-8-penutup)).
 
-**Status: Fase 0, 1, dan 2 selesai. Berikutnya Fase 3.**
+**Status: Fase 0 sampai 4 selesai. Berikutnya Fase 5.**
 
 ### 6.1 Tujuan
 
@@ -535,22 +535,18 @@ Catatan untuk fase berikutnya: halaman baru di CMS Inner Circle cukup menambah s
 - Beda dari rencana awal: baris `ic_pengaturan` hanya ada bila teksnya **berbeda** dari bawaan (mengosongkan atau menyamakan dengan bawaan menghapus barisnya), dan `ic_item` belum diisi (daftar awalnya dibuat saat Fase 3 memakainya).
 - Tes: `InnerCircleKontenTest` (bawaan, simpan, kembalikan, cache, validasi, escape, hak akses, tabel belum ada, daftar item, dan pemindai kunci view-config).
 
-#### Fase 3: Halaman Tentang dan teaser beranda
+#### Fase 3: Halaman Tentang dan teaser beranda (SELESAI)
 
-1. `tentang.blade.php`: hero, deskripsi meta, ajakan akhir lewat kunci baru di `config/ic_konten.php` + `ic_teks()` (lihat cara di 4.9); "Cara kerjanya" dari `ic_item` grup `langkah`; FAQ dari grup `faq`.
-2. `inner-circle-teaser.blade.php`: judul, deskripsi, 3 poin (grup `teaser_poin`), label tombol.
-3. Tab Konten: pengelola daftar (tambah, ubah, urutkan naik/turun, aktif/sembunyikan, hapus) untuk langkah, FAQ, dan poin teaser. Seeder/migrasi mengisi daftar awal sama dengan teks sekarang.
-4. Tes: tampilan default identik dengan sekarang; ubah teks tampil; item disembunyikan hilang; urutan.
+- `tentang.blade.php`: judul tab, deskripsi meta, hero, tombol, judul tiap bagian, teks acara kosong, dan ajakan akhir memakai kunci `tentang.*`; "Cara kerjanya" dari `ic_item` grup `langkah`, FAQ dari grup `faq`. Bagian yang butirnya kosong disembunyikan.
+- `inner-circle-teaser.blade.php`: eyebrow, judul, deskripsi, tombol, tautan (`teaser.*`) dan poin dari grup `teaser_poin` (tiap poin memilih ikon dari `ic_konten.ikon_daftar`).
+- Tab Konten: pengelola daftar (`kontenDaftarController`, service `IcDaftar`, `simpanItemRequest`): tambah, ubah, naik/turun, tampil/sembunyikan, hapus, **Kembalikan daftar bawaan**; batas jumlah per daftar (`maks_item`). Galat tampil di dalam form butir yang bersangkutan (kantong galat bernama).
+- Migrasi `2026_11_02_140000_ic_item_bawaan` menanam isi awal (sama persis dengan teks lama) hanya untuk daftar yang masih kosong. Sumber isi awal: `config/ic_konten.php` (`daftar.*.bawaan`).
+- Teks baru yang butuh baris baru atau tautan resmi memakai `ic_html()` / `ic_html_daftar()` (hasil sudah di-escape, tetap ditulis `{{ }}`). Tautan hanya yang terdaftar di `ic_konten.tautan` (`{privasi}`, `{baca_privasi}`, `{hadiah}`); admin tidak bisa menyisipkan HTML.
+- Tes: `InnerCircleFase3Test`.
 
-**Selesai bila:** halaman `/innercircle/tentang` dan teaser sepenuhnya dikendalikan dari CMS.
+#### Fase 4: Layar anggota (SELESAI)
 
-#### Fase 4: Layar anggota
-
-Sambungkan ke `ic_teks()`: beranda (eyebrow, sapaan, terima kasih, stiker, judul aktivitas, teks kosong), hadiah (header), komunitas (header dan banner), check-in (header, **judul dan penjelasan kartu jadwal**), profil (header, teks foto, teks akun dan privasi), masuk, daftar, lupa sandi, atur ulang, kartu anggota, bar stempel.
-
-Aturan: kunci per halaman (`beranda.*`, `hadiah.*`, ...); placeholder `{nama}` hanya di sapaan. Tes yang menegaskan teks lama tetap lulus karena bawaannya sama.
-
-**Selesai bila:** semua teks inventaris nomor 1, 4 sampai 9 bisa diubah dari tab Konten.
+Beranda (sapaan dengan `{nama}`, kartu anggota, kotak progres stempel), Hadiah (header, klaim, catatan cara kerja), Komunitas (header, banner, pengumuman, galeri, label Kabar Pilihan), Profil (judul bagian, foto dengan `{maks}`, tautan `{hadiah}` dan `{baca_privasi}`), serta Masuk, Daftar, Lupa sandi, dan Atur ulang sandi. Halaman Check-in sudah dikerjakan di Fase 2. Total 81 kunci di 8 grup. CSS memberi `overflow-wrap: anywhere` pada semua teks yang bisa diubah supaya tidak melebarkan halaman di 320 px. Tes: `InnerCircleFase4Test`.
 
 #### Fase 5: Aturan dan daftar pilihan
 

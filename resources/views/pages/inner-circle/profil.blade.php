@@ -3,7 +3,7 @@
 @section('title', 'Profil')
 
 @section('content')
-    <p class="ic-eyebrow">Perjalanan Inner Circle-mu</p>
+    <p class="ic-eyebrow">{{ ic_teks('profil.eyebrow') }}</p>
     <h1 class="ic-judul">Profil Saya<span>.</span></h1>
     <p class="ic-deskripsi">{{ $member->nama }} · {{ $member->kode_member }} · {{ $member->email }}</p>
 
@@ -18,9 +18,8 @@
             @endif
         </span>
         <div class="ic-profil-editor__isi">
-            <h2 class="ic-panel__judul" id="judul-foto">Foto profilmu ✦</h2>
-            <p class="ic-bantuan">Sesuaikan akun Inner Circle-mu. Pilih foto JPG, PNG, atau WebP (maksimal
-                {{ $maksFotoMb }} MB).</p>
+            <h2 class="ic-panel__judul" id="judul-foto">{{ ic_teks('profil.foto.judul') }}</h2>
+            <p class="ic-bantuan">{{ ic_html('profil.foto.deskripsi', ['maks' => $maksFotoMb]) }}</p>
 
             {{-- Dua form tanpa isi tampak; tombolnya di bawah memakai atribut form="..." supaya tetap satu baris. --}}
             <form method="POST" action="{{ route('ic.profil.foto') }}" enctype="multipart/form-data" id="ic-foto-form"
@@ -68,16 +67,16 @@
         </div>
     </div>
 
-    <h2 class="ic-judul-bagian" id="riwayat">Riwayat stempel</h2>
+    <h2 class="ic-judul-bagian" id="riwayat">{{ ic_teks('profil.riwayat.judul') }}</h2>
     <div class="ic-panel ic-daftar ic-daftar--rapat">
         @forelse ($riwayat as $a)
             <x-inner-circle.baris-aktivitas :aktivitas="$a" />
         @empty
-            <p class="ic-bantuan">Belum ada stempel. Datang ke acara dan check-in untuk mulai mengumpulkan.</p>
+            <p class="ic-bantuan">{{ ic_html('profil.riwayat.kosong') }}</p>
         @endforelse
     </div>
 
-    <h2 class="ic-judul-bagian">Pengajuan hadiah</h2>
+    <h2 class="ic-judul-bagian">{{ ic_teks('profil.klaim.judul') }}</h2>
     <div class="ic-panel ic-klaim-daftar">
         @forelse ($klaim as $k)
             @php $status = config('inner_circle.status_klaim.' . $k->status); @endphp
@@ -93,8 +92,7 @@
                 <span class="ic-pil ic-pil--{{ $status['warna'] }}">{{ $status['label'] }}</span>
             </div>
         @empty
-            <p class="ic-bantuan">Belum ada pengajuan. Buka <a class="ic-tautan" href="{{ route('ic.hadiah') }}">Hadiah</a>
-                untuk mengajukan tahapan yang sudah terbuka.</p>
+            <p class="ic-bantuan">{{ ic_html('profil.klaim.kosong') }}</p>
         @endforelse
     </div>
 
@@ -103,11 +101,9 @@
         $klaimMenunggu = app(\App\Services\InnerCircle\HapusAkunService::class)->adaKlaimMenunggu($member);
     @endphp
 
-    <h2 class="ic-judul-bagian">Akun dan privasi</h2>
+    <h2 class="ic-judul-bagian">{{ ic_teks('profil.akun.judul') }}</h2>
     <div class="ic-panel ic-akun">
-        <p class="ic-bantuan">Datamu hanya dipakai untuk Inner Circle.
-            <a class="ic-tautan" href="{{ route('privasi') }}" target="_blank" rel="noopener">Baca Kebijakan Privasi</a>.
-        </p>
+        <p class="ic-bantuan">{{ ic_html('profil.akun.deskripsi') }}</p>
         @error('akun')
             <p class="ic-galat ic-galat--blok" role="alert">{{ $message }}</p>
         @enderror

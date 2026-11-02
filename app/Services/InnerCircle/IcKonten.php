@@ -7,6 +7,7 @@ use App\Models\ic_pengaturan;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\HtmlString;
 
 /**
  * Konten Inner Circle yang bisa diubah dari CMS.
@@ -16,6 +17,8 @@ use Illuminate\Support\Facades\Cache;
  * ("kembalikan bawaan") selalu aman. Hasil di-cache dan cache dibuang tiap kali konten disimpan.
  *
  * Isi yang dikembalikan adalah TEKS BIASA: view wajib menampilkannya dengan {{ }} (di-escape), tidak pernah {!! !!}.
+ * Teks yang perlu baris baru atau tautan resmi memakai html()/htmlDaftar(): hasilnya HtmlString yang SUDAH di-escape,
+ * jadi tetap ditulis {{ ic_html('kunci') }} di view.
  */
 class IcKonten
 {
@@ -55,6 +58,47 @@ class IcKonten
         $teks = ($nilai !== null && trim($nilai) !== '') ? $nilai : (string) $def['bawaan'];
 
         return $this->isiPlaceholder($teks, $def['placeholder'] ?? [], $isi);
+    }
+
+    /**
+     * Teks satu kunci sebagai HTML aman: seluruh isi di-escape, baris baru menjadi <br>, dan {nama_tautan} diganti tautan
+     * resmi (label tetap, alamat dari route; lihat `tautan` di config/ic_konten.php). Admin tidak pernah bisa menyisipkan HTML.
+     */
+    public function html(string $kunci, array $isi = []): HtmlString
+    {
+        $def = $this->definisiKunci($kunci);
+
+        return $this->susunHtml($this->teks($kunci, $isi), $def['tautan'] ?? [], ! empty($def['baris']));
+    }
+
+    /** Sama seperti html(), untuk isi butir daftar (mis. jawaban FAQ) menurut aturan grup daftarnya. */
+    public function htmlDaftar(string $grup, ?string $teks): HtmlString
+    {
+        $def = config("ic_konten.daftar.$grup") ?? [];
+
+        return $this->susunHtml((string) $teks, $def['tautan'] ?? [], ! empty($def['isi']['baris']));
+    }
+
+    /** @param  list<string>  $tautan nama tautan yang boleh muncul di teks ini */
+    private function susunHtml(string $teks, array $tautan, bool $banyakBaris): HtmlString
+    {
+        $html = e($teks);
+        if ($banyakBaris) {
+            $html = preg_replace('/\r?\n/', '<br>', $html) ?? $html;
+        }
+
+        $ganti = [];
+        foreach ($tautan as $nama) {
+            $def = config("ic_konten.tautan.$nama");
+            if (! $def) {
+                continue;
+            }
+            $ganti['{' . $nama . '}'] = '<a class="ic-tautan" href="' . e(route($def['route'])) . '"'
+                . (! empty($def['baru']) ? ' target="_blank" rel="noopener"' : '')
+                . '>' . e($def['label']) . '</a>';
+        }
+
+        return new HtmlString($ganti ? strtr($html, $ganti) : $html);
     }
 
     /** Teks bawaan (tanpa placeholder diisi), untuk petunjuk di form CMS. */

@@ -56,6 +56,12 @@ return [
         'ic.admin.acara.lokasi.cari' => 'Cari alamat lokasi acara',
         'ic.admin.konten.simpan' => 'Ubah konten Inner Circle',
         'ic.admin.konten.reset' => 'Kembalikan teks bawaan Inner Circle',
+        'ic.admin.konten.item.tambah' => 'Tambah butir daftar konten Inner Circle',
+        'ic.admin.konten.item.ubah' => 'Ubah butir daftar konten Inner Circle',
+        'ic.admin.konten.item.geser' => 'Ubah urutan butir daftar konten Inner Circle',
+        'ic.admin.konten.item.aktif' => 'Tampil/sembunyikan butir daftar konten Inner Circle',
+        'ic.admin.konten.item.hapus' => 'Hapus butir daftar konten Inner Circle',
+        'ic.admin.konten.item.bawaan' => 'Kembalikan daftar konten Inner Circle ke bawaan',
         'ic.admin.klaim.proses' => 'Proses klaim hadiah',
         'ic.admin.hadiah.ubah' => 'Ubah tahap hadiah',
         'ic.admin.hadiah.aktif' => 'Aktif/nonaktifkan tahap hadiah',
@@ -70,7 +76,7 @@ return [
     ],
 
     /* Isi form yang boleh ikut dicatat (nilai pendek dan tidak sensitif). Selain ini TIDAK pernah disimpan. */
-    'input_dicatat' => ['aksi', 'aktif', 'status', 'tahap', 'petugas'],
+    'input_dicatat' => ['aksi', 'aktif', 'status', 'tahap', 'petugas', 'arah'],
 
     'kategori' => [
         'akses' => 'Masuk & keluar',

@@ -7,15 +7,16 @@
 
     <div class="ic-beranda">
         <section class="ic-hero" aria-labelledby="judul-beranda">
-            <p class="ic-eyebrow">Musik seru. Teman baru.</p>
+            <p class="ic-eyebrow">{{ ic_teks('beranda.eyebrow') }}</p>
             <h1 class="ic-judul" id="judul-beranda">Beranda<span>.</span></h1>
-            <h2 class="ic-hero__salam">Hai, {{ \Illuminate\Support\Str::of($member->nama)->before(' ') }}!</h2>
+            <h2 class="ic-hero__salam">
+                {{ ic_teks('beranda.salam', ['nama' => \Illuminate\Support\Str::of($member->nama)->before(' ')]) }}</h2>
             <div class="ic-hero__tangan" aria-hidden="true">
                 <x-inner-circle.ikon nama="ok-hand" kelas="ic-ikon--tangan" />
                 <x-inner-circle.ikon nama="ok-hand" kelas="ic-ikon--tangan" />
             </div>
-            <p class="ic-hero__teks">Terima kasih sudah menjadi bagian dari keluarga WS Inner Circle.</p>
-            <a class="ic-hero__stiker" href="{{ route('ic.komunitas') }}">Setiap momen berarti</a>
+            <p class="ic-hero__teks">{{ ic_html('beranda.terima_kasih') }}</p>
+            <a class="ic-hero__stiker" href="{{ route('ic.komunitas') }}">{{ ic_teks('beranda.stiker') }}</a>
             <span class="ic-hero__bintang" aria-hidden="true">✳</span>
             <span class="ic-hero__cakram" aria-hidden="true"><span>WS</span></span>
         </section>
@@ -27,14 +28,14 @@
     </div>
 
     <div class="ic-bagian-kepala">
-        <h2 class="ic-judul-bagian">Aktivitas terbaru ✦</h2>
+        <h2 class="ic-judul-bagian">{{ ic_teks('beranda.aktivitas.judul') }}</h2>
         <a class="ic-tautan" href="{{ route('ic.profil') }}#riwayat">Lihat semua →</a>
     </div>
     <div class="ic-panel ic-daftar ic-daftar--rapat">
         @forelse ($aktivitas as $a)
             <x-inner-circle.baris-aktivitas :aktivitas="$a" />
         @empty
-            <p class="ic-bantuan">Belum ada aktivitas. Datang ke acara dan check-in untuk mendapat stempel pertamamu.</p>
+            <p class="ic-bantuan">{{ ic_html('beranda.aktivitas.kosong') }}</p>
         @endforelse
     </div>
 @endsection

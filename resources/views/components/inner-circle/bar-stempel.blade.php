@@ -10,11 +10,11 @@
         <x-inner-circle.ikon nama="gift" kelas="ic-ikon--kecil" />
         <p>
             @if ($berikutnya->sisa > 0)
-                <b>{{ $berikutnya->sisa }}</b> stempel lagi untuk membuka hadiah berikutnya.
+                <b>{{ $berikutnya->sisa }}</b> {{ ic_teks('beranda.stempel.sisa') }}
             @else
-                Semua tahapan hadiah sudah terbuka.
+                {{ ic_teks('beranda.stempel.selesai') }}
             @endif
-            <small>Stempel terus terkumpul dan tidak hangus</small>
+            <small>{{ ic_teks('beranda.stempel.catatan') }}</small>
         </p>
     </div>
 </div>

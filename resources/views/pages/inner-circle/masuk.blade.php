@@ -3,8 +3,8 @@
 @section('title', 'Masuk')
 
 @section('content')
-    <h1 class="ic-auth__judul">Selamat datang kembali</h1>
-    <p class="ic-auth__intro">Masuk dengan akun yang sudah terdaftar.</p>
+    <h1 class="ic-auth__judul">{{ ic_teks('masuk.judul') }}</h1>
+    <p class="ic-auth__intro">{{ ic_html('masuk.intro') }}</p>
 
     <x-inner-circle.tombol-google teks="Lanjutkan dengan Google" />
 

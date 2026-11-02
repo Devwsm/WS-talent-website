@@ -10,10 +10,9 @@
 @endphp
 
 @section('content')
-    <p class="ic-eyebrow">Kumpulkan • Buka • Rasakan</p>
+    <p class="ic-eyebrow">{{ ic_teks('hadiah.eyebrow') }}</p>
     <h1 class="ic-judul">Hadiah<span>.</span></h1>
-    <p class="ic-deskripsi">Setiap stempel membuatmu lebih dekat dengan Whisnu Santika. Buka merchandise eksklusif,
-        pengalaman personal, dan akses spesial.</p>
+    <p class="ic-deskripsi">{{ ic_html('hadiah.deskripsi') }}</p>
 
     @unless ($terverifikasi)
         <section class="ic-panel ic-jarak-atas" aria-labelledby="verifikasi-judul">
@@ -36,7 +35,7 @@
     </div>
 
     <div class="ic-bagian-kepala" id="klaim">
-        <h2 class="ic-judul-bagian">Klaim hadiahmu ↗</h2>
+        <h2 class="ic-judul-bagian">{{ ic_teks('hadiah.klaim.judul') }}</h2>
         <span class="ic-pil">{{ $member->stempel_total }} stempel terkumpul</span>
     </div>
     <div class="ic-panel ic-klaim-daftar">
@@ -60,8 +59,8 @@
                     @if ($reward->opsi)
                         {{-- Hadiah dengan pilihan A/B: buka modal pilihan (bukan prompt() seperti di prototype). --}}
                         <button type="button" class="ic-tombol ic-tombol--kecil"
-                            data-ic-modal-buka="modal-opsi-{{ $reward->target_stempel }}">Klaim <i class="bi bi-arrow-right"
-                                aria-hidden="true"></i></button>
+                            data-ic-modal-buka="modal-opsi-{{ $reward->target_stempel }}">Klaim <i
+                                class="bi bi-arrow-right" aria-hidden="true"></i></button>
                     @else
                         {{-- Konfirmasi lewat JS (data-ic-konfirmasi); tanpa JS form tetap terkirim dan dicek di server. --}}
                         <form method="POST" action="{{ route('ic.hadiah.klaim', $reward->target_stempel) }}"
@@ -83,10 +82,8 @@
     </div>
 
     <section class="ic-panel ic-jarak-atas" aria-labelledby="cara-kerja">
-        <h2 class="ic-panel__judul" id="cara-kerja">✦ Cara kerja hadiah</h2>
-        <p class="ic-bantuan">Stempel bersifat kumulatif dan tidak berkurang setelah klaim. Setiap tahapan hanya dapat
-            diklaim satu kali. Benefit pengalaman bergantung pada kapasitas, jadwal artis, dan izin promotor atau
-            venue.</p>
+        <h2 class="ic-panel__judul" id="cara-kerja">{{ ic_teks('hadiah.cara.judul') }}</h2>
+        <p class="ic-bantuan">{{ ic_html('hadiah.cara.deskripsi') }}</p>
     </section>
 @endsection
 

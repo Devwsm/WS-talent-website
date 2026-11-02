@@ -2334,3 +2334,35 @@ a.ic-event:hover {
         display: none;
     }
 }
+
+/* ---------- Teks yang bisa diubah dari CMS ----------
+   Admin bebas mengetik, jadi kata panjang atau judul panjang harus turun baris di layar sempit (320 px)
+   dan tidak boleh melebarkan halaman ke samping. */
+.ic-app .ic-eyebrow,
+.ic-app .ic-judul,
+.ic-app .ic-deskripsi,
+.ic-app .ic-judul-bagian,
+.ic-app .ic-hero__teks,
+.ic-app .ic-hero__salam,
+.ic-app .ic-hero__stiker,
+.ic-app .ic-banner h2,
+.ic-app .ic-banner p,
+.ic-app .ic-auth__judul,
+.ic-app .ic-auth__intro,
+.ic-app .ic-langkah h3,
+.ic-app .ic-langkah p,
+.ic-app .ic-faq summary,
+.ic-app .ic-faq p,
+.ic-app .ic-cta-akhir h2,
+.ic-app .ic-cta-akhir p,
+.ic-app .ic-bar-stempel__catatan,
+.ic-app .ic-kartu-anggota .ic-sub,
+.ic-app .ic-intro-kenangan,
+.ic-app .ic-catatan {
+    overflow-wrap: anywhere;
+}
+
+.ic-app .ic-pil {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}

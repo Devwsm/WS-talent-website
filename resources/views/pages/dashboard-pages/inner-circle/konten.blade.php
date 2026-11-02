@@ -20,12 +20,23 @@
                 'aktif' => 'konten',
                 'judul' => 'Konten',
                 'deskripsi' =>
-                    'Ubah teks yang tampil di halaman anggota tanpa menyentuh kode. Kosongkan isian untuk memakai teks bawaan.',
+                    'Ubah teks halaman anggota, halaman Tentang, dan teaser beranda tanpa menyentuh kode. Kosongkan isian untuk memakai teks bawaan.',
                 'pakaiCss' => false,
             ])
 
             @include('components/errors')
             @include('components/success')
+
+            {{-- Lompat ke bagian: berderet dan turun baris di layar sempit, tidak pernah melebar ke samping. --}}
+            <nav aria-label="Bagian konten" class="flex flex-wrap gap-2">
+                @foreach ($grup as $kodeGrup => $info)
+                    <a href="#grup-{{ $kodeGrup }}"
+                        class="min-h-11 px-3.5 inline-flex items-center gap-2 rounded-full border border-white/15 text-xs font-semibold text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+                        <i class="bi {{ $info['ikon'] }} text-white/50" aria-hidden="true"></i>
+                        <span class="wrap-break-word">{{ $info['label'] }}</span>
+                    </a>
+                @endforeach
+            </nav>
 
             @foreach ($grup as $kodeGrup => $info)
                 @php
@@ -49,7 +60,8 @@
                             </p>
                         </div>
                         @if (!empty($info['halaman']))
-                            <a href="{{ route($info['halaman']) }}" target="_blank" rel="noopener"
+                            <a href="{{ route($info['halaman']) }}{{ !empty($info['jangkar']) ? '#' . $info['jangkar'] : '' }}"
+                                target="_blank" rel="noopener"
                                 class="{{ $kelasTombol }} self-start sm:self-auto shrink-0">
                                 <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i> Lihat halaman</a>
                         @endif
@@ -89,10 +101,20 @@
                                 <div
                                     class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-xs text-white/40">
                                     <p class="min-w-0 wrap-break-word">Bawaan: <span
-                                            class="text-white/60">{{ $def['bawaan'] }}</span></p>
+                                            class="text-white/60 whitespace-pre-line">{{ $def['bawaan'] }}</span></p>
                                     <span class="shrink-0"><span
                                             data-hitung-untuk="{{ $id }}">{{ mb_strlen($nilai) }}</span>/{{ $def['maks'] }}</span>
                                 </div>
+
+                                @php $bolehPakai = array_merge($def['placeholder'] ?? [], $def['tautan'] ?? []); @endphp
+                                @if ($bolehPakai)
+                                    <p class="text-xs text-white/40">Bisa memakai:
+                                        @foreach ($bolehPakai as $nama)
+                                            <code
+                                                class="rounded bg-white/10 px-1.5 py-0.5 text-white/70">&#123;{{ $nama }}&#125;</code>
+                                        @endforeach
+                                    </p>
+                                @endif
 
                                 @error('k.' . $kolom)
                                     <p class="text-xs text-red-300" role="alert">{{ $message }}</p>
@@ -116,6 +138,10 @@
                                 <i class="bi bi-check2-circle" aria-hidden="true"></i> Simpan {{ $info['label'] }}</button>
                         </div>
                     </form>
+
+                    @foreach ($info['daftar'] ?? [] as $kodeDaftar)
+                        @include('components.dashboard.inner-circle.daftar-konten')
+                    @endforeach
                 </section>
             @endforeach
         </div>
@@ -128,6 +154,14 @@
                 const hitung = document.querySelector('[data-hitung-untuk="' + el.id + '"]');
                 el.addEventListener('input', () => {
                     if (hitung) hitung.textContent = el.value.length;
+                });
+            });
+
+            // Pratinjau ikon di samping pilihan ikon.
+            document.querySelectorAll('[data-ikon-pilih]').forEach((pilih) => {
+                const ikon = pilih.closest('div')?.querySelector('[data-ikon-pratinjau]');
+                pilih.addEventListener('change', () => {
+                    if (ikon) ikon.className = 'bi bi-' + pilih.value;
                 });
             });
         </script>

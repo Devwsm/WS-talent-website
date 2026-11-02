@@ -59,7 +59,8 @@ function escapeHtml(value) {
  */
 window.confirmDelete = async function (form) {
     const result = await swal.fire({
-        title: "Hapus data?",
+        // Judul dan tombol bisa diganti per form (data-confirm-title / -button / -loading) untuk aksi yang bukan hapus.
+        title: form.dataset.confirmTitle || "Hapus data?",
 
         text:
             form.dataset.confirmMessage ||
@@ -69,7 +70,7 @@ window.confirmDelete = async function (form) {
 
         showCancelButton: true,
 
-        confirmButtonText: "Ya, hapus",
+        confirmButtonText: form.dataset.confirmButton || "Ya, hapus",
         cancelButtonText: "Batal",
 
         reverseButtons: true,
@@ -81,7 +82,7 @@ window.confirmDelete = async function (form) {
     }
 
     await swal.fire({
-        title: "Menghapus...",
+        title: form.dataset.confirmLoading || "Menghapus...",
 
         text: "Mohon tunggu.",
 

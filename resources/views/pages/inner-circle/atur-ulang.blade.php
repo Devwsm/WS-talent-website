@@ -3,8 +3,8 @@
 @section('title', 'Kata sandi baru')
 
 @section('content')
-    <h1 class="ic-auth__judul">Buat kata sandi baru</h1>
-    <p class="ic-auth__intro">Pilih kata sandi baru untuk akun WS Inner Circle kamu.</p>
+    <h1 class="ic-auth__judul">{{ ic_teks('atur.judul') }}</h1>
+    <p class="ic-auth__intro">{{ ic_html('atur.intro') }}</p>
 
     <form method="POST" action="{{ route('ic.sandi.atur.proses') }}" novalidate>
         @csrf

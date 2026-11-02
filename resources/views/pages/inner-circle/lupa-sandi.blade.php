@@ -3,8 +3,8 @@
 @section('title', 'Lupa kata sandi')
 
 @section('content')
-    <h1 class="ic-auth__judul">Lupa kata sandi?</h1>
-    <p class="ic-auth__intro">Masukkan email akunmu. Kami kirim tautan untuk membuat kata sandi baru.</p>
+    <h1 class="ic-auth__judul">{{ ic_teks('lupa.judul') }}</h1>
+    <p class="ic-auth__intro">{{ ic_html('lupa.intro') }}</p>
 
     {{-- Jawaban sama untuk semua email (terdaftar atau tidak), supaya halaman ini tidak bisa dipakai menebak siapa yang punya akun. --}}
     @if (session('lupa_terkirim'))
