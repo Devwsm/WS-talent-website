@@ -59,61 +59,68 @@
 @endphp
 
 {{-- ============== DESKTOP: dock bawah-tengah, tema gelap, beda dari background halaman ============== --}}
-<div
-    class="cms-dock hidden lg:flex fixed bottom-5 left-1/2 -translate-x-1/2 z-50 items-center
+{{-- Pembungkus tetap di bawah-tengah. Lebarnya mengikuti dock, sehingga saklar mode (melayang sendiri di sisi
+     kanan dock) selalu menempel di sebelah tombol Keluar, baik menu sedang terbuka maupun tertutup. --}}
+<div class="hidden lg:block fixed bottom-5 left-1/2 -translate-x-1/2 z-50">
+    <div
+        class="cms-dock flex items-center
     rounded-2xl bg-neutral-900 border border-white/10 ring-1 ring-red-950/50
     p-1.5 shadow-2xl shadow-black/70">
 
-    <a href="{{ route($rumah['route']) }}" aria-label="{{ $rumah['label'] }}" title="{{ $rumah['label'] }}"
-        class="flex justify-center items-center h-12 w-12 rounded-xl shrink-0 text-xl transition-colors
+        <a href="{{ route($rumah['route']) }}" aria-label="{{ $rumah['label'] }}" title="{{ $rumah['label'] }}"
+            class="flex justify-center items-center h-12 w-12 rounded-xl shrink-0 text-xl transition-colors
         {{ $rumahAktif ? 'bg-white text-black' : 'text-white/60 hover:bg-white/10 hover:text-white' }}">
-        <i class="bi bi-house-door-fill" aria-hidden="true"></i>
-    </a>
+            <i class="bi bi-house-door-fill" aria-hidden="true"></i>
+        </a>
 
-    <button id="contentBtn" type="button" aria-label="Menu konten" aria-expanded="false" aria-controls="contentMenu"
-        class="flex justify-center items-center h-12 w-12 rounded-xl shrink-0 text-xl transition-colors
+        <button id="contentBtn" type="button" aria-label="Menu konten" aria-expanded="false" aria-controls="contentMenu"
+            class="flex justify-center items-center h-12 w-12 rounded-xl shrink-0 text-xl transition-colors
         {{ $isKontenActive ? 'bg-white text-black' : 'text-white/60 hover:bg-white/10 hover:text-white' }}">
-        <i class="bi bi-grid-fill" aria-hidden="true"></i>
-    </button>
+            <i class="bi bi-grid-fill" aria-hidden="true"></i>
+        </button>
 
-    {{-- Kategori: nyatu dalam dock yang sama, munculnya fade + scale dari sisi tombol menu --}}
-    <div id="contentMenu"
-        class="hidden items-center gap-1 pl-1 pr-1 opacity-0 scale-x-95 origin-left transition-all duration-200 ease-out">
-        @foreach ($navLinks as $link)
-            {{-- Saat menu Inner Circle ikut tampil, 8 menu tidak muat di layar 1024-1279px: label disembunyikan
+        {{-- Kategori: nyatu dalam dock yang sama, munculnya fade + scale dari sisi tombol menu --}}
+        <div id="contentMenu"
+            class="hidden items-center gap-1 pl-1 pr-1 opacity-0 scale-x-95 origin-left transition-all duration-200 ease-out">
+            @foreach ($navLinks as $link)
+                {{-- Saat menu Inner Circle ikut tampil, 8 menu tidak muat di layar 1024-1279px: label disembunyikan
                  di rentang itu (ikon + title saja) dan baru tampil penuh mulai 1280px. --}}
-            <a href="{{ route($link['route']) }}"
-                @if ($icAktif) title="{{ $link['label'] }}" aria-label="{{ $link['label'] }}" @endif
-                class="flex items-center gap-2 h-12 px-3.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-colors
+                <a href="{{ route($link['route']) }}"
+                    @if ($icAktif) title="{{ $link['label'] }}" aria-label="{{ $link['label'] }}" @endif
+                    class="flex items-center gap-2 h-12 px-3.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-colors
                 {{ request()->routeIs($link['pola'] ?? $link['route']) ? 'bg-white text-black' : 'text-white/60 hover:bg-white/10 hover:text-white' }}">
-                <i class="bi {{ $link['icon'] }} text-base" aria-hidden="true"></i>
-                <span class="{{ $icAktif ? 'hidden xl:inline' : '' }}">{{ $link['label'] }}</span>
-                @if (($link['lencana'] ?? 0) > 0)
-                    <span
-                        class="min-w-5 h-5 px-1.5 inline-flex items-center justify-center rounded-full bg-red-500 text-white text-[11px] font-bold">{{ $link['lencana'] }}</span>
-                @endif
-            </a>
-        @endforeach
+                    <i class="bi {{ $link['icon'] }} text-base" aria-hidden="true"></i>
+                    <span class="{{ $icAktif ? 'hidden xl:inline' : '' }}">{{ $link['label'] }}</span>
+                    @if (($link['lencana'] ?? 0) > 0)
+                        <span
+                            class="min-w-5 h-5 px-1.5 inline-flex items-center justify-center rounded-full bg-red-500 text-white text-[11px] font-bold">{{ $link['lencana'] }}</span>
+                    @endif
+                </a>
+            @endforeach
 
-        <div class="w-px h-8 bg-white/10 mx-1 shrink-0"></div>
+            <div class="w-px h-8 bg-white/10 mx-1 shrink-0"></div>
+        </div>
+
+        <form action="{{ route('logout') }}" method="POST" class="contents">
+            @csrf
+            <button type="submit" aria-label="Logout"
+                class="flex justify-center items-center h-12 w-12 rounded-xl shrink-0 text-xl text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer">
+                <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+            </button>
+        </form>
     </div>
 
-    {{-- Saklar mode: di sebelah tombol Keluar. Menampilkan CMS tujuan; label disembunyikan di 1024-1279px. --}}
+    {{-- Saklar mode: tombol melayang sendiri di kanan dock (di sebelah tombol Keluar). Berisi ikon saja agar tidak
+         melebar keluar layar saat menu terbuka; nama CMS tujuan tampil di layar 1536px ke atas dan sebagai tooltip. --}}
     @if ($saklar)
         <a href="{{ route($saklar['route']) }}" title="{{ $saklar['judul'] }}" aria-label="{{ $saklar['judul'] }}"
-            class="flex items-center gap-2 h-12 px-3.5 mr-1 rounded-xl border border-white/15 text-sm font-semibold whitespace-nowrap text-white/80 hover:bg-white/10 hover:text-white transition-colors">
-            <i class="bi bi-arrow-left-right text-base" aria-hidden="true"></i>
-            <span class="hidden xl:inline">{{ $saklar['label'] }}</span>
+            class="cms-dock absolute left-full top-0 ml-3 flex items-center gap-2 h-15.5 px-4 rounded-2xl
+            bg-neutral-900 border border-white/10 ring-1 ring-red-950/50 shadow-2xl shadow-black/70
+            text-sm font-semibold whitespace-nowrap text-white/80 hover:text-white hover:bg-neutral-800 transition-colors">
+            <i class="bi bi-arrow-left-right text-xl" aria-hidden="true"></i>
+            <span class="hidden 2xl:inline">{{ $saklar['label'] }}</span>
         </a>
     @endif
-
-    <form action="{{ route('logout') }}" method="POST" class="contents">
-        @csrf
-        <button type="submit" aria-label="Logout"
-            class="flex justify-center items-center h-12 w-12 rounded-xl shrink-0 text-xl text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer">
-            <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
-        </button>
-    </form>
 </div>
 
 {{-- ============== MOBILE & TABLET: burger + bottom sheet setengah layar ============== --}}
@@ -122,6 +129,16 @@
     class="cms-dock fixed z-50 bottom-5 right-5 lg:hidden flex justify-center items-center h-14 w-14 rounded-full bg-white text-black text-2xl shadow-lg shadow-black/40">
     <i class="bi bi-list" aria-hidden="true"></i>
 </button>
+
+{{-- Saklar mode di HP: tombol bulat melayang tepat di atas tombol burger. --}}
+@if ($saklar)
+    <a id="dashSwitchBtn" href="{{ route($saklar['route']) }}" title="{{ $saklar['judul'] }}"
+        aria-label="{{ $saklar['judul'] }}"
+        class="cms-dock fixed z-50 bottom-22 right-6 lg:hidden flex justify-center items-center h-12 w-12 rounded-full
+        bg-neutral-900 border border-white/15 text-white text-xl shadow-lg shadow-black/40 transition-opacity">
+        <i class="bi bi-arrow-left-right" aria-hidden="true"></i>
+    </a>
+@endif
 
 <div id="dashSheetOverlay" aria-hidden="true"
     class="cms-dock fixed inset-0 bg-black/60 z-40 opacity-0 invisible transition-opacity duration-300 lg:hidden"></div>
@@ -164,15 +181,6 @@
                 </span>
             </a>
         @endforeach
-
-        {{-- Saklar mode: bersebelahan dengan tombol Logout. --}}
-        @if ($saklar)
-            <a href="{{ route($saklar['route']) }}"
-                class="menu-link flex flex-col items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 py-4 text-white/80">
-                <i class="bi {{ $saklar['icon'] }} text-2xl" aria-hidden="true"></i>
-                <span class="text-xs font-semibold uppercase text-center">{{ $saklar['label'] }}</span>
-            </a>
-        @endif
 
         <form action="{{ route('logout') }}" method="POST" class="contents">
             @csrf
@@ -236,11 +244,13 @@
     const dashCloseBtn = document.getElementById('dashCloseBtn');
     const dashMobileMenu = document.getElementById('dashMobileMenu');
     const dashSheetOverlay = document.getElementById('dashSheetOverlay');
+    const dashSwitchBtn = document.getElementById('dashSwitchBtn');
 
     function openDashSheet() {
         dashMobileMenu.classList.remove('translate-y-full');
         dashSheetOverlay.classList.remove('opacity-0', 'invisible');
         dashOpenBtn.setAttribute('aria-expanded', 'true');
+        dashSwitchBtn?.classList.add('opacity-0', 'pointer-events-none');
         document.body.classList.add('overflow-hidden');
     }
 
@@ -248,6 +258,7 @@
         dashMobileMenu.classList.add('translate-y-full');
         dashSheetOverlay.classList.add('opacity-0', 'invisible');
         dashOpenBtn.setAttribute('aria-expanded', 'false');
+        dashSwitchBtn?.classList.remove('opacity-0', 'pointer-events-none');
         document.body.classList.remove('overflow-hidden');
     }
 

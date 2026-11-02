@@ -54,6 +54,8 @@ return [
         'ic.admin.acara.lokasi' => 'Atur titik lokasi check-in',
         'ic.admin.acara.lokasi.hapus' => 'Hapus titik lokasi check-in',
         'ic.admin.acara.lokasi.cari' => 'Cari alamat lokasi acara',
+        'ic.admin.konten.simpan' => 'Ubah konten Inner Circle',
+        'ic.admin.konten.reset' => 'Kembalikan teks bawaan Inner Circle',
         'ic.admin.klaim.proses' => 'Proses klaim hadiah',
         'ic.admin.hadiah.ubah' => 'Ubah tahap hadiah',
         'ic.admin.hadiah.aktif' => 'Aktif/nonaktifkan tahap hadiah',

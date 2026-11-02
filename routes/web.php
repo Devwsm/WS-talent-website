@@ -5,6 +5,7 @@ use App\Http\Controllers\homeController;
 use App\Http\Controllers\InnerCircle\adminController;
 use App\Http\Controllers\InnerCircle\akunController;
 use App\Http\Controllers\InnerCircle\emailAdminController;
+use App\Http\Controllers\InnerCircle\kontenController;
 use App\Http\Controllers\InnerCircle\authController;
 use App\Http\Controllers\InnerCircle\fotoProfilController;
 use App\Http\Controllers\InnerCircle\googleController;
@@ -140,6 +141,11 @@ Route::prefix('/dashboard')->middleware(['cekLogin', 'catatAktivitas'])->group(f
         Route::delete('/pengumuman/{id}', [adminController::class, 'hapusPengumuman'])->whereNumber('id')->name('pengumuman.hapus')->middleware('throttle:10,1');
         Route::get('/kenangan', [adminController::class, 'kenangan'])->name('kenangan');
         Route::patch('/kenangan/{id}', [adminController::class, 'moderasiKenangan'])->whereNumber('id')->name('kenangan.moderasi')->middleware('throttle:30,1');
+
+        // Tab Konten: teks halaman anggota yang bisa diubah dari CMS (daftar kunci di config/ic_konten.php).
+        Route::get('/konten', [kontenController::class, 'index'])->name('konten');
+        Route::post('/konten/{grup}', [kontenController::class, 'simpan'])->where('grup', '[a-z_]+')->name('konten.simpan')->middleware('throttle:20,1');
+        Route::post('/konten/{grup}/reset/{kunci}', [kontenController::class, 'reset'])->where('grup', '[a-z_]+')->name('konten.reset')->middleware('throttle:20,1');
 
         // Fase 9: format email notifikasi, pratinjau, dan email tes.
         Route::get('/email', [emailAdminController::class, 'index'])->name('email');

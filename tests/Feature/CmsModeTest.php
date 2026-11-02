@@ -27,6 +27,7 @@ class CmsModeTest extends TestCase
             'ic.admin.hadiah',
             'ic.admin.pengumuman',
             'ic.admin.kenangan',
+            'ic.admin.konten',
             'ic.admin.email',
         ];
     }
@@ -59,7 +60,7 @@ class CmsModeTest extends TestCase
     {
         $html = $this->admin()->get(route('ic.admin.klaim'))->assertOk()->getContent();
 
-        foreach (['ic.admin.anggota', 'ic.admin.acara', 'ic.admin.klaim', 'ic.admin.hadiah', 'ic.admin.pengumuman', 'ic.admin.kenangan', 'ic.admin.email'] as $nama) {
+        foreach (['ic.admin.anggota', 'ic.admin.acara', 'ic.admin.klaim', 'ic.admin.hadiah', 'ic.admin.pengumuman', 'ic.admin.kenangan', 'ic.admin.konten', 'ic.admin.email'] as $nama) {
             $this->assertStringContainsString('href="' . route($nama) . '"', $html, $nama);
         }
         // Bar tab lama dibuang: navigasi hanya satu, yaitu navbar bawah.

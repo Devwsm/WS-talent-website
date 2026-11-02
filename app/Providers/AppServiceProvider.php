@@ -22,7 +22,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Fungsi bantu view (ic_teks, ic_daftar); IcKonten satu per permintaan supaya cache dibaca sekali.
+        require_once app_path('Support/helpers.php');
+        $this->app->singleton(\App\Services\InnerCircle\IcKonten::class);
     }
 
     /**

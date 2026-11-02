@@ -2,7 +2,7 @@
 
 Situs resmi DJ **Whisnu Santika** (`whisnusantika.com`) beserta komunitas penggemarnya, **WS Inner Circle**. Satu project Laravel yang berisi dua produk: situs artis dengan CMS-nya, dan komunitas Inner Circle dengan CMS-nya.
 
-Status: tayang di production dengan auto deploy (GitHub Actions + SSH). Terakhir **269 tes lulus**.
+Status: tayang di production dengan auto deploy (GitHub Actions + SSH). Terakhir **285 tes lulus**.
 
 ## Daftar isi
 
@@ -100,18 +100,19 @@ CMS dibagi dua **mode** dengan navbar bawah yang identik (dock di desktop, botto
 
 ### 3.4 CMS Inner Circle (`/dashboard/inner-circle`)
 
-Tema lavender seperti area anggota, tetapi dibuat lembut di mata (latar lavender muda, teks ungu-tua, bukan putih murni). Menu CMS ini ada di dock: Anggota, Acara & QR, Klaim (dengan lencana jumlah yang menunggu), Hadiah, Pengumuman, Kenangan, Email; tombol rumah membuka Ringkasan.
+Tema lavender seperti area anggota, tetapi dibuat lembut di mata (latar lavender muda, teks ungu-tua, bukan putih murni). Menu CMS ini ada di dock: Anggota, Acara & QR, Klaim (dengan lencana jumlah yang menunggu), Hadiah, Pengumuman, Kenangan, Konten, Email; tombol rumah membuka Ringkasan.
 
-| Tab        | Fungsi                                                                                                       |
-| ---------- | ------------------------------------------------------------------------------------------------------------ |
-| Ringkasan  | Angka ringkas komunitas                                                                                      |
-| Anggota    | Daftar anggota, tambah stempel manual (untuk anggota yang gagal check-in)                                    |
-| Acara & QR | Tambah/ubah/hapus acara, impor CSV, sinkron Bandsintown, QR cetak, perbaiki token, **titik lokasi check-in** |
-| Klaim      | Proses pengajuan hadiah per status                                                                           |
-| Hadiah     | Ubah tahap hadiah, tampil/sembunyikan                                                                        |
-| Pengumuman | CRUD, unggulan (hanya satu), terjadwal, tampil/sembunyikan                                                   |
-| Kenangan   | Moderasi (sembunyikan/tayangkan)                                                                             |
-| Email      | Pratinjau format email, cek pengaturan kirim, email tes                                                      |
+| Tab        | Fungsi                                                                                                                                                         |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Ringkasan  | Angka ringkas komunitas                                                                                                                                        |
+| Anggota    | Daftar anggota, tambah stempel manual (untuk anggota yang gagal check-in)                                                                                      |
+| Acara & QR | Tambah/ubah/hapus acara, impor CSV, sinkron Bandsintown, QR cetak, perbaiki token, **titik lokasi check-in**                                                   |
+| Klaim      | Proses pengajuan hadiah per status                                                                                                                             |
+| Hadiah     | Ubah tahap hadiah, tampil/sembunyikan                                                                                                                          |
+| Pengumuman | CRUD, unggulan (hanya satu), terjadwal, tampil/sembunyikan                                                                                                     |
+| Kenangan   | Moderasi (sembunyikan/tayangkan)                                                                                                                               |
+| Konten     | Ubah teks halaman anggota (judul, penjelasan, dst.) tanpa menyentuh kode; kosongkan = teks bawaan. Saat ini baru halaman Check-in, grup lain menyusul bertahap |
+| Email      | Pratinjau format email, cek pengaturan kirim, email tes                                                                                                        |
 
 ### 3.5 Fitur lintas
 
@@ -167,14 +168,14 @@ app/
   Console/Commands/      perintah artisan kustom
   Providers/             AppServiceProvider (pembatas laju bernama, policy)
 bootstrap/app.php        middleware, pelaporan error ke Log
-config/                  inner_circle.php, site.php, log_admin.php, dst.
-database/migrations/     35 migrasi;  database/seeders/  data awal
+config/                  inner_circle.php, ic_konten.php (teks yang bisa diubah dari CMS), site.php, log_admin.php, dst.
+database/migrations/     36 migrasi;  database/seeders/  data awal
 public/                  index.php, aset/ (logo, ikon Inner Circle), build/ (hasil Vite)
 resources/css/           app.css (Tailwind), inner-circle.css (tema lavender)
 resources/js/            app.js, dashboard.js, sweetalert.js, inner-circle.js
 resources/views/         template/, pages/, components/, emails/, errors/
 routes/                  web.php, console.php (jadwal)
-tests/                   Feature/ (14 berkas), Unit/ (2 berkas)
+tests/                   Feature/ (15 berkas), Unit/ (2 berkas)
 .github/workflows/       deploy.yml (tes + auto deploy)
 ```
 
@@ -205,32 +206,34 @@ tests/                   Feature/ (14 berkas), Unit/ (2 berkas)
 | `tentangController`    | Halaman publik penjelasan program                                                     |
 | `adminController`      | CMS Inner Circle: 8 tab (anggota, acara, lokasi, klaim, hadiah, pengumuman, kenangan) |
 | `emailAdminController` | Tab Email: pratinjau, cek pengiriman, email tes                                       |
+| `kontenController`     | Tab Konten: tampil, simpan per grup, kembalikan bawaan                                |
 
 **Middleware** (`app/Http/Middleware/`): `CekLogin` (gerbang admin), `IcAktif` (flag fitur, 404 bila mati), `IcSesiVersi` (mengeluarkan sesi anggota yang dicabut), `IcTerverifikasi` (aksi anggota butuh email terverifikasi), `CatatAktivitas` (mencatat aksi tulis admin), `SecurityHeaders` (nosniff, frame, referrer, `Permissions-Policy` dengan `geolocation=(self)`, HSTS di produksi).
 
 **Service** (`app/Services/`)
 
-| File                                               | Peran                                                                              |
-| -------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `AdminOtpService`                                  | Kode OTP 6 digit login admin (hash HMAC, 10 menit, sekali pakai)                   |
-| `AktivitasService`, `LogErrorService`              | Jejak aksi admin dan penyimpanan error (digabung per sidik jari, disamarkan)       |
-| `InnerCircle/CheckinService`                       | Semua aturan check-in (anggota, jendela waktu, token, lokasi, satu kali per acara) |
-| `InnerCircle/LokasiService`                        | Jarak haversine dan penilaian radius + akurasi GPS                                 |
-| `InnerCircle/GeocodeService`                       | Cari koordinat dari alamat venue (Nominatim/OpenStreetMap)                         |
-| `InnerCircle/StempelService`                       | Satu-satunya tempat stempel ditambah (buku besar `ic_stempel`)                     |
-| `InnerCircle/ClaimService`                         | Aturan klaim hadiah dan alur status                                                |
-| `InnerCircle/AcaraService`                         | Buat acara dan impor CSV                                                           |
-| `InnerCircle/QrService`                            | QR check-in sebagai SVG (tanpa GD)                                                 |
-| `InnerCircle/BandsintownService`                   | Tarik jadwal tur ke `ic_events` (tidak pernah menghapus)                           |
-| `InnerCircle/KenanganService`, `PengumumanService` | Galeri kenangan (terbit, suka, moderasi) dan pengumuman (satu unggulan)            |
-| `InnerCircle/AvatarService`, `HapusAkunService`    | Foto profil dan penghapusan akun                                                   |
-| `InnerCircle/GoogleOAuth`, `GoogleAkun`            | OAuth Google (code + PKCE, OIDC) dan pencocokan akun                               |
-| `InnerCircle/EmailService`                         | Semua email Inner Circle (kapan, ke siapa, contoh isi)                             |
-| `InnerCircle/*Gagal`                               | Pengecualian berpesan aman untuk ditampilkan ke pengguna                           |
+| File                                               | Peran                                                                                                                                                                                                     |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AdminOtpService`                                  | Kode OTP 6 digit login admin (hash HMAC, 10 menit, sekali pakai)                                                                                                                                          |
+| `AktivitasService`, `LogErrorService`              | Jejak aksi admin dan penyimpanan error (digabung per sidik jari, disamarkan)                                                                                                                              |
+| `InnerCircle/CheckinService`                       | Semua aturan check-in (anggota, jendela waktu, token, lokasi, satu kali per acara)                                                                                                                        |
+| `InnerCircle/LokasiService`                        | Jarak haversine dan penilaian radius + akurasi GPS                                                                                                                                                        |
+| `InnerCircle/GeocodeService`                       | Cari koordinat dari alamat venue (Nominatim/OpenStreetMap)                                                                                                                                                |
+| `InnerCircle/StempelService`                       | Satu-satunya tempat stempel ditambah (buku besar `ic_stempel`)                                                                                                                                            |
+| `InnerCircle/ClaimService`                         | Aturan klaim hadiah dan alur status                                                                                                                                                                       |
+| `InnerCircle/AcaraService`                         | Buat acara dan impor CSV                                                                                                                                                                                  |
+| `InnerCircle/QrService`                            | QR check-in sebagai SVG (tanpa GD)                                                                                                                                                                        |
+| `InnerCircle/BandsintownService`                   | Tarik jadwal tur ke `ic_events` (tidak pernah menghapus)                                                                                                                                                  |
+| `InnerCircle/KenanganService`, `PengumumanService` | Galeri kenangan (terbit, suka, moderasi) dan pengumuman (satu unggulan)                                                                                                                                   |
+| `InnerCircle/AvatarService`, `HapusAkunService`    | Foto profil dan penghapusan akun                                                                                                                                                                          |
+| `InnerCircle/GoogleOAuth`, `GoogleAkun`            | OAuth Google (code + PKCE, OIDC) dan pencocokan akun                                                                                                                                                      |
+| `InnerCircle/EmailService`                         | Semua email Inner Circle (kapan, ke siapa, contoh isi)                                                                                                                                                    |
+| `InnerCircle/IcKonten`                             | Konten yang bisa diubah dari CMS: `teks(kunci)` = isi `ic_pengaturan` bila ada, kalau tidak teks bawaan dari `config/ic_konten.php`; `daftar(grup)`; cache dibuang tiap simpan; aman bila tabel belum ada |
+| `InnerCircle/*Gagal`                               | Pengecualian berpesan aman untuk ditampilkan ke pengguna                                                                                                                                                  |
 
-**Model** (`app/Models/`): situs artis (`banner`, `header`, `albums`, `news`, `merchandise`, `color_pages`, `statistik`, `highlight`, dan 7 model profil: `profile_hero`, `genre`, `bio`, `collab`, `media_coverage`, `booking`, `media_sosial`); admin dan log (`account`, `log_error`, `log_aktivitas`); Inner Circle (`member`, `ic_event`, `ic_stempel`, `ic_reward`, `ic_claim`, `ic_claim_log`, `ic_broadcast`, `ic_memory`).
+**Model** (`app/Models/`): situs artis (`banner`, `header`, `albums`, `news`, `merchandise`, `color_pages`, `statistik`, `highlight`, dan 7 model profil: `profile_hero`, `genre`, `bio`, `collab`, `media_coverage`, `booking`, `media_sosial`); admin dan log (`account`, `log_error`, `log_aktivitas`); Inner Circle (`member`, `ic_event`, `ic_stempel`, `ic_reward`, `ic_claim`, `ic_claim_log`, `ic_broadcast`, `ic_memory`, `ic_pengaturan`, `ic_item`).
 
-**Lainnya:** `Mail/InnerCircle/*` (reset sandi, akun Google, selamat datang, status klaim, verifikasi; dasar bersama `PesanIc`) dan `Mail/Admin/*` (kode login, peringatan error); `Policies/MemoryPolicy` (hak atas kenangan, didaftarkan manual di `AppServiceProvider`); `Rules/SandiAnggota`; `Support/ImageProcessor` (foto anggota: EXIF diluruskan, WebP, metadata dibuang), `Support/HtmlSanitizer`, `Support/GambarGagal`; `Console/Commands/SinkronBandsintown` dan `OptimalkanGambar`.
+**Lainnya:** `Mail/InnerCircle/*` (reset sandi, akun Google, selamat datang, status klaim, verifikasi; dasar bersama `PesanIc`) dan `Mail/Admin/*` (kode login, peringatan error); `Policies/MemoryPolicy` (hak atas kenangan, didaftarkan manual di `AppServiceProvider`); `Rules/SandiAnggota`; `Support/ImageProcessor` (foto anggota: EXIF diluruskan, WebP, metadata dibuang), `Support/HtmlSanitizer`, `Support/GambarGagal`, `Support/helpers.php` (fungsi view `ic_teks()` dan `ic_daftar()`, dimuat oleh `AppServiceProvider`, tidak perlu `composer dump-autoload`); `Console/Commands/SinkronBandsintown` dan `OptimalkanGambar`.
 
 > `ic_event` juga memuat `pilihanBulan()` dan `scopeDiBulan()`: pilihan filter bulan di area anggota dan dashboard diambil dari tanggal acara yang ada, bukan daftar tetap.
 
@@ -243,7 +246,7 @@ tests/                   Feature/ (14 berkas), Unit/ (2 berkas)
 | `template/innerCircleLayout`, `innerCircleAuthLayout`, `innerCirclePublikLayout` | Kerangka area anggota, halaman masuk/daftar, dan halaman publik Inner Circle                                                                                                                                                                                                                      |
 | `template/layout`                                                                | Kerangka situs publik artis                                                                                                                                                                                                                                                                       |
 | `pages/`                                                                         | Halaman: `home`, `login`, `login-otp`, `privasi`, `dashboard-pages/` (CMS), `inner-circle/` (area anggota)                                                                                                                                                                                        |
-| `pages/dashboard-pages/inner-circle/`                                            | 9 berkas CMS Inner Circle (8 memakai `icDashboardLayout`; cetak QR berdiri sendiri) (ringkasan, anggota, acara, cetak-qr, klaim, hadiah, pengumuman, kenangan, email)                                                                                                                             |
+| `pages/dashboard-pages/inner-circle/`                                            | 10 berkas CMS Inner Circle (ringkasan, anggota, acara, cetak-qr, klaim, hadiah, pengumuman, kenangan, konten, email). Semua memakai `icDashboardLayout` kecuali cetak QR yang berdiri sendiri                                                                                                     |
 | `components/dashboard/`                                                          | `navbar` (dock + bottom sheet, **sadar mode**: menu Artis atau Inner Circle plus saklar mode), modal edit/hapus tiap modul, `inner-circle/kepala` (judul halaman CMS Inner Circle dan skrip bersama)                                                                                              |
 | `components/inner-circle/`                                                       | Komponen area anggota: dock, kartu event, ubin hadiah, kartu kenangan, modal (varian lembar bawah), bar stempel, dst.                                                                                                                                                                             |
 | `components/inner-circle-teaser`                                                 | Teaser Inner Circle di beranda artis (tema situs artis, bukan lavender)                                                                                                                                                                                                                           |
@@ -264,6 +267,8 @@ tests/                   Feature/ (14 berkas), Unit/ (2 berkas)
 | `ic_rewards`, `ic_claims`, `ic_claim_logs` | Tahap hadiah (`target_stempel` unik), pengajuan (unik per anggota per tahap), jejak status                                                                                                         |
 | `ic_broadcasts`                            | Pengumuman (`unggulan`, `terbit_pada`, `aktif`)                                                                                                                                                    |
 | `ic_memories`, `ic_memory_likes`           | Kenangan (tayang/disembunyikan) dan tanda suka                                                                                                                                                     |
+| `ic_pengaturan`                            | Teks konten yang **diubah** admin (`kunci` unik, `nilai`, `diubah_oleh`). Tanpa baris = teks bawaan, jadi tabel kosong tidak mengubah tampilan                                                     |
+| `ic_item`                                  | Daftar berurutan untuk konten (`grup`, `urutan`, `judul`, `isi`, `ikon`, `aktif`); dipakai mulai Fase 3                                                                                            |
 | `log_errors`, `log_aktivitas`              | Log error (digabung) dan jejak aksi admin                                                                                                                                                          |
 | Situs artis                                | `banners`, `headers`, `albums`, `news`, `merchandise`, `color_pages`, `statistik`, `highlight`, tabel profil                                                                                       |
 | Sistem                                     | `sessions`, `cache`, `jobs`, `migrations`                                                                                                                                                          |
@@ -297,9 +302,9 @@ Aturan penulisan: buang komentar `#` di baris yang diisi; beri tanda kutip pada 
 php artisan test
 ```
 
-269 tes. Database SQLite di memori; tes **tidak bergantung pada `.env`** (semua env dipaku di `phpunit.xml`), jadi hasilnya sama di lokal dan di GitHub. `ImageProcessorTest` dilewati otomatis bila ekstensi `gd`/`exif` tidak aktif. SQLite tidak menguji kunci baris (`lockForUpdate`): coba klik ganda klaim dan suka secara manual di MySQL.
+285 tes. Database SQLite di memori; tes **tidak bergantung pada `.env`** (semua env dipaku di `phpunit.xml`), jadi hasilnya sama di lokal dan di GitHub. `ImageProcessorTest` dilewati otomatis bila ekstensi `gd`/`exif` tidak aktif. SQLite tidak menguji kunci baris (`lockForUpdate`): coba klik ganda klaim dan suka secara manual di MySQL.
 
-Berkas tes: `InnerCircleTest` (inti), `...Lokasi`, `...Hadiah`, `...Komunitas`, `...Keamanan`, `...Google`, `...VerifikasiEmail`, `...AkunPrivasi`, `...SitusPublik`, `...Fase9`, `...Fase10`, `...FilterBulan`, `CmsMode`, `AdminLogDuaFaktor`, dan `Unit/` (`HtmlSanitizer`, `ImageProcessor`).
+Berkas tes: `InnerCircleTest` (inti), `...Lokasi`, `...Hadiah`, `...Komunitas`, `...Keamanan`, `...Google`, `...VerifikasiEmail`, `...AkunPrivasi`, `...SitusPublik`, `...Fase9`, `...Fase10`, `...FilterBulan`, `...Konten`, `CmsMode`, `AdminLogDuaFaktor`, dan `Unit/` (`HtmlSanitizer`, `ImageProcessor`).
 
 ### 4.8 Keamanan (ringkas)
 
@@ -327,6 +332,8 @@ Berkas tes: `InnerCircleTest` (inti), `...Lokasi`, `...Hadiah`, `...Komunitas`, 
 **Hapus akun** (`HapusAkunService`): ketik `HAPUS` (dan sandi bila ada). Menghapus akun, foto, stempel, klaim, kenangan, dan suka; **ditahan** bila ada klaim `diajukan`, `ditinjau`, atau `disetujui`.
 
 **Pembatas laju dan unggahan.** Anggota: check-in 8/menit, klaim 6/menit, kenangan 4/menit, suka 60/menit, foto 6/menit, hapus akun 5/menit (per anggota, bukan IP, karena penonton satu venue sering berbagi IP). Lupa sandi punya batas harian global 100. Unggahan CMS: banner dan hero 2 MB; album, berita, merchandise, header 1 MB; video header 50 MB (batas upload server harus ikut naik); semua gambar maks 16 megapiksel. Foto anggota: kenangan 4 MB, profil 5 MB.
+
+**Menambah teks yang bisa diubah dari CMS.** (1) Daftarkan kunci di `config/ic_konten.php`: `grup`, `label`, `bawaan` (teks yang tampil sekarang, persis), `maks`, dan `baris` bila beberapa baris. (2) Ganti teks di view dengan `{{ ic_teks('grup.kunci') }}` (selalu `{{ }}`, jangan `{!! !!}`). (3) Bila grupnya baru, tambahkan di `grup` pada config itu. Form di tab Konten, validasi, dan label Log otomatis ikut. Kunci yang salah ketik melempar galat saat pengembangan dan tes; di produksi mengembalikan teks kosong. Tes `InnerCircleKontenTest` memastikan setiap kunci di view terdaftar **dan** setiap kunci di config dipakai view (tidak ada isian CMS yang tidak berpengaruh). Teks bersifat biasa: `<` dan `>` ditolak; placeholder yang boleh: `{program}` dan yang didaftarkan per kunci.
 
 **Keputusan arsitektur yang masih berlaku:** logout anggota memakai `Auth::guard('member')->logout()` + `regenerateToken()` (bukan `session()->invalidate()`) supaya sesi admin di browser yang sama tidak terhapus; OAuth Google ditulis dengan HTTP client bawaan (tanpa Socialite) karena hosting tanpa terminal; email tanpa antrean (dikirim setelah respons) karena hosting tanpa worker; status acara (lewat/hari ini/akan datang) dihitung dari `now()` tanpa cron.
 
@@ -436,7 +443,7 @@ Tulis sandi tanpa spasi. `MAIL_FROM_ADDRESS` harus sama dengan `MAIL_USERNAME`. 
 
 > Bagian ini hanya selama pengerjaan. Setelah semua fase selesai: **hapus bagian 6 ini**, lalu perbarui poin lain (lihat [Fase 8](#fase-8-penutup)).
 
-**Status: Fase 0 dan Fase 1 selesai. Berikutnya Fase 2.**
+**Status: Fase 0, 1, dan 2 selesai. Berikutnya Fase 3.**
 
 ### 6.1 Tujuan
 
@@ -519,20 +526,18 @@ Hapus `InnerCircleDummy`; filter bulan Check-in dan Acara & QR kini diambil dari
 
 Catatan untuk fase berikutnya: halaman baru di CMS Inner Circle cukup menambah satu entri di `config('inner_circle.tab_admin')`, otomatis muncul di dock. Warna "terang" yang harus tetap putih (kartu QR, pratinjau) diberi class `cms-asli`; dock memakai `cms-dock`.
 
-#### Fase 2: Fondasi konten dan tab Konten
+#### Fase 2: Fondasi konten dan tab Konten (SELESAI)
 
-1. Migrasi `ic_pengaturan` dan `ic_item`; model `ic_pengaturan`, `ic_item`.
-2. `config/ic_konten.php` berisi semua kunci Fase 3 sampai 6 dengan teks bawaan, batas panjang, label, petunjuk.
-3. `IcKonten` (service + cache) dan helper `ic_teks()` / `ic_daftar()`; helper didaftarkan lewat `composer.json` (`autoload.files`) atau Blade directive.
-4. `kontenController` + `simpanKontenRequest`: halaman **Konten** (entri baru di `config('inner_circle.tab_admin')`, otomatis muncul di dock), dibagi per halaman, tiap isian menampilkan teks bawaan sebagai petunjuk, penghitung huruf, dan tombol **Kembalikan bawaan** (menghapus baris). Simpan membersihkan tag HTML dan memotong sesuai batas.
-5. Label Log: `ic.admin.konten.simpan`, `ic.admin.konten.reset`.
-6. Tes: bawaan dipakai saat kosong; simpan lalu terbaca; reset kembali ke bawaan; cache ikut berubah; tag dibuang; batas panjang; hanya admin yang bisa; teks berisi `<script>` tampil ter-escape.
-
-**File baru:** 2 migrasi, 2 model, `IcKonten`, `config/ic_konten.php`, `kontenController`, `simpanKontenRequest`, `pages/dashboard-pages/inner-circle/konten.blade.php`, tes. **Selesai bila:** tab Konten terbuka dan menyimpan, belum ada halaman anggota yang berubah.
+- Migrasi `ic_pengaturan` dan `ic_item`; model `ic_pengaturan`, `ic_item`.
+- `config/ic_konten.php` (daftar kunci: grup, label, teks bawaan, batas panjang), `IcKonten` (service + cache), `ic_teks()` / `ic_daftar()`.
+- Tab **Konten** (`kontenController`, `simpanKontenRequest`, `konten.blade.php`): isian per grup, teks bawaan sebagai petunjuk, penghitung huruf, tombol **Kembalikan bawaan**, validasi (`<` `>` ditolak, batas panjang, placeholder asing ditolak). Muncul otomatis di dock CMS Inner Circle.
+- **Grup pertama yang sudah hidup: Halaman Check-in** (6 teks: eyebrow, penjelasan, judul dan penjelasan kartu jadwal, judul dan penjelasan kotak "sudah di lokasi") sebagai bukti alurnya jalan dari CMS sampai halaman anggota.
+- Beda dari rencana awal: baris `ic_pengaturan` hanya ada bila teksnya **berbeda** dari bawaan (mengosongkan atau menyamakan dengan bawaan menghapus barisnya), dan `ic_item` belum diisi (daftar awalnya dibuat saat Fase 3 memakainya).
+- Tes: `InnerCircleKontenTest` (bawaan, simpan, kembalikan, cache, validasi, escape, hak akses, tabel belum ada, daftar item, dan pemindai kunci view-config).
 
 #### Fase 3: Halaman Tentang dan teaser beranda
 
-1. `tentang.blade.php`: hero, deskripsi meta, ajakan akhir dari pengaturan; "Cara kerjanya" dari `ic_item` grup `langkah`; FAQ dari grup `faq`.
+1. `tentang.blade.php`: hero, deskripsi meta, ajakan akhir lewat kunci baru di `config/ic_konten.php` + `ic_teks()` (lihat cara di 4.9); "Cara kerjanya" dari `ic_item` grup `langkah`; FAQ dari grup `faq`.
 2. `inner-circle-teaser.blade.php`: judul, deskripsi, 3 poin (grup `teaser_poin`), label tombol.
 3. Tab Konten: pengelola daftar (tambah, ubah, urutkan naik/turun, aktif/sembunyikan, hapus) untuk langkah, FAQ, dan poin teaser. Seeder/migrasi mengisi daftar awal sama dengan teks sekarang.
 4. Tes: tampilan default identik dengan sekarang; ubah teks tampil; item disembunyikan hilang; urutan.

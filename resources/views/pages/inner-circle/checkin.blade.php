@@ -10,10 +10,9 @@
 @endphp
 
 @section('content')
-    <p class="ic-eyebrow">Datang. Kumpulkan stempel.</p>
+    <p class="ic-eyebrow">{{ ic_teks('checkin.eyebrow') }}</p>
     <h1 class="ic-judul">Check-in<span>.</span></h1>
-    <p class="ic-deskripsi">Jadilah bagian dari perjalanan ini. Temukan kegiatan Inner Circle dan kumpulkan stempel
-        ketika hadir.</p>
+    <p class="ic-deskripsi">{{ ic_teks('checkin.deskripsi') }}</p>
 
     <x-inner-circle.panel-verifikasi />
 
@@ -23,9 +22,8 @@
 
     <section class="ic-filter" aria-labelledby="judul-jadwal">
         <div>
-            <h2 class="ic-filter__judul" id="judul-jadwal">Jadwal Pertunjukan WS</h2>
-            <p class="ic-bantuan">Jadwal berdasarkan rencana WSM dan bersifat tentatif. Tidak semua acara otomatis
-                memberi stempel.</p>
+            <h2 class="ic-filter__judul" id="judul-jadwal">{{ ic_teks('checkin.jadwal.judul') }}</h2>
+            <p class="ic-bantuan">{{ ic_teks('checkin.jadwal.deskripsi') }}</p>
         </div>
         <form class="ic-filter__form" method="GET" action="{{ route('ic.checkin') }}" role="search">
             <label class="ic-sr-saja" for="filter-bulan">Bulan</label>
@@ -71,8 +69,8 @@
     </div>
 
     <section class="ic-kotak" aria-labelledby="judul-kode">
-        <h2 class="ic-kotak__judul" id="judul-kode">✦ Sudah di lokasi?</h2>
-        <p class="ic-bantuan">Pilih acara di atas, atau langsung pindai QR dari panitia. Acaranya terpilih otomatis.</p>
+        <h2 class="ic-kotak__judul" id="judul-kode">✦ {{ ic_teks('checkin.lokasi.judul') }}</h2>
+        <p class="ic-bantuan">{{ ic_teks('checkin.lokasi.deskripsi') }}</p>
         <ol class="ic-langkah">
             <li>Pilih acara, lalu izinkan akses lokasi bila diminta (hanya untuk memastikan kamu ada di venue).</li>
             <li>Pindai QR panitia atau ketik kodenya, lalu tekan Check-in sekarang.</li>
