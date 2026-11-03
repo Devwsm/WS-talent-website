@@ -50,24 +50,6 @@
         </form>
     </section>
 
-    <p class="ic-jumlah" role="status">
-        {{ count($events) }} dari {{ $totalEvents }} jadwal ditampilkan
-        @if ($adaFilter)
-            · <a class="ic-tautan" href="{{ route('ic.checkin') }}">Atur ulang filter</a>
-        @endif
-    </p>
-
-    <div class="ic-daftar">
-        @forelse ($events as $event)
-            <x-inner-circle.kartu-event :event="$event" :href="route('ic.checkin', $parameterFilter + ['acara' => $event->kode])" :dipilih="$eventDipilih && $eventDipilih->kode === $event->kode" />
-        @empty
-            <div class="ic-panel ic-kosong">
-                <b>Belum ada jadwal yang cocok.</b>
-                <p class="ic-bantuan">Coba ganti bulan, tipe, atau kata pencarian.</p>
-            </div>
-        @endforelse
-    </div>
-
     <section class="ic-kotak" aria-labelledby="judul-kode">
         <h2 class="ic-kotak__judul" id="judul-kode">✦ {{ ic_teks('checkin.lokasi.judul') }}</h2>
         <p class="ic-bantuan">{{ ic_teks('checkin.lokasi.deskripsi') }}</p>
@@ -88,6 +70,24 @@
             <p class="ic-galat">Check-in membutuhkan JavaScript. Aktifkan JavaScript di browser lalu muat ulang halaman.</p>
         </noscript>
     </section>
+
+    <p class="ic-jumlah" role="status">
+        {{ count($events) }} dari {{ $totalEvents }} jadwal ditampilkan
+        @if ($adaFilter)
+            · <a class="ic-tautan" href="{{ route('ic.checkin') }}">Atur ulang filter</a>
+        @endif
+    </p>
+
+    <div class="ic-daftar">
+        @forelse ($events as $event)
+            <x-inner-circle.kartu-event :event="$event" :href="route('ic.checkin', $parameterFilter + ['acara' => $event->kode])" :dipilih="$eventDipilih && $eventDipilih->kode === $event->kode" />
+        @empty
+            <div class="ic-panel ic-kosong">
+                <b>Belum ada jadwal yang cocok.</b>
+                <p class="ic-bantuan">Coba ganti bulan, tipe, atau kata pencarian.</p>
+            </div>
+        @endforelse
+    </div>
 @endsection
 
 @push('modal')

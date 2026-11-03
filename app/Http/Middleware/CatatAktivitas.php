@@ -25,6 +25,11 @@ class CatatAktivitas
             return $response;
         }
 
+        // Pratinjau konten hanya merender halaman (POST dipakai supaya isian panjang muat); bukan aksi tulis.
+        if ($request->routeIs('ic.admin.konten.pratinjau')) {
+            return $response;
+        }
+
         try {
             $sesi = $request->hasSession() ? $request->session() : null;
 

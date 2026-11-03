@@ -43,17 +43,23 @@ class InnerCircleFase4Test extends TestCase
         $m = $this->anggota();
 
         $this->actingAs($m, 'member')->get(route('ic.beranda'))->assertOk()
-            ->assertSee('Musik seru. Teman baru.')->assertSee('Hai, Ancha!')
+            ->assertSee('Whisnu Santika Official Fanbase')->assertDontSee('Musik seru. Teman baru.')->assertSee('Hai, Ancha!')
             ->assertSee('Terima kasih sudah menjadi bagian dari keluarga WS Inner Circle.')
-            ->assertSee('Setiap momen berarti')->assertSee('Aktivitas terbaru ✦')
+            ->assertSee('Scan dan check-in sekarang')->assertDontSee('Setiap momen berarti')->assertSee('Aktivitas terbaru ✦')
+            ->assertSee('<a class="ic-hero__stiker" href="' . route('ic.checkin') . '">', false)
+            ->assertSee('aset/inner-circle/logo/wsic-wordmark-kompak.webp', false)
             ->assertSee('KARTU KEANGGOTAAN DIGITAL')->assertSee('Stempel terus terkumpul dan tidak hangus');
 
         $this->actingAs($m, 'member')->get(route('ic.hadiah'))->assertOk()
-            ->assertSee('Kumpulkan • Buka • Rasakan')->assertSee('Klaim hadiahmu ↗')->assertSee('✦ Cara kerja hadiah');
+            ->assertSee('Rewards')->assertDontSee('Kumpulkan • Buka • Rasakan')
+            ->assertSee('Setiap stempel membuatmu lebih dekat dengan Whisnu Santika.')->assertDontSee('Buka merchandise eksklusif')
+            ->assertSee('Klaim hadiahmu ↗')->assertSee('✦ Cara kerja hadiah');
 
         $this->actingAs($m, 'member')->get(route('ic.komunitas'))->assertOk()
-            ->assertSee('Lebih banyak musik • Teman yang sama')
-            ->assertSee('Lebih banyak musik.<br>Teman yang sama.', false)
+            ->assertSee('Our Community')->assertDontSee('Komunitas kita')->assertDontSee('Lebih banyak musik')
+            ->assertSee('We&#039;re DIVERSE, UNITE, EVOLVE', false)
+            ->assertSee('Bagikan momen kamu ke sesama WS Inner Circle yang lainnya.')
+            ->assertSee('Lebih dekat. Lebih Akrab.')
             ->assertSee('✦ WS INNER CIRCLE ✦')->assertSee('Kabar terbaru ✳');
 
         $this->actingAs($m, 'member')->get(route('ic.komunitas', ['tab' => 'galeri']))->assertOk()
@@ -73,7 +79,7 @@ class InnerCircleFase4Test extends TestCase
             'beranda__stiker' => 'Lihat kabar',
             'beranda__stempel__sisa' => 'langkah lagi menuju hadiah.',
         ]);
-        $this->ubah('hadiah', ['hadiah__eyebrow' => 'Buka Hadiah']);
+        $this->ubah('hadiah', ['hadiah__deskripsi' => 'Kumpulkan stempel, buka kejutan.']);
         $this->ubah('komunitas', ['komunitas__banner__judul' => "Satu musik.\nSatu keluarga."]);
         $this->ubah('profil', ['profil__klaim__kosong' => 'Kosong. Lihat {hadiah} ya.']);
         $this->ubah('masuk', ['masuk__judul' => 'Masuk Dulu', 'atur__intro' => 'Sandi baru ya.']);
@@ -85,7 +91,7 @@ class InnerCircleFase4Test extends TestCase
         $this->actingAs($m, 'member')->get(route('ic.beranda'))
             ->assertSee('Halo Ancha, apa kabar?')->assertSee('Lihat kabar')->assertSee('langkah lagi menuju hadiah.')
             ->assertDontSee('Hai, Ancha!');
-        $this->actingAs($m, 'member')->get(route('ic.hadiah'))->assertSee('Buka Hadiah');
+        $this->actingAs($m, 'member')->get(route('ic.hadiah'))->assertSee('Kumpulkan stempel, buka kejutan.');
         $this->actingAs($m, 'member')->get(route('ic.komunitas'))->assertSee('Satu musik.<br>Satu keluarga.', false);
         $this->actingAs($m, 'member')->get(route('ic.profil'))
             ->assertSee('Kosong. Lihat <a class="ic-tautan" href="' . route('ic.hadiah') . '">Hadiah</a> ya.', false);

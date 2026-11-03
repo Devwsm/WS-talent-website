@@ -188,12 +188,16 @@ class memberController extends Controller
         $kategori = $this->teks($request, 'kategori');
         $kategori = array_key_exists($kategori, config('inner_circle.kategori_kenangan')) ? $kategori : 'all';
 
+        // Lencana angka di tab: isi yang belum dibaca sejak tab itu terakhir dibuka. Tab yang sedang dibuka dianggap
+        // dibaca sekarang, jadi lencananya hilang dan waktu bacanya diperbarui.
+        $belumDibaca = $this->belumDibaca($anggota, $tab);
+
         $data = [
             'member' => $anggota,
             'tab' => $tab,
             'kategori' => $kategori,
-            'jumlahPengumuman' => ic_broadcast::query()->tayang()->count(),
-            'jumlahKenangan' => ic_memory::query()->tayang()->count(),
+            'jumlahPengumuman' => $belumDibaca['pengumuman'],
+            'jumlahKenangan' => $belumDibaca['galeri'],
             'maksFotoMb' => config('inner_circle.foto_kenangan_maks_kb') / 1024,
         ];
 
@@ -232,6 +236,52 @@ class memberController extends Controller
     private function anggota(): member
     {
         return Auth::guard('member')->user();
+    }
+
+    /**
+     * Jumlah isi Komunitas yang belum dibaca anggota, per tab.
+     *
+     * - Pengumuman: yang sudah tayang dan dibuat setelah tab terakhir dibuka, atau yang tanggal terbitnya (jadwal)
+     *   jatuh sesudah hari itu.
+     * - Galeri: kenangan tayang milik anggota lain yang dibuat setelah tab terakhir dibuka.
+     * - Belum pernah membuka tab: pembandingnya waktu anggota bergabung.
+     *
+     * Membuka sebuah tab menandainya dibaca (hanya untuk anggota sungguhan; pratinjau CMS memakai anggota contoh
+     * yang tidak tersimpan, jadi tidak menulis apa pun).
+     *
+     * @return array{pengumuman: int, galeri: int}
+     */
+    private function belumDibaca(member $anggota, string $tabDibuka): array
+    {
+        $sekarang = now();
+        $bergabung = $anggota->created_at ?? $sekarang;
+
+        $sejakPengumuman = $anggota->pengumuman_dibaca_pada ?? $bergabung;
+        $sejakGaleri = $anggota->galeri_dibaca_pada ?? $bergabung;
+
+        $jumlah = [
+            'pengumuman' => ic_broadcast::query()->tayang()
+                ->where(fn($q) => $q->where('created_at', '>', $sejakPengumuman)
+                    ->orWhereDate('terbit_pada', '>', $sejakPengumuman->toDateString()))
+                ->count(),
+            'galeri' => ic_memory::query()->tayang()
+                ->where('member_id', '!=', $anggota->getKey())
+                ->where('created_at', '>', $sejakGaleri)
+                ->count(),
+        ];
+
+        $kolom = $tabDibuka === 'galeri' ? 'galeri_dibaca_pada' : 'pengumuman_dibaca_pada';
+        $kunci = $tabDibuka === 'galeri' ? 'galeri' : 'pengumuman';
+
+        if ($anggota->exists) {
+            // Hanya ditulis bila ada yang berubah (ada lencana, atau belum pernah dibuka sama sekali).
+            if ($jumlah[$kunci] > 0 || $anggota->{$kolom} === null) {
+                $anggota->forceFill([$kolom => $sekarang])->saveQuietly();
+            }
+        }
+        $jumlah[$kunci] = 0;
+
+        return $jumlah;
     }
 
     /** Stempel terbaru anggota (check-in dan stempel manual), terbaru di atas. */

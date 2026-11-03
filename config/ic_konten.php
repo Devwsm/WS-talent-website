@@ -18,6 +18,9 @@
 | agar tidak ada isian CMS yang tidak berpengaruh apa-apa. Tambah kunci baru = tambah di sini lalu pakai di view.
 | Tanda < dan > tidak boleh dipakai (teks biasa saja, selalu di-escape saat ditampilkan).
 |
+| Tiap grup punya `pratinjau`: halaman apa saja yang dirender di panel pratinjau samping form (kunci halaman => label;
+| lihat kontenPratinjauController). Satu halaman = tanpa pilihan, lebih dari satu = ada menu pilihan di panel.
+|
 | `daftar` memuat daftar berurutan (langkah, FAQ, poin teaser) yang dikelola dari tab Konten. Isi awalnya (`bawaan`) ditanam
 | oleh migrasi dan dipakai tombol "Kembalikan daftar bawaan"; sesudah itu sumbernya tabel `ic_item`.
 */
@@ -58,6 +61,7 @@ return [
             'ikon' => 'bi-megaphone',
             'petunjuk' => 'Halaman /innercircle/tentang yang dilihat calon anggota sebelum daftar: judul, penjelasan, langkah, dan tanya jawab.',
             'halaman' => 'ic.tentang',
+            'pratinjau' => ['tentang' => 'Halaman Tentang'],
             'daftar' => ['langkah', 'faq'],
         ],
         'teaser' => [
@@ -66,6 +70,7 @@ return [
             'petunjuk' => 'Kotak Inner Circle di beranda situs Whisnu Santika (tema situs artis).',
             'halaman' => 'home',
             'jangkar' => 'inner-circle',
+            'pratinjau' => ['teaser' => 'Teaser di beranda'],
             'daftar' => ['teaser_poin'],
         ],
         'beranda' => [
@@ -73,36 +78,42 @@ return [
             'ikon' => 'bi-house-door',
             'petunjuk' => 'Sapaan, aktivitas terbaru, kartu anggota, dan kotak progres stempel.',
             'halaman' => 'ic.beranda',
+            'pratinjau' => ['beranda' => 'Beranda anggota'],
         ],
         'checkin' => [
             'label' => 'Halaman Check-in',
             'ikon' => 'bi-qr-code-scan',
             'petunjuk' => 'Judul dan penjelasan di halaman Check-in anggota.',
             'halaman' => 'ic.checkin',
+            'pratinjau' => ['checkin' => 'Check-in'],
         ],
         'hadiah' => [
             'label' => 'Halaman Hadiah',
             'ikon' => 'bi-gift',
             'petunjuk' => 'Judul, penjelasan, dan catatan cara kerja hadiah.',
             'halaman' => 'ic.hadiah',
+            'pratinjau' => ['hadiah' => 'Rewards'],
         ],
         'komunitas' => [
             'label' => 'Halaman Komunitas',
             'ikon' => 'bi-people',
             'petunjuk' => 'Judul, banner, dan teks pengumuman serta galeri kenangan.',
             'halaman' => 'ic.komunitas',
+            'pratinjau' => ['komunitas' => 'Pengumuman WS', 'galeri' => 'Galeri Kenangan'],
         ],
         'profil' => [
             'label' => 'Halaman Profil anggota',
             'ikon' => 'bi-person-circle',
             'petunjuk' => 'Judul bagian dan teks pendamping di halaman Profil anggota.',
             'halaman' => 'ic.profil',
+            'pratinjau' => ['profil' => 'Profil anggota'],
         ],
         'masuk' => [
             'label' => 'Halaman masuk dan daftar',
             'ikon' => 'bi-box-arrow-in-right',
             'petunjuk' => 'Judul dan kalimat pembuka halaman Masuk, Daftar, Lupa sandi, dan Atur ulang sandi.',
             'halaman' => 'ic.masuk',
+            'pratinjau' => ['masuk' => 'Masuk', 'daftar' => 'Daftar', 'lupa' => 'Lupa sandi', 'atur' => 'Atur ulang sandi'],
         ],
     ],
 
@@ -253,7 +264,7 @@ return [
         'beranda.eyebrow' => [
             'grup' => 'beranda',
             'label' => 'Teks kecil di atas judul',
-            'bawaan' => 'Musik seru. Teman baru.',
+            'bawaan' => 'Whisnu Santika Official Fanbase',
             'maks' => 60,
         ],
         'beranda.salam' => [
@@ -272,8 +283,8 @@ return [
         ],
         'beranda.stiker' => [
             'grup' => 'beranda',
-            'label' => 'Stiker (mengarah ke Komunitas)',
-            'bawaan' => 'Setiap momen berarti',
+            'label' => 'Tombol stiker (mengarah ke Check-in)',
+            'bawaan' => 'Scan dan check-in sekarang',
             'maks' => 40,
         ],
         'beranda.aktivitas.judul' => [
@@ -352,16 +363,10 @@ return [
             'maks' => 220,
             'baris' => true,
         ],
-        'hadiah.eyebrow' => [
-            'grup' => 'hadiah',
-            'label' => 'Teks kecil di atas judul',
-            'bawaan' => 'Kumpulkan • Buka • Rasakan',
-            'maks' => 60,
-        ],
         'hadiah.deskripsi' => [
             'grup' => 'hadiah',
             'label' => 'Penjelasan di bawah judul',
-            'bawaan' => 'Setiap stempel membuatmu lebih dekat dengan Whisnu Santika. Buka merchandise eksklusif, pengalaman personal, dan akses spesial.',
+            'bawaan' => 'Setiap stempel membuatmu lebih dekat dengan Whisnu Santika.',
             'maks' => 260,
             'baris' => true,
         ],
@@ -384,16 +389,10 @@ return [
             'maks' => 400,
             'baris' => true,
         ],
-        'komunitas.eyebrow' => [
-            'grup' => 'komunitas',
-            'label' => 'Teks kecil di atas judul',
-            'bawaan' => 'Lebih banyak musik • Teman yang sama',
-            'maks' => 60,
-        ],
         'komunitas.deskripsi' => [
             'grup' => 'komunitas',
             'label' => 'Penjelasan di bawah judul',
-            'bawaan' => 'Semua cerita dimulai dari hadir. Update langsung dari WSM, lalu simpan momen yang layak diingat.',
+            'bawaan' => 'We\'re DIVERSE, UNITE, EVOLVE',
             'maks' => 260,
             'baris' => true,
         ],
@@ -406,14 +405,14 @@ return [
         'komunitas.banner.judul' => [
             'grup' => 'komunitas',
             'label' => 'Banner: judul (Enter = baris baru)',
-            'bawaan' => "Lebih banyak musik.\nTeman yang sama.",
-            'maks' => 70,
+            'bawaan' => 'Bagikan momen kamu ke sesama WS Inner Circle yang lainnya.',
+            'maks' => 90,
             'baris' => true,
         ],
         'komunitas.banner.deskripsi' => [
             'grup' => 'komunitas',
             'label' => 'Banner: penjelasan',
-            'bawaan' => 'Lebih dekat dengan musik. Lebih akrab satu sama lain.',
+            'bawaan' => 'Lebih dekat. Lebih Akrab.',
             'maks' => 160,
             'baris' => true,
         ],

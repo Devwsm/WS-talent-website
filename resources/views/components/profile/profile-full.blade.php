@@ -6,7 +6,7 @@
     'Profile lengkap Whisnu Santika — genre, highlight, kolaborasi,
     media coverage, dan kontak booking.')
 @section('og_image', $hero->foto ?? null ? \Illuminate\Support\Facades\Storage::url('profile-hero/' . $hero->foto) :
-    asset('aset/logo/whisnuSantika.jpg'))
+    asset('aset/og/og-ws-artis.jpg'))
 
     @push('schema')
         <script type="application/ld+json">

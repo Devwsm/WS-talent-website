@@ -29,6 +29,9 @@ class IcKonten
     private ?array $memoPengaturan = null;
     private ?array $memoItem = null;
 
+    /** Nilai draf pratinjau CMS (belum disimpan). Bila terisi, menggantikan isi tabel untuk permintaan ini saja. */
+    private ?array $draf = null;
+
     /** @return array<string, array<string, mixed>> semua kunci yang terdaftar di config */
     public function definisi(): array
     {
@@ -99,6 +102,40 @@ class IcKonten
         }
 
         return new HtmlString($ganti ? strtr($html, $ganti) : $html);
+    }
+
+    /**
+     * Pakai isian form yang BELUM disimpan sebagai pengganti sementara, hanya selama permintaan ini (pratinjau CMS).
+     * Tidak menulis ke database maupun cache. Isian kosong berarti teks bawaan, sama seperti saat disimpan.
+     *
+     * @param  array<string, mixed>  $nilai  nama kolom form (kunci dengan "." diganti "__") => teks
+     */
+    public function pakaiDraf(array $nilai): void
+    {
+        $dasar = $this->tersimpan();
+
+        foreach ($this->definisi() as $kunci => $def) {
+            $kolom = str_replace('.', '__', $kunci);
+            if (! array_key_exists($kolom, $nilai)) {
+                continue;
+            }
+
+            $teks = mb_substr($this->rapikan(is_string($nilai[$kolom]) ? $nilai[$kolom] : '', ! empty($def['baris'])), 0, (int) $def['maks']);
+
+            if ($teks === '') {
+                unset($dasar[$kunci]);
+            } else {
+                $dasar[$kunci] = $teks;
+            }
+        }
+
+        $this->draf = $dasar;
+    }
+
+    /** Hentikan pemakaian draf (kembali ke isi database). */
+    public function lupakanDraf(): void
+    {
+        $this->draf = null;
     }
 
     /** Teks bawaan (tanpa placeholder diisi), untuk petunjuk di form CMS. */
@@ -206,6 +243,10 @@ class IcKonten
     /** @return array<string, string|null> */
     private function pengaturan(): array
     {
+        if ($this->draf !== null) {
+            return $this->draf;
+        }
+
         if ($this->memoPengaturan !== null) {
             return $this->memoPengaturan;
         }

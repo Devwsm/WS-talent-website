@@ -1,6 +1,6 @@
 @extends('template.innerCircleLayout')
 
-@section('title', 'Hadiah')
+@section('title', 'Rewards')
 
 @php
     $semua = collect($rewards);
@@ -10,8 +10,7 @@
 @endphp
 
 @section('content')
-    <p class="ic-eyebrow">{{ ic_teks('hadiah.eyebrow') }}</p>
-    <h1 class="ic-judul">Hadiah<span>.</span></h1>
+    <h1 class="ic-judul">Rewards<span>.</span></h1>
     <p class="ic-deskripsi">{{ ic_html('hadiah.deskripsi') }}</p>
 
     @unless ($terverifikasi)

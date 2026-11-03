@@ -4,11 +4,10 @@
 @section('meta_description',
     'Whisnu Santika — DJ & produser asal Jakarta, pionir Indonesian Bounce. Info tur, rilisan
     musik, merchandise, dan berita terbaru.')
-@section('og_image', $hero->foto ?? null ? \Illuminate\Support\Facades\Storage::url('profile-hero/' . $hero->foto) :
-    asset('aset/logo/Whisnu-Santika_Logo-2025-White.png'))
+@section('og_image', asset('aset/og/og-ws-artis.jpg'))
 
-    @push('schema')
-        <script type="application/ld+json">
+@push('schema')
+    <script type="application/ld+json">
         {!! json_encode([
             '@context' => 'https://schema.org',
             '@type' => 'MusicGroup',
@@ -29,7 +28,7 @@
             ],
         ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) !!}
     </script>
-    @endpush
+@endpush
 
 @section('content')
     <div>

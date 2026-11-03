@@ -67,81 +67,95 @@
                         @endif
                     </div>
 
-                    <form method="POST" action="{{ route('ic.admin.konten.simpan', $kodeGrup) }}"
-                        class="rounded-3xl border border-white/10 bg-white/3 p-5 sm:p-6 md:p-8 flex flex-col gap-6">
-                        @csrf
+                    {{-- Form di kiri, pratinjau halaman asli di kanan (di bawah form pada layar sempit). --}}
+                    <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] gap-6 items-start">
+                        <div class="flex flex-col gap-4 min-w-0">
+                            <form method="POST" id="form-{{ $kodeGrup }}"
+                                action="{{ route('ic.admin.konten.simpan', $kodeGrup) }}"
+                                class="rounded-3xl border border-white/10 bg-white/3 p-5 sm:p-6 md:p-8 flex flex-col gap-6">
+                                @csrf
 
-                        @foreach ($isianGrup as $namaKunci => $def)
-                            @php
-                                $kolom = str_replace('.', '__', $namaKunci);
-                                $id = 'f-' . $kolom;
-                                $nilai = old('k.' . $kolom, $tersimpan[$namaKunci] ?? '');
-                                $diubah = isset($tersimpan[$namaKunci]);
-                            @endphp
+                                @foreach ($isianGrup as $namaKunci => $def)
+                                    @php
+                                        $kolom = str_replace('.', '__', $namaKunci);
+                                        $id = 'f-' . $kolom;
+                                        $nilai = old('k.' . $kolom, $tersimpan[$namaKunci] ?? '');
+                                        $diubah = isset($tersimpan[$namaKunci]);
+                                    @endphp
 
-                            <div class="flex flex-col gap-1.5 min-w-0">
-                                <div class="flex flex-wrap items-center justify-between gap-2">
-                                    <label for="{{ $id }}"
-                                        class="{{ $kelasLabel }}">{{ $def['label'] }}</label>
-                                    @if ($diubah)
-                                        <span
-                                            class="rounded-full bg-red-950/40 text-white/70 px-2.5 py-0.5 text-[11px] font-bold">Diubah</span>
-                                    @endif
-                                </div>
+                                    <div class="flex flex-col gap-1.5 min-w-0">
+                                        <div class="flex flex-wrap items-center justify-between gap-2">
+                                            <label for="{{ $id }}"
+                                                class="{{ $kelasLabel }}">{{ $def['label'] }}</label>
+                                            @if ($diubah)
+                                                <span
+                                                    class="rounded-full bg-red-950/40 text-white/70 px-2.5 py-0.5 text-[11px] font-bold">Diubah</span>
+                                            @endif
+                                        </div>
 
-                                @if (!empty($def['baris']))
-                                    <textarea id="{{ $id }}" name="k[{{ $kolom }}]" rows="3" maxlength="{{ $def['maks'] }}"
-                                        placeholder="{{ $def['bawaan'] }}" data-hitung class="{{ $kelasInput }}">{{ $nilai }}</textarea>
-                                @else
-                                    <input id="{{ $id }}" name="k[{{ $kolom }}]"
-                                        maxlength="{{ $def['maks'] }}" autocomplete="off" value="{{ $nilai }}"
-                                        placeholder="{{ $def['bawaan'] }}" data-hitung class="{{ $kelasInput }}">
-                                @endif
+                                        @if (!empty($def['baris']))
+                                            <textarea id="{{ $id }}" name="k[{{ $kolom }}]" rows="3" maxlength="{{ $def['maks'] }}"
+                                                placeholder="{{ $def['bawaan'] }}" data-hitung class="{{ $kelasInput }}">{{ $nilai }}</textarea>
+                                        @else
+                                            <input id="{{ $id }}" name="k[{{ $kolom }}]"
+                                                maxlength="{{ $def['maks'] }}" autocomplete="off"
+                                                value="{{ $nilai }}" placeholder="{{ $def['bawaan'] }}" data-hitung
+                                                class="{{ $kelasInput }}">
+                                        @endif
 
-                                <div
-                                    class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-xs text-white/40">
-                                    <p class="min-w-0 wrap-break-word">Bawaan: <span
-                                            class="text-white/60 whitespace-pre-line">{{ $def['bawaan'] }}</span></p>
-                                    <span class="shrink-0"><span
-                                            data-hitung-untuk="{{ $id }}">{{ mb_strlen($nilai) }}</span>/{{ $def['maks'] }}</span>
-                                </div>
+                                        <div
+                                            class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-xs text-white/40">
+                                            <p class="min-w-0 wrap-break-word">Bawaan: <span
+                                                    class="text-white/60 whitespace-pre-line">{{ $def['bawaan'] }}</span>
+                                            </p>
+                                            <span class="shrink-0"><span
+                                                    data-hitung-untuk="{{ $id }}">{{ mb_strlen($nilai) }}</span>/{{ $def['maks'] }}</span>
+                                        </div>
 
-                                @php $bolehPakai = array_merge($def['placeholder'] ?? [], $def['tautan'] ?? []); @endphp
-                                @if ($bolehPakai)
-                                    <p class="text-xs text-white/40">Bisa memakai:
-                                        @foreach ($bolehPakai as $nama)
-                                            <code
-                                                class="rounded bg-white/10 px-1.5 py-0.5 text-white/70">&#123;{{ $nama }}&#125;</code>
-                                        @endforeach
-                                    </p>
-                                @endif
+                                        @php $bolehPakai = array_merge($def['placeholder'] ?? [], $def['tautan'] ?? []); @endphp
+                                        @if ($bolehPakai)
+                                            <p class="text-xs text-white/40">Bisa memakai:
+                                                @foreach ($bolehPakai as $nama)
+                                                    <code
+                                                        class="rounded bg-white/10 px-1.5 py-0.5 text-white/70">&#123;{{ $nama }}&#125;</code>
+                                                @endforeach
+                                            </p>
+                                        @endif
 
-                                @error('k.' . $kolom)
-                                    <p class="text-xs text-red-300" role="alert">{{ $message }}</p>
-                                @enderror
+                                        @error('k.' . $kolom)
+                                            <p class="text-xs text-red-300" role="alert">{{ $message }}</p>
+                                        @enderror
 
-                                @if ($diubah)
-                                    <div>
-                                        <button type="submit"
-                                            formaction="{{ route('ic.admin.konten.reset', [$kodeGrup, $namaKunci]) }}"
-                                            class="text-xs text-white/50 underline underline-offset-4 hover:text-white min-h-11">
-                                            Kembalikan bawaan (isian lain di bagian ini yang belum disimpan tidak
-                                            ikut)</button>
+                                        @if ($diubah)
+                                            <div>
+                                                <button type="submit"
+                                                    formaction="{{ route('ic.admin.konten.reset', [$kodeGrup, $namaKunci]) }}"
+                                                    class="text-xs text-white/50 underline underline-offset-4 hover:text-white min-h-11">
+                                                    Kembalikan bawaan (isian lain di bagian ini yang belum disimpan tidak
+                                                    ikut)</button>
+                                            </div>
+                                        @endif
                                     </div>
-                                @endif
-                            </div>
-                        @endforeach
+                                @endforeach
 
-                        <div class="flex flex-wrap gap-2">
-                            <button type="submit"
-                                class="h-11 px-5 inline-flex items-center gap-2 text-white font-bold uppercase tracking-widest text-xs bg-red-950 hover:bg-red-900 active:scale-95 transition rounded-lg">
-                                <i class="bi bi-check2-circle" aria-hidden="true"></i> Simpan {{ $info['label'] }}</button>
+                                <div class="flex flex-wrap gap-2">
+                                    <button type="submit"
+                                        class="h-11 px-5 inline-flex items-center gap-2 text-white font-bold uppercase tracking-widest text-xs bg-red-950 hover:bg-red-900 active:scale-95 transition rounded-lg">
+                                        <i class="bi bi-check2-circle" aria-hidden="true"></i> Simpan
+                                        {{ $info['label'] }}</button>
+                                </div>
+                            </form>
+
+                            @foreach ($info['daftar'] ?? [] as $kodeDaftar)
+                                @include('components.dashboard.inner-circle.daftar-konten')
+                            @endforeach
                         </div>
-                    </form>
 
-                    @foreach ($info['daftar'] ?? [] as $kodeDaftar)
-                        @include('components.dashboard.inner-circle.daftar-konten')
-                    @endforeach
+                        @include('components.dashboard.inner-circle.pratinjau', [
+                            'kodeGrup' => $kodeGrup,
+                            'info' => $info,
+                        ])
+                    </div>
                 </section>
             @endforeach
         </div>
@@ -155,6 +169,81 @@
                 el.addEventListener('input', () => {
                     if (hitung) hitung.textContent = el.value.length;
                 });
+            });
+
+            // Pratinjau langsung: halaman asli dirender server dengan isian form yang belum disimpan (iframe di kanan form).
+            // Dimuat saat bagiannya terlihat, lalu diperbarui sebentar setelah berhenti mengetik. Posisi gulir dipertahankan.
+            document.querySelectorAll('[data-pratinjau]').forEach((panel) => {
+                const form = document.getElementById(panel.dataset.form);
+                const frame = panel.querySelector('[data-pratinjau-frame]');
+                const status = panel.querySelector('[data-pratinjau-status]');
+                const pilih = panel.querySelector('[data-pratinjau-halaman]');
+                if (!form || !frame) return;
+
+                let tunda = null;
+                let batal = null;
+                let sudahTampil = false;
+
+                const muat = async () => {
+                    if (batal) batal.abort();
+                    batal = new AbortController();
+                    status.textContent = 'Memuat…';
+
+                    const data = new FormData(form);
+                    data.set('grup', panel.dataset.grup);
+                    if (pilih) data.set('halaman', pilih.value);
+
+                    try {
+                        const res = await fetch(panel.dataset.url, {
+                            method: 'POST',
+                            body: data,
+                            signal: batal.signal,
+                            credentials: 'same-origin',
+                            headers: {
+                                Accept: 'text/html'
+                            },
+                        });
+                        if (!res.ok) throw new Error(String(res.status));
+                        const html = await res.text();
+                        const y = sudahTampil && frame.contentWindow ? frame.contentWindow.scrollY : 0;
+                        frame.addEventListener('load', () => {
+                            if (y > 0 && frame.contentWindow) frame.contentWindow.scrollTo(0, y);
+                        }, {
+                            once: true
+                        });
+                        frame.srcdoc = html;
+                        sudahTampil = true;
+                        status.textContent = 'Pratinjau diperbarui';
+                    } catch (galat) {
+                        if (galat.name !== 'AbortError') status.textContent =
+                            'Pratinjau gagal dimuat. Coba muat ulang.';
+                    }
+                };
+
+                const jadwalkan = () => {
+                    status.textContent = 'Memperbarui…';
+                    clearTimeout(tunda);
+                    tunda = setTimeout(muat, 600);
+                };
+
+                form.addEventListener('input', jadwalkan);
+                if (pilih) pilih.addEventListener('change', muat);
+                panel.querySelector('[data-pratinjau-muat]')?.addEventListener('click', muat);
+
+                // Muat pertama kali hanya saat panelnya mendekati layar, supaya delapan halaman tidak dirender sekaligus.
+                if ('IntersectionObserver' in window) {
+                    const amati = new IntersectionObserver((baris) => {
+                        if (baris.some((b) => b.isIntersecting)) {
+                            amati.disconnect();
+                            muat();
+                        }
+                    }, {
+                        rootMargin: '300px'
+                    });
+                    amati.observe(panel);
+                } else {
+                    muat();
+                }
             });
 
             // Pratinjau ikon di samping pilihan ikon.

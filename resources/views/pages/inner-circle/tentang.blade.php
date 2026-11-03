@@ -4,7 +4,7 @@
 @section('deskripsi', ic_teks('tentang.meta.deskripsi'))
 
 {{-- Semua teks di halaman ini bisa diubah dari CMS Inner Circle, tab Konten (bagian "Halaman Tentang"). Daftar hadiah dan
-     jadwal acara diambil otomatis dari menu Hadiah dan Acara & QR; langkah dan FAQ dari daftar di tab Konten. --}}
+    jadwal acara diambil otomatis dari menu Hadiah dan Acara & QR; langkah dan FAQ dari daftar di tab Konten. --}}
 @php
     $langkah = ic_daftar('langkah');
     $faq = ic_daftar('faq');
@@ -27,7 +27,9 @@
             @endif
         </div>
         <span class="ic-hero__bintang" aria-hidden="true">✳</span>
-        <span class="ic-hero__cakram" aria-hidden="true"><span>WS</span></span>
+        <span class="ic-hero__cakram" aria-hidden="true"><span><img
+                    src="{{ asset('aset/inner-circle/logo/wsic-wordmark-kompak.webp') }}" alt="" width="420"
+                    height="185" decoding="async"></span></span>
     </section>
 
     @if ($langkah->isNotEmpty())

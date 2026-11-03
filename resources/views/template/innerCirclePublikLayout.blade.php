@@ -9,11 +9,8 @@
     <title>@yield('title', 'WS Inner Circle') — Whisnu Santika</title>
     <meta name="description" content="@yield('deskripsi')">
     <link rel="canonical" href="{{ url()->current() }}">
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="@yield('title', 'WS Inner Circle') — Whisnu Santika">
-    <meta property="og:description" content="@yield('deskripsi')">
-    <meta property="og:url" content="{{ url()->current() }}">
-    <meta property="og:image" content="{{ asset('aset/logo/Whisnu-Santika_Logo-2025-2-White.png') }}">
+    <x-inner-circle.meta-sosial :judul="trim($__env->yieldContent('title', 'WS Inner Circle')) . ' — Whisnu Santika'" :deskripsi="trim($__env->yieldContent('deskripsi'))" />
+    <meta name="theme-color" content="#f8f7fc">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,7 +18,7 @@
         href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap">
 
     @vite(['resources/css/inner-circle.css', 'resources/js/inner-circle.js'])
-    <link rel="icon" href="{{ asset('aset/logo/Whisnu-Santika_Logo-2025-2-White.png') }}" type="image/png">
+    <x-favicon merek="ws-inner-circle" />
     @stack('head')
 </head>
 
@@ -30,10 +27,9 @@
 
     <div class="ic-shell ic-shell--publik">
         <header class="ic-bar">
-            <div>
+            <a href="{{ route('ic.tentang') }}" class="ic-bar__logo" aria-label="WS Inner Circle, halaman utama">
                 <x-inner-circle.logo ukuran="md" />
-                <p class="ic-bar__sub">INNER CIRCLE</p>
-            </div>
+            </a>
             <div class="ic-bar__aksi">
                 @if ($sudahMasuk)
                     <a href="{{ route('ic.beranda') }}" class="ic-tombol">Buka Inner Circle</a>

@@ -2,7 +2,7 @@
 
 Situs resmi DJ **Whisnu Santika** (`whisnusantika.com`) beserta komunitas penggemarnya, **WS Inner Circle**. Satu project Laravel yang berisi dua produk: situs artis dengan CMS-nya, dan komunitas Inner Circle dengan CMS-nya.
 
-Status: tayang di production dengan auto deploy (GitHub Actions + SSH). Terakhir **301 tes lulus**.
+Status: tayang di production dengan auto deploy (GitHub Actions + SSH). Terakhir **315 tes lulus**.
 
 ## Daftar isi
 
@@ -170,12 +170,17 @@ app/
 bootstrap/app.php        middleware, pelaporan error ke Log
 config/                  inner_circle.php, ic_konten.php (teks yang bisa diubah dari CMS), site.php, log_admin.php, dst.
 database/migrations/     36 migrasi;  database/seeders/  data awal
-public/                  index.php, aset/ (logo, ikon Inner Circle), build/ (hasil Vite)
+public/                  index.php, favicon.ico (= WS Artis), build/ (hasil Vite)
+  aset/logo/             logo WS Artis
+  aset/inner-circle/     ikon 3D dan logo resmi WS Inner Circle (logo/wsic-*.webp)
+  aset/favicon/          set favicon per merek: ws-artis/ dan ws-inner-circle/ (ico, 16/32/48 px, apple-touch-icon,
+                         android-chrome 192/512, site.webmanifest); dipasang lewat <x-favicon merek="...">
+  aset/og/               gambar Open Graph 1200x630: og-ws-artis.jpg, og-ws-inner-circle.jpg
 resources/css/           app.css (Tailwind), inner-circle.css (tema lavender)
 resources/js/            app.js, dashboard.js, sweetalert.js, inner-circle.js
 resources/views/         template/, pages/, components/, emails/, errors/
 routes/                  web.php, console.php (jadwal)
-tests/                   Feature/ (15 berkas), Unit/ (2 berkas)
+tests/                   Feature/ (18 berkas), Unit/ (2 berkas)
 .github/workflows/       deploy.yml (tes + auto deploy)
 ```
 
@@ -304,7 +309,7 @@ php artisan test
 
 301 tes. Database SQLite di memori; tes **tidak bergantung pada `.env`** (semua env dipaku di `phpunit.xml`), jadi hasilnya sama di lokal dan di GitHub. `ImageProcessorTest` dilewati otomatis bila ekstensi `gd`/`exif` tidak aktif. SQLite tidak menguji kunci baris (`lockForUpdate`): coba klik ganda klaim dan suka secara manual di MySQL.
 
-Berkas tes: `InnerCircleTest` (inti), `...Lokasi`, `...Hadiah`, `...Komunitas`, `...Keamanan`, `...Google`, `...VerifikasiEmail`, `...AkunPrivasi`, `...SitusPublik`, `...Fase9`, `...Fase10`, `...FilterBulan`, `...Konten`, `...Fase3`, `...Fase4`, `CmsMode`, `AdminLogDuaFaktor`, dan `Unit/` (`HtmlSanitizer`, `ImageProcessor`).
+Berkas tes: `InnerCircleTest` (inti), `...Lokasi`, `...Hadiah`, `...Komunitas`, `...Keamanan`, `...Google`, `...VerifikasiEmail`, `...AkunPrivasi`, `...SitusPublik`, `...Fase9`, `...Fase10`, `...FilterBulan`, `...Konten`, `...Fase3`, `...Fase4`, `...Fase11`, `CmsMode`, `AdminLogDuaFaktor`, dan `Unit/` (`HtmlSanitizer`, `ImageProcessor`).
 
 ### 4.8 Keamanan (ringkas)
 
@@ -443,7 +448,7 @@ Tulis sandi tanpa spasi. `MAIL_FROM_ADDRESS` harus sama dengan `MAIL_USERNAME`. 
 
 > Bagian ini hanya selama pengerjaan. Setelah semua fase selesai: **hapus bagian 6 ini**, lalu perbarui poin lain (lihat [Fase 8](#fase-8-penutup)).
 
-**Status: Fase 0 sampai 4 selesai. Berikutnya Fase 5.**
+**Status: Fase 0 sampai 4b selesai. Berikutnya Fase 5.**
 
 ### 6.1 Tujuan
 
@@ -547,6 +552,14 @@ Catatan untuk fase berikutnya: halaman baru di CMS Inner Circle cukup menambah s
 #### Fase 4: Layar anggota (SELESAI)
 
 Beranda (sapaan dengan `{nama}`, kartu anggota, kotak progres stempel), Hadiah (header, klaim, catatan cara kerja), Komunitas (header, banner, pengumuman, galeri, label Kabar Pilihan), Profil (judul bagian, foto dengan `{maks}`, tautan `{hadiah}` dan `{baca_privasi}`), serta Masuk, Daftar, Lupa sandi, dan Atur ulang sandi. Halaman Check-in sudah dikerjakan di Fase 2. Total 81 kunci di 8 grup. CSS memberi `overflow-wrap: anywhere` pada semua teks yang bisa diubah supaya tidak melebarkan halaman di 320 px. Tes: `InnerCircleFase4Test`.
+
+#### Fase 4b: Revisi tim, pratinjau, dan aset resmi (SELESAI)
+
+- **Pratinjau langsung di tab Konten:** di samping tiap form ada panel iframe berisi halaman asli yang dirender server dengan isian yang belum disimpan (`kontenPratinjauController`, `IcKonten::pakaiDraf`). Memakai anggota contoh yang tidak tersimpan, tidak menulis database dan tidak masuk Log aktivitas. Daftar halaman per grup ada di `pratinjau` pada `config/ic_konten.php`.
+- **Lencana "belum dibaca"** di tab Komunitas: kolom `members.pengumuman_dibaca_pada` dan `galeri_dibaca_pada`. Tersembunyi bila 0, hilang saat tabnya dibuka. Warna lewat `--ic-lencana-latar` / `--ic-lencana-teks` (belum ada isian di CMS).
+- **Aset tim:** logo WS Inner Circle di header/kartu/hero, favicon dan Open Graph untuk WS Artis dan WS Inner Circle (lihat 4.2).
+- **Revisi teks dan tata letak** Beranda, Rewards, Check-in, dan Our Community; latar HP disamakan dengan kartu. Kunci `hadiah.eyebrow` dan `komunitas.eyebrow` dihapus.
+- Tes: `InnerCircleFase11Test`.
 
 #### Fase 5: Aturan dan daftar pilihan
 

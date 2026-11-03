@@ -7,6 +7,7 @@
     {{-- Area anggota: jangan diindeks mesin pencari. --}}
     <meta name="robots" content="noindex, nofollow">
     <title>@yield('title', 'WS Inner Circle') — Whisnu Santika</title>
+    <x-inner-circle.meta-sosial :judul="trim($__env->yieldContent('title', 'WS Inner Circle')) . ' — Whisnu Santika'" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,7 +15,7 @@
         href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap">
 
     @vite(['resources/css/inner-circle.css', 'resources/js/inner-circle.js'])
-    <link rel="icon" href="{{ asset('aset/logo/Whisnu-Santika_Logo-2025-2-White.png') }}" type="image/png">
+    <x-favicon merek="ws-inner-circle" />
     @stack('head')
 </head>
 
@@ -26,7 +27,6 @@
     <main class="ic-auth" id="konten">
         <div class="ic-auth__kartu">
             <x-inner-circle.logo ukuran="lg" />
-            <p class="ic-sub">INNER CIRCLE</p>
             @yield('content')
         </div>
     </main>

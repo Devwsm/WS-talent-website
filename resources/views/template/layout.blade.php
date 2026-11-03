@@ -17,8 +17,7 @@
             html_entity_decode(trim($__env->yieldContent('meta_description')), ENT_QUOTES) ?:
             'Whisnu Santika — DJ & produser asal Jakarta, pionir Indonesian Bounce. Info tur, rilisan musik, merchandise, dan berita terbaru.';
         $seoImage =
-            html_entity_decode(trim($__env->yieldContent('og_image')), ENT_QUOTES) ?:
-            asset('aset/logo/Whisnu-Santika_Logo-2025-White.png');
+            html_entity_decode(trim($__env->yieldContent('og_image')), ENT_QUOTES) ?: asset('aset/og/og-ws-artis.jpg');
     @endphp
 
     <title>{{ $seoTitle }}</title>
@@ -33,6 +32,9 @@
     <meta property="og:title" content="{{ $seoTitle }}">
     <meta property="og:description" content="{{ $seoDescription }}">
     <meta property="og:image" content="{{ $seoImage }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Whisnu Santika, DJ & Produser Musik Indonesia">
 
     {{-- Twitter Card --}}
     <meta name="twitter:card" content="summary_large_image">
@@ -41,7 +43,7 @@
     <meta name="twitter:image" content="{{ $seoImage }}">
 
     {{-- Font Sora kini dihosting sendiri lewat resources/css/app.css (@fontsource-variable/sora),
-         jadi tidak perlu lagi preconnect/stylesheet Google Fonts yang memblokir render. --}}
+        jadi tidak perlu lagi preconnect/stylesheet Google Fonts yang memblokir render. --}}
 
     {{-- Warna universal (CMS: Warna Web) sebagai CSS variable — dipakai aksen yang sebelumnya hardcode merah --}}
     <style>
@@ -51,7 +53,7 @@
     </style>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link rel="icon" href="{{ asset('aset/logo/Whisnu-Santika_Logo-2025-2-White.png') }}" type="image/png">
+    <x-favicon merek="ws-artis" />
 
     {{-- Structured data (JSON-LD) — tiap halaman bisa push schema-nya sendiri --}}
     @stack('schema')

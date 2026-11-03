@@ -16,9 +16,11 @@
                 <x-inner-circle.ikon nama="ok-hand" kelas="ic-ikon--tangan" />
             </div>
             <p class="ic-hero__teks">{{ ic_html('beranda.terima_kasih') }}</p>
-            <a class="ic-hero__stiker" href="{{ route('ic.komunitas') }}">{{ ic_teks('beranda.stiker') }}</a>
+            <a class="ic-hero__stiker" href="{{ route('ic.checkin') }}">{{ ic_teks('beranda.stiker') }}</a>
             <span class="ic-hero__bintang" aria-hidden="true">✳</span>
-            <span class="ic-hero__cakram" aria-hidden="true"><span>WS</span></span>
+            <span class="ic-hero__cakram" aria-hidden="true"><span><img
+                        src="{{ asset('aset/inner-circle/logo/wsic-wordmark-kompak.webp') }}" alt="" width="420"
+                        height="185" decoding="async"></span></span>
         </section>
 
         <div class="ic-beranda__sisi">

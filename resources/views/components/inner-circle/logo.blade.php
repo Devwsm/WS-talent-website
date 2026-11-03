@@ -1,3 +1,4 @@
 @props(['ukuran' => 'md'])
-<span class="ic-logo ic-logo--{{ $ukuran }}" role="img" aria-label="WS Inner Circle">WS<i
-        aria-hidden="true">✦</i></span>
+{{-- Logo resmi WS Inner Circle (aset tim). Tinggi diatur CSS lewat .ic-logo--md / --lg; lebar mengikuti rasio gambar. --}}
+<img class="ic-logo ic-logo--{{ $ukuran }}" src="{{ asset('aset/inner-circle/logo/wsic-wordmark.webp') }}"
+        alt="WS Inner Circle" width="560" height="193" decoding="async">

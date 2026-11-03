@@ -1,10 +1,9 @@
 @extends('template.innerCircleLayout')
 
-@section('title', 'Komunitas')
+@section('title', 'Our Community')
 
 @section('content')
-    <p class="ic-eyebrow">{{ ic_teks('komunitas.eyebrow') }}</p>
-    <h1 class="ic-judul">Komunitas kita<span>.</span></h1>
+    <h1 class="ic-judul">Our Community<span>.</span></h1>
     <p class="ic-deskripsi">{{ ic_html('komunitas.deskripsi') }}</p>
 
     <x-inner-circle.panel-verifikasi />
@@ -28,12 +27,16 @@
             href="{{ route('ic.komunitas', ['tab' => 'pengumuman']) }}"
             @if ($tab === 'pengumuman') aria-current="page" @endif>
             <x-inner-circle.ikon nama="megaphone" kelas="ic-ikon--mini" /> Pengumuman WS
-            <span class="ic-tab__lencana">{{ $jumlahPengumuman }}</span>
+            @if ($jumlahPengumuman > 0)
+                <span class="ic-tab__lencana">{{ $jumlahPengumuman > 99 ? '99+' : $jumlahPengumuman }}<span class="ic-sr-saja"> belum dibaca</span></span>
+            @endif
         </a>
         <a class="ic-tab {{ $tab === 'galeri' ? 'is-aktif' : '' }}" href="{{ route('ic.komunitas', ['tab' => 'galeri']) }}"
             @if ($tab === 'galeri') aria-current="page" @endif>
             <x-inner-circle.ikon nama="camera" kelas="ic-ikon--mini" /> Galeri Kenangan
-            <span class="ic-tab__lencana">{{ $jumlahKenangan }}</span>
+            @if ($jumlahKenangan > 0)
+                <span class="ic-tab__lencana">{{ $jumlahKenangan > 99 ? '99+' : $jumlahKenangan }}<span class="ic-sr-saja"> belum dibaca</span></span>
+            @endif
         </a>
     </nav>
 
@@ -69,8 +72,7 @@
                 @disabled($member->email_verified_at === null)>{{ ic_teks('komunitas.galeri.tombol') }}</button>
         </div>
 
-        <p class="ic-intro-kenangan"><b>{{ ic_teks('komunitas.galeri.intro_tebal') }}</b>
-            {{ ic_html('komunitas.galeri.intro') }}</p>
+        <p class="ic-intro-kenangan"><b>{{ ic_teks('komunitas.galeri.intro_tebal') }}</b> {{ ic_html('komunitas.galeri.intro') }}</p>
 
         <nav class="ic-chip-daftar" aria-label="Filter kategori kenangan">
             <a class="ic-chip {{ $kategori === 'all' ? 'is-aktif' : '' }}"

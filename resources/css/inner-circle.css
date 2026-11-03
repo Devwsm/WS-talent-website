@@ -26,6 +26,9 @@
     --ic-pink: #f0a3e6;
     --ic-hijau: #82dfb4;
     --ic-merah: #ff7770;
+    /* Warna lencana "belum dibaca" di tab Komunitas. Nanti bisa diisi dari CMS lewat :root { --ic-lencana-latar: ... }. */
+    --ic-lencana-latar: var(--ic-emas);
+    --ic-lencana-teks: var(--ic-tinta);
     --ic-font: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
     --ic-font-judul: "Space Grotesk", "DM Sans", system-ui, sans-serif;
 
@@ -133,12 +136,9 @@
     border-bottom: 1px solid var(--ic-garis);
 }
 
-.ic-bar__sub {
-    margin-top: 4px;
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 2px;
-    color: var(--ic-eyebrow);
+.ic-bar__logo {
+    display: block;
+    flex-shrink: 0;
 }
 
 .ic-bar__aksi {
@@ -160,33 +160,16 @@
 
 /* ---------- Logo & avatar ---------- */
 .ic-logo {
-    display: inline-block;
-    font-family: var(--ic-font-judul);
-    font-weight: 800;
-    font-style: italic;
-    letter-spacing: -0.12em;
-    line-height: 1;
-    color: var(--ic-navy);
-}
-
-.ic-logo i {
-    font-style: normal;
-    letter-spacing: 0;
-    color: var(--ic-emas);
-    vertical-align: top;
+    display: block;
+    width: auto;
+    max-width: 100%;
 }
 
 .ic-logo--md {
-    font-size: 23px;
-}
-.ic-logo--md i {
-    font-size: 12px;
+    height: 40px;
 }
 .ic-logo--lg {
-    font-size: 30px;
-}
-.ic-logo--lg i {
-    font-size: 17px;
+    height: 54px;
 }
 
 .ic-avatar {
@@ -1548,8 +1531,8 @@ a.ic-event:hover {
 
 .ic-hero__cakram {
     position: absolute;
-    right: -26px;
-    bottom: -26px;
+    right: -14px;
+    bottom: -14px;
     display: grid;
     place-items: center;
     width: 156px;
@@ -1558,19 +1541,22 @@ a.ic-event:hover {
     border: 15px solid rgba(141, 115, 255, 0.4);
 }
 
+/* Kartu putih kecil berisi logo WS Inner Circle, di tengah lingkaran dekoratif. */
 .ic-hero__cakram span {
     display: grid;
     place-items: center;
-    width: 58px;
-    height: 58px;
-    border-radius: 50%;
+    width: 74%;
+    aspect-ratio: 1.9;
+    border-radius: 16px;
     background: #fff;
-    font-family: var(--ic-font-judul);
-    font-style: italic;
-    font-weight: 800;
-    font-size: 20px;
-    letter-spacing: -0.1em;
-    color: var(--ic-navy);
+    padding: 8%;
+    transform: rotate(-6deg);
+    box-shadow: 0 8px 20px rgba(60, 35, 120, 0.18);
+}
+
+.ic-hero__cakram img {
+    width: 100%;
+    height: auto;
 }
 
 /* ---------- Hadiah: daftar klaim ---------- */
@@ -1750,8 +1736,8 @@ a.ic-event:hover {
     font-family: var(--ic-font-judul);
     font-style: italic;
     font-weight: 700;
-    font-size: clamp(34px, 5.4vw, 62px);
-    line-height: 0.95;
+    font-size: clamp(28px, 4.4vw, 48px);
+    line-height: 1;
     letter-spacing: -0.05em;
     text-transform: uppercase;
     color: #1a1230;
@@ -1805,12 +1791,16 @@ a.ic-event:hover {
     color: #fff;
 }
 
+/* Lencana angka: hanya dirender bila ada isi yang belum dibaca (lihat komunitas.blade.php). */
 .ic-tab__lencana {
+    min-width: 22px;
     padding: 2px 8px;
     border-radius: 10px;
-    background: var(--ic-emas);
-    color: var(--ic-tinta);
+    background: var(--ic-lencana-latar);
+    color: var(--ic-lencana-teks);
     font-size: 11px;
+    line-height: 1.4;
+    text-align: center;
 }
 
 .ic-intro-kenangan {
@@ -2069,7 +2059,7 @@ a.ic-event:hover {
     padding-bottom: 40px;
 }
 /* Hero halaman publik: kartu lilac yang sama dengan Beranda anggota (.ic-hero), tapi lebih lapang.
-   Dulu aturan di sini menimpa .ic-hero secara global (padding kiri/kanan jadi 0), sehingga teks menempel
+    Dulu aturan di sini menimpa .ic-hero secara global (padding kiri/kanan jadi 0), sehingga teks menempel
    di tepi kartu dan Beranda anggota ikut rusak. Sekarang dibatasi ke .ic-hero--publik. */
 .ic-hero--publik {
     min-height: 0;
@@ -2106,9 +2096,7 @@ a.ic-event:hover {
     border-width: clamp(12px, 2vw, 22px);
 }
 .ic-hero--publik .ic-hero__cakram span {
-    width: 38%;
-    height: 38%;
-    font-size: clamp(16px, 2.4vw, 28px);
+    border-radius: clamp(14px, 2vw, 22px);
 }
 .ic-langkah {
     list-style: none;
@@ -2286,16 +2274,14 @@ a.ic-event:hover {
         max-width: 100%;
     }
     .ic-hero__cakram {
-        width: 120px;
-        height: 120px;
-        right: -34px;
-        bottom: -34px;
+        width: 132px;
+        height: 132px;
+        right: -14px;
+        bottom: -14px;
         border-width: 12px;
     }
     .ic-hero__cakram span {
-        width: 46px;
-        height: 46px;
-        font-size: 16px;
+        border-radius: 12px;
     }
 
     /* Dock: 5 menu di layar 320 px harus muat tanpa label terpotong atau terpecah dua baris. */
@@ -2336,7 +2322,7 @@ a.ic-event:hover {
 }
 
 /* ---------- Teks yang bisa diubah dari CMS ----------
-   Admin bebas mengetik, jadi kata panjang atau judul panjang harus turun baris di layar sempit (320 px)
+    Admin bebas mengetik, jadi kata panjang atau judul panjang harus turun baris di layar sempit (320 px)
    dan tidak boleh melebarkan halaman ke samping. */
 .ic-app .ic-eyebrow,
 .ic-app .ic-judul,
@@ -2365,4 +2351,23 @@ a.ic-event:hover {
 .ic-app .ic-pil {
     max-width: 100%;
     overflow-wrap: anywhere;
+}
+
+/* ---------- HP: latar menyatu dengan kartu (tidak ada pita ungu di belakang dock) ----------
+    Di layar lebar, ungu di luar kartu adalah bingkai. Di HP kartunya memenuhi layar, jadi margin bawah 95px
+    (ruang dock) menampilkan latar ungu yang terpotong di belakang dock. Sekarang latarnya sama dengan kartu dan
+   ruang dock diberikan lewat padding .ic-konten. Halaman Masuk/Daftar (.ic-app--auth) tetap berlatar ungu. */
+@media (max-width: 780px) {
+    .ic-app:not(.ic-app--auth) {
+        background: var(--ic-shell);
+    }
+    .ic-app:not(.ic-app--auth) .ic-shell {
+        margin-bottom: 0;
+    }
+    .ic-konten {
+        padding-bottom: calc(130px + env(safe-area-inset-bottom, 0px));
+    }
+    .ic-konten--publik {
+        padding-bottom: 40px;
+    }
 }

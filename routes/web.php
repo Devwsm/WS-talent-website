@@ -7,6 +7,7 @@ use App\Http\Controllers\InnerCircle\akunController;
 use App\Http\Controllers\InnerCircle\emailAdminController;
 use App\Http\Controllers\InnerCircle\kontenController;
 use App\Http\Controllers\InnerCircle\kontenDaftarController;
+use App\Http\Controllers\InnerCircle\kontenPratinjauController;
 use App\Http\Controllers\InnerCircle\authController;
 use App\Http\Controllers\InnerCircle\fotoProfilController;
 use App\Http\Controllers\InnerCircle\googleController;
@@ -145,6 +146,8 @@ Route::prefix('/dashboard')->middleware(['cekLogin', 'catatAktivitas'])->group(f
 
         // Tab Konten: teks halaman anggota yang bisa diubah dari CMS (daftar kunci di config/ic_konten.php).
         Route::get('/konten', [kontenController::class, 'index'])->name('konten');
+        // Pratinjau langsung di samping form (tidak menyimpan apa pun). Harus di atas /konten/{grup}.
+        Route::post('/konten/pratinjau', [kontenPratinjauController::class, 'tampil'])->name('konten.pratinjau')->middleware('throttle:120,1');
         Route::post('/konten/{grup}', [kontenController::class, 'simpan'])->where('grup', '[a-z_]+')->name('konten.simpan')->middleware('throttle:20,1');
         Route::post('/konten/{grup}/reset/{kunci}', [kontenController::class, 'reset'])->where('grup', '[a-z_]+')->name('konten.reset')->middleware('throttle:20,1');
         // Daftar berurutan di tab Konten (langkah, FAQ, poin teaser): tambah, ubah, urutkan, tampil/sembunyikan, hapus.

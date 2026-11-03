@@ -40,6 +40,9 @@ class member extends Authenticatable
             'email_verified_at' => 'datetime',
             'sesi_versi' => 'integer',
             'stempel_total' => 'integer',
+            // Terakhir membuka tab Pengumuman / Galeri di Komunitas (dasar lencana belum dibaca).
+            'pengumuman_dibaca_pada' => 'datetime',
+            'galeri_dibaca_pada' => 'datetime',
             // Alias hasil withMax() di tab Anggota dashboard.
             'terakhir_checkin' => 'datetime',
         ];
