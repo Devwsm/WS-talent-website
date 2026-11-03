@@ -67,7 +67,7 @@ class InnerCircleFase8Test extends TestCase
     {
         $css = file_get_contents(resource_path('css/app.css'));
 
-        $this->assertMatchesRegularExpression('/body\.cms-ic \.cms-dock\s*\{[^}]*--color-neutral-900:\s*#2d2859/s', $css);
+        $this->assertMatchesRegularExpression('/body\.cms-ic \.cms-dock\s*\{[^}]*--color-neutral-900:\s*#27233f/s', $css);
         $this->assertMatchesRegularExpression('/body\.cms-ic \.cms-asli\s*\{[^}]*--color-white:\s*#fff/s', $css);
     }
 }

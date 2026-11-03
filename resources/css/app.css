@@ -608,14 +608,16 @@ body.cms-ic .cms-asli {
     --color-black: #000;
     --color-neutral-900: #171717;
 }
-/* Dock navigasi (desktop), tombol burger, saklar mode, dan bottom sheet (HP): ungu-tua senada tema lavender.
-   Kelas aktif `bg-white text-black` jadi pil lavender muda berteks tinta, cincin `ring-red-950` jadi lilac,
-   dan hover `bg-white/10` jadi kilap lavender, tanpa mengedit markup navbar (yang dipakai bersama CMS Artis). */
+/* Dock navigasi (desktop), tombol burger, saklar mode, dan bottom sheet (HP): memakai tinta ungu-tua yang SAMA
+   dengan tombol "Kelola" dan judul halaman (#27233f), jadi dock, tombol, dan teks satu keluarga warna.
+   Kelas aktif `bg-white text-black` jadi pil lavender muda (#ebe7f7, warna latar halaman) berteks tinta, persis
+   kebalikan tombol Kelola; cincin `ring-red-950` jadi lilac; hover `bg-white/10` jadi kilap lavender tipis.
+   Tanpa mengedit markup navbar (dipakai bersama CMS Artis). */
 body.cms-ic .cms-dock {
-    --color-white: #f3effd;
-    --color-black: #26224a;
-    --color-neutral-900: #2d2859;
-    --color-neutral-800: #3a3470;
+    --color-white: #ebe7f7;
+    --color-black: #27233f;
+    --color-neutral-900: #27233f;
+    --color-neutral-800: #38325c;
 }
 
 /* Warna tombol konfirmasi SweetAlert mengikuti tema (merah tua di CMS Artis, lilac di CMS Inner Circle). */
