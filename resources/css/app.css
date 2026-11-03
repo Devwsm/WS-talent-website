@@ -602,13 +602,22 @@ body.cms-ic {
 body.cms-ic .scheme-dark {
     color-scheme: light;
 }
-/* Bagian yang sengaja tetap memakai warna asli: dock navigasi (gelap), kartu QR, dan pratinjau email (putih). */
-body.cms-ic .cms-dock,
+/* Kartu QR dan pratinjau email tetap memakai warna asli (putih). */
 body.cms-ic .cms-asli {
     --color-white: #fff;
     --color-black: #000;
     --color-neutral-900: #171717;
 }
+/* Dock navigasi (desktop), tombol burger, saklar mode, dan bottom sheet (HP): ungu-tua senada tema lavender.
+   Kelas aktif `bg-white text-black` jadi pil lavender muda berteks tinta, cincin `ring-red-950` jadi lilac,
+   dan hover `bg-white/10` jadi kilap lavender, tanpa mengedit markup navbar (yang dipakai bersama CMS Artis). */
+body.cms-ic .cms-dock {
+    --color-white: #f3effd;
+    --color-black: #26224a;
+    --color-neutral-900: #2d2859;
+    --color-neutral-800: #3a3470;
+}
+
 /* Warna tombol konfirmasi SweetAlert mengikuti tema (merah tua di CMS Artis, lilac di CMS Inner Circle). */
 :root {
     --cms-aksen: #5e0006;

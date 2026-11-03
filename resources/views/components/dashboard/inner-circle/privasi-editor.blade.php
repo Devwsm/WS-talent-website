@@ -37,7 +37,7 @@
 
         <div
             class="rounded-lg overflow-hidden border border-white/15 focus-within:border-red-900 focus-within:ring-1 focus-within:ring-red-900 transition">
-            <div id="privasi-quill" style="min-height: 360px; background: rgba(255,255,255,0.05); color: white;"></div>
+            <div id="privasi-quill" class="bg-white/5 text-white" style="min-height: 360px;"></div>
         </div>
         <input type="hidden" name="isi" id="privasi-isi">
 
@@ -60,34 +60,37 @@
 </section>
 
 <style>
+    /* Warna editor mengikuti tema CMS lewat variabel --color-white (tinta) dan --color-black (latar) milik body.cms-ic,
+       jadi teks tidak lagi putih-di-atas-lavender. Nilai di belakang koma = cadangan bila variabel tidak ada. */
     #form-privasi .ql-toolbar.ql-snow {
-        background-color: rgba(255, 255, 255, 0.08);
+        background-color: color-mix(in srgb, var(--color-white, #fff) 6%, transparent);
         border: none;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        border-bottom: 1px solid color-mix(in srgb, var(--color-white, #fff) 15%, transparent);
         border-radius: 0;
         padding: 8px 12px;
     }
 
     #form-privasi .ql-toolbar.ql-snow .ql-stroke {
-        stroke: #d1d5db;
+        stroke: color-mix(in srgb, var(--color-white, #fff) 70%, transparent);
     }
 
     #form-privasi .ql-toolbar.ql-snow .ql-fill {
-        fill: #d1d5db;
+        fill: color-mix(in srgb, var(--color-white, #fff) 70%, transparent);
     }
 
-    #form-privasi .ql-toolbar.ql-snow .ql-picker {
-        color: #d1d5db;
+    #form-privasi .ql-toolbar.ql-snow .ql-picker,
+    #form-privasi .ql-toolbar.ql-snow .ql-picker-label {
+        color: color-mix(in srgb, var(--color-white, #fff) 70%, transparent);
     }
 
     #form-privasi .ql-toolbar.ql-snow button:hover .ql-stroke,
     #form-privasi .ql-toolbar.ql-snow button.ql-active .ql-stroke {
-        stroke: #ffffff;
+        stroke: var(--color-red-900, #fff);
     }
 
     #form-privasi .ql-toolbar.ql-snow button:hover .ql-fill,
     #form-privasi .ql-toolbar.ql-snow button.ql-active .ql-fill {
-        fill: #ffffff;
+        fill: var(--color-red-900, #fff);
     }
 
     #form-privasi .ql-container.ql-snow {
@@ -97,13 +100,59 @@
     }
 
     #form-privasi .ql-editor {
-        color: #f3f4f6;
-        caret-color: white;
+        color: var(--color-white, #f3f4f6);
+        caret-color: var(--color-red-900, #fff);
         min-height: 360px;
+        line-height: 1.7;
+        overflow-wrap: anywhere;
+    }
+
+    #form-privasi .ql-editor.ql-blank::before {
+        color: color-mix(in srgb, var(--color-white, #fff) 40%, transparent);
+        font-style: normal;
+    }
+
+    /* Judul, daftar, dan kutipan di dalam editor: selalu tinta penuh (bukan pudar) dan berjarak teratur. */
+    #form-privasi .ql-editor h2,
+    #form-privasi .ql-editor h3 {
+        color: var(--color-white, #fff);
+        font-weight: 700;
+        margin: 1.4em 0 0.5em;
+    }
+
+    #form-privasi .ql-editor h2 {
+        font-size: 1.35rem;
+    }
+
+    #form-privasi .ql-editor h3 {
+        font-size: 1.1rem;
+    }
+
+    #form-privasi .ql-editor p,
+    #form-privasi .ql-editor li {
+        color: var(--color-white, #f3f4f6);
+    }
+
+    #form-privasi .ql-editor ol,
+    #form-privasi .ql-editor ul {
+        padding-left: 0.5em;
     }
 
     #form-privasi .ql-editor a {
-        color: #f87171;
+        color: #5a45b0;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+
+    @media (max-width: 639px) {
+        #form-privasi .ql-toolbar.ql-snow {
+            padding: 6px 8px;
+        }
+
+        #form-privasi .ql-editor {
+            min-height: 280px;
+            padding: 12px 14px;
+        }
     }
 </style>
 <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>

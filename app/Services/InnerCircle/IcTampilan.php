@@ -74,6 +74,30 @@ class IcTampilan
         return $this->warna()['kartu'];
     }
 
+    /**
+     * Palet email: email memakai tema Inner Circle yang sama dengan area anggota (bukan merah CMS Artis), jadi ikut
+     * berubah bila warna diubah dari CMS. Header dan tombol memakai navy tetap (teks putih selalu terbaca), aksen dan
+     * lilac hanya untuk hiasan, dan tautan/kode memakai warna label (`eyebrow`, kontras di atas putih lolos AA).
+     *
+     * @return array{latar: string, kartu: string, aksen: string, lilac: string, navy: string, tinta: string, redup: string, tautan: string, garis: string}
+     */
+    public function warnaEmail(): array
+    {
+        $warna = $this->warna();
+
+        return [
+            'latar' => $warna['latar'],
+            'kartu' => $warna['kartu'],
+            'aksen' => $warna['aksen'],
+            'lilac' => self::campur($warna['aksen'], '#ffffff', 0.5),
+            'navy' => '#111322',
+            'tinta' => config('ic_konten.tampilan.teks.tinta.warna'),
+            'redup' => config('ic_konten.tampilan.teks.redup.warna'),
+            'tautan' => config('ic_konten.tampilan.teks.eyebrow.warna'),
+            'garis' => '#e4dff1',
+        ];
+    }
+
     /** Ada warna yang diubah dari bawaan? */
     public function warnaKustom(): bool
     {
