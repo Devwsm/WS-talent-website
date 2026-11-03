@@ -130,7 +130,7 @@ class adminController extends Controller
 
         $filter = [
             'bulan' => $bulanPilihan->has($bulan) ? $bulan : 'all',
-            'tipe' => array_key_exists($tipe, config('inner_circle.tipe_event')) ? $tipe : 'all',
+            'tipe' => array_key_exists($tipe, ic_tipe_event()) ? $tipe : 'all',
             'q' => mb_substr(trim($this->teks($request, 'q')), 0, 60),
         ];
 
@@ -578,7 +578,7 @@ class adminController extends Controller
     public function kenangan(Request $request)
     {
         $kategori = $this->teks($request, 'kategori');
-        $kategori = array_key_exists($kategori, config('inner_circle.kategori_kenangan')) ? $kategori : 'all';
+        $kategori = array_key_exists($kategori, ic_kategori_kenangan(true)) ? $kategori : 'all';
 
         $status = $this->teks($request, 'status');
         $status = in_array($status, [ic_memory::TAYANG, ic_memory::DISEMBUNYIKAN], true) ? $status : 'all';

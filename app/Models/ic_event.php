@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Casts\TokenAcara;
+use App\Services\InnerCircle\IcAturan;
+use App\Services\InnerCircle\IcPilihan;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
@@ -96,7 +98,7 @@ class ic_event extends Model
     {
         return Attribute::get(function () {
             $cfg = config('inner_circle.lokasi');
-            $radius = $this->lokasi_radius ?: (int) $cfg['radius_bawaan_m'];
+            $radius = $this->lokasi_radius ?: app(IcAturan::class)->radiusBawaan();
 
             return max((int) $cfg['radius_min_m'], min((int) $cfg['radius_maks_m'], $radius));
         });
@@ -141,16 +143,19 @@ class ic_event extends Model
         });
     }
 
-    /** Bawaan: tanggal show pukul 12.00 WIB. Bisa diganti per acara lewat kolom jendela_mulai. */
+    /**
+     * Bawaan: aturan jendela dari CMS (cadangan config: tanggal show pukul 12.00 WIB). Bisa diganti per acara lewat
+     * kolom jendela_mulai. Lihat IcAturan: mengubah bawaan tidak menggeser acara yang sudah ada.
+     */
     protected function jendelaBuka(): Attribute
     {
-        return Attribute::get(fn() => $this->jendela_mulai ?? $this->tanggal->copy()->setTime(12, 0));
+        return Attribute::get(fn() => $this->jendela_mulai ?? app(IcAturan::class)->bukaUntuk($this->tanggal));
     }
 
-    /** Bawaan: H+1 pukul 06.00 WIB (show klub selesai lewat tengah malam). */
+    /** Bawaan: aturan jendela dari CMS (cadangan config: H+1 pukul 06.00 WIB, karena show klub selesai lewat tengah malam). */
     protected function jendelaTutup(): Attribute
     {
-        return Attribute::get(fn() => $this->jendela_selesai ?? $this->tanggal->copy()->addDay()->setTime(6, 0));
+        return Attribute::get(fn() => $this->jendela_selesai ?? app(IcAturan::class)->tutupUntuk($this->tanggal));
     }
 
     /**
@@ -192,7 +197,7 @@ class ic_event extends Model
      */
     public function atributCheckin(): array
     {
-        $tipe = config('inner_circle.tipe_event.' . $this->tipe);
+        $tipe = app(IcPilihan::class)->tipeEvent()[$this->tipe] ?? null;
 
         return [
             'data-kode' => (string) $this->kode,

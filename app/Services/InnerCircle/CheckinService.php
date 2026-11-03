@@ -110,7 +110,7 @@ class CheckinService
                     throw new CheckinGagal('Kamu sudah check-in di acara ini. Satu acara hanya memberi satu stempel.');
                 }
 
-                $tipe = config('inner_circle.tipe_event.' . $event->tipe);
+                $tipe = app(IcPilihan::class)->tipeEvent()[$event->tipe] ?? null;
 
                 return $this->stempel->tambah(
                     $terkunci,

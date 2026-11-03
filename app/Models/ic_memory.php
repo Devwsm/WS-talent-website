@@ -80,15 +80,15 @@ class ic_memory extends Model
         return Attribute::get(fn() => $this->created_at);
     }
 
-    /** Ikon sampul kartu tanpa foto, dari kategorinya (config kategori_kenangan). */
+    /** Ikon sampul kartu tanpa foto, dari kategorinya (kategori kenangan, termasuk yang disembunyikan). */
     protected function ikon(): Attribute
     {
-        return Attribute::get(fn() => config('inner_circle.kategori_kenangan.' . $this->kategori . '.sampul', 'sparkles'));
+        return Attribute::get(fn() => ic_kategori_kenangan(true)[$this->kategori]['sampul'] ?? 'sparkles');
     }
 
     protected function warna(): Attribute
     {
-        return Attribute::get(fn() => config('inner_circle.kategori_kenangan.' . $this->kategori . '.warna', 'kuning'));
+        return Attribute::get(fn() => ic_kategori_kenangan(true)[$this->kategori]['warna'] ?? 'kuning');
     }
 
     protected function jumlahLike(): Attribute

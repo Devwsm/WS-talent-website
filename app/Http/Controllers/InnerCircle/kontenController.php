@@ -5,15 +5,18 @@ namespace App\Http\Controllers\InnerCircle;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\InnerCircle\simpanKontenRequest;
 use App\Models\ic_claim;
+use App\Models\ic_pilihan;
+use App\Services\InnerCircle\IcAturan;
 use App\Services\InnerCircle\IcDaftar;
 use App\Services\InnerCircle\IcKonten;
+use App\Services\InnerCircle\IcPilihan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 /** Tab Konten di CMS Inner Circle: ubah teks halaman anggota tanpa menyentuh kode. */
 class kontenController extends Controller
 {
-    public function index(IcKonten $konten, IcDaftar $daftar): View
+    public function index(IcKonten $konten, IcDaftar $daftar, IcPilihan $pilihan, IcAturan $aturan): View
     {
         return view('pages.dashboard-pages.inner-circle.konten', [
             'grup' => config('ic_konten.grup'),
@@ -23,6 +26,17 @@ class kontenController extends Controller
             'daftarDef' => $daftar->definisi(),
             'butir' => collect($daftar->definisi())->map(fn($def, $kode) => $daftar->semua($kode))->all(),
             'ikonDaftar' => config('ic_konten.ikon_daftar'),
+            // Pilihan (tipe acara, kategori kenangan) dan aturan bawaan check-in.
+            'tipeBaris' => $pilihan->baris(ic_pilihan::TIPE_EVENT),
+            'kategoriBaris' => $pilihan->baris(ic_pilihan::KATEGORI_KENANGAN),
+            'pemakaianKategori' => $pilihan->pemakaianKategori(),
+            'ikonKategori' => config('inner_circle.ikon_pilihan'),
+            'ikonTipe' => config('inner_circle.ikon_pilihan') + config('inner_circle.ikon_tipe_tambahan'),
+            'warnaKartu' => config('inner_circle.warna_kartu'),
+            'warnaHex' => config('inner_circle.warna_kartu_hex'),
+            'aturan' => $aturan->efektif(),
+            'aturanBawaan' => $aturan->bawaan(),
+            'aturanRingkasan' => $aturan->ringkasan(),
             'jumlahKlaimMenunggu' => ic_claim::query()->whereIn('status', ic_claim::statusMenunggu())->count(),
         ]);
     }

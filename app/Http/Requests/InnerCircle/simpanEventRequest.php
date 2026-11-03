@@ -30,7 +30,7 @@ class simpanEventRequest extends FormRequest
     {
         return [
             'tanggal' => ['required', 'date_format:Y-m-d'],
-            'tipe' => ['required', Rule::in(array_keys(config('inner_circle.tipe_event')))],
+            'tipe' => ['required', Rule::in(array_keys(ic_tipe_event()))],
             'venue' => ['nullable', 'string', 'max:80'],
             'kota' => ['nullable', 'string', 'max:60'],
             'jendela_mulai' => ['nullable', 'date', 'required_with:jendela_selesai'],

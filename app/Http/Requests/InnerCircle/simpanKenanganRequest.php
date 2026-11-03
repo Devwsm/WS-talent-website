@@ -28,7 +28,7 @@ class simpanKenanganRequest extends FormRequest
         return [
             'caption' => ['required', 'string', 'max:240'],
             'tempat' => ['nullable', 'string', 'max:65'],
-            'kategori' => ['required', Rule::in(array_keys(config('inner_circle.kategori_kenangan')))],
+            'kategori' => ['required', Rule::in(array_keys(ic_kategori_kenangan()))],
             'foto' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:' . (int) config('inner_circle.foto_kenangan_maks_kb')],
         ];
     }

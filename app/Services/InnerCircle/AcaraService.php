@@ -108,7 +108,7 @@ class AcaraService
             if (! $tanggal || $tanggal->format('Y-m-d') !== $data['tanggal']) {
                 $galat[] = "Baris {$nomor}: tanggal harus berformat YYYY-MM-DD.";
             }
-            if (! array_key_exists(strtolower($data['tipe']), config('inner_circle.tipe_event'))) {
+            if (! array_key_exists(strtolower($data['tipe']), app(IcPilihan::class)->tipeEvent())) {
                 $galat[] = "Baris {$nomor}: tipe harus festival, club, atau private.";
             }
             if (mb_strlen($data['kode']) > 20 || mb_strlen($data['kota']) > 60 || mb_strlen($data['venue']) > 80) {

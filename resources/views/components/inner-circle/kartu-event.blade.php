@@ -1,6 +1,6 @@
 @props(['event', 'dipilih' => false, 'href' => null, 'info' => false])
 @php
-    $tipe = config('inner_circle.tipe_event.' . $event->tipe);
+    $tipe = ic_tipe_event()[$event->tipe] ?? ['label' => 'Acara', 'ikon' => 'ticket', 'warna' => 'lilac'];
     $statusWaktu =
         ['lewat' => 'Sudah lewat', 'hari_ini' => 'Hari ini', 'akan_datang' => 'Akan datang'][$event->status_waktu] ??
         '';

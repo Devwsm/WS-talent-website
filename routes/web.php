@@ -6,7 +6,9 @@ use App\Http\Controllers\InnerCircle\adminController;
 use App\Http\Controllers\InnerCircle\akunController;
 use App\Http\Controllers\InnerCircle\emailAdminController;
 use App\Http\Controllers\InnerCircle\kontenController;
+use App\Http\Controllers\InnerCircle\kontenAturanController;
 use App\Http\Controllers\InnerCircle\kontenDaftarController;
+use App\Http\Controllers\InnerCircle\kontenPilihanController;
 use App\Http\Controllers\InnerCircle\kontenPratinjauController;
 use App\Http\Controllers\InnerCircle\authController;
 use App\Http\Controllers\InnerCircle\fotoProfilController;
@@ -151,6 +153,22 @@ Route::prefix('/dashboard')->middleware(['cekLogin', 'catatAktivitas'])->group(f
         Route::post('/konten/{grup}', [kontenController::class, 'simpan'])->where('grup', '[a-z_]+')->name('konten.simpan')->middleware('throttle:20,1');
         Route::post('/konten/{grup}/reset/{kunci}', [kontenController::class, 'reset'])->where('grup', '[a-z_]+')->name('konten.reset')->middleware('throttle:20,1');
         // Daftar berurutan di tab Konten (langkah, FAQ, poin teaser): tambah, ubah, urutkan, tampil/sembunyikan, hapus.
+        // Tipe acara dan kategori kenangan yang bisa diubah dari CMS (IcPilihan).
+        Route::prefix('/konten-pilihan')->name('konten.pilihan.')->group(function () {
+            Route::put('/tipe/{kunci}', [kontenPilihanController::class, 'ubahTipe'])->where('kunci', '[a-z0-9_]+')->defaults('jenis', 'tipe')->name('tipe.ubah')->middleware('throttle:20,1');
+            Route::post('/tipe/{kunci}/bawaan', [kontenPilihanController::class, 'bawaanTipe'])->where('kunci', '[a-z0-9_]+')->name('tipe.bawaan')->middleware('throttle:20,1');
+            Route::post('/kategori', [kontenPilihanController::class, 'tambahKategori'])->defaults('jenis', 'kategori')->name('kategori.tambah')->middleware('throttle:20,1');
+            Route::put('/kategori/{kunci}', [kontenPilihanController::class, 'ubahKategori'])->where('kunci', '[a-z0-9_]+')->defaults('jenis', 'kategori')->name('kategori.ubah')->middleware('throttle:20,1');
+            Route::patch('/kategori/{kunci}/geser', [kontenPilihanController::class, 'geserKategori'])->where('kunci', '[a-z0-9_]+')->name('kategori.geser')->middleware('throttle:admin-aksi-kecil');
+            Route::patch('/kategori/{kunci}/aktif', [kontenPilihanController::class, 'aktifKategori'])->where('kunci', '[a-z0-9_]+')->name('kategori.aktif')->middleware('throttle:admin-aksi-kecil');
+            Route::post('/kategori/{kunci}/bawaan', [kontenPilihanController::class, 'bawaanKategori'])->where('kunci', '[a-z0-9_]+')->name('kategori.bawaan')->middleware('throttle:20,1');
+            Route::delete('/kategori/{kunci}', [kontenPilihanController::class, 'hapusKategori'])->where('kunci', '[a-z0-9_]+')->name('kategori.hapus')->middleware('throttle:20,1');
+        });
+
+        // Aturan bawaan check-in (jendela, radius, akurasi): IcAturan.
+        Route::post('/konten-aturan', [kontenAturanController::class, 'simpan'])->name('konten.aturan.simpan')->middleware('throttle:20,1');
+        Route::post('/konten-aturan/bawaan', [kontenAturanController::class, 'bawaan'])->name('konten.aturan.bawaan')->middleware('throttle:10,1');
+
         Route::prefix('/konten-daftar/{daftar}')->where(['daftar' => '[a-z_]+'])->name('konten.item.')->group(function () {
             Route::post('/', [kontenDaftarController::class, 'tambah'])->name('tambah')->middleware('throttle:20,1');
             Route::post('/bawaan', [kontenDaftarController::class, 'bawaan'])->name('bawaan')->middleware('throttle:10,1');

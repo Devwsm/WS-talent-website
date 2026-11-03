@@ -78,7 +78,7 @@
             <a class="ic-chip {{ $kategori === 'all' ? 'is-aktif' : '' }}"
                 href="{{ route('ic.komunitas', ['tab' => 'galeri']) }}"
                 @if ($kategori === 'all') aria-current="true" @endif>Semua kenangan</a>
-            @foreach (config('inner_circle.kategori_kenangan') as $kunci => $item)
+            @foreach (ic_kategori_kenangan() as $kunci => $item)
                 <a class="ic-chip {{ $kategori === $kunci ? 'is-aktif' : '' }}"
                     href="{{ route('ic.komunitas', ['tab' => 'galeri', 'kategori' => $kunci]) }}"
                     @if ($kategori === $kunci) aria-current="true" @endif>
@@ -145,7 +145,7 @@
                 <div>
                     <label class="ic-label" for="kenangan-kategori">Kategori</label>
                     <select class="ic-input" id="kenangan-kategori" name="kategori">
-                        @foreach (config('inner_circle.kategori_kenangan') as $kunci => $item)
+                        @foreach (ic_kategori_kenangan() as $kunci => $item)
                             <option value="{{ $kunci }}" @selected(old('kategori') === $kunci)>{{ $item['label'] }}
                             </option>
                         @endforeach

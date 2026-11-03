@@ -37,7 +37,7 @@
             <label class="ic-sr-saja" for="filter-tipe">Tipe acara</label>
             <select class="ic-input" id="filter-tipe" name="tipe" data-ic-otomatis>
                 <option value="all">Semua tipe</option>
-                @foreach (config('inner_circle.tipe_event') as $kunci => $tipe)
+                @foreach (ic_tipe_event() as $kunci => $tipe)
                     <option value="{{ $kunci }}" @selected($filter['tipe'] === $kunci)>{{ $tipe['label'] }}</option>
                 @endforeach
             </select>
@@ -113,7 +113,7 @@
                         data-ic-isi="tanggal">{{ $eventDipilih?->tanggal->locale('id')->translatedFormat('D, j M Y') }}</span>
                 </li>
                 <li><span class="ic-pil"
-                        data-ic-isi="tipe">{{ $eventDipilih ? config('inner_circle.tipe_event.' . $eventDipilih->tipe . '.label') : '' }}</span>
+                        data-ic-isi="tipe">{{ $eventDipilih ? ic_tipe_event()[$eventDipilih->tipe]['label'] ?? '' : '' }}</span>
                 </li>
             </ul>
 

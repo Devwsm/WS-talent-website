@@ -69,7 +69,7 @@ class LokasiService
         $cfg = config('inner_circle.lokasi');
         $akurasi = (float) ($lokasi['akurasi'] ?? 0);
         // HP yang tidak melaporkan akurasi dianggap kasar: tidak boleh jadi celah melewati batas akurasi.
-        if (! is_numeric($lokasi['akurasi'] ?? null) || $akurasi <= 0 || $akurasi > (float) $cfg['akurasi_maks_m']) {
+        if (! is_numeric($lokasi['akurasi'] ?? null) || $akurasi <= 0 || $akurasi > (float) app(IcAturan::class)->akurasiMaks()) {
             throw new CheckinGagal(
                 'Sinyal lokasi HP-mu kurang akurat' . ($akurasi > 0 ? ' (sekitar ' . self::formatJarak($akurasi) . ')' : '') .
                     '. Pindah ke area terbuka atau nyalakan GPS presisi tinggi, lalu coba lagi.'

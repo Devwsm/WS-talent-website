@@ -1,6 +1,6 @@
 @props(['kenangan'])
 @php
-    $kategori = config('inner_circle.kategori_kenangan.' . $kenangan->kategori);
+    $kategori = ic_kategori_kenangan(true)[$kenangan->kategori] ?? ['label' => 'Kenangan', 'ikon' => 'sparkles'];
 @endphp
 <article class="ic-kenangan">
     <div class="ic-kenangan__sampul ic-warna-{{ $kenangan->warna }}">

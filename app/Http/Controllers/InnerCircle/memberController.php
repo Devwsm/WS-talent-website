@@ -79,7 +79,7 @@ class memberController extends Controller
 
         $filter = [
             'bulan' => $bulanPilihan->has($bulan) ? $bulan : 'all',
-            'tipe' => array_key_exists($tipe, config('inner_circle.tipe_event')) ? $tipe : 'all',
+            'tipe' => array_key_exists($tipe, ic_tipe_event()) ? $tipe : 'all',
             'q' => mb_substr(trim($this->teks($request, 'q')), 0, 60),
         ];
 
@@ -186,7 +186,7 @@ class memberController extends Controller
         $tab = $this->teks($request, 'tab') === 'galeri' ? 'galeri' : 'pengumuman';
 
         $kategori = $this->teks($request, 'kategori');
-        $kategori = array_key_exists($kategori, config('inner_circle.kategori_kenangan')) ? $kategori : 'all';
+        $kategori = array_key_exists($kategori, ic_kategori_kenangan()) ? $kategori : 'all';
 
         // Lencana angka di tab: isi yang belum dibaca sejak tab itu terakhir dibuka. Tab yang sedang dibuka dianggap
         // dibaca sekarang, jadi lencananya hilang dan waktu bacanya diperbarui.

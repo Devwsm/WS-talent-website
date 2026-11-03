@@ -1,7 +1,7 @@
 @extends('template/icDashboardLayout')
 @section('content')
     @php
-        $tipeEvent = config('inner_circle.tipe_event');
+        $tipeEvent = ic_tipe_event();
         $titikTipe = ['festival' => 'bg-orange-300', 'club' => 'bg-amber-300', 'private' => 'bg-fuchsia-300'];
         $labelWaktu = ['lewat' => 'Sudah lewat', 'hari_ini' => 'Hari ini', 'akan_datang' => 'Akan datang'];
 
@@ -265,7 +265,7 @@
                                     <input id="lokasi-radius" name="radius" type="number" inputmode="numeric"
                                         min="{{ config('inner_circle.lokasi.radius_min_m') }}"
                                         max="{{ config('inner_circle.lokasi.radius_maks_m') }}"
-                                        value="{{ old('radius', $acaraDipilih->lokasi_radius ?: config('inner_circle.lokasi.radius_bawaan_m')) }}"
+                                        value="{{ old('radius', $acaraDipilih->lokasi_radius ?: app(\App\Services\InnerCircle\IcAturan::class)->radiusBawaan()) }}"
                                         class="{{ $kelasInput }}" required>
                                     <p class="text-xs text-white/30">Klub: 100-200 m. Festival atau area luas: 300-800 m.
                                     </p>
@@ -420,8 +420,8 @@
                                             class="bg-white/5 border border-white/15 text-white p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition scheme-dark" />
                                     </div>
                                 </div>
-                                <p class="text-xs text-white/30 mt-3">Kosongkan keduanya untuk memakai bawaan: tanggal show
-                                    pukul 12.00 sampai hari berikutnya pukul 06.00 WIB.</p>
+                                <p class="text-xs text-white/30 mt-3">Kosongkan keduanya untuk memakai bawaan:
+                                    {{ app(\App\Services\InnerCircle\IcAturan::class)->ringkasan() }}.</p>
                             </details>
 
                             <button type="submit"
@@ -687,9 +687,9 @@
                                     class="bg-white/5 border border-white/15 text-white p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition scheme-dark" />
                             </div>
                         </div>
-                        <p class="text-xs text-white/30">Kosongkan kedua jendela untuk memakai bawaan (tanggal show pukul
-                            12.00
-                            sampai hari berikutnya pukul 06.00 WIB). Token dan QR acara tidak berubah.</p>
+                        <p class="text-xs text-white/30">Kosongkan kedua jendela untuk memakai bawaan
+                            ({{ app(\App\Services\InnerCircle\IcAturan::class)->ringkasan() }}). Token dan QR acara tidak
+                            berubah.</p>
                     </div>
                     <div class="flex justify-end gap-2 px-6 py-4 border-t border-white/10 bg-white/3 shrink-0">
                         <button type="button" onclick="document.getElementById('dialogAcara').close()"
@@ -960,7 +960,7 @@
                                 perbaruiPeta();
                                 teks(
                                     'Titik diisi dari alamat. Periksa lewat Cek di Google Maps, lalu tekan Simpan lokasi.'
-                                    );
+                                );
                             });
                             const tautan = document.createElement('a');
                             tautan.href = 'https://www.google.com/maps?q=' + h.lat + ',' + h.lng;

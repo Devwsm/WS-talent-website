@@ -45,6 +45,21 @@ return [
         'akurasi_maks_m' => 150,
         'toleransi_akurasi_m' => 50,
         'geser_konfirmasi_m' => 1000,
+        // Batas isian "akurasi GPS maksimal" di CMS (Konten > Aturan check-in), supaya tidak diisi terlalu longgar/ketat.
+        'akurasi_isian_min_m' => 30,
+        'akurasi_isian_maks_m' => 500,
+    ],
+
+    /*
+    | Jendela check-in bawaan untuk acara yang tidak punya jendela sendiri: dibuka pada jam `buka` di tanggal show,
+    | ditutup pada jam `tutup` setelah `tutup_hari` hari (1 = H+1, karena show klub selesai lewat tengah malam).
+    | Nilai ini hanya cadangan: bila admin mengubahnya di CMS (Konten > Aturan check-in), nilai dari CMS yang dipakai
+    | (lihat App\Services\InnerCircle\IcAturan).
+    */
+    'jendela' => [
+        'buka' => '12:00',
+        'tutup' => '06:00',
+        'tutup_hari' => 1,
     ],
 
     /* Batas pengajuan hadiah per anggota per menit (RateLimiter `ic-klaim`). Pengaman klik ganda dan skrip. */
@@ -157,6 +172,25 @@ return [
         'sparkles' => 'Kilau',
         'cd' => 'Cakram CD',
         'megaphone' => 'Pengeras suara',
+    ],
+
+    /* Pilihan ikon untuk TIPE ACARA: sama dengan ikon_pilihan ditambah gembok (dipakai tipe Acara Privat). */
+    'ikon_tipe_tambahan' => [
+        'lock' => 'Gembok',
+    ],
+
+    /* Jumlah kategori kenangan maksimal (termasuk yang disembunyikan), supaya deretan chip filter tetap rapi di HP. */
+    'kategori_kenangan_maks' => 8,
+
+    /* Warna sampel untuk pratinjau pilihan di CMS (sama dengan token --ic-* di inner-circle.css). */
+    'warna_kartu_hex' => [
+        'koral' => '#ffb3a5',
+        'kuning' => '#f5c45f',
+        'biru' => '#b9d2ff',
+        'lilac' => '#cbb8ff',
+        'pink' => '#f0a3e6',
+        'hijau' => '#82dfb4',
+        'merah' => '#ff7770',
     ],
 
     /* Warna kartu yang boleh dipilih admin. Kunci = modifier .ic-warna-{kunci} di CSS anggota. */

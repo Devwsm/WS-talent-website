@@ -1,6 +1,7 @@
 <?php
 
 use App\Services\InnerCircle\IcKonten;
+use App\Services\InnerCircle\IcPilihan;
 use Illuminate\Support\Collection;
 
 /*
@@ -40,5 +41,21 @@ if (! function_exists('ic_html_daftar')) {
     function ic_html_daftar(string $grup, ?string $teks): Illuminate\Support\HtmlString
     {
         return app(IcKonten::class)->htmlDaftar($grup, $teks);
+    }
+}
+
+if (! function_exists('ic_tipe_event')) {
+    /** Tipe acara (kunci => label, ikon, warna) dari CMS atau config. */
+    function ic_tipe_event(): array
+    {
+        return app(IcPilihan::class)->tipeEvent();
+    }
+}
+
+if (! function_exists('ic_kategori_kenangan')) {
+    /** Kategori kenangan (kunci => label, ikon, sampul, warna). $semua = termasuk yang disembunyikan (untuk kenangan lama). */
+    function ic_kategori_kenangan(bool $semua = false): array
+    {
+        return app(IcPilihan::class)->kategoriKenangan($semua);
     }
 }

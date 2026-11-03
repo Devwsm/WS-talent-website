@@ -129,6 +129,21 @@ class IcKonten
             }
         }
 
+        // Pengaturan tampilan (warna, nama program) ikut dipratinjau; nilai yang tidak valid dibuang oleh IcTampilan saat dibaca.
+        foreach ((array) config('ic_konten.tampilan.kunci', []) as $kunci => $def) {
+            $kolom = str_replace('.', '__', $kunci);
+            if (! array_key_exists($kolom, $nilai)) {
+                continue;
+            }
+
+            $teks = mb_substr($this->rapikan(is_string($nilai[$kolom]) ? $nilai[$kolom] : ''), 0, 40);
+            if ($teks === '') {
+                unset($dasar[$kunci]);
+            } else {
+                $dasar[$kunci] = $teks;
+            }
+        }
+
         $this->draf = $dasar;
     }
 
@@ -136,6 +151,46 @@ class IcKonten
     public function lupakanDraf(): void
     {
         $this->draf = null;
+    }
+
+    /**
+     * Nilai mentah satu pengaturan di luar daftar teks (mis. `aturan.radius_bawaan_m`, `tampilan.aksen`), atau null bila
+     * tidak ada. Dipakai IcAturan dan IcTampilan; isinya bukan teks tampil, jadi pemanggil wajib memeriksanya sendiri.
+     */
+    public function nilaiMentah(string $kunci): ?string
+    {
+        $nilai = $this->pengaturan()[$kunci] ?? null;
+
+        return ($nilai !== null && trim((string) $nilai) !== '') ? (string) $nilai : null;
+    }
+
+    /**
+     * Simpan atau hapus beberapa nilai mentah sekaligus: null berarti hapus (kembali ke bawaan).
+     *
+     * @param  array<string, string|null>  $nilai
+     * @return int jumlah nilai yang benar-benar berubah
+     */
+    public function simpanMentah(array $nilai, ?string $oleh = null): int
+    {
+        $berubah = 0;
+
+        foreach ($nilai as $kunci => $baru) {
+            $lama = $this->nilaiMentah($kunci);
+
+            if ($baru === null) {
+                if ($lama !== null) {
+                    ic_pengaturan::query()->where('kunci', $kunci)->delete();
+                    $berubah++;
+                }
+            } elseif ($baru !== $lama) {
+                ic_pengaturan::query()->updateOrCreate(['kunci' => $kunci], ['nilai' => $baru, 'diubah_oleh' => $oleh]);
+                $berubah++;
+            }
+        }
+
+        $this->lupakan();
+
+        return $berubah;
     }
 
     /** Teks bawaan (tanpa placeholder diisi), untuk petunjuk di form CMS. */
@@ -230,7 +285,7 @@ class IcKonten
 
     private function isiPlaceholder(string $teks, array $diizinkan, array $isi): string
     {
-        $ganti = ['{program}' => (string) config('ic_konten.program')];
+        $ganti = ['{program}' => $this->namaProgram()];
         foreach ($diizinkan as $nama) {
             if (array_key_exists($nama, $isi)) {
                 $ganti['{' . $nama . '}'] = (string) $isi[$nama];
@@ -238,6 +293,12 @@ class IcKonten
         }
 
         return strtr($teks, $ganti);
+    }
+
+    /** Nama program yang dipakai placeholder {program}: dari CMS (Tampilan) bila diisi, kalau tidak dari config. */
+    public function namaProgram(): string
+    {
+        return $this->nilaiMentah('tampilan.program') ?? (string) config('ic_konten.program');
     }
 
     /** @return array<string, string|null> */

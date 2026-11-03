@@ -1,7 +1,7 @@
 @extends('template/icDashboardLayout')
 @section('content')
     @php
-        $kategoriKenangan = config('inner_circle.kategori_kenangan');
+        $kategoriKenangan = ic_kategori_kenangan(true);
         $chipAktif = 'bg-white text-black border-white';
         $chipBiasa = 'border-white/10 text-white/60 hover:bg-white/10 hover:text-white';
     @endphp

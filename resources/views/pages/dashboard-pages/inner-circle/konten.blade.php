@@ -36,6 +36,13 @@
                         <span class="wrap-break-word">{{ $info['label'] }}</span>
                     </a>
                 @endforeach
+                @foreach (['pilihan-tipe' => ['bi-calendar-event', 'Tipe acara'], 'pilihan-kategori' => ['bi-images', 'Kategori kenangan'], 'aturan-checkin' => ['bi-sliders', 'Aturan check-in']] as $jangkar => [$ikonNav, $labelNav])
+                    <a href="#{{ $jangkar }}"
+                        class="min-h-11 px-3.5 inline-flex items-center gap-2 rounded-full border border-white/15 text-xs font-semibold text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+                        <i class="bi {{ $ikonNav }} text-white/50" aria-hidden="true"></i>
+                        <span class="wrap-break-word">{{ $labelNav }}</span>
+                    </a>
+                @endforeach
             </nav>
 
             @foreach ($grup as $kodeGrup => $info)
@@ -50,7 +57,8 @@
                         <div class="min-w-0">
                             <h2 id="judul-{{ $kodeGrup }}"
                                 class="font-bold uppercase tracking-wide text-sm flex items-center gap-2">
-                                <i class="bi {{ $info['ikon'] }} text-white/50" aria-hidden="true"></i> {{ $info['label'] }}
+                                <i class="bi {{ $info['ikon'] }} text-white/50" aria-hidden="true"></i>
+                                {{ $info['label'] }}
                             </h2>
                             <p class="text-xs text-white/40 mt-1">{{ $info['petunjuk'] }}
                                 @if ($jumlahDiubah > 0)
@@ -158,6 +166,10 @@
                     </div>
                 </section>
             @endforeach
+
+            @include('components.dashboard.inner-circle.pilihan-tipe')
+            @include('components.dashboard.inner-circle.pilihan-kategori')
+            @include('components.dashboard.inner-circle.aturan-checkin')
         </div>
     </div>
 
