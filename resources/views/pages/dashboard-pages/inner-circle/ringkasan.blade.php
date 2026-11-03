@@ -81,7 +81,7 @@
                 ])
                     @if ($ringkasan->acara_berikutnya)
                         @php $e = $ringkasan->acara_berikutnya; @endphp
-                        <div class="ic-app rounded-3xl p-4" inert>
+                        <div class="ic-app rounded-3xl p-1 sm:p-4" inert>
                             <x-inner-circle.kartu-event :event="$e" href="#" />
                         </div>
                         <p class="text-xs text-white/40 mt-3">

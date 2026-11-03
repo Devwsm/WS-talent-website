@@ -2371,3 +2371,35 @@ a.ic-event:hover {
         padding-bottom: 40px;
     }
 }
+
+/* ---- Kartu acara di CMS (Fase A) ----
+    Di CMS kartu berada di dalam beberapa lapis padding, jadi di layar kecil lebarnya sempit dan judul terpotong per huruf.
+    Di bawah 480 px: ikon dan panah satu baris di atas, judul dan keterangan memakai selebar kartu. Hanya berlaku di CMS
+    (body.cms-ic); kartu di area anggota tidak berubah. */
+@media (max-width: 479px) {
+    body.cms-ic .ic-event {
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px 12px;
+        min-height: 0;
+        padding: 14px;
+    }
+    body.cms-ic .ic-event__seni {
+        order: 1;
+        width: 52px;
+        height: 52px;
+        border-radius: 16px;
+    }
+    body.cms-ic .ic-event__panah {
+        order: 2;
+    }
+    body.cms-ic .ic-event__isi {
+        order: 3;
+        flex: 1 1 100%;
+    }
+    body.cms-ic .ic-event__venue {
+        font-size: 20px;
+        overflow-wrap: break-word;
+        word-break: normal;
+    }
+}

@@ -44,21 +44,21 @@
             @include('components/errors')
             @include('components/success')
 
-            <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex flex-col gap-3">
                 <h2 class="font-bold uppercase tracking-wide text-sm flex items-center gap-2">
                     <i class="bi bi-inbox-fill text-white/50" aria-hidden="true"></i>
                     Antrean pengajuan
                 </h2>
 
-                {{-- Filter status lewat ?status= (bisa dibagikan, jalan tanpa JavaScript) --}}
-                <nav aria-label="Saring pengajuan" class="-mx-5 md:mx-0 overflow-x-auto md:overflow-visible">
-                    <ul class="flex gap-2 px-5 md:px-0 w-max md:w-auto">
+                {{-- Filter status lewat ?status= (bisa dibagikan, jalan tanpa JavaScript). Grid, bukan baris yang digeser. --}}
+                <nav aria-label="Saring pengajuan">
+                    <ul class="cms-grid-filter">
                         @foreach ($pilihanFilter as $kunci => $label)
                             @php $dipilih = $kunci === $filterStatus; @endphp
                             <li>
                                 <a href="{{ route('ic.admin.klaim', ['status' => $kunci]) }}"
                                     @if ($dipilih) aria-current="page" @endif
-                                    class="inline-flex items-center gap-2 h-11 px-4 rounded-full border text-sm font-semibold whitespace-nowrap transition-colors
+                                    class="cms-chip rounded-full border text-sm font-semibold transition-colors
                                     {{ $dipilih ? 'bg-white text-black border-white' : 'border-white/10 text-white/60 hover:bg-white/10 hover:text-white' }}">
                                     {{ $label }}
                                     <span

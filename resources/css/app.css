@@ -628,3 +628,32 @@ body.cms-ic {
     --cms-aksen: #c8b2ff;
     --cms-glow: #a58bff;
 }
+
+/* ---- Grid filter/tab CMS (Fase A) ----
+    Semua baris tab/filter di CMS memakai grid yang sama: kolom otomatis (minimal 7,5rem, jadi 2 kolom di layar 320 px),
+    sel berukuran seragam, membungkus rapi, TANPA geser ke samping. Chip memenuhi selnya dan teks boleh turun baris. */
+.cms-grid-filter {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+    gap: 0.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.cms-grid-filter > li {
+    display: flex;
+    min-width: 0;
+}
+.cms-chip {
+    display: inline-flex;
+    flex: 1 1 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-width: 0;
+    min-height: 2.75rem;
+    padding: 0.5rem 0.75rem;
+    line-height: 1.2;
+    text-align: center;
+    overflow-wrap: anywhere;
+}

@@ -31,7 +31,7 @@
                         placeholder="Nama, email, atau kode (mis. IC-00248)"
                         class="bg-white/5 border border-white/15 text-white placeholder-white/30 p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition" />
                 </div>
-                <div class="flex items-end gap-2">
+                <div class="flex items-end gap-2 *:flex-1 sm:*:flex-none *:justify-center">
                     <button type="submit"
                         class="h-12 px-6 text-white font-bold uppercase tracking-widest bg-red-950 hover:bg-red-900 active:scale-95 transition rounded-lg">
                         Cari

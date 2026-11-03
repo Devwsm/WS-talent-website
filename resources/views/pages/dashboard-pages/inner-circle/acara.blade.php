@@ -490,7 +490,7 @@
                             <span class="text-xs uppercase tracking-widest text-white/40">Tampilan di halaman
                                 Check-in</span>
                         </div>
-                        <div class="ic-app p-5" inert id="preview-acara">
+                        <div class="ic-app p-2 sm:p-5" inert id="preview-acara">
                             <x-inner-circle.kartu-event :event="$contohAcara" href="#" />
                         </div>
                     </div>
@@ -505,7 +505,7 @@
                 </h2>
 
                 <form method="GET" action="{{ route('ic.admin.acara') }}#jadwal" role="search"
-                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1.6fr_auto] gap-3 rounded-3xl border border-white/10 bg-white/3 p-4 md:p-5 items-end">
+                    class="grid grid-cols-2 lg:grid-cols-[1fr_1fr_1.6fr_auto] gap-3 rounded-3xl border border-white/10 bg-white/3 p-4 md:p-5 items-end">
                     <div class="flex flex-col gap-1.5">
                         <label for="f-bulan"
                             class="text-sm font-semibold uppercase tracking-widest text-white/60">Bulan</label>
@@ -530,14 +530,14 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="flex flex-col gap-1.5 sm:col-span-2 lg:col-span-1">
+                    <div class="flex flex-col gap-1.5 col-span-2 lg:col-span-1">
                         <label for="f-q"
                             class="text-sm font-semibold uppercase tracking-widest text-white/60">Cari</label>
                         <input type="search" id="f-q" name="q" value="{{ $filter['q'] }}" maxlength="60"
                             placeholder="Kota atau venue"
                             class="bg-white/5 border border-white/15 text-white placeholder-white/30 p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition" />
                     </div>
-                    <div class="flex gap-2 sm:col-span-2 lg:col-span-1">
+                    <div class="flex gap-2 col-span-2 lg:col-span-1 *:flex-1 lg:*:flex-none *:justify-center">
                         <button type="submit"
                             class="h-12 px-6 text-white font-bold uppercase tracking-widest bg-red-950 hover:bg-red-900 active:scale-95 transition rounded-lg">
                             Terapkan

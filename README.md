@@ -315,7 +315,7 @@ php artisan test
 
 396 tes. Database SQLite di memori; tes **tidak bergantung pada `.env`** (semua env dipaku di `phpunit.xml`), jadi hasilnya sama di lokal dan di GitHub. `ImageProcessorTest` dilewati otomatis bila ekstensi `gd`/`exif` tidak aktif. SQLite tidak menguji kunci baris (`lockForUpdate`): coba klik ganda klaim dan suka secara manual di MySQL.
 
-Berkas tes: `InnerCircleTest` (inti), `...Lokasi`, `...Hadiah`, `...Komunitas`, `...Keamanan`, `...Google`, `...VerifikasiEmail`, `...AkunPrivasi`, `...SitusPublik`, `...Fase9`, `...Fase10`, `...FilterBulan`, `...Konten`, `...Fase3`, `...Fase4`, `...Fase5`, `...Fase6`, `...Fase7`, `...Fase8`, `...Fase11`, `CmsMode`, `AdminLogDuaFaktor`, dan `Unit/` (`HtmlSanitizer`, `ImageProcessor`).
+Berkas tes: `InnerCircleTest` (inti), `...Lokasi`, `...Hadiah`, `...Komunitas`, `...Keamanan`, `...Google`, `...VerifikasiEmail`, `...AkunPrivasi`, `...SitusPublik`, `...Fase9`, `...Fase10`, `...FilterBulan`, `...Konten`, `...Fase3`, `...Fase4`, `...Fase5`, `...Fase6`, `...Fase7`, `...Fase8`, `CmsResponsifFaseA`, `...Fase11`, `CmsMode`, `AdminLogDuaFaktor`, dan `Unit/` (`HtmlSanitizer`, `ImageProcessor`).
 
 ### 4.8 Keamanan (ringkas)
 
@@ -477,7 +477,7 @@ Tulis sandi tanpa spasi. `MAIL_FROM_ADDRESS` harus sama dengan `MAIL_USERNAME`. 
 
 ### 6.3 Fase
 
-#### Fase A: Perbaikan responsif cepat (belum)
+#### Fase A: Perbaikan responsif cepat (SELESAI)
 
 Tanpa mengubah struktur halaman, hanya CSS dan markup kecil:
 
@@ -486,6 +486,8 @@ Tanpa mengubah struktur halaman, hanya CSS dan markup kecil:
 3. Tab status Klaim hadiah jadi grid (tanpa geser samping).
 4. Audit cepat semua halaman CMS Inner Circle dan CMS Artis di 320 px: tidak ada halaman yang melebar, tombol aksi minimal 44 px.
 5. Tes: pemindai view (tidak ada `overflow-x-auto` pada baris tab/filter, tidak ada lebar tetap yang melebihi 320 px).
+
+Yang dikerjakan: class `.cms-grid-filter` dan `.cms-chip` di `app.css` (grid `auto-fill, minmax(7.5rem, 1fr)`, jadi 2 kolom di 320 px) dipakai di tab Klaim hadiah dan dua filter Kenangan; filter Acara & QR tetap 2 kolom (Bulan, Tipe) di HP dengan Cari dan tombol selebar penuh; tombol Anggota dan filter Acara melebar rata di HP; kartu acara di CMS (`body.cms-ic .ic-event` di `inner-circle.css`) di bawah 480 px menaruh ikon dan panah di baris atas dan judul selebar kartu; padding pembungkus kartu di Ringkasan dan pratinjau Acara dikecilkan di HP. Tes: `CmsResponsifFaseATest`. Belum dicek di browser: kartu dan filter di 320, 375, 768 px perlu dilihat langsung, dan audit halaman CMS Artis menunggu Fase D.
 
 #### Fase B: Pecah tab Konten (belum)
 
@@ -512,7 +514,7 @@ Tanpa mengubah struktur halaman, hanya CSS dan markup kecil:
 ### 6.4 Catatan
 
 - Tidak ada migrasi baru dan tidak ada paket baru yang dibutuhkan.
-- Urutan dikerjakan A, B, C, D; Fase A paling cepat terasa dan aman di-push sendiri.
+- Urutan dikerjakan A, B, C, D; Fase A selesai, berikutnya B dan C digabung dalam satu sesi (pecah tab Konten langsung dengan pratinjau potongan).
 - Fase 8 (penutup pemisahan CMS) selesai dengan tiga perbaikan terakhir: **email satu tema** dengan Inner Circle (tanpa merah), **editor kebijakan privasi** terbaca di tema lavender, dan **dock CMS Inner Circle** senada dengan tema.
 - Dock CMS Inner Circle memakai tinta `#27233f` yang sama dengan tombol Kelola dan judul halaman; pil aktifnya lavender `#ebe7f7` (warna latar halaman). Aturannya di `body.cms-ic .cms-dock` pada `app.css`.
 - Peringatan VS Code `invalidConfigPath` pada `config('ic_konten...')` adalah false positive ekstensi Tailwind IntelliSense (bukan galat kode). Atur `tailwindCSS.lint.invalidConfigPath` ke `ignore` di Settings workspace; folder `.vscode` tidak ikut Git.

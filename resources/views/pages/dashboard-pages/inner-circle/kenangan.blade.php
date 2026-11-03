@@ -27,26 +27,26 @@
 
             {{-- Filter: tautan GET, jalan tanpa JavaScript --}}
             <div class="flex flex-col gap-3 rounded-3xl border border-white/10 bg-white/3 p-4 md:p-5">
-                <nav aria-label="Filter kategori kenangan" class="flex flex-wrap gap-2">
+                <nav aria-label="Filter kategori kenangan" class="cms-grid-filter">
                     <a href="{{ route('ic.admin.kenangan', array_filter(['status' => $status !== 'all' ? $status : null])) }}"
                         @if ($kategori === 'all') aria-current="true" @endif
-                        class="inline-flex items-center gap-2 h-11 px-4 rounded-full border text-sm font-semibold transition-colors {{ $kategori === 'all' ? $chipAktif : $chipBiasa }}">
+                        class="cms-chip rounded-full border text-sm font-semibold transition-colors {{ $kategori === 'all' ? $chipAktif : $chipBiasa }}">
                         Semua kategori
                     </a>
                     @foreach ($kategoriKenangan as $kunci => $k)
                         <a href="{{ route('ic.admin.kenangan', array_filter(['kategori' => $kunci, 'status' => $status !== 'all' ? $status : null])) }}"
                             @if ($kategori === $kunci) aria-current="true" @endif
-                            class="inline-flex items-center gap-2 h-11 px-4 rounded-full border text-sm font-semibold transition-colors {{ $kategori === $kunci ? $chipAktif : $chipBiasa }}">
+                            class="cms-chip rounded-full border text-sm font-semibold transition-colors {{ $kategori === $kunci ? $chipAktif : $chipBiasa }}">
                             {{ $k['label'] }}
                         </a>
                     @endforeach
                 </nav>
 
-                <nav aria-label="Filter status kenangan" class="flex flex-wrap gap-2">
+                <nav aria-label="Filter status kenangan" class="cms-grid-filter">
                     @foreach (['all' => 'Semua status', 'tayang' => 'Tayang', 'disembunyikan' => 'Disembunyikan'] as $kunci => $label)
                         <a href="{{ route('ic.admin.kenangan', array_filter(['kategori' => $kategori !== 'all' ? $kategori : null, 'status' => $kunci !== 'all' ? $kunci : null])) }}"
                             @if ($status === $kunci) aria-current="true" @endif
-                            class="inline-flex items-center h-11 px-4 rounded-full border text-sm font-semibold transition-colors {{ $status === $kunci ? $chipAktif : $chipBiasa }}">
+                            class="cms-chip rounded-full border text-sm font-semibold transition-colors {{ $status === $kunci ? $chipAktif : $chipBiasa }}">
                             {{ $label }}
                         </a>
                     @endforeach
