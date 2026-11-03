@@ -2,7 +2,7 @@
 
 Situs resmi DJ **Whisnu Santika** (`whisnusantika.com`) beserta komunitas penggemarnya, **WS Inner Circle**. Satu project Laravel yang berisi dua produk: situs artis dengan CMS-nya, dan komunitas Inner Circle dengan CMS-nya.
 
-Status: tayang di production dengan auto deploy (GitHub Actions + SSH). Terakhir **337 tes lulus**.
+Status: tayang di production dengan auto deploy (GitHub Actions + SSH). Terakhir **396 tes lulus**.
 
 ## Daftar isi
 
@@ -313,7 +313,7 @@ Aturan penulisan: buang komentar `#` di baris yang diisi; beri tanda kutip pada 
 php artisan test
 ```
 
-337 tes. Database SQLite di memori; tes **tidak bergantung pada `.env`** (semua env dipaku di `phpunit.xml`), jadi hasilnya sama di lokal dan di GitHub. `ImageProcessorTest` dilewati otomatis bila ekstensi `gd`/`exif` tidak aktif. SQLite tidak menguji kunci baris (`lockForUpdate`): coba klik ganda klaim dan suka secara manual di MySQL.
+396 tes. Database SQLite di memori; tes **tidak bergantung pada `.env`** (semua env dipaku di `phpunit.xml`), jadi hasilnya sama di lokal dan di GitHub. `ImageProcessorTest` dilewati otomatis bila ekstensi `gd`/`exif` tidak aktif. SQLite tidak menguji kunci baris (`lockForUpdate`): coba klik ganda klaim dan suka secara manual di MySQL.
 
 Berkas tes: `InnerCircleTest` (inti), `...Lokasi`, `...Hadiah`, `...Komunitas`, `...Keamanan`, `...Google`, `...VerifikasiEmail`, `...AkunPrivasi`, `...SitusPublik`, `...Fase9`, `...Fase10`, `...FilterBulan`, `...Konten`, `...Fase3`, `...Fase4`, `...Fase5`, `...Fase6`, `...Fase7`, `...Fase8`, `...Fase11`, `CmsMode`, `AdminLogDuaFaktor`, dan `Unit/` (`HtmlSanitizer`, `ImageProcessor`).
 
@@ -514,3 +514,5 @@ Tanpa mengubah struktur halaman, hanya CSS dan markup kecil:
 - Tidak ada migrasi baru dan tidak ada paket baru yang dibutuhkan.
 - Urutan dikerjakan A, B, C, D; Fase A paling cepat terasa dan aman di-push sendiri.
 - Fase 8 (penutup pemisahan CMS) selesai dengan tiga perbaikan terakhir: **email satu tema** dengan Inner Circle (tanpa merah), **editor kebijakan privasi** terbaca di tema lavender, dan **dock CMS Inner Circle** senada dengan tema.
+- Dock CMS Inner Circle memakai tinta `#27233f` yang sama dengan tombol Kelola dan judul halaman; pil aktifnya lavender `#ebe7f7` (warna latar halaman). Aturannya di `body.cms-ic .cms-dock` pada `app.css`.
+- Peringatan VS Code `invalidConfigPath` pada `config('ic_konten...')` adalah false positive ekstensi Tailwind IntelliSense (bukan galat kode). Atur `tailwindCSS.lint.invalidConfigPath` ke `ignore` di Settings workspace; folder `.vscode` tidak ikut Git.
