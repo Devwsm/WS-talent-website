@@ -31,7 +31,10 @@ class kontenPratinjauController extends Controller
             'k' => ['nullable', 'array'],
         ])->validate();
 
-        $halamanGrup = config('ic_konten.grup.' . $data['grup'] . '.pratinjau');
+        // Bagian Tampilan bukan grup teks biasa: halaman pratinjaunya ada di ic_konten.tampilan.
+        $halamanGrup = $data['grup'] === 'tampilan'
+            ? config('ic_konten.tampilan.pratinjau')
+            : config('ic_konten.grup.' . $data['grup'] . '.pratinjau');
         abort_unless(is_array($halamanGrup) && $halamanGrup !== [], 404);
 
         $halaman = $data['halaman'] ?? array_key_first($halamanGrup);

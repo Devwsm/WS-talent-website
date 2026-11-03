@@ -10,13 +10,14 @@ use App\Services\InnerCircle\IcAturan;
 use App\Services\InnerCircle\IcDaftar;
 use App\Services\InnerCircle\IcKonten;
 use App\Services\InnerCircle\IcPilihan;
+use App\Services\InnerCircle\IcTampilan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 /** Tab Konten di CMS Inner Circle: ubah teks halaman anggota tanpa menyentuh kode. */
 class kontenController extends Controller
 {
-    public function index(IcKonten $konten, IcDaftar $daftar, IcPilihan $pilihan, IcAturan $aturan): View
+    public function index(IcKonten $konten, IcDaftar $daftar, IcPilihan $pilihan, IcAturan $aturan, IcTampilan $tampilan): View
     {
         return view('pages.dashboard-pages.inner-circle.konten', [
             'grup' => config('ic_konten.grup'),
@@ -37,6 +38,13 @@ class kontenController extends Controller
             'aturan' => $aturan->efektif(),
             'aturanBawaan' => $aturan->bawaan(),
             'aturanRingkasan' => $aturan->ringkasan(),
+            // Tampilan dan merek: nama program, warna, dan logo.
+            'tampilanInfo' => config('ic_konten.tampilan'),
+            'tampilanWarna' => $tampilan->warna(),
+            'tampilanWarnaSimpan' => $tampilan->warnaTersimpan(),
+            'tampilanProgram' => $tampilan->programTersimpan(),
+            'tampilanProgramBawaan' => $tampilan->programBawaan(),
+            'tampilanLogo' => $tampilan->logoUrl(),
             'jumlahKlaimMenunggu' => ic_claim::query()->whereIn('status', ic_claim::statusMenunggu())->count(),
         ]);
     }

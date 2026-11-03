@@ -121,7 +121,9 @@ class InnerCircleFase11Test extends TestCase
     {
         $html = $this->admin()->get(route('ic.admin.konten'))->assertOk()->getContent();
 
-        $this->assertSame(count(config('ic_konten.grup')), substr_count($html, '<iframe data-pratinjau-frame'));
+        // Satu panel per grup teks, ditambah satu untuk bagian Tampilan (Fase 6).
+        $this->assertSame(count(config('ic_konten.grup')) + 1, substr_count($html, '<iframe data-pratinjau-frame'));
+        $this->assertStringContainsString('id="form-tampilan"', $html);
         $this->assertStringContainsString(route('ic.admin.konten.pratinjau'), $html);
         $this->assertStringContainsString('id="form-masuk"', $html);
     }

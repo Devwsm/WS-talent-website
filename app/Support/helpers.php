@@ -2,6 +2,7 @@
 
 use App\Services\InnerCircle\IcKonten;
 use App\Services\InnerCircle\IcPilihan;
+use App\Services\InnerCircle\IcTampilan;
 use Illuminate\Support\Collection;
 
 /*
@@ -57,5 +58,21 @@ if (! function_exists('ic_kategori_kenangan')) {
     function ic_kategori_kenangan(bool $semua = false): array
     {
         return app(IcPilihan::class)->kategoriKenangan($semua);
+    }
+}
+
+if (! function_exists('ic_tampilan')) {
+    /** Tampilan dan merek Inner Circle (warna, logo kustom) dari CMS atau bawaan. */
+    function ic_tampilan(): IcTampilan
+    {
+        return app(IcTampilan::class);
+    }
+}
+
+if (! function_exists('ic_program')) {
+    /** Nama program (bawaan "WS Inner Circle") dari CMS. Tampilkan dengan {{ }} supaya di-escape. */
+    function ic_program(): string
+    {
+        return app(IcKonten::class)->namaProgram();
     }
 }

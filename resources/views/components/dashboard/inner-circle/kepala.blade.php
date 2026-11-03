@@ -28,7 +28,7 @@
 @endif
 
 <div>
-    <p class="text-xs font-semibold uppercase tracking-widest text-white/40 mb-1">WS Inner Circle</p>
+    <p class="text-xs font-semibold uppercase tracking-widest text-white/40 mb-1">{{ ic_program() }}</p>
     <h1 class="text-2xl lg:text-3xl font-bold uppercase">{{ $judul }}</h1>
     <p class="text-white/50 mt-1">{{ $deskripsi }}</p>
 </div>

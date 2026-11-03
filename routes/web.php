@@ -10,6 +10,7 @@ use App\Http\Controllers\InnerCircle\kontenAturanController;
 use App\Http\Controllers\InnerCircle\kontenDaftarController;
 use App\Http\Controllers\InnerCircle\kontenPilihanController;
 use App\Http\Controllers\InnerCircle\kontenPratinjauController;
+use App\Http\Controllers\InnerCircle\kontenTampilanController;
 use App\Http\Controllers\InnerCircle\authController;
 use App\Http\Controllers\InnerCircle\fotoProfilController;
 use App\Http\Controllers\InnerCircle\googleController;
@@ -168,6 +169,10 @@ Route::prefix('/dashboard')->middleware(['cekLogin', 'catatAktivitas'])->group(f
         // Aturan bawaan check-in (jendela, radius, akurasi): IcAturan.
         Route::post('/konten-aturan', [kontenAturanController::class, 'simpan'])->name('konten.aturan.simpan')->middleware('throttle:20,1');
         Route::post('/konten-aturan/bawaan', [kontenAturanController::class, 'bawaan'])->name('konten.aturan.bawaan')->middleware('throttle:10,1');
+
+        // Tampilan dan merek (nama program, warna, logo): IcTampilan.
+        Route::post('/konten-tampilan', [kontenTampilanController::class, 'simpan'])->name('konten.tampilan.simpan')->middleware('throttle:20,1');
+        Route::post('/konten-tampilan/bawaan', [kontenTampilanController::class, 'bawaan'])->name('konten.tampilan.bawaan')->middleware('throttle:10,1');
 
         Route::prefix('/konten-daftar/{daftar}')->where(['daftar' => '[a-z_]+'])->name('konten.item.')->group(function () {
             Route::post('/', [kontenDaftarController::class, 'tambah'])->name('tambah')->middleware('throttle:20,1');

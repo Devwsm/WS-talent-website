@@ -36,7 +36,7 @@
                         <span class="wrap-break-word">{{ $info['label'] }}</span>
                     </a>
                 @endforeach
-                @foreach (['pilihan-tipe' => ['bi-calendar-event', 'Tipe acara'], 'pilihan-kategori' => ['bi-images', 'Kategori kenangan'], 'aturan-checkin' => ['bi-sliders', 'Aturan check-in']] as $jangkar => [$ikonNav, $labelNav])
+                @foreach (['pilihan-tipe' => ['bi-calendar-event', 'Tipe acara'], 'pilihan-kategori' => ['bi-images', 'Kategori kenangan'], 'aturan-checkin' => ['bi-sliders', 'Aturan check-in'], 'tampilan' => ['bi-palette', 'Tampilan dan merek']] as $jangkar => [$ikonNav, $labelNav])
                     <a href="#{{ $jangkar }}"
                         class="min-h-11 px-3.5 inline-flex items-center gap-2 rounded-full border border-white/15 text-xs font-semibold text-white/70 hover:bg-white/10 hover:text-white transition-colors">
                         <i class="bi {{ $ikonNav }} text-white/50" aria-hidden="true"></i>
@@ -170,6 +170,7 @@
             @include('components.dashboard.inner-circle.pilihan-tipe')
             @include('components.dashboard.inner-circle.pilihan-kategori')
             @include('components.dashboard.inner-circle.aturan-checkin')
+            @include('components.dashboard.inner-circle.tampilan')
         </div>
     </div>
 
@@ -202,6 +203,8 @@
                     status.textContent = 'Memuat…';
 
                     const data = new FormData(form);
+                    // Berkas unggahan (logo) tidak ikut dikirim ke pratinjau; logo baru tampil setelah disimpan.
+                    data.delete('logo');
                     data.set('grup', panel.dataset.grup);
                     if (pilih) data.set('halaman', pilih.value);
 
@@ -256,6 +259,33 @@
                 } else {
                     muat();
                 }
+            });
+
+            // Pemilih warna: pemilih bawaan browser dan isian #RRGGBB saling mengikuti; kosong = warna bawaan.
+            document.querySelectorAll('[data-warna]').forEach((bungkus) => {
+                const teks = bungkus.querySelector('[data-warna-teks]');
+                const pilih = bungkus.querySelector('[data-warna-pilih]');
+                const bawaan = bungkus.dataset.warnaBawaan;
+                const valid = (v) => /^#[0-9a-f]{6}$/i.test(v);
+                if (!teks || !pilih) return;
+
+                pilih.addEventListener('input', () => {
+                    teks.value = pilih.value;
+                    teks.dispatchEvent(new Event('input', {
+                        bubbles: true
+                    }));
+                });
+                teks.addEventListener('input', () => {
+                    const nilai = teks.value.trim();
+                    if (valid(nilai)) pilih.value = nilai.toLowerCase();
+                });
+                bungkus.querySelector('[data-warna-kosongkan]')?.addEventListener('click', () => {
+                    teks.value = '';
+                    pilih.value = bawaan;
+                    teks.dispatchEvent(new Event('input', {
+                        bubbles: true
+                    }));
+                });
             });
 
             // Pratinjau ikon di samping pilihan ikon.

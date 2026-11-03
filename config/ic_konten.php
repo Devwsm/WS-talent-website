@@ -30,6 +30,68 @@ return [
     /* Nama program; dipakai lewat placeholder {program}. */
     'program' => 'WS Inner Circle',
 
+    /*
+    | Tampilan dan merek (tab Konten, bagian "Tampilan"; Fase 6): nama program, tiga warna, dan logo.
+    | - kunci   : pengaturan yang disimpan di `ic_pengaturan` hanya bila BEDA dari bawaan (sama seperti teks lain).
+    |             Dipakai juga oleh IcKonten::pakaiDraf() supaya pratinjau langsung ikut berubah.
+    | - warna   : `css` = variabel CSS yang ditimpa di area anggota (resources/css/inner-circle.css). Hanya nilai
+    |             #RRGGBB yang lolos validasi, jadi tidak ada teks bebas yang masuk ke CSS.
+    | - teks    : warna teks area anggota (bukan isian CMS). Dipakai untuk memeriksa kontras; tes menjaga agar nilainya
+    |             sama dengan token di inner-circle.css.
+    | - kontras : batas WCAG AA. Teks 4.5:1; aksen 3:1 (cincin fokus, garis, dan judul besar, bukan teks kecil).
+    */
+    'tampilan' => [
+        'label' => 'Tampilan dan merek',
+        'program_maks' => 30,
+        'logo_folder' => 'inner-circle/logo-kustom',
+        'logo_maks_kb' => 2048,
+        'logo_sisi_maks' => 800,
+        'kontras' => ['teks' => 4.5, 'aksen' => 3.0],
+
+        'pratinjau' => [
+            'beranda' => 'Beranda anggota',
+            'masuk' => 'Masuk',
+            'tentang' => 'Halaman Tentang',
+        ],
+
+        'warna' => [
+            'aksen' => [
+                'kunci' => 'tampilan.aksen',
+                'label' => 'Warna aksen',
+                'css' => '--ic-aksen',
+                'bawaan' => '#8d73ff',
+                'petunjuk' => 'Cincin fokus, garis pilihan, dan kata beraksen di judul. Warna lembut turunannya (lencana dan lingkaran bernomor) ikut menyesuaikan.'
+            ],
+            'latar' => [
+                'kunci' => 'tampilan.latar',
+                'label' => 'Warna latar',
+                'css' => '--ic-latar',
+                'bawaan' => '#d9cdf7',
+                'petunjuk' => 'Bingkai di luar kartu utama pada layar lebar, dan latar halaman Masuk dan Daftar.'
+            ],
+            'kartu' => [
+                'kunci' => 'tampilan.kartu',
+                'label' => 'Warna kartu',
+                'css' => '--ic-shell',
+                'bawaan' => '#f8f7fc',
+                'petunjuk' => 'Permukaan utama tempat teks tampil. Pilih warna terang supaya teks gelap tetap terbaca.'
+            ],
+        ],
+
+        'teks' => [
+            'tinta' => ['label' => 'teks utama', 'warna' => '#151522'],
+            'redup' => ['label' => 'teks pendamping', 'warna' => '#6b6880'],
+            'eyebrow' => ['label' => 'teks label kecil', 'warna' => '#6a58a8'],
+        ],
+
+        'kunci' => [
+            'tampilan.program' => ['label' => 'Nama program', 'maks' => 30],
+            'tampilan.aksen' => ['label' => 'Warna aksen', 'maks' => 7],
+            'tampilan.latar' => ['label' => 'Warna latar', 'maks' => 7],
+            'tampilan.kartu' => ['label' => 'Warna kartu', 'maks' => 7],
+        ],
+    ],
+
     /* Tautan yang boleh disisipkan di dalam teks: {nama} diganti tautan ber-label tetap (dibuat kode, bukan diketik admin). */
     'tautan' => [
         'privasi' => ['route' => 'privasi', 'label' => 'Kebijakan Privasi', 'baru' => false],
@@ -121,7 +183,7 @@ return [
         'tentang.meta.judul' => [
             'grup' => 'tentang',
             'label' => 'Judul tab browser dan hasil pencarian',
-            'bawaan' => 'WS Inner Circle, komunitas penggemar',
+            'bawaan' => '{program}, komunitas penggemar',
             'maks' => 70,
         ],
         'tentang.meta.deskripsi' => [
@@ -140,7 +202,7 @@ return [
         'tentang.hero.judul' => [
             'grup' => 'tentang',
             'label' => 'Judul besar',
-            'bawaan' => 'WS Inner Circle',
+            'bawaan' => '{program}',
             'maks' => 30,
         ],
         'tentang.hero.deskripsi' => [
@@ -227,7 +289,7 @@ return [
         'teaser.judul' => [
             'grup' => 'teaser',
             'label' => 'Judul',
-            'bawaan' => 'WS Inner Circle',
+            'bawaan' => '{program}',
             'maks' => 40,
         ],
         'teaser.deskripsi' => [
@@ -277,7 +339,7 @@ return [
         'beranda.terima_kasih' => [
             'grup' => 'beranda',
             'label' => 'Kalimat terima kasih',
-            'bawaan' => 'Terima kasih sudah menjadi bagian dari keluarga WS Inner Circle.',
+            'bawaan' => 'Terima kasih sudah menjadi bagian dari keluarga {program}.',
             'maks' => 160,
             'baris' => true,
         ],
@@ -405,7 +467,7 @@ return [
         'komunitas.banner.judul' => [
             'grup' => 'komunitas',
             'label' => 'Banner: judul (Enter = baris baru)',
-            'bawaan' => 'Bagikan momen kamu ke sesama WS Inner Circle yang lainnya.',
+            'bawaan' => 'Bagikan momen kamu ke sesama {program} yang lainnya.',
             'maks' => 90,
             'baris' => true,
         ],
@@ -587,7 +649,7 @@ return [
         'daftar.judul' => [
             'grup' => 'masuk',
             'label' => 'Daftar: judul',
-            'bawaan' => 'Gabung WS Inner Circle',
+            'bawaan' => 'Gabung {program}',
             'maks' => 60,
         ],
         'daftar.intro' => [
@@ -619,7 +681,7 @@ return [
         'atur.intro' => [
             'grup' => 'masuk',
             'label' => 'Atur ulang sandi: kalimat pembuka',
-            'bawaan' => 'Pilih kata sandi baru untuk akun WS Inner Circle kamu.',
+            'bawaan' => 'Pilih kata sandi baru untuk akun {program} kamu.',
             'maks' => 160,
             'baris' => true,
         ],

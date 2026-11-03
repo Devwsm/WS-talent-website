@@ -312,7 +312,7 @@ php artisan test
 
 337 tes. Database SQLite di memori; tes **tidak bergantung pada `.env`** (semua env dipaku di `phpunit.xml`), jadi hasilnya sama di lokal dan di GitHub. `ImageProcessorTest` dilewati otomatis bila ekstensi `gd`/`exif` tidak aktif. SQLite tidak menguji kunci baris (`lockForUpdate`): coba klik ganda klaim dan suka secara manual di MySQL.
 
-Berkas tes: `InnerCircleTest` (inti), `...Lokasi`, `...Hadiah`, `...Komunitas`, `...Keamanan`, `...Google`, `...VerifikasiEmail`, `...AkunPrivasi`, `...SitusPublik`, `...Fase9`, `...Fase10`, `...FilterBulan`, `...Konten`, `...Fase3`, `...Fase4`, `...Fase5`, `...Fase11`, `CmsMode`, `AdminLogDuaFaktor`, dan `Unit/` (`HtmlSanitizer`, `ImageProcessor`).
+Berkas tes: `InnerCircleTest` (inti), `...Lokasi`, `...Hadiah`, `...Komunitas`, `...Keamanan`, `...Google`, `...VerifikasiEmail`, `...AkunPrivasi`, `...SitusPublik`, `...Fase9`, `...Fase10`, `...FilterBulan`, `...Konten`, `...Fase3`, `...Fase4`, `...Fase5`, `...Fase6`, `...Fase11`, `CmsMode`, `AdminLogDuaFaktor`, dan `Unit/` (`HtmlSanitizer`, `ImageProcessor`).
 
 ### 4.8 Keamanan (ringkas)
 
@@ -451,7 +451,7 @@ Tulis sandi tanpa spasi. `MAIL_FROM_ADDRESS` harus sama dengan `MAIL_USERNAME`. 
 
 > Bagian ini hanya selama pengerjaan. Setelah semua fase selesai: **hapus bagian 6 ini**, lalu perbarui poin lain (lihat [Fase 8](#fase-8-penutup)).
 
-**Status: Fase 0 sampai 5 selesai. Berikutnya Fase 6.**
+**Status: Fase 0 sampai 6 selesai. Berikutnya Fase 7.**
 
 ### 6.1 Tujuan
 
@@ -575,15 +575,20 @@ Tiga bagian baru di tab Konten (`kontenPilihanController`, `kontenAturanControll
 5. Sumber data: tabel `ic_pilihan` (migrasi `2026_11_03_090000_ic_pilihan`, isi awal sama persis dengan config). Tabel kosong atau belum ada = config yang dipakai.
 6. Tes: `InnerCircleFase5Test` (22 tes).
 
-#### Fase 6: Tema dan merek
+#### Fase 6: Tema dan merek (SELESAI)
 
-1. Tab Konten, bagian **Tampilan**: warna aksen, latar, dan kartu (isian `#RRGGBB` dengan pemilih warna), nama program, logo (unggah JPG/PNG diubah ke WebP lewat `ImageProcessor`).
-2. Tiga layout anggota (`innerCircleLayout`, `AuthLayout`, `PublikLayout`) menulis `<style>:root{--ic-aksen:...}</style>` dari pengaturan, dengan nilai yang divalidasi (hanya `#RRGGBB`, tidak pernah menyisipkan teks bebas ke CSS).
-3. Pemeriksaan kontras: tolak pasangan teks/latar di bawah 4.5:1 dengan pesan jelas; tombol **Kembalikan bawaan**.
-4. Nama program dipakai lewat `{program}` di teks bawaan.
-5. Tes: warna tersimpan tampil di layout; nilai tidak valid ditolak; kontras rendah ditolak; logo tersimpan sebagai WebP.
+Bagian baru **Tampilan dan merek** di tab Konten (`kontenTampilanController`, `simpanTampilanRequest`, service `IcTampilan`, partial `components/dashboard/inner-circle/tampilan`), lengkap dengan pratinjau langsung di sampingnya (halaman Beranda, Masuk, dan Tentang; `grup=tampilan` di `kontenPratinjauController`).
 
-**Selesai bila:** warna dan nama program berubah dari CMS tanpa menyentuh CSS.
+1. **Isian:** nama program (maks. 30 huruf, tanpa `< > { }`), tiga warna `#RRGGBB` (aksen, latar, kartu; pemilih warna dan isian teks saling mengikuti, tombol **Pakai bawaan** per warna), dan logo (JPG/PNG/WebP maks. 2 MB, diolah `ImageProcessor` menjadi WebP dengan sisi terpanjang 800 px). Semua batas ada di `config/ic_konten.php` blok `tampilan`.
+2. **Penyimpanan:** `ic_pengaturan` kunci `tampilan.program`, `tampilan.aksen`, `tampilan.latar`, `tampilan.kartu`, `tampilan.logo`. Sama seperti teks lain, baris hanya ada bila **berbeda** dari bawaan; tabel kosong = tampilan persis seperti sebelumnya. Tidak ada migrasi baru.
+3. **Cara warna dipasang:** komponen `<x-inner-circle.tema />` (di `innerCircleLayout`, `innerCircleAuthLayout`, `innerCirclePublikLayout`) menulis `<style>body.ic-app{...}</style>` **hanya** untuk warna yang diubah. Isinya cuma nama variabel dari config dan nilai `#RRGGBB` yang lolos regex, tidak pernah teks bebas. Aksen juga menurunkan `--ic-lilac` (campuran 50% putih) untuk lencana dan lingkaran bernomor. Warna kartu juga dipakai `<meta name="theme-color">`. Nilai rusak di database diabaikan dan bawaan yang dipakai.
+4. **Pemeriksaan kontras (WCAG AA), dihitung dari gabungan warna yang akan berlaku:** teks utama, teks pendamping, dan teks label kecil di atas **kartu** minimal **4,5:1**; teks utama di atas **latar** minimal 4,5:1; **aksen** di atas kartu minimal **3:1** (aksen dipakai untuk cincin fokus, garis pilihan, dan judul besar, bukan teks kecil; beda dari rencana awal yang menyamaratakan 4,5:1 karena aksen bawaan sendiri 3,3:1). Pesan penolakan menyebut pasangan yang gagal dan rasionya. Warna teks yang diperiksa ada di `ic_konten.tampilan.teks`; tes menjaganya tetap sama dengan token di `inner-circle.css`.
+5. **Nama program:** dipakai di judul tab, `og:site_name`, teks alternatif dan label logo, header CMS Inner Circle, dan semua teks bawaan yang memuat `{program}` (kini 9 kunci, mis. judul hero Tentang, judul teaser, "Gabung {program}"). Teks yang sudah diubah admin tidak ikut berganti. Email belum ikut (Fase 7).
+6. **Logo:** disimpan di disk `public` folder `inner-circle/logo-kustom/` dengan nama UUID; mengganti atau menghapus logo membuang berkas lamanya. Jalur di database dicek bentuknya sebelum dipakai atau dihapus, dan berkas yang hilang jatuh ke logo bawaan. Gambar Open Graph dan favicon tidak ikut berganti (aset tim, bukan isian CMS).
+7. **Pratinjau:** warna dan nama program yang belum disimpan ikut tampil; logo baru tampil setelah disimpan.
+8. Tes: `InnerCircleFase6Test` (29 tes). `InnerCircleFase11Test` disesuaikan (panel pratinjau kini grup teks + 1 untuk Tampilan).
+
+**Selesai bila:** warna dan nama program berubah dari CMS tanpa menyentuh CSS. Sudah terpenuhi.
 
 #### Fase 7: Email dan privasi (opsional)
 

@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {{-- Area anggota: jangan diindeks mesin pencari. --}}
     <meta name="robots" content="noindex, nofollow">
-    <title>@yield('title', 'WS Inner Circle') — Whisnu Santika</title>
-    <x-inner-circle.meta-sosial :judul="trim($__env->yieldContent('title', 'WS Inner Circle')) . ' — Whisnu Santika'" />
+    <title>@yield('title', ic_program()) — Whisnu Santika</title>
+    <x-inner-circle.meta-sosial :judul="trim($__env->yieldContent('title', ic_program())) . ' — Whisnu Santika'" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,6 +16,7 @@
 
     @vite(['resources/css/inner-circle.css', 'resources/js/inner-circle.js'])
     <x-favicon merek="ws-inner-circle" />
+    <x-inner-circle.tema />
     @stack('head')
 </head>
 

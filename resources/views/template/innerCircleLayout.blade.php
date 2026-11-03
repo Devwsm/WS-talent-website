@@ -7,9 +7,9 @@
     {{-- Area anggota: jangan diindeks mesin pencari. --}}
     <meta name="robots" content="noindex, nofollow">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'WS Inner Circle') — Whisnu Santika</title>
-    <x-inner-circle.meta-sosial :judul="trim($__env->yieldContent('title', 'WS Inner Circle')) . ' — Whisnu Santika'" />
-    <meta name="theme-color" content="#f8f7fc">
+    <title>@yield('title', ic_program()) — Whisnu Santika</title>
+    <x-inner-circle.meta-sosial :judul="trim($__env->yieldContent('title', ic_program())) . ' — Whisnu Santika'" />
+    <meta name="theme-color" content="{{ ic_tampilan()->warnaKartu() }}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,6 +18,7 @@
 
     @vite(['resources/css/inner-circle.css', 'resources/js/inner-circle.js'])
     <x-favicon merek="ws-inner-circle" />
+    <x-inner-circle.tema />
     @stack('head')
 </head>
 
@@ -26,7 +27,7 @@
 
     <div class="ic-shell">
         <header class="ic-bar">
-            <a href="{{ route('ic.beranda') }}" class="ic-bar__logo" aria-label="WS Inner Circle, beranda">
+            <a href="{{ route('ic.beranda') }}" class="ic-bar__logo" aria-label="{{ ic_program() }}, beranda">
                 <x-inner-circle.logo ukuran="md" />
             </a>
             <div class="ic-bar__aksi">
