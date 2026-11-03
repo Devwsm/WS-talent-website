@@ -16,7 +16,7 @@ class StatusKlaimMail extends PesanIc
 
     protected function subjek(): string
     {
-        return "Hadiah \"{$this->hadiah}\": {$this->labelStatus}";
+        return ic_email('klaim', 'subjek', ['nama' => $this->nama, 'hadiah' => $this->hadiah, 'status' => $this->labelStatus]);
     }
 
     protected function isi(): array
@@ -27,6 +27,10 @@ class StatusKlaimMail extends PesanIc
             'selesai' => "Pengajuan hadiah \"{$this->hadiah}\" sudah selesai. Terima kasih sudah jadi bagian dari Inner Circle!",
             default => "Status pengajuan hadiah \"{$this->hadiah}\" sekarang: {$this->labelStatus}.",
         };
+
+        // Pembuka dari CMS (bila diisi) menggantikan kalimat bawaan menurut status untuk semua status.
+        $pembuka = ic_email('klaim', 'pembuka', ['nama' => $this->nama, 'hadiah' => $this->hadiah, 'status' => $this->labelStatus]);
+        $kalimat = $pembuka !== '' ? $pembuka : $kalimat;
 
         return [
             'sapaan' => "Halo {$this->nama},",

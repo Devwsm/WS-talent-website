@@ -100,6 +100,68 @@
                                 <i class="bi bi-send" aria-hidden="true"></i> Kirim email tes
                             </button>
                         </form>
+                        {{-- Teks yang bisa diubah: subjek dan paragraf pembuka. Tautan, token, dan tombol tetap dibuat kode. --}}
+                        @php
+                            $galatTeks = $errors->getBag('emailteks');
+                            $pakaiOldTeks = $galatTeks->any();
+                            $bolehPakaiTeks = array_merge(['program'], $teksDef['placeholder'] ?? []);
+                            $kelasInputTeks =
+                                'w-full min-w-0 bg-white/5 border border-white/15 text-white p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition';
+                        @endphp
+                        <form method="POST" id="teks-email" action="{{ route('ic.admin.email.teks', $jenis) }}"
+                            class="flex flex-col gap-4 pt-5 border-t border-white/10 scroll-mt-8">
+                            @csrf
+                            <p class="text-sm font-semibold uppercase tracking-widest text-white/60">Teks email</p>
+                            @if ($galatTeks->any())
+                                <div role="alert"
+                                    class="rounded-xl border border-red-300/40 bg-red-950/20 p-3 text-xs text-red-300 flex flex-col gap-1">
+                                    @foreach ($galatTeks->all() as $pesan)
+                                        <p>{{ $pesan }}</p>
+                                    @endforeach
+                                </div>
+                            @endif
+                            @foreach (['subjek', 'pembuka'] as $bagian)
+                                @php
+                                    $defBagian = $teksDef[$bagian];
+                                    $nilaiBagian = $pakaiOldTeks ? old($bagian, '') : $teksSimpan[$bagian] ?? '';
+                                @endphp
+                                <div class="flex flex-col gap-1.5 min-w-0">
+                                    <label for="teks-{{ $bagian }}"
+                                        class="text-xs font-semibold uppercase tracking-widest text-white/60">{{ $defBagian['label'] }}</label>
+                                    @if ($bagian === 'pembuka')
+                                        <textarea id="teks-{{ $bagian }}" name="{{ $bagian }}" rows="4"
+                                            maxlength="{{ $defBagian['maks'] }}" placeholder="{{ $defBagian['bawaan'] }}" class="{{ $kelasInputTeks }}">{{ $nilaiBagian }}</textarea>
+                                    @else
+                                        <input id="teks-{{ $bagian }}" name="{{ $bagian }}" autocomplete="off"
+                                            maxlength="{{ $defBagian['maks'] }}" value="{{ $nilaiBagian }}"
+                                            placeholder="{{ $defBagian['bawaan'] }}" class="{{ $kelasInputTeks }}">
+                                    @endif
+                                    @if ($defBagian['bawaan'] !== '')
+                                        <p class="text-xs text-white/40 wrap-break-word">Bawaan: <span
+                                                class="text-white/60">{{ $defBagian['bawaan'] }}</span></p>
+                                    @endif
+                                    @if (!empty($defBagian['petunjuk']))
+                                        <p class="text-xs text-white/40">{{ $defBagian['petunjuk'] }}</p>
+                                    @endif
+                                </div>
+                            @endforeach
+                            <p class="text-xs text-white/40">Bisa memakai:
+                                @foreach ($bolehPakaiTeks as $nama)
+                                    <code
+                                        class="rounded bg-white/10 px-1.5 py-0.5 text-white/70">&#123;{{ $nama }}&#125;</code>
+                                @endforeach
+                                . Kosongkan isian untuk memakai bawaan. Pratinjau di kanan memakai teks yang sudah disimpan.
+                            </p>
+                            <div class="flex flex-wrap items-center gap-4">
+                                <button type="submit"
+                                    class="h-11 px-5 inline-flex items-center gap-2 text-white font-bold uppercase tracking-widest text-xs bg-red-950 hover:bg-red-900 active:scale-95 transition rounded-lg">
+                                    <i class="bi bi-check2-circle" aria-hidden="true"></i> Simpan teks</button>
+                                <button type="submit" formaction="{{ route('ic.admin.email.teks.bawaan', $jenis) }}"
+                                    formnovalidate
+                                    class="min-h-11 text-xs text-white/50 underline underline-offset-4 hover:text-white">Kembalikan
+                                    bawaan</button>
+                            </div>
+                        </form>
                     </div>
 
                     {{-- Kanan: pratinjau (iframe tersandbox: skrip dan tautan keluar dimatikan) --}}

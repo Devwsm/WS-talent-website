@@ -117,6 +117,56 @@ return [
         'patch-check' => 'Terverifikasi',
     ],
 
+    /*
+    | Teks email (tab Email; Fase 7): subjek dan paragraf pembuka tiap jenis email. Disimpan di `ic_pengaturan` dengan kunci
+    | `email.<jenis>.<bagian>` hanya bila beda dari bawaan. Placeholder: `{program}` selalu boleh, ditambah `placeholder`
+    | milik jenis itu. Tautan, token, dan tombol dibuat kode dan tidak bisa diubah dari CMS. `klaim.pembuka` yang kosong
+    | berarti kalimat bawaan menurut status hadiah (diajukan, ditolak, selesai) tetap dipakai.
+    */
+    'email' => [
+        'reset' => [
+            'placeholder' => ['nama'],
+            'subjek' => ['label' => 'Subjek', 'maks' => 90, 'bawaan' => 'Atur ulang kata sandi {program}'],
+            'pembuka' => ['label' => 'Paragraf pembuka', 'maks' => 400, 'bawaan' => 'Kami menerima permintaan untuk mengatur ulang kata sandi akun {program} kamu. Tekan tombol di bawah untuk membuat kata sandi baru.'],
+        ],
+        'google' => [
+            'placeholder' => ['nama'],
+            'subjek' => ['label' => 'Subjek', 'maks' => 90, 'bawaan' => 'Akun {program} kamu masuk lewat Google'],
+            'pembuka' => ['label' => 'Paragraf pembuka', 'maks' => 400, 'bawaan' => 'Kami menerima permintaan atur ulang kata sandi untuk akun ini. Akun ini dibuat dengan Google, jadi tidak ada kata sandi yang perlu diatur ulang.'],
+        ],
+        'selamat-datang' => [
+            'placeholder' => ['nama', 'kode'],
+            'subjek' => ['label' => 'Subjek', 'maks' => 90, 'bawaan' => 'Selamat datang di {program}'],
+            'pembuka' => ['label' => 'Paragraf pembuka', 'maks' => 400, 'bawaan' => 'Akun {program} kamu sudah aktif. Kode anggotamu: {kode}.'],
+        ],
+        'verifikasi' => [
+            'placeholder' => ['nama'],
+            'subjek' => ['label' => 'Subjek', 'maks' => 90, 'bawaan' => 'Verifikasi email {program}'],
+            'pembuka' => ['label' => 'Paragraf pembuka', 'maks' => 400, 'bawaan' => 'Terima kasih sudah bergabung di {program}. Tekan tombol di bawah untuk memastikan email ini milikmu. Email yang sudah terverifikasi dibutuhkan untuk mengajukan hadiah.'],
+        ],
+        'klaim' => [
+            'placeholder' => ['nama', 'hadiah', 'status'],
+            'subjek' => ['label' => 'Subjek', 'maks' => 120, 'bawaan' => 'Hadiah "{hadiah}": {status}'],
+            'pembuka' => [
+                'label' => 'Paragraf pembuka (semua status)',
+                'maks' => 400,
+                'bawaan' => '',
+                'petunjuk' => 'Kosongkan untuk memakai kalimat bawaan menurut status (dibuka kembali, ditolak, selesai). Bila diisi, kalimat ini dipakai untuk semua status.'
+            ],
+        ],
+    ],
+
+    /*
+    | Kebijakan privasi (/privasi; Fase 7): isi teks kaya disimpan di `ic_pengaturan` (`privasi.isi`, sudah disaring
+    | HtmlSanitizer) bersama tanggal `privasi.diperbarui` yang terisi otomatis saat disimpan. Tanpa baris, halaman memakai
+    | teks bawaan di resources/views/pages/privasi-bawaan.blade.php dan tanggal dari config/site.php.
+    | Batas: kolom nilai bertipe TEXT (65.535 byte), jadi ada batas byte selain batas karakter.
+    */
+    'privasi' => [
+        'maks_karakter' => 30000,
+        'maks_byte' => 60000,
+    ],
+
     'grup' => [
         'tentang' => [
             'label' => 'Halaman Tentang (publik)',

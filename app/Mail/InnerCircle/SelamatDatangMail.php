@@ -13,19 +13,19 @@ class SelamatDatangMail extends PesanIc
 
     protected function subjek(): string
     {
-        return 'Selamat datang di WS Inner Circle';
+        return ic_email('selamat-datang', 'subjek', ['nama' => $this->nama, 'kode' => $this->kodeMember]);
     }
 
     protected function isi(): array
     {
         return [
             'sapaan' => "Halo {$this->nama},",
-            'pratinjau' => 'Akun WS Inner Circle kamu sudah aktif.',
+            'pratinjau' => 'Akun ' . ic_program() . ' kamu sudah aktif.',
             'paragraf' => [
-                "Akun WS Inner Circle kamu sudah aktif. Kode anggotamu: {$this->kodeMember}.",
+                ic_email('selamat-datang', 'pembuka', ['nama' => $this->nama, 'kode' => $this->kodeMember]),
                 'Datang ke show, pindai QR check-in di venue, kumpulkan stempel, lalu tukarkan dengan hadiah.',
             ],
-            'tombol' => ['teks' => 'Buka WS Inner Circle', 'url' => $this->url],
+            'tombol' => ['teks' => 'Buka ' . ic_program(), 'url' => $this->url],
             'catatan' => [],
         ];
     }

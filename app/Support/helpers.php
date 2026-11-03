@@ -69,6 +69,14 @@ if (! function_exists('ic_tampilan')) {
     }
 }
 
+if (! function_exists('ic_email')) {
+    /** Subjek atau paragraf pembuka email Inner Circle (dari CMS atau bawaan), mis. ic_email('reset', 'subjek', ['nama' => $n]). */
+    function ic_email(string $jenis, string $bagian, array $isi = []): string
+    {
+        return app(\App\Services\InnerCircle\IcEmailTeks::class)->teks($jenis, $bagian, $isi);
+    }
+}
+
 if (! function_exists('ic_program')) {
     /** Nama program (bawaan "WS Inner Circle") dari CMS. Tampilkan dengan {{ }} supaya di-escape. */
     function ic_program(): string

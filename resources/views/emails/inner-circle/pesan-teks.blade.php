@@ -20,5 +20,5 @@
 @endforeach
 
 --
-{{ $merek ?? 'WS Inner Circle' }} - Whisnu Santika
+{{ $merek ?? ic_program() }} - Whisnu Santika
 Kebijakan Privasi: {!! route('privasi') !!}

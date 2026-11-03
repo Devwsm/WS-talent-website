@@ -13,7 +13,7 @@ class AkunGoogleMail extends PesanIc
 
     protected function subjek(): string
     {
-        return 'Akun WS Inner Circle kamu masuk lewat Google';
+        return ic_email('google', 'subjek', ['nama' => $this->nama]);
     }
 
     protected function isi(): array
@@ -22,7 +22,7 @@ class AkunGoogleMail extends PesanIc
             'sapaan' => "Halo {$this->nama},",
             'pratinjau' => 'Akun ini masuk lewat Google, tidak memakai kata sandi.',
             'paragraf' => [
-                'Kami menerima permintaan atur ulang kata sandi untuk akun ini. Akun ini dibuat dengan Google, jadi tidak ada kata sandi yang perlu diatur ulang.',
+                ic_email('google', 'pembuka', ['nama' => $this->nama]),
                 $this->googleAktif
                     ? 'Cukup tekan tombol di bawah dan pilih akun Google dengan alamat email yang sama.'
                     : 'Silakan masuk dari halaman Masuk memakai akun Google dengan alamat email yang sama.',

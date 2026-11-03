@@ -36,7 +36,7 @@
                         <span class="wrap-break-word">{{ $info['label'] }}</span>
                     </a>
                 @endforeach
-                @foreach (['pilihan-tipe' => ['bi-calendar-event', 'Tipe acara'], 'pilihan-kategori' => ['bi-images', 'Kategori kenangan'], 'aturan-checkin' => ['bi-sliders', 'Aturan check-in'], 'tampilan' => ['bi-palette', 'Tampilan dan merek']] as $jangkar => [$ikonNav, $labelNav])
+                @foreach (['pilihan-tipe' => ['bi-calendar-event', 'Tipe acara'], 'pilihan-kategori' => ['bi-images', 'Kategori kenangan'], 'aturan-checkin' => ['bi-sliders', 'Aturan check-in'], 'tampilan' => ['bi-palette', 'Tampilan dan merek'], 'privasi' => ['bi-shield-check', 'Kebijakan privasi']] as $jangkar => [$ikonNav, $labelNav])
                     <a href="#{{ $jangkar }}"
                         class="min-h-11 px-3.5 inline-flex items-center gap-2 rounded-full border border-white/15 text-xs font-semibold text-white/70 hover:bg-white/10 hover:text-white transition-colors">
                         <i class="bi {{ $ikonNav }} text-white/50" aria-hidden="true"></i>
@@ -171,6 +171,7 @@
             @include('components.dashboard.inner-circle.pilihan-kategori')
             @include('components.dashboard.inner-circle.aturan-checkin')
             @include('components.dashboard.inner-circle.tampilan')
+            @include('components.dashboard.inner-circle.privasi-editor')
         </div>
     </div>
 

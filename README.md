@@ -312,7 +312,7 @@ php artisan test
 
 337 tes. Database SQLite di memori; tes **tidak bergantung pada `.env`** (semua env dipaku di `phpunit.xml`), jadi hasilnya sama di lokal dan di GitHub. `ImageProcessorTest` dilewati otomatis bila ekstensi `gd`/`exif` tidak aktif. SQLite tidak menguji kunci baris (`lockForUpdate`): coba klik ganda klaim dan suka secara manual di MySQL.
 
-Berkas tes: `InnerCircleTest` (inti), `...Lokasi`, `...Hadiah`, `...Komunitas`, `...Keamanan`, `...Google`, `...VerifikasiEmail`, `...AkunPrivasi`, `...SitusPublik`, `...Fase9`, `...Fase10`, `...FilterBulan`, `...Konten`, `...Fase3`, `...Fase4`, `...Fase5`, `...Fase6`, `...Fase11`, `CmsMode`, `AdminLogDuaFaktor`, dan `Unit/` (`HtmlSanitizer`, `ImageProcessor`).
+Berkas tes: `InnerCircleTest` (inti), `...Lokasi`, `...Hadiah`, `...Komunitas`, `...Keamanan`, `...Google`, `...VerifikasiEmail`, `...AkunPrivasi`, `...SitusPublik`, `...Fase9`, `...Fase10`, `...FilterBulan`, `...Konten`, `...Fase3`, `...Fase4`, `...Fase5`, `...Fase6`, `...Fase7`, `...Fase11`, `CmsMode`, `AdminLogDuaFaktor`, dan `Unit/` (`HtmlSanitizer`, `ImageProcessor`).
 
 ### 4.8 Keamanan (ringkas)
 
@@ -451,7 +451,7 @@ Tulis sandi tanpa spasi. `MAIL_FROM_ADDRESS` harus sama dengan `MAIL_USERNAME`. 
 
 > Bagian ini hanya selama pengerjaan. Setelah semua fase selesai: **hapus bagian 6 ini**, lalu perbarui poin lain (lihat [Fase 8](#fase-8-penutup)).
 
-**Status: Fase 0 sampai 6 selesai. Berikutnya Fase 7.**
+**Status: Fase 0 sampai 7 selesai. Berikutnya Fase 8 (penutup).**
 
 ### 6.1 Tujuan
 
@@ -590,13 +590,28 @@ Bagian baru **Tampilan dan merek** di tab Konten (`kontenTampilanController`, `s
 
 **Selesai bila:** warna dan nama program berubah dari CMS tanpa menyentuh CSS. Sudah terpenuhi.
 
-#### Fase 7: Email dan privasi (opsional)
+#### Fase 7: Email dan privasi (SELESAI)
 
-1. Subjek dan paragraf pembuka lima jenis email dari pengaturan, dengan placeholder yang diizinkan per jenis (`{nama}`, `{acara}`, `{status}`); tautan dan token tetap dibuat kode, tidak bisa diubah dari CMS. Pratinjau di tab Email memakai teks terbaru.
-2. `/privasi`: isi teks kaya (Quill) disaring `HtmlSanitizer`, dan `privasi_diperbarui` terisi otomatis saat disimpan.
-3. Tes: placeholder asing ditolak; teks email ter-escape; HTML berbahaya di privasi dibersihkan.
+**Teks email** (tab Email, form "Teks email" di bawah pemilih jenis; `emailAdminController::simpanTeks`, `simpanEmailTeksRequest`, service `IcEmailTeks`, helper `ic_email()`):
 
-**Selesai bila:** tab Email dan `/privasi` memakai isi dari CMS.
+1. Subjek dan paragraf pembuka kelima jenis email (reset, Google, selamat datang, verifikasi, status hadiah). Bawaan di `config/ic_konten.php` blok `email`, persis seperti teks lama; disimpan di `ic_pengaturan` (`email.<jenis>.<subjek|pembuka>`) hanya bila beda dari bawaan.
+2. Placeholder per jenis: `{program}` (semua), `{nama}` (semua), `{kode}` (selamat datang), `{hadiah}` dan `{status}` (status hadiah). Placeholder lain, `< >`, dan teks melewati batas (subjek 90/120, pembuka 400 huruf) ditolak. Tautan, token, dan tombol tetap dibuat kode.
+3. Pembuka status hadiah yang kosong = kalimat bawaan menurut status (dibuka kembali, ditolak, selesai); bila diisi, dipakai untuk semua status.
+4. Keamanan: teks tampil lewat `{{ }}` (di-escape); nilai placeholder dari data anggota dijadikan satu baris dan diganti dalam satu putaran (tidak diproses ulang), jadi tidak bisa menyisipkan baris baru ke subjek.
+5. Nama program (Fase 6) kini ikut ke email: subjek, pembuka, tombol "Buka {program}", kalimat catatan, dan nama pengirim di kaki email.
+6. Pratinjau di tab Email memakai teks yang sudah **disimpan** (belum live saat mengetik).
+
+**Kebijakan privasi** (tab Konten, bagian "Kebijakan privasi"; `kontenPrivasiController`, `simpanPrivasiRequest`, service `IcPrivasi`, partial `components/dashboard/inner-circle/privasi-editor`):
+
+1. Editor Quill (H2/H3, tebal, miring, garis bawah, daftar, tautan). Isi awal editor = teks bawaan, yang dipindah ke `resources/views/pages/privasi-bawaan.blade.php` (dipakai /privasi selama belum ada isi sendiri).
+2. Isi disaring `HtmlSanitizer` saat disimpan dan disaring lagi saat dibaca. Isi yang tampak kosong (`<p><br></p>`, `&nbsp;`) ditolak; batas 30.000 karakter dan 60.000 byte (kolom TEXT).
+3. Tanggal "Diperbarui" terisi otomatis dengan hari penyimpanan, hanya bila isinya benar-benar berubah. Tanpa isi sendiri, tanggal tetap dari `config/site.php` (`privasi_diperbarui`).
+4. **Kembalikan teks bawaan** menghapus isi dan tanggal kustom. Kontak privasi tetap dari `KONTAK_PRIVASI_EMAIL` (hanya di teks bawaan; isi sendiri harus menulis kontaknya sendiri).
+5. Tanpa migrasi baru (`privasi.isi` dan `privasi.diperbarui` di `ic_pengaturan`).
+
+Tes: `InnerCircleFase7Test` (25 tes).
+
+**Selesai bila:** tab Email dan `/privasi` memakai isi dari CMS. Sudah terpenuhi.
 
 #### Fase 8: Penutup
 

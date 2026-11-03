@@ -5,7 +5,9 @@ namespace App\Http\Controllers\InnerCircle;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\InnerCircle\kirimEmailTesRequest;
 use App\Models\ic_claim;
+use App\Http\Requests\InnerCircle\simpanEmailTeksRequest;
 use App\Services\InnerCircle\EmailService;
+use App\Services\InnerCircle\IcEmailTeks;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -16,7 +18,7 @@ use Throwable;
  */
 class emailAdminController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, IcEmailTeks $teks)
     {
         $jenis = $request->query('jenis');
         $jenis = is_string($jenis) && array_key_exists($jenis, EmailService::JENIS) ? $jenis : array_key_first(EmailService::JENIS);
@@ -25,6 +27,9 @@ class emailAdminController extends Controller
 
         return view('pages.dashboard-pages.inner-circle.email', [
             'daftar' => EmailService::JENIS,
+            // Teks yang bisa diubah (subjek, pembuka) untuk jenis yang dipilih.
+            'teksDef' => config("ic_konten.email.$jenis"),
+            'teksSimpan' => $teks->tersimpan($jenis),
             'jenis' => $jenis,
             'mailer' => $mailer,
             // `log` dan `array` tidak mengirim email sungguhan: isinya hanya ditulis ke storage/logs.
@@ -44,6 +49,22 @@ class emailAdminController extends Controller
             ->header('Content-Type', 'text/html; charset=UTF-8')
             ->header('Cache-Control', 'no-store')
             ->header('Content-Security-Policy', "sandbox; default-src 'none'; style-src 'unsafe-inline'");
+    }
+
+    public function simpanTeks(string $jenis, simpanEmailTeksRequest $request, IcEmailTeks $teks)
+    {
+        $berubah = $teks->simpan($jenis, $request->nilai(), session('user'));
+
+        return redirect(route('ic.admin.email', ['jenis' => $jenis]) . '#teks-email')
+            ->with('success', $berubah > 0 ? "Teks email \"" . EmailService::JENIS[$jenis]['label'] . "\" disimpan." : 'Tidak ada teks yang berubah.');
+    }
+
+    public function kembalikanTeks(string $jenis, IcEmailTeks $teks)
+    {
+        abort_unless(array_key_exists($jenis, EmailService::JENIS), 404);
+        $teks->kembalikan($jenis, session('user'));
+
+        return redirect(route('ic.admin.email', ['jenis' => $jenis]) . '#teks-email')->with('success', 'Teks email dikembalikan ke bawaan.');
     }
 
     public function tes(kirimEmailTesRequest $request, EmailService $email)

@@ -13,16 +13,16 @@ class ResetSandiMail extends PesanIc
 
     protected function subjek(): string
     {
-        return 'Atur ulang kata sandi WS Inner Circle';
+        return ic_email('reset', 'subjek', ['nama' => $this->nama]);
     }
 
     protected function isi(): array
     {
         return [
             'sapaan' => "Halo {$this->nama},",
-            'pratinjau' => 'Buat kata sandi baru untuk akun WS Inner Circle kamu.',
+            'pratinjau' => 'Buat kata sandi baru untuk akun ' . ic_program() . ' kamu.',
             'paragraf' => [
-                'Kami menerima permintaan untuk mengatur ulang kata sandi akun WS Inner Circle kamu. Tekan tombol di bawah untuk membuat kata sandi baru.',
+                ic_email('reset', 'pembuka', ['nama' => $this->nama]),
             ],
             'tombol' => ['teks' => 'Buat kata sandi baru', 'url' => $this->url],
             'catatan' => [

@@ -10,6 +10,7 @@ use App\Services\InnerCircle\IcAturan;
 use App\Services\InnerCircle\IcDaftar;
 use App\Services\InnerCircle\IcKonten;
 use App\Services\InnerCircle\IcPilihan;
+use App\Services\InnerCircle\IcPrivasi;
 use App\Services\InnerCircle\IcTampilan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -17,7 +18,7 @@ use Illuminate\View\View;
 /** Tab Konten di CMS Inner Circle: ubah teks halaman anggota tanpa menyentuh kode. */
 class kontenController extends Controller
 {
-    public function index(IcKonten $konten, IcDaftar $daftar, IcPilihan $pilihan, IcAturan $aturan, IcTampilan $tampilan): View
+    public function index(IcKonten $konten, IcDaftar $daftar, IcPilihan $pilihan, IcAturan $aturan, IcTampilan $tampilan, IcPrivasi $privasi): View
     {
         return view('pages.dashboard-pages.inner-circle.konten', [
             'grup' => config('ic_konten.grup'),
@@ -38,6 +39,10 @@ class kontenController extends Controller
             'aturan' => $aturan->efektif(),
             'aturanBawaan' => $aturan->bawaan(),
             'aturanRingkasan' => $aturan->ringkasan(),
+            // Kebijakan privasi: isi awal editor = isi kustom, atau teks bawaan.
+            'privasiKustom' => $privasi->sudahKustom(),
+            'privasiHtml' => $privasi->isi() ?? $privasi->bawaanHtml(),
+            'privasiTanggal' => $privasi->diperbarui(),
             // Tampilan dan merek: nama program, warna, dan logo.
             'tampilanInfo' => config('ic_konten.tampilan'),
             'tampilanWarna' => $tampilan->warna(),
