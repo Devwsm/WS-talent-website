@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\InnerCircle;
 
+use App\Services\InnerCircle\IcBagian;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -34,7 +35,7 @@ class simpanPilihanRequest extends FormRequest
 
     protected function getRedirectUrl(): string
     {
-        return route('ic.admin.konten') . '#pilihan-' . $this->route('jenis');
+        return IcBagian::url(IcBagian::untukPilihan((string) $this->route('jenis')));
     }
 
     public function rules(): array

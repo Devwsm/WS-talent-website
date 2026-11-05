@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\InnerCircle;
 
+use App\Services\InnerCircle\IcBagian;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\InnerCircle\simpanAturanRequest;
 use App\Services\InnerCircle\IcAturan;
@@ -28,6 +29,6 @@ class kontenAturanController extends Controller
             $pesan .= " {$hasil['dibekukan']} acara yang sudah ada tetap memakai aturan lamanya.";
         }
 
-        return redirect(route('ic.admin.konten') . '#aturan-checkin')->with('success', $pesan);
+        return redirect(IcBagian::url('aturan-checkin'))->with('success', $pesan);
     }
 }

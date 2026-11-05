@@ -20,10 +20,10 @@
             bawaan. Warna dicek kontrasnya supaya teks tetap terbaca.</p>
     </div>
 
-    <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] gap-6 items-start">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         <form method="POST" id="form-tampilan" action="{{ route('ic.admin.konten.tampilan.simpan') }}"
             enctype="multipart/form-data"
-            class="rounded-3xl border border-white/10 bg-white/3 p-5 sm:p-6 md:p-8 flex flex-col gap-6 min-w-0">
+            class="rounded-3xl border border-white/10 bg-white/3 p-6 md:p-8 flex flex-col gap-6 min-w-0">
             @csrf
             @if ($galat->any())
                 <div role="alert"

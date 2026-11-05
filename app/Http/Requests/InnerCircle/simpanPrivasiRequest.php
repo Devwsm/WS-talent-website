@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\InnerCircle;
 
+use App\Services\InnerCircle\IcBagian;
 use App\Services\InnerCircle\IcPrivasi;
 use App\Support\HtmlSanitizer;
 use Illuminate\Foundation\Http\FormRequest;
@@ -24,7 +25,7 @@ class simpanPrivasiRequest extends FormRequest
 
     protected function getRedirectUrl(): string
     {
-        return route('ic.admin.konten') . '#privasi';
+        return IcBagian::url('privasi');
     }
 
     public function rules(): array

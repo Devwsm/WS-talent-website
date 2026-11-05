@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\InnerCircle;
 
+use App\Services\InnerCircle\IcBagian;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\InnerCircle\simpanPrivasiRequest;
 use App\Services\InnerCircle\IcPrivasi;
@@ -14,7 +15,7 @@ class kontenPrivasiController extends Controller
     {
         $privasi->simpan($request->isi(), session('user'));
 
-        return redirect(route('ic.admin.konten') . '#privasi')
+        return redirect(IcBagian::url('privasi'))
             ->with('success', 'Kebijakan privasi disimpan. Tanggal "Diperbarui" di halaman ikut berubah.');
     }
 
@@ -22,7 +23,7 @@ class kontenPrivasiController extends Controller
     {
         $berubah = $privasi->kembalikanBawaan(session('user'));
 
-        return redirect(route('ic.admin.konten') . '#privasi')
+        return redirect(IcBagian::url('privasi'))
             ->with('success', $berubah > 0 ? 'Kebijakan privasi dikembalikan ke teks bawaan.' : 'Kebijakan privasi sudah memakai teks bawaan.');
     }
 }

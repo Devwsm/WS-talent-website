@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\InnerCircle;
 
+use App\Services\InnerCircle\IcBagian;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\InnerCircle\simpanItemRequest;
 use App\Services\InnerCircle\IcDaftar;
@@ -75,7 +76,7 @@ class kontenDaftarController extends Controller
     {
         abort_unless(is_array(config("ic_konten.daftar.$daftar")), 404);
 
-        $kembali = redirect(route('ic.admin.konten') . '#daftar-' . $daftar);
+        $kembali = redirect(IcBagian::url(IcBagian::untukDaftar($daftar), 'daftar-' . $daftar));
 
         try {
             return $kembali->with('success', $aksi());

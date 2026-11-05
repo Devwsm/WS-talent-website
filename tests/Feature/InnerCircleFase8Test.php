@@ -56,7 +56,7 @@ class InnerCircleFase8Test extends TestCase
 
     public function test_editor_privasi_tidak_memakai_warna_putih_tetap(): void
     {
-        $html = $this->admin()->get(route('ic.admin.konten'))->assertOk()->getContent();
+        $html = $this->admin()->get(route('ic.admin.konten.bagian', 'privasi'))->assertOk()->getContent();
 
         $this->assertStringNotContainsString('color: white;"></div>', $html);
         $this->assertStringContainsString('var(--color-white', $html);

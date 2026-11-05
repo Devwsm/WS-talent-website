@@ -32,6 +32,9 @@ class IcKonten
     /** Nilai draf pratinjau CMS (belum disimpan). Bila terisi, menggantikan isi tabel untuk permintaan ini saja. */
     private ?array $draf = null;
 
+    /** Pratinjau potongan: bila true, tiap teks diberi penanda tak terlihat berisi kuncinya (lihat PratinjauPotongan). */
+    private bool $penanda = false;
+
     /** @return array<string, array<string, mixed>> semua kunci yang terdaftar di config */
     public function definisi(): array
     {
@@ -60,7 +63,9 @@ class IcKonten
         $nilai = $this->pengaturan()[$kunci] ?? null;
         $teks = ($nilai !== null && trim($nilai) !== '') ? $nilai : (string) $def['bawaan'];
 
-        return $this->isiPlaceholder($teks, $def['placeholder'] ?? [], $isi);
+        $hasil = $this->isiPlaceholder($teks, $def['placeholder'] ?? [], $isi);
+
+        return $this->penanda ? PratinjauPotongan::AWAL . $kunci . PratinjauPotongan::AKHIR . $hasil : $hasil;
     }
 
     /**
@@ -151,6 +156,13 @@ class IcKonten
     public function lupakanDraf(): void
     {
         $this->draf = null;
+        $this->penanda = false;
+    }
+
+    /** Nyalakan penanda kunci di depan tiap teks, hanya untuk permintaan pratinjau potongan (dimatikan oleh lupakanDraf). */
+    public function pakaiPenanda(bool $aktif = true): void
+    {
+        $this->penanda = $aktif;
     }
 
     /**

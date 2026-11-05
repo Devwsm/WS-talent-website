@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\homeController;
 use App\Models\member;
 use App\Services\InnerCircle\IcKonten;
+use App\Services\InnerCircle\PratinjauPotongan;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
@@ -19,7 +20,13 @@ use Illuminate\Support\Facades\Validator;
  * - teks yang tampil adalah isian form yang belum disimpan (IcKonten::pakaiDraf), bukan isi database;
  * - anggotanya contoh (tidak tersimpan, tidak pernah ditulis ke database), jadi layar anggota bisa ditampilkan
  *   tanpa login anggota dan tanpa efek samping (mis. menandai Komunitas dibaca).
- * Hasilnya HTML utuh yang dimuat panel iframe di CMS. Tautan dan kirim form di dalamnya dimatikan.
+ * Hasilnya HTML yang dimuat panel iframe di CMS. Tautan dan kirim form di dalamnya dimatikan.
+ *
+ * Dua mode:
+ * - tanpa `fokus`: halaman utuh (perilaku lama);
+ * - dengan `fokus` (kunci teks yang sedang diedit, titik diganti `__`): PRATINJAU POTONGAN, hanya bagian halaman yang
+ *   memuat teks itu (lihat PratinjauPotongan). Bila halaman belum dipilih, semua halaman grup dicoba berurutan sampai
+ *   teksnya ditemukan. Isian kosong tampil sebagai teks bawaan, jadi potongan selalu punya isi contoh.
  */
 class kontenPratinjauController extends Controller
 {
@@ -28,6 +35,7 @@ class kontenPratinjauController extends Controller
         $data = Validator::make($request->all(), [
             'grup' => ['required', 'string', 'regex:/^[a-z_]+$/'],
             'halaman' => ['nullable', 'string', 'regex:/^[a-z_]+$/'],
+            'fokus' => ['nullable', 'string', 'regex:/^[a-z0-9_]+$/'],
             'k' => ['nullable', 'array'],
         ])->validate();
 
@@ -37,22 +45,56 @@ class kontenPratinjauController extends Controller
             : config('ic_konten.grup.' . $data['grup'] . '.pratinjau');
         abort_unless(is_array($halamanGrup) && $halamanGrup !== [], 404);
 
+        $fokus = $data['fokus'] ?? null;
+        $kunciFokus = $fokus !== null ? str_replace('__', '.', $fokus) : null;
+        abort_unless($kunciFokus === null || $konten->definisiKunci($kunciFokus) !== null || str_starts_with($kunciFokus, 'tampilan.'), 404);
+
         $halaman = $data['halaman'] ?? array_key_first($halamanGrup);
         abort_unless(array_key_exists($halaman, $halamanGrup), 404);
 
+        $jangkar = (string) config('ic_konten.grup.' . $data['grup'] . '.jangkar', '');
         $konten->pakaiDraf($data['k'] ?? []);
 
         try {
-            $html = $this->render($halaman);
+            if ($kunciFokus === null) {
+                $html = $this->matikanInteraksi($this->render($halaman), $jangkar);
+                $catatan = '';
+            } else {
+                // Teks tampilan/merek (nama program, warna) tidak punya penanda: tampilkan bagian atas halaman contoh.
+                $tanpaPenanda = str_starts_with($kunciFokus, 'tampilan.');
+                $konten->pakaiPenanda(! $tanpaPenanda);
+
+                // Halaman yang dicoba: yang dipilih dulu; bila tidak dipilih dari form (kosong), semua halaman grup berurutan.
+                $urutan = isset($data['halaman']) && $data['halaman'] !== ''
+                    ? [$halaman]
+                    : array_keys($halamanGrup);
+
+                $potong = ['html' => '', 'catatan' => PratinjauPotongan::CATATAN_ATAS];
+                foreach ($urutan as $kandidat) {
+                    $hasil = $tanpaPenanda
+                        ? ['html' => PratinjauPotongan::potongAtas($this->render($kandidat)), 'catatan' => '']
+                        : PratinjauPotongan::potong($this->render($kandidat), $kunciFokus);
+
+                    if ($potong['html'] === '' || $hasil['catatan'] === '') {
+                        $potong = $hasil;
+                    }
+                    if ($hasil['catatan'] === '') {
+                        break;
+                    }
+                }
+
+                $html = $this->tambahGayaPotongan($potong['html']);
+                $catatan = $potong['catatan'];
+            }
         } finally {
             $konten->lupakanDraf();
         }
-        $jangkar = (string) config('ic_konten.grup.' . $data['grup'] . '.jangkar', '');
 
-        return response($this->matikanInteraksi($html, $jangkar), 200, [
+        return response($html, 200, array_filter([
             'Content-Type' => 'text/html; charset=UTF-8',
             'Cache-Control' => 'no-store',
-        ]);
+            'X-Pratinjau-Catatan' => rawurlencode($catatan),
+        ], fn($v) => $v !== ''));
     }
 
     private function render(string $halaman): string
@@ -132,5 +174,33 @@ class kontenPratinjauController extends Controller
         $posisi = strripos($html, '</body>');
 
         return $posisi === false ? $html . $skrip : substr($html, 0, $posisi) . $skrip . substr($html, $posisi);
+    }
+
+    /**
+     * Gaya dan skrip untuk potongan: tinggi mengikuti isi (bukan tinggi layar), bagian yang diedit diberi garis putus-putus,
+     * tautan dan form dimatikan, dan tinggi akhir dikirim ke halaman CMS supaya iframe-nya pas.
+     */
+    private function tambahGayaPotongan(string $html): string
+    {
+        $gaya = '<style>html,body{min-height:0!important;height:auto!important;overflow:hidden!important}'
+            . 'body{margin:0!important}[data-ic-sorot]{outline:2px dashed #8d73ff;outline-offset:4px;border-radius:6px}</style>';
+        $skrip = '<script>(function(){'
+            . 'document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("a");if(a){e.preventDefault();}},true);'
+            . 'document.addEventListener("submit",function(e){e.preventDefault();},true);'
+            . 'function kirim(){parent.postMessage({icPratinjauTinggi:document.documentElement.scrollHeight},"*");}'
+            . 'window.addEventListener("load",function(){kirim();setTimeout(kirim,300);setTimeout(kirim,1200);});'
+            . 'if(window.ResizeObserver){new ResizeObserver(kirim).observe(document.body);}'
+            . '})();</script>';
+
+        $kepala = strripos($html, '</head>');
+        if ($kepala !== false) {
+            $html = substr($html, 0, $kepala) . $gaya . substr($html, $kepala);
+        } else {
+            $html = $gaya . $html;
+        }
+
+        $badan = strripos($html, '</body>');
+
+        return $badan === false ? $html . $skrip : substr($html, 0, $badan) . $skrip . substr($html, $badan);
     }
 }

@@ -281,10 +281,16 @@ class InnerCircleFase5Test extends TestCase
     public function test_tab_konten_memuat_bagian_pilihan_dan_aturan_dan_teks_acara_dinamis(): void
     {
         $this->admin()->post(route('ic.admin.konten.aturan.simpan'), $this->aturan(['jendela_buka' => '14:00']));
-        $html = $this->admin()->get(route('ic.admin.konten'))->assertOk()->getContent();
-
-        foreach (['id="pilihan-tipe"', 'id="pilihan-kategori"', 'id="aturan-checkin"', 'Kategori kenangan', 'Aturan check-in'] as $s) {
-            $this->assertStringContainsString($s, $html);
+        $halaman = [
+            'tipe-acara' => ['id="pilihan-tipe"'],
+            'kategori-kenangan' => ['id="pilihan-kategori"', 'Kategori kenangan'],
+            'aturan-checkin' => ['id="aturan-checkin"', 'Aturan check-in'],
+        ];
+        foreach ($halaman as $slug => $harus) {
+            $html = $this->admin()->get(route('ic.admin.konten.bagian', $slug))->assertOk()->getContent();
+            foreach ($harus as $s) {
+                $this->assertStringContainsString($s, $html, $slug);
+            }
         }
 
         $acara = $this->admin()->get(route('ic.admin.acara'))->assertOk()->getContent();

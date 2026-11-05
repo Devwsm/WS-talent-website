@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\InnerCircle;
 
+use App\Services\InnerCircle\IcBagian;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\InnerCircle\simpanPilihanRequest;
 use App\Models\ic_pilihan;
@@ -91,7 +92,7 @@ class kontenPilihanController extends Controller
     /** Jalankan aksi; aturan yang menolak = pesan galat di halaman Konten, tepat di bagiannya. */
     private function jalankan(string $bagian, callable $aksi): RedirectResponse
     {
-        $kembali = redirect(route('ic.admin.konten') . '#pilihan-' . $bagian);
+        $kembali = redirect(IcBagian::url(IcBagian::untukPilihan($bagian)));
 
         try {
             return $kembali->with('success', $aksi());

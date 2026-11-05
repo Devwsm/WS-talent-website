@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\InnerCircle;
 
+use App\Services\InnerCircle\IcBagian;
 use Illuminate\Foundation\Http\FormRequest;
 
 /** Simpan aturan bawaan check-in (tab Konten, bagian Aturan check-in). Batas isian diambil dari config/inner_circle.php. */
@@ -19,7 +20,7 @@ class simpanAturanRequest extends FormRequest
 
     protected function getRedirectUrl(): string
     {
-        return route('ic.admin.konten') . '#aturan-checkin';
+        return IcBagian::url('aturan-checkin');
     }
 
     public function rules(): array

@@ -150,6 +150,8 @@ Route::prefix('/dashboard')->middleware(['cekLogin', 'catatAktivitas'])->group(f
 
         // Tab Konten: teks halaman anggota yang bisa diubah dari CMS (daftar kunci di config/ic_konten.php).
         Route::get('/konten', [kontenController::class, 'index'])->name('konten');
+        // Satu halaman per bagian (tab Konten tidak lagi satu halaman panjang). Daftar bagian: IcBagian.
+        Route::get('/konten/bagian/{bagian}', [kontenController::class, 'bagian'])->where('bagian', '[a-z_-]+')->name('konten.bagian');
         // Pratinjau langsung di samping form (tidak menyimpan apa pun). Harus di atas /konten/{grup}.
         Route::post('/konten/pratinjau', [kontenPratinjauController::class, 'tampil'])->name('konten.pratinjau')->middleware('throttle:120,1');
         Route::post('/konten/{grup}', [kontenController::class, 'simpan'])->where('grup', '[a-z_]+')->name('konten.simpan')->middleware('throttle:20,1');

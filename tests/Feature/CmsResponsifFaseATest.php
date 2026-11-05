@@ -20,21 +20,21 @@ class CmsResponsifFaseATest extends TestCase
         return glob(resource_path('views/pages/dashboard-pages/inner-circle/*.blade.php'));
     }
 
-    public function test_tab_klaim_memakai_grid_bukan_baris_yang_digeser(): void
+    public function test_tab_klaim_memakai_chip_mengalir_bukan_baris_yang_digeser(): void
     {
         $html = $this->admin()->get(route('ic.admin.klaim'))->assertOk()->getContent();
 
-        $this->assertStringContainsString('cms-grid-filter', $html);
+        $this->assertStringContainsString('cms-chips', $html);
         $this->assertStringContainsString('cms-chip', $html);
         $this->assertStringNotContainsString('overflow-x-auto', $html);
         $this->assertStringNotContainsString('w-max', $html);
     }
 
-    public function test_filter_kenangan_memakai_grid(): void
+    public function test_filter_kenangan_memakai_chip_mengalir(): void
     {
         $html = $this->admin()->get(route('ic.admin.kenangan'))->assertOk()->getContent();
 
-        $this->assertSame(2, substr_count($html, 'class="cms-grid-filter"'));
+        $this->assertSame(2, substr_count($html, 'class="cms-chips"'));
     }
 
     public function test_tidak_ada_halaman_cms_inner_circle_yang_menggeser_baris_tab_ke_samping(): void
@@ -59,8 +59,9 @@ class CmsResponsifFaseATest extends TestCase
         $app = file_get_contents(resource_path('css/app.css'));
         $ic = file_get_contents(resource_path('css/inner-circle.css'));
 
-        $this->assertMatchesRegularExpression('/\.cms-grid-filter\s*\{[^}]*grid-template-columns:\s*repeat\(auto-fill,\s*minmax\(7\.5rem/s', $app);
-        $this->assertMatchesRegularExpression('/\.cms-chip\s*\{[^}]*min-height:\s*2\.75rem/s', $app);
+        $this->assertMatchesRegularExpression('/\\.cms-chips\\s*\\{[^}]*flex-wrap:\\s*wrap/s', $app);
+        $this->assertMatchesRegularExpression('/\\.cms-chip\\s*\\{[^}]*min-height:\\s*2\\.75rem/s', $app);
+        $this->assertStringNotContainsString('auto-fill', $app);
         $this->assertMatchesRegularExpression('/@media \(max-width: 479px\)\s*\{\s*body\.cms-ic \.ic-event\s*\{[^}]*flex-wrap:\s*wrap/s', $ic);
         $this->assertMatchesRegularExpression('/body\.cms-ic \.ic-event__isi\s*\{[^}]*flex:\s*1 1 100%/s', $ic);
     }

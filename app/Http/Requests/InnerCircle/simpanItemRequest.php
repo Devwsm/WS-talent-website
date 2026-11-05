@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\InnerCircle;
 
+use App\Services\InnerCircle\IcBagian;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -45,7 +46,7 @@ class simpanItemRequest extends FormRequest
     /** Alamat tujuan saat gagal: kembali ke halaman Konten, tepat di bagian daftar yang sedang diisi. */
     protected function getRedirectUrl(): string
     {
-        return route('ic.admin.konten') . '#daftar-' . $this->route('daftar');
+        return IcBagian::url(IcBagian::untukDaftar((string) $this->route('daftar')), 'daftar-' . $this->route('daftar'));
     }
 
     public function rules(): array

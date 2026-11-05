@@ -3,6 +3,7 @@
 namespace App\Http\Requests\InnerCircle;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Arr;
 
 /**
  * Simpan semua isian satu grup konten Inner Circle (tab Konten).
@@ -97,16 +98,22 @@ class simpanKontenRequest extends FormRequest
     }
 
     /**
-     * Isian bersih dengan kunci aslinya (titik).
+     * Isian bersih dengan kunci aslinya (titik). Hanya isian yang DIKIRIM form yang ikut: form tiap modul hanya memuat
+     * kunci miliknya, jadi menyimpan satu modul tidak boleh menyentuh (apalagi mengosongkan) isian modul lain di grup yang sama.
      *
      * @return array<string, string>
      */
     public function nilai(): array
     {
+        $valid = $this->validated();
         $hasil = [];
         foreach ($this->kunciGrup() as $kolom => $def) {
+            if (! Arr::has($valid, 'k.' . $kolom)) {
+                continue;
+            }
+
             $kunci = str_replace('__', '.', $kolom);
-            $hasil[$kunci] = (string) ($this->validated('k.' . $kolom) ?? '');
+            $hasil[$kunci] = (string) (Arr::get($valid, 'k.' . $kolom) ?? '');
         }
 
         return $hasil;

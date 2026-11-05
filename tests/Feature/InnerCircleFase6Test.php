@@ -123,7 +123,7 @@ class InnerCircleFase6Test extends TestCase
     public function test_warna_tersimpan_tampil_di_halaman_dan_turunannya_ikut(): void
     {
         $this->kirim(['tampilan__aksen' => '#1A5FB4', 'tampilan__latar' => '#E8F0FF', 'tampilan__kartu' => '#FFFFFF'])
-            ->assertSessionHasNoErrors()->assertRedirect(route('ic.admin.konten') . '#tampilan');
+            ->assertSessionHasNoErrors()->assertRedirect(route('ic.admin.konten.bagian', 'tampilan'));
 
         $html = $this->halamanMasuk();
         $this->assertStringContainsString('body.ic-app{--ic-aksen:#1a5fb4;--ic-latar:#e8f0ff;--ic-shell:#ffffff;--ic-lilac:#8dafda}', $html);
@@ -349,7 +349,7 @@ class InnerCircleFase6Test extends TestCase
         ic_pengaturan::create(['kunci' => 'checkin.eyebrow', 'nilai' => 'Teks lain yang tidak boleh ikut hilang']);
 
         $this->admin()->post(route('ic.admin.konten.tampilan.bawaan'))
-            ->assertRedirect(route('ic.admin.konten') . '#tampilan')->assertSessionHas('success');
+            ->assertRedirect(route('ic.admin.konten.bagian', 'tampilan'))->assertSessionHas('success');
 
         $this->assertSame(0, ic_pengaturan::query()->where('kunci', 'like', 'tampilan.%')->count());
         $this->assertDatabaseHas('ic_pengaturan', ['kunci' => 'checkin.eyebrow']);
@@ -393,7 +393,7 @@ class InnerCircleFase6Test extends TestCase
 
     public function test_halaman_konten_menampilkan_bagian_tampilan_dengan_nilai_tersimpan(): void
     {
-        $this->admin()->get(route('ic.admin.konten'))
+        $this->admin()->get(route('ic.admin.konten.bagian', 'tampilan'))
             ->assertOk()
             ->assertSee('id="tampilan"', false)
             ->assertSee('Nama program')
@@ -402,7 +402,7 @@ class InnerCircleFase6Test extends TestCase
 
         $this->kirim(['tampilan__program' => 'Whisnu Crew', 'tampilan__aksen' => '#1a5fb4'], ['logo' => $this->logoPng()]);
 
-        $this->admin()->get(route('ic.admin.konten'))
+        $this->admin()->get(route('ic.admin.konten.bagian', 'tampilan'))
             ->assertOk()
             ->assertSee('value="Whisnu Crew"', false)
             ->assertSee('value="#1a5fb4"', false)

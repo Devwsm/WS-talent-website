@@ -171,11 +171,13 @@ class InnerCircleFase3Test extends TestCase
 
     public function test_halaman_konten_menampilkan_pengelola_daftar_dan_label_log(): void
     {
-        $this->admin()->get(route('ic.admin.konten'))->assertOk()
+        $this->admin()->get(route('ic.admin.konten.bagian', 'tentang'))->assertOk()
             ->assertSee('Langkah &quot;Cara kerjanya&quot;', false)
             ->assertSee('Tambah pertanyaan')
-            ->assertSee('Kembalikan daftar')
-            ->assertSee('id="daftar-teaser_poin"', false)
+            ->assertSee('Kembalikan daftar');
+        $this->admin()->get(route('ic.admin.konten.bagian', 'teaser'))->assertOk()
+            ->assertSee('id="daftar-teaser_poin"', false);
+        $this->admin()->get(route('ic.admin.konten.bagian', 'masuk'))->assertOk()
             ->assertSee('id="grup-masuk"', false);
 
         foreach (['tambah', 'ubah', 'geser', 'aktif', 'hapus', 'bawaan'] as $aksi) {

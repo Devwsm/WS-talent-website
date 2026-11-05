@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\InnerCircle;
 
+use App\Services\InnerCircle\IcBagian;
 use App\Services\InnerCircle\IcTampilan;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
@@ -27,7 +28,7 @@ class simpanTampilanRequest extends FormRequest
 
     protected function getRedirectUrl(): string
     {
-        return route('ic.admin.konten') . '#tampilan';
+        return IcBagian::url('tampilan');
     }
 
     public function rules(): array

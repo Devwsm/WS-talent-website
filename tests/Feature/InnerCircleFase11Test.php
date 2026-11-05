@@ -117,15 +117,24 @@ class InnerCircleFase11Test extends TestCase
             ->assertOk()->assertSee('getElementById("inner-circle")', false)->assertSee('preventDefault', false);
     }
 
-    public function test_tab_konten_memuat_panel_pratinjau_untuk_tiap_grup(): void
+    public function test_tiap_modul_konten_memuat_panel_pratinjau_dan_formnya_sendiri(): void
     {
-        $html = $this->admin()->get(route('ic.admin.konten'))->assertOk()->getContent();
+        // Tiap modul (formulir kecil) punya satu panel pratinjau; tampilan/merek punya satu panel di bagiannya sendiri (Fase 6).
+        foreach (array_keys(config('ic_konten.grup')) as $kode) {
+            $modul = \App\Services\InnerCircle\IcBagian::modul($kode);
+            $html = $this->admin()->get(route('ic.admin.konten.bagian', $kode))->assertOk()->getContent();
+            $this->assertSame(count($modul), substr_count($html, '<iframe data-pratinjau-frame'), $kode);
+            $this->assertStringContainsString(route('ic.admin.konten.pratinjau'), $html);
+            foreach ($modul as $slug => $m) {
+                if ($m['kunci'] !== []) {
+                    $this->assertStringContainsString('id="form-' . $kode . '-' . $slug . '"', $html, "$kode/$slug");
+                }
+            }
+        }
 
-        // Satu panel per grup teks, ditambah satu untuk bagian Tampilan (Fase 6).
-        $this->assertSame(count(config('ic_konten.grup')) + 1, substr_count($html, '<iframe data-pratinjau-frame'));
-        $this->assertStringContainsString('id="form-tampilan"', $html);
-        $this->assertStringContainsString(route('ic.admin.konten.pratinjau'), $html);
-        $this->assertStringContainsString('id="form-masuk"', $html);
+        $tampilan = $this->admin()->get(route('ic.admin.konten.bagian', 'tampilan'))->assertOk()->getContent();
+        $this->assertSame(1, substr_count($tampilan, '<iframe data-pratinjau-frame'));
+        $this->assertStringContainsString('id="form-tampilan"', $tampilan);
     }
 
     // ---------- Lencana belum dibaca ----------

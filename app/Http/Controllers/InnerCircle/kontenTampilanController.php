@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\InnerCircle;
 
+use App\Services\InnerCircle\IcBagian;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\InnerCircle\simpanTampilanRequest;
 use App\Services\InnerCircle\IcTampilan;
@@ -36,6 +37,6 @@ class kontenTampilanController extends Controller
 
     private function kembali(): RedirectResponse
     {
-        return redirect(route('ic.admin.konten') . '#tampilan');
+        return redirect(IcBagian::url('tampilan'));
     }
 }

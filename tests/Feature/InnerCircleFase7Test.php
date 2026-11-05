@@ -199,7 +199,7 @@ class InnerCircleFase7Test extends TestCase
         $this->travelTo('2027-02-03 10:00:00');
 
         $this->simpanPrivasi('<h2>Data kami</h2><p>Kami <strong>tidak</strong> menjual datamu.</p><ul><li>Satu</li></ul>')
-            ->assertSessionHasNoErrors()->assertRedirect(route('ic.admin.konten') . '#privasi');
+            ->assertSessionHasNoErrors()->assertRedirect(route('ic.admin.konten.bagian', 'privasi'));
 
         $this->get(route('privasi'))->assertOk()
             ->assertSee('<h2>Data kami</h2>', false)
@@ -258,7 +258,7 @@ class InnerCircleFase7Test extends TestCase
     {
         $this->simpanPrivasi('<p>Isi sendiri</p>');
 
-        $this->admin()->post(route('ic.admin.konten.privasi.bawaan'))->assertRedirect(route('ic.admin.konten') . '#privasi')->assertSessionHas('success');
+        $this->admin()->post(route('ic.admin.konten.privasi.bawaan'))->assertRedirect(route('ic.admin.konten.bagian', 'privasi'))->assertSessionHas('success');
 
         $this->assertDatabaseMissing('ic_pengaturan', ['kunci' => 'privasi.isi']);
         $this->assertDatabaseMissing('ic_pengaturan', ['kunci' => 'privasi.diperbarui']);
@@ -275,13 +275,13 @@ class InnerCircleFase7Test extends TestCase
 
     public function test_cms_menampilkan_editor_dengan_teks_bawaan_lalu_isi_sendiri(): void
     {
-        $this->admin()->get(route('ic.admin.konten'))->assertOk()
+        $this->admin()->get(route('ic.admin.konten.bagian', 'privasi'))->assertOk()
             ->assertSee('id="privasi"', false)->assertSee('Kebijakan privasi')
             ->assertSee('Saat kamu hanya melihat situs')->assertSee('teks bawaan');
 
         $this->simpanPrivasi('<p>Isi sendiri yang unik</p>');
 
-        $this->admin()->get(route('ic.admin.konten'))->assertOk()
+        $this->admin()->get(route('ic.admin.konten.bagian', 'privasi'))->assertOk()
             ->assertSee('Isi sendiri yang unik')->assertDontSee('Saat kamu hanya melihat situs')->assertSee('Kembalikan teks');
     }
 

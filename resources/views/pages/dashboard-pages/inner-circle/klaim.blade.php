@@ -50,9 +50,9 @@
                     Antrean pengajuan
                 </h2>
 
-                {{-- Filter status lewat ?status= (bisa dibagikan, jalan tanpa JavaScript). Grid, bukan baris yang digeser. --}}
+                {{-- Filter status lewat ?status= (bisa dibagikan, jalan tanpa JavaScript). Chip mengalir dan turun baris, bukan baris yang digeser. --}}
                 <nav aria-label="Saring pengajuan">
-                    <ul class="cms-grid-filter">
+                    <ul class="cms-chips">
                         @foreach ($pilihanFilter as $kunci => $label)
                             @php $dipilih = $kunci === $filterStatus; @endphp
                             <li>

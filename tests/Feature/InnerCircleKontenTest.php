@@ -132,7 +132,7 @@ class InnerCircleKontenTest extends TestCase
 
     public function test_halaman_konten_menampilkan_isian_bawaan_dan_penanda_diubah(): void
     {
-        $this->admin()->get(route('ic.admin.konten'))
+        $this->admin()->get(route('ic.admin.konten.bagian', 'checkin'))
             ->assertOk()
             ->assertSee('Halaman Check-in')
             ->assertSee('Jadwal Pertunjukan WS')
@@ -140,7 +140,7 @@ class InnerCircleKontenTest extends TestCase
 
         $this->kirim(['checkin__jadwal__judul' => 'Tur Akhir Tahun']);
 
-        $this->admin()->get(route('ic.admin.konten'))
+        $this->admin()->get(route('ic.admin.konten.bagian', 'checkin'))
             ->assertOk()
             ->assertSee('Tur Akhir Tahun')
             ->assertSee('Diubah')

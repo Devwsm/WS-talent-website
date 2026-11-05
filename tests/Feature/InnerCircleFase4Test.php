@@ -119,11 +119,13 @@ class InnerCircleFase4Test extends TestCase
         $this->assertSame(0, ic_pengaturan::count());
     }
 
-    public function test_semua_grup_tampil_di_tab_konten_dengan_petunjuk_placeholder(): void
+    public function test_semua_grup_punya_halaman_bagian_dengan_petunjuk_placeholder(): void
     {
-        $this->admin()->get(route('ic.admin.konten'))->assertOk()
-            ->assertSee('Beranda anggota')->assertSee('Halaman Hadiah')->assertSee('Halaman Komunitas')
-            ->assertSee('Halaman Profil anggota')->assertSee('Halaman masuk dan daftar')
+        foreach (['beranda' => 'Beranda anggota', 'hadiah' => 'Halaman Hadiah', 'komunitas' => 'Halaman Komunitas', 'profil' => 'Halaman Profil anggota', 'masuk' => 'Halaman masuk dan daftar'] as $slug => $label) {
+            $this->admin()->get(route('ic.admin.konten.bagian', $slug))->assertOk()->assertSee($label);
+        }
+
+        $this->admin()->get(route('ic.admin.konten.bagian', 'beranda'))->assertOk()
             ->assertSee('Bisa memakai:')->assertSee('{nama}', false);
     }
 }
