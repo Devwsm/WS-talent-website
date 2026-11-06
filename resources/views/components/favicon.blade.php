@@ -2,7 +2,7 @@
 @php
     // Set favicon per merek ada di public/aset/favicon/{ws-artis|ws-inner-circle}/ (nama berkas standar).
     $dir = 'aset/favicon/' . $merek;
-    $warna = $merek === 'ws-inner-circle' ? '#8d73ff' : '#000000';
+    $warna = $merek === 'ws-inner-circle' ? '#1b68a0' : '#000000';
 @endphp
 <link rel="icon" href="{{ asset($dir . '/favicon.ico') }}" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="{{ asset($dir . '/favicon-32x32.png') }}">

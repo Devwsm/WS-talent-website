@@ -94,7 +94,7 @@ class IcTampilan
             'tinta' => config('ic_konten.tampilan.teks.tinta.warna'),
             'redup' => config('ic_konten.tampilan.teks.redup.warna'),
             'tautan' => config('ic_konten.tampilan.teks.eyebrow.warna'),
-            'garis' => '#e4dff1',
+            'garis' => '#d5e8f4',
         ];
     }
 

@@ -122,12 +122,12 @@ class InnerCircleFase6Test extends TestCase
 
     public function test_warna_tersimpan_tampil_di_halaman_dan_turunannya_ikut(): void
     {
-        $this->kirim(['tampilan__aksen' => '#1A5FB4', 'tampilan__latar' => '#E8F0FF', 'tampilan__kartu' => '#FFFFFF'])
+        $this->kirim(['tampilan__aksen' => '#1A5FB4', 'tampilan__latar' => '#E8F0FF', 'tampilan__kartu' => '#F4FBFF'])
             ->assertSessionHasNoErrors()->assertRedirect(route('ic.admin.konten.bagian', 'tampilan'));
 
         $html = $this->halamanMasuk();
-        $this->assertStringContainsString('body.ic-app{--ic-aksen:#1a5fb4;--ic-latar:#e8f0ff;--ic-shell:#ffffff;--ic-lilac:#8dafda}', $html);
-        $this->assertStringContainsString('<meta name="theme-color" content="#ffffff">', $this->get(route('ic.tentang'))->getContent());
+        $this->assertStringContainsString('body.ic-app{--ic-aksen:#1a5fb4;--ic-latar:#e8f0ff;--ic-shell:#f4fbff;--ic-lilac:#8dafda}', $html);
+        $this->assertStringContainsString('<meta name="theme-color" content="#f4fbff">', $this->get(route('ic.tentang'))->getContent());
     }
 
     public function test_hanya_warna_yang_diubah_yang_ditimpa(): void
@@ -142,7 +142,7 @@ class InnerCircleFase6Test extends TestCase
         $this->kirim(['tampilan__aksen' => '#1a5fb4'])->assertSessionHasNoErrors();
         $this->assertDatabaseHas('ic_pengaturan', ['kunci' => 'tampilan.aksen', 'nilai' => '#1a5fb4']);
 
-        $this->kirim(['tampilan__aksen' => '#8D73FF'])->assertSessionHasNoErrors();
+        $this->kirim(['tampilan__aksen' => '#1B68A0'])->assertSessionHasNoErrors();
         $this->assertDatabaseMissing('ic_pengaturan', ['kunci' => 'tampilan.aksen']);
 
         $this->kirim(['tampilan__aksen' => '#1a5fb4']);
@@ -196,7 +196,7 @@ class InnerCircleFase6Test extends TestCase
         $this->kirim(['tampilan__aksen' => '#7a66dd'])->assertSessionHasNoErrors();
         $this->kirim(['tampilan__aksen' => '#7a66dd', 'tampilan__kartu' => '#6a5acd'])->assertSessionHasErrorsIn('tampilan');
         $this->assertSame('#7a66dd', $this->tampilan()->warna()['aksen']);
-        $this->assertSame('#f8f7fc', $this->tampilan()->warna()['kartu']);
+        $this->assertSame('#ffffff', $this->tampilan()->warna()['kartu']);
     }
 
     public function test_hitungan_kontras_wcag(): void

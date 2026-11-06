@@ -59,29 +59,30 @@ return [
                 'kunci' => 'tampilan.aksen',
                 'label' => 'Warna aksen',
                 'css' => '--ic-aksen',
-                'bawaan' => '#8d73ff',
+                'bawaan' => '#1b68a0',
                 'petunjuk' => 'Cincin fokus, garis pilihan, dan kata beraksen di judul. Warna lembut turunannya (lencana dan lingkaran bernomor) ikut menyesuaikan.'
             ],
             'latar' => [
                 'kunci' => 'tampilan.latar',
                 'label' => 'Warna latar',
                 'css' => '--ic-latar',
-                'bawaan' => '#d9cdf7',
+                'bawaan' => '#d6f4ff',
                 'petunjuk' => 'Bingkai di luar kartu utama pada layar lebar, dan latar halaman Masuk dan Daftar.'
             ],
             'kartu' => [
                 'kunci' => 'tampilan.kartu',
                 'label' => 'Warna kartu',
                 'css' => '--ic-shell',
-                'bawaan' => '#f8f7fc',
+                'bawaan' => '#ffffff',
                 'petunjuk' => 'Permukaan utama tempat teks tampil. Pilih warna terang supaya teks gelap tetap terbaca.'
             ],
         ],
 
         'teks' => [
-            'tinta' => ['label' => 'teks utama', 'warna' => '#151522'],
-            'redup' => ['label' => 'teks pendamping', 'warna' => '#6b6880'],
-            'eyebrow' => ['label' => 'teks label kecil', 'warna' => '#6a58a8'],
+            'tinta' => ['label' => 'teks utama', 'warna' => '#0b2a47'],
+            'judul' => ['label' => 'judul', 'warna' => '#05467c'],
+            'redup' => ['label' => 'teks pendamping', 'warna' => '#4a6178'],
+            'eyebrow' => ['label' => 'teks label kecil', 'warna' => '#1e5688'],
         ],
 
         'kunci' => [

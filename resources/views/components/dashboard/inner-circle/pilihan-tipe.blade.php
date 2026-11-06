@@ -20,7 +20,7 @@
             <li class="rounded-2xl border border-white/10 bg-white/3 min-w-0">
                 <div class="p-4 flex items-center gap-3 min-w-0">
                     <span aria-hidden="true" class="shrink-0 w-10 h-10 rounded-xl grid place-items-center text-lg"
-                        style="background: {{ $warnaHex[$b->warna] ?? '#cbb8ff' }}">{{ config('inner_circle.ikon.' . $b->ikon, '✦') }}</span>
+                        style="background: {{ $warnaHex[$b->warna] ?? '#7db3d6' }}">{{ config('inner_circle.ikon.' . $b->ikon, '✦') }}</span>
                     <div class="min-w-0">
                         <p class="font-semibold wrap-break-word">{{ $b->label }}</p>
                         <p class="text-xs text-white/40">Kunci: <code class="text-white/60">{{ $b->kunci }}</code>

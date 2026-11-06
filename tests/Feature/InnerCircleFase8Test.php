@@ -30,8 +30,8 @@ class InnerCircleFase8Test extends TestCase
     public function test_palet_email_mengikuti_warna_tampilan_dari_cms(): void
     {
         $bawaan = app(IcTampilan::class)->warnaEmail();
-        $this->assertSame('#d9cdf7', strtolower($bawaan['latar']));
-        $this->assertSame('#f8f7fc', strtolower($bawaan['kartu']));
+        $this->assertSame('#d6f4ff', strtolower($bawaan['latar']));
+        $this->assertSame('#ffffff', strtolower($bawaan['kartu']));
 
         $this->admin()->post(route('ic.admin.konten.tampilan.simpan'), ['k' => [
             'tampilan__program' => '',
@@ -41,7 +41,7 @@ class InnerCircleFase8Test extends TestCase
         ]])->assertSessionHasNoErrors();
 
         $html = EmailService::contoh('reset')->render();
-        $this->assertStringContainsString('background-color:#d9cdf7', strtolower($html));
+        $this->assertStringContainsString('background-color:#d6f4ff', strtolower($html));
         $this->assertSame('#1a5fb4', strtolower(app(IcTampilan::class)->warnaEmail()['aksen']));
     }
 
@@ -51,7 +51,7 @@ class InnerCircleFase8Test extends TestCase
 
         $html = EmailService::contoh('reset')->render();
         $this->assertStringNotContainsString('<script>alert(1)', $html);
-        $this->assertStringContainsString('background-color:#d9cdf7', strtolower($html));
+        $this->assertStringContainsString('background-color:#d6f4ff', strtolower($html));
     }
 
     public function test_editor_privasi_tidak_memakai_warna_putih_tetap(): void

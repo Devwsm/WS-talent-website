@@ -184,24 +184,24 @@ return [
 
     /* Warna sampel untuk pratinjau pilihan di CMS (sama dengan token --ic-* di inner-circle.css). */
     'warna_kartu_hex' => [
-        'koral' => '#ffb3a5',
-        'kuning' => '#f5c45f',
-        'biru' => '#b9d2ff',
-        'lilac' => '#cbb8ff',
-        'pink' => '#f0a3e6',
-        'hijau' => '#82dfb4',
-        'merah' => '#ff7770',
+        'koral' => '#b6dcf0',
+        'kuning' => '#8fbdd8',
+        'biru' => '#6fa5ca',
+        'lilac' => '#1f6d9d',
+        'pink' => '#004882',
+        'hijau' => '#1a7490',
+        'merah' => '#24428f',
     ],
 
     /* Warna kartu yang boleh dipilih admin. Kunci = modifier .ic-warna-{kunci} di CSS anggota. */
     'warna_kartu' => [
-        'koral' => 'Koral',
-        'kuning' => 'Kuning',
-        'biru' => 'Biru',
-        'lilac' => 'Lilac',
-        'pink' => 'Pink',
-        'hijau' => 'Hijau',
-        'merah' => 'Merah',
+        'koral' => 'Biru es',
+        'kuning' => 'Biru muda',
+        'biru' => 'Biru langit',
+        'lilac' => 'Biru laut',
+        'pink' => 'Biru tua',
+        'hijau' => 'Toska',
+        'merah' => 'Nila',
     ],
 
     /* Tujuan tombol (CTA) pengumuman: nama route anggota => label di form admin. */

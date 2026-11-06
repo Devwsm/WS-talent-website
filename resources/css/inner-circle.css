@@ -1,6 +1,7 @@
 /*
  * WS Inner Circle — gaya area anggota.
- * Diturunkan dari lapisan "Soft Lavender" prototype (WS_Inner_Circle.html), ditulis ulang bersih.
+ * Tema biru (desain Website_Inner_Circle, Nov 2026): latar gradasi biru laut, kartu putih, aksen biru, judul biru tua.
+ * Sebelumnya tema "Soft Lavender" dari prototype (WS_Inner_Circle.html).
  * Semua class berawalan ic- dan hanya berlaku di bawah .ic-app; berkas ini tidak mengimpor Tailwind.
  * Teks kecil memakai warna yang sudah dicek terhadap kontras WCAG AA (>= 4.5:1).
  */
@@ -8,17 +9,23 @@
 
 /* ---------- Token ---------- */
 .ic-app {
-    --ic-latar: #d9cdf7;
-    --ic-shell: #f8f7fc;
-    --ic-krem: #fcfbff;
-    --ic-garis: #e4dff1;
-    --ic-garis-kartu: #ece7f8;
-    --ic-tinta: #151522;
-    --ic-navy: #111322;
-    --ic-redup: #6b6880;
-    --ic-eyebrow: #6a58a8;
-    --ic-lilac: #c8b2ff;
-    --ic-aksen: #8d73ff;
+    /* Tiga warna yang bisa diubah dari CMS (Tampilan): aksen, latar, kartu. Nilai bawaannya dijaga tes agar sama dengan config. */
+    --ic-aksen: #1b68a0;
+    --ic-latar: #d6f4ff;
+    --ic-shell: #ffffff;
+    /* Warna tepi gradasi latar: aksen yang digelapkan, jadi ikut berganti bila aksen diubah dari CMS. */
+    --ic-latar-tepi: color-mix(in srgb, var(--ic-aksen) 80%, #000);
+    --ic-krem: #f3fbff;
+    --ic-garis: #d5e8f4;
+    --ic-garis-kartu: #b3d4ea;
+    /* Warna teks: kontrasnya terhadap kartu diperiksa di CMS (config/ic_konten.php, tampilan.teks). */
+    --ic-tinta: #0b2a47;
+    --ic-judul: #05467c;
+    --ic-redup: #4a6178;
+    --ic-eyebrow: #1e5688;
+    /* Biru tua untuk tombol, tag, dock, dan latar CTA: teks putih di atasnya selalu terbaca (7:1). */
+    --ic-navy: #17629a;
+    --ic-lilac: #bfe2f6;
     --ic-emas: #ffbf57;
     --ic-koral: #ffb3a5;
     --ic-kuning: #f5c45f;
@@ -30,7 +37,8 @@
     --ic-lencana-latar: var(--ic-emas);
     --ic-lencana-teks: var(--ic-tinta);
     --ic-font: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-    --ic-font-judul: "Space Grotesk", "DM Sans", system-ui, sans-serif;
+    --ic-font-judul:
+        "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
 
     margin: 0;
     background: var(--ic-latar);
@@ -95,25 +103,37 @@
 
 /* ---------- Warna kartu (dipakai ubin, event, pengumuman, sampul) ---------- */
 .ic-warna-koral {
-    background: var(--ic-koral);
+    background: linear-gradient(120deg, #b6dcf0 0%, #d8eef9 100%);
 }
 .ic-warna-kuning {
-    background: var(--ic-kuning);
+    background: linear-gradient(120deg, #8fbdd8 0%, #bcdcee 100%);
 }
 .ic-warna-biru {
-    background: var(--ic-biru);
+    background: linear-gradient(120deg, #6fa5ca 0%, #a3cde5 100%);
 }
 .ic-warna-lilac {
-    background: #cbb8ff;
+    background: linear-gradient(120deg, #1f6d9d 0%, #3d7fac 100%);
 }
 .ic-warna-pink {
-    background: var(--ic-pink);
+    background: linear-gradient(120deg, #004882 0%, #1b6c9b 100%);
 }
 .ic-warna-hijau {
-    background: var(--ic-hijau);
+    background: linear-gradient(120deg, #1a7490 0%, #3a8aa4 100%);
 }
 .ic-warna-merah {
-    background: var(--ic-merah);
+    background: linear-gradient(120deg, #24428f 0%, #4a66b0 100%);
+}
+/* Teks di atas kartu berwarna: gelap pada tiga warna terang, putih pada empat warna gelap (semuanya lolos kontras AA). */
+.ic-warna-koral,
+.ic-warna-kuning,
+.ic-warna-biru {
+    color: #06284a;
+}
+.ic-warna-lilac,
+.ic-warna-pink,
+.ic-warna-hijau,
+.ic-warna-merah {
+    color: #fff;
 }
 
 /* ---------- Shell, header, konten ---------- */
@@ -121,9 +141,9 @@
     max-width: 1180px;
     margin: 18px auto 110px;
     background: var(--ic-shell);
-    border: 1px solid #dad4ee;
-    border-radius: 34px;
-    box-shadow: 0 28px 90px rgba(83, 58, 128, 0.16);
+    border: 1px solid var(--ic-garis);
+    border-radius: 44px;
+    box-shadow: 0 28px 90px rgba(4, 38, 84, 0.3);
     overflow: hidden;
 }
 
@@ -202,7 +222,7 @@
     width: 25px;
     height: 25px;
     font-size: 15px;
-    background: #cbb8ff;
+    background: #7db3d6;
 }
 
 /* ---------- Tipografi halaman ---------- */
@@ -219,9 +239,9 @@
     font-weight: 700;
     font-size: clamp(54px, 8vw, 92px);
     line-height: 0.9;
-    letter-spacing: -0.06em;
+    letter-spacing: -0.045em;
     margin: 14px 0 18px;
-    color: #131423;
+    color: var(--ic-judul);
 }
 
 .ic-judul > span {
@@ -237,9 +257,10 @@
 .ic-judul-bagian {
     font-family: var(--ic-font-judul);
     font-weight: 700;
-    font-size: 24px;
-    letter-spacing: -0.04em;
+    font-size: 26px;
+    letter-spacing: -0.03em;
     margin: 40px 0 15px;
+    color: var(--ic-judul);
 }
 
 .ic-sub {
@@ -300,8 +321,8 @@
     gap: 6px;
     min-height: 44px;
     border: 0;
-    border-radius: 18px;
-    padding: 12px 19px;
+    border-radius: 999px;
+    padding: 12px 22px;
     background: var(--ic-navy);
     color: #fff;
     font-weight: 800;
@@ -319,8 +340,9 @@
     transform: none;
 }
 .ic-tombol--terang {
-    background: #efedf7;
-    color: var(--ic-tinta);
+    background: #fff;
+    color: var(--ic-navy);
+    box-shadow: inset 0 0 0 1.5px var(--ic-navy);
 }
 .ic-tombol--krem {
     background: #f5f1e9;
@@ -328,15 +350,15 @@
 }
 .ic-tombol--kecil {
     min-height: 44px;
-    padding: 10px 14px;
+    padding: 10px 16px;
     font-size: 12px;
-    border-radius: 14px;
+    border-radius: 999px;
 }
 .ic-tombol--garis {
-    background: transparent;
-    color: #28243b;
-    border: 1px solid #d7d0ec;
-    border-radius: 30px;
+    background: rgba(255, 255, 255, 0.75);
+    color: var(--ic-navy);
+    border: 1.5px solid var(--ic-garis-kartu);
+    border-radius: 999px;
     padding: 8px 14px;
     font-size: 12px;
 }
@@ -351,7 +373,7 @@
 .ic-input {
     width: 100%;
     padding: 14px;
-    border: 1px solid #ddd6f0;
+    border: 1px solid #b3d1e6;
     border-radius: 16px;
     background: var(--ic-krem);
     color: var(--ic-tinta);
@@ -362,8 +384,8 @@
     display: inline-block;
     padding: 7px 11px;
     border-radius: 20px;
-    background: #efedf7;
-    color: #4b4960;
+    background: #e3f2fb;
+    color: #3f566b;
     font-size: 11px;
     font-weight: 800;
 }
@@ -406,7 +428,7 @@
     width: 96px;
     height: 96px;
     font-size: 80px;
-    filter: drop-shadow(0 14px 10px rgba(40, 25, 80, 0.18));
+    filter: drop-shadow(0 14px 10px rgba(4, 38, 84, 0.18));
 }
 
 /* ---------- Kartu anggota & bar stempel ---------- */
@@ -419,9 +441,9 @@
     gap: 30px;
     min-height: 235px;
     padding: 26px;
-    border: 1px solid #ddd5f6;
+    border: 1px solid #c3dcee;
     border-radius: 24px;
-    background: linear-gradient(180deg, #fff 0%, #f4f1ff 100%);
+    background: linear-gradient(180deg, #fff 0%, #eef8fe 100%);
 }
 
 .ic-kartu-anggota::after {
@@ -430,7 +452,7 @@
     right: 10px;
     bottom: -54px;
     font-size: 140px;
-    color: #e9e2ff;
+    color: #d6ebf9;
     pointer-events: none;
 }
 
@@ -444,7 +466,7 @@
 .ic-bar-stempel {
     padding: 23px;
     background: #fff;
-    border: 1px solid #ddd5f6;
+    border: 1px solid #c3dcee;
     border-radius: 25px;
 }
 
@@ -459,7 +481,7 @@
 .ic-progres {
     height: 12px;
     margin: 12px 0;
-    background: #ebe7f8;
+    background: #d9ebf7;
     border-radius: 50px;
     overflow: hidden;
 }
@@ -468,7 +490,7 @@
     display: block;
     height: 100%;
     border-radius: 50px;
-    background: linear-gradient(90deg, #bca2ff 0%, #8bb8ff 45%, #f8c95f 100%);
+    background: linear-gradient(90deg, #8fd0f2 0%, #3b8cc8 55%, #17629a 100%);
     transition: width 0.3s;
 }
 
@@ -477,7 +499,7 @@
     align-items: center;
     gap: 12px;
     font-size: 12px;
-    color: #4b4960;
+    color: #3f566b;
 }
 .ic-bar-stempel__catatan small {
     display: block;
@@ -491,7 +513,7 @@
     display: block;
     min-height: 230px;
     padding: 23px;
-    border: 1px solid #e4def3;
+    border: 1px solid #c3dcee;
     border-radius: 30px;
     color: var(--ic-tinta);
     transition: transform 0.2s;
@@ -540,7 +562,7 @@
     width: 92px;
     height: 92px;
     font-size: 76px;
-    filter: drop-shadow(0 10px 16px rgba(40, 25, 80, 0.14));
+    filter: drop-shadow(0 10px 16px rgba(4, 38, 84, 0.14));
 }
 .ic-ubin--lebar .ic-ubin__ikon {
     width: 104px;
@@ -564,7 +586,7 @@
     margin-top: 5px;
     font-size: 12px;
     line-height: 1.45;
-    color: #353246;
+    color: #294358;
     position: relative;
 }
 
@@ -578,7 +600,7 @@
     height: 33px;
     border-radius: 50%;
     background: #fff;
-    border: 1px solid #e8e2f6;
+    border: 1px solid #c3dcee;
 }
 
 /* ---------- Kartu event ---------- */
@@ -589,7 +611,7 @@
     width: 100%;
     min-height: 120px;
     padding: 17px;
-    border: 1px solid #e2dbf3;
+    border: 1px solid #c3dcee;
     border-radius: 28px;
     color: var(--ic-tinta);
     transition: transform 0.2s;
@@ -629,7 +651,7 @@ a.ic-event:hover {
     font-size: 11px;
     font-weight: 800;
     letter-spacing: 0.4px;
-    color: #4b4960;
+    color: #3f566b;
 }
 .ic-event__venue {
     font-family: var(--ic-font-judul);
@@ -641,7 +663,7 @@ a.ic-event:hover {
 }
 .ic-event__kota {
     font-size: 12px;
-    color: #302f41;
+    color: #243d52;
 }
 
 .ic-event__lencana {
@@ -668,7 +690,7 @@ a.ic-event:hover {
     margin-left: auto;
     border-radius: 50%;
     background: #fff;
-    border: 1px solid #ebe5f7;
+    border: 1px solid #c3dcee;
 }
 
 /* ---------- Aktivitas ---------- */
@@ -678,7 +700,7 @@ a.ic-event:hover {
     gap: 13px;
     padding: 12px;
     border-radius: 17px;
-    background: #f6f4fb;
+    background: #f0f8fd;
 }
 .ic-aktivitas__ikon {
     display: grid;
@@ -687,7 +709,7 @@ a.ic-event:hover {
     width: 50px;
     height: 50px;
     border-radius: 14px;
-    background: #efeaf9;
+    background: #e3f2fb;
 }
 .ic-aktivitas b {
     font-size: 13px;
@@ -712,14 +734,14 @@ a.ic-event:hover {
     margin-bottom: 14px;
     padding: clamp(28px, 4vw, 48px);
     border-radius: 28px;
-    background: linear-gradient(180deg, #c8b2ff 0%, #bda4ff 100%);
+    background: linear-gradient(160deg, #d3f3fe 0%, #9cc9e6 100%);
 }
 
 .ic-unggulan__label {
     font-size: 10px;
     font-weight: 800;
     letter-spacing: 1.6px;
-    color: #3b2d75;
+    color: #0a4a82;
 }
 .ic-unggulan__judul {
     max-width: 560px;
@@ -734,7 +756,7 @@ a.ic-event:hover {
     max-width: 520px;
     margin-bottom: 20px;
     font-size: 14px;
-    color: #2e2745;
+    color: #1b3c57;
     position: relative;
     z-index: 1;
 }
@@ -786,7 +808,7 @@ a.ic-event:hover {
 .ic-pengumuman__isi {
     margin-bottom: 12px;
     font-size: 13px;
-    color: #555267;
+    color: #456074;
 }
 
 /* ---------- Kenangan ---------- */
@@ -810,13 +832,13 @@ a.ic-event:hover {
     object-fit: cover;
 }
 .ic-kenangan__sampul.ic-warna-kuning {
-    background: linear-gradient(180deg, #f6c65e 0%, #f0b65d 100%);
+    background: linear-gradient(180deg, #8fbdd8 0%, #7aaecb 100%);
 }
 .ic-kenangan__sampul.ic-warna-biru {
-    background: linear-gradient(180deg, #b9d2ff 0%, #9ec0ff 100%);
+    background: linear-gradient(180deg, #b6dcf0 0%, #9cccea 100%);
 }
 .ic-kenangan__sampul.ic-warna-pink {
-    background: linear-gradient(180deg, #f0a3e6 0%, #e38adb 100%);
+    background: linear-gradient(180deg, #4f86b3 0%, #3a74a3 100%);
 }
 .ic-kenangan__bintang {
     position: absolute;
@@ -846,7 +868,7 @@ a.ic-event:hover {
 .ic-kenangan__caption {
     margin: 13px 0;
     font-size: 14px;
-    color: #555267;
+    color: #456074;
 }
 .ic-kenangan__kaki {
     display: flex;
@@ -854,7 +876,7 @@ a.ic-event:hover {
     justify-content: space-between;
     gap: 10px;
     padding-top: 12px;
-    border-top: 1px solid #eee9f6;
+    border-top: 1px solid #d5e8f4;
 }
 .ic-kenangan__tag {
     display: inline-flex;
@@ -877,7 +899,7 @@ a.ic-event:hover {
     padding: 9px 14px;
     border: 0;
     border-radius: 24px;
-    background: #f4f0fb;
+    background: #eaf5fc;
     font-size: 12px;
     font-weight: 800;
 }
@@ -909,7 +931,7 @@ a.ic-event:hover {
     padding: 10px 12px;
     background: var(--ic-navy);
     border-radius: 30px;
-    box-shadow: 0 16px 40px rgba(46, 31, 85, 0.22);
+    box-shadow: 0 16px 40px rgba(4, 38, 84, 0.22);
 }
 
 .ic-dock__item {
@@ -921,7 +943,7 @@ a.ic-event:hover {
     min-height: 48px;
     padding: 8px 2px;
     border-radius: 20px;
-    color: #d9d6eb;
+    color: #cfe3f1;
     font-size: 11px;
     font-weight: 600;
     transition: background 0.2s;
@@ -948,7 +970,7 @@ a.ic-event:hover {
     display: grid;
     place-items: center;
     padding: 15px;
-    background: rgba(20, 20, 34, 0.62);
+    background: rgba(5, 25, 50, 0.62);
     backdrop-filter: blur(5px);
 }
 
@@ -989,7 +1011,7 @@ a.ic-event:hover {
     height: 44px;
     border: 0;
     border-radius: 50%;
-    background: #ece8f7;
+    background: #d9ebf7;
 }
 .ic-app.ic-modal-terbuka {
     overflow: hidden;
@@ -1031,7 +1053,7 @@ a.ic-event:hover {
         height: 5px;
         margin: 0 auto 14px;
         border-radius: 99px;
-        background: #d6d0ea;
+        background: #b3d1e6;
     }
     .ic-modal--lembar .ic-modal__judul {
         font-size: 24px;
@@ -1070,7 +1092,7 @@ a.ic-event:hover {
     margin: 0 0 4px;
     padding: 12px 14px;
     border-radius: 16px;
-    background: #f1eefb;
+    background: #e6f3fb;
     font-size: 13px;
     font-weight: 700;
 }
@@ -1105,7 +1127,7 @@ a.ic-event:hover {
     padding: 14px;
     border: 1px solid var(--ic-garis);
     border-radius: 18px;
-    background: #f1eefb;
+    background: #e6f3fb;
 }
 .ic-lokasi__ikon {
     display: grid;
@@ -1200,7 +1222,7 @@ a.ic-event:hover {
     min-height: 44px;
     font-size: 13px;
     font-weight: 800;
-    color: #4f3d92;
+    color: #1e5688;
 }
 
 .ic-tautan:hover {
@@ -1258,8 +1280,8 @@ a.ic-event:hover {
     color: #8a1f17;
 }
 .ic-pil--redup {
-    background: #efedf7;
-    color: #5b5870;
+    background: #e3f2fb;
+    color: #4a6379;
 }
 
 /* ---------- Form: galat, centang, tombol penuh ---------- */
@@ -1332,7 +1354,7 @@ a.ic-event:hover {
     background: #fff;
     border: 1px solid var(--ic-garis-kartu);
     border-radius: 34px;
-    box-shadow: 0 28px 90px rgba(83, 58, 128, 0.16);
+    box-shadow: 0 28px 90px rgba(4, 38, 84, 0.16);
 }
 
 .ic-auth__judul {
@@ -1432,7 +1454,7 @@ a.ic-event:hover {
     display: inline-block;
     padding: 10px 4px;
     font-weight: 800;
-    color: #4f3d92;
+    color: #1e5688;
     text-decoration: underline;
 }
 
@@ -1458,12 +1480,25 @@ a.ic-event:hover {
     padding: clamp(24px, 3.5vw, 34px);
     overflow: hidden;
     border-radius: 30px;
-    background: linear-gradient(160deg, #cdb9ff 0%, #b79bff 100%);
-    color: var(--ic-navy);
+    background:
+        radial-gradient(
+            120% 80% at 0% 100%,
+            rgba(255, 255, 255, 0.95) 0%,
+            rgba(255, 255, 255, 0) 55%
+        ),
+        linear-gradient(
+            100deg,
+            #def6ff 0%,
+            #c9eefc 38%,
+            #a9d5ec 62%,
+            #4d8ab6 82%,
+            #1b5f9c 100%
+        );
+    color: var(--ic-judul);
 }
 
 .ic-hero .ic-eyebrow {
-    color: #35286f;
+    color: #1b3c57;
 }
 
 .ic-hero .ic-judul {
@@ -1472,7 +1507,7 @@ a.ic-event:hover {
 }
 
 .ic-hero .ic-judul > span {
-    color: #fff;
+    color: inherit;
 }
 
 .ic-hero__salam {
@@ -1497,7 +1532,7 @@ a.ic-event:hover {
 .ic-hero__teks {
     max-width: 300px;
     font-size: 14px;
-    color: #2b2352;
+    color: #1b3c57;
 }
 
 .ic-hero__stiker {
@@ -1507,7 +1542,7 @@ a.ic-event:hover {
     margin-top: 22px;
     padding: 12px 16px;
     border-radius: 18px;
-    background: #f7f2ff;
+    background: #f1faff;
     color: var(--ic-navy);
     font-size: 11px;
     font-weight: 800;
@@ -1538,7 +1573,7 @@ a.ic-event:hover {
     width: 156px;
     height: 156px;
     border-radius: 50%;
-    border: 15px solid rgba(141, 115, 255, 0.4);
+    border: 15px solid rgba(255, 255, 255, 0.3);
 }
 
 /* Kartu putih kecil berisi logo WS Inner Circle, di tengah lingkaran dekoratif. */
@@ -1551,7 +1586,7 @@ a.ic-event:hover {
     background: #fff;
     padding: 8%;
     transform: rotate(-6deg);
-    box-shadow: 0 8px 20px rgba(60, 35, 120, 0.18);
+    box-shadow: 0 8px 20px rgba(4, 38, 84, 0.18);
 }
 
 .ic-hero__cakram img {
@@ -1645,7 +1680,7 @@ a.ic-event:hover {
     padding: 18px 12px;
     border: 2px solid transparent;
     border-radius: 22px;
-    background: #f4f1fb;
+    background: #eaf5fc;
     font-size: 14px;
     font-weight: 800;
     text-align: center;
@@ -1653,7 +1688,7 @@ a.ic-event:hover {
 
 .ic-pilihan input:checked + .ic-pilihan__isi {
     border-color: var(--ic-aksen);
-    background: #ece5ff;
+    background: #d6ebf9;
 }
 
 .ic-pilihan input:focus-visible + .ic-pilihan__isi {
@@ -1717,7 +1752,7 @@ a.ic-event:hover {
     padding: clamp(24px, 4vw, 44px);
     overflow: hidden;
     border-radius: 30px;
-    background: linear-gradient(150deg, #cbb6ff 0%, #b394ff 100%);
+    background: linear-gradient(150deg, #d3f3fe 0%, #a3cde5 70%, #7db3d6 100%);
 }
 
 .ic-banner__stiker {
@@ -1740,13 +1775,13 @@ a.ic-event:hover {
     line-height: 1;
     letter-spacing: -0.05em;
     text-transform: uppercase;
-    color: #1a1230;
+    color: #05467c;
 }
 
 .ic-banner p {
     margin-bottom: 20px;
     font-size: 14px;
-    color: #2b2352;
+    color: #1b3c57;
 }
 
 .ic-banner__orbit {
@@ -1756,7 +1791,7 @@ a.ic-event:hover {
     height: 150px;
     border-radius: 38px;
     background: linear-gradient(145deg, #ffd47a 0%, #f6a93b 100%);
-    box-shadow: 0 20px 40px rgba(60, 35, 120, 0.22);
+    box-shadow: 0 20px 40px rgba(4, 38, 84, 0.22);
     transform: rotate(10deg);
 }
 
@@ -1766,7 +1801,7 @@ a.ic-event:hover {
     gap: 6px;
     padding: 6px;
     border-radius: 22px;
-    background: #efedf7;
+    background: #e3f2fb;
 }
 
 .ic-tab {
@@ -1778,7 +1813,7 @@ a.ic-event:hover {
     border-radius: 18px;
     font-size: 14px;
     font-weight: 800;
-    color: #3d3a52;
+    color: #304a5f;
     transition: background 0.2s;
 }
 
@@ -1805,11 +1840,11 @@ a.ic-event:hover {
 
 .ic-intro-kenangan {
     padding: 16px 18px;
-    border: 1px solid #e2d9fb;
+    border: 1px solid #c3dcee;
     border-radius: 20px;
-    background: #f1ecff;
+    background: #e3f2fb;
     font-size: 13px;
-    color: #3b3558;
+    color: #294358;
 }
 
 .ic-chip-daftar {
@@ -1825,7 +1860,7 @@ a.ic-event:hover {
     gap: 6px;
     min-height: 44px;
     padding: 10px 16px;
-    border: 1px solid #ddd6f0;
+    border: 1px solid #b3d1e6;
     border-radius: 22px;
     background: #fff;
     font-size: 13px;
@@ -1833,7 +1868,7 @@ a.ic-event:hover {
 }
 
 .ic-chip:hover {
-    background: #f4f1fb;
+    background: #eaf5fc;
 }
 
 .ic-chip.is-aktif {
@@ -1861,11 +1896,11 @@ a.ic-event:hover {
     width: 124px;
     height: 124px;
     overflow: hidden;
-    border: 5px solid #f5f1ff;
+    border: 5px solid #eaf5fc;
     border-radius: 35px;
-    background: #d5c5ff;
+    background: #a9d1ec;
     font-size: 62px;
-    box-shadow: 0 10px 24px rgba(108, 84, 165, 0.14);
+    box-shadow: 0 10px 24px rgba(4, 38, 84, 0.14);
 }
 
 .ic-profil-foto img {
@@ -2078,7 +2113,7 @@ a.ic-event:hover {
     max-width: 560px;
     font-size: clamp(14px, 1.7vw, 17px);
     line-height: 1.6;
-    color: #2b2352;
+    color: #1b3c57;
 }
 .ic-hero--publik .ic-aksi-baris {
     margin-top: 28px;
@@ -2110,8 +2145,8 @@ a.ic-event:hover {
 .ic-langkah li {
     counter-increment: langkah;
     background: #fff;
-    border: 1px solid var(--ic-garis-kartu);
-    border-radius: 24px;
+    border: 2px solid var(--ic-garis-kartu);
+    border-radius: 26px;
     padding: 18px;
 }
 .ic-langkah li::before {
@@ -2122,13 +2157,14 @@ a.ic-event:hover {
     height: 34px;
     margin-bottom: 12px;
     border-radius: 50%;
-    background: var(--ic-lilac);
-    color: var(--ic-navy);
+    background: var(--ic-judul);
+    color: #fff;
     font-weight: 800;
 }
 .ic-langkah h3 {
     margin-bottom: 4px;
     font-size: 16px;
+    color: var(--ic-judul);
 }
 .ic-faq {
     display: grid;
@@ -2136,10 +2172,13 @@ a.ic-event:hover {
     margin-top: 18px;
 }
 .ic-faq details {
-    background: #fff;
-    border: 1px solid var(--ic-garis-kartu);
-    border-radius: 20px;
-    padding: 0 18px;
+    background: linear-gradient(90deg, #d6f4ff 0%, #f6fcff 100%);
+    border: 1.5px solid var(--ic-judul);
+    border-radius: 999px;
+    padding: 0 22px;
+}
+.ic-faq details[open] {
+    border-radius: 28px;
 }
 .ic-faq summary {
     display: flex;
@@ -2149,6 +2188,7 @@ a.ic-event:hover {
     min-height: 48px;
     padding: 8px 0;
     font-weight: 700;
+    color: var(--ic-judul);
     cursor: pointer;
     list-style: none;
 }
@@ -2172,7 +2212,13 @@ a.ic-event:hover {
     margin-top: 34px;
     padding: 32px 20px;
     border-radius: 28px;
-    background: var(--ic-navy);
+    background: linear-gradient(
+        100deg,
+        #0f4f86 0%,
+        #2d70a6 55%,
+        #6aa3cc 85%,
+        #b0d3e8 100%
+    );
     color: #fff;
     text-align: center;
 }
@@ -2183,15 +2229,16 @@ a.ic-event:hover {
 }
 .ic-cta-akhir p {
     margin-bottom: 18px;
-    color: #d9d4ee;
+    color: #fff;
 }
 .ic-cta-akhir .ic-aksi-baris {
     justify-content: center;
     margin-top: 0;
 }
 .ic-cta-akhir .ic-tombol--garis {
+    background: var(--ic-navy);
     color: #fff;
-    border-color: rgba(255, 255, 255, 0.45);
+    border-color: transparent;
 }
 .ic-footer-publik {
     padding: 0 20px 28px;
@@ -2401,5 +2448,159 @@ a.ic-event:hover {
         font-size: 20px;
         overflow-wrap: break-word;
         word-break: normal;
+    }
+}
+
+/* ---------- Tema biru: lapisan akhir (desain Website_Inner_Circle) ----------
+   Diletakkan paling akhir supaya menang atas aturan dasar di atas. Hanya warna, latar, garis, dan bentuk; ukuran dan tata
+   letak tetap dari aturan dasar. Semua warna lewat token --ic-*, jadi ikut berganti bila warna diubah dari CMS. */
+
+/* Latar halaman: tepi biru tua -> latar terang -> hampir putih di tengah -> kembali ke tepi. Baris pertama = cadangan
+   untuk browser tanpa color-mix. */
+.ic-app {
+    min-height: 100vh;
+    background: var(--ic-latar);
+    background: linear-gradient(
+        180deg,
+        var(--ic-latar-tepi) 0%,
+        var(--ic-latar) 24%,
+        color-mix(in srgb, var(--ic-latar) 35%, #fff) 50%,
+        var(--ic-latar) 76%,
+        var(--ic-latar-tepi) 100%
+    );
+}
+
+/* Logo resmi bawaan (hitam) dibiruan supaya selaras dengan tema. Logo kustom dari CMS tidak disentuh. */
+.ic-logo[src*="wsic-wordmark"] {
+    filter: brightness(0) saturate(100%) invert(22%) sepia(80%) saturate(1900%)
+        hue-rotate(188deg) brightness(92%);
+}
+
+/* Hero: lingkaran dekoratif berisi "WS" menggantikan kartu logo miring. */
+.ic-hero--publik .ic-hero__bintang {
+    display: none;
+}
+.ic-hero .ic-hero__cakram span {
+    width: 62%;
+    aspect-ratio: 1;
+    padding: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.32);
+    box-shadow: none;
+    transform: none;
+}
+.ic-hero__cakram img {
+    display: none;
+}
+.ic-hero__cakram span::after {
+    content: "WS";
+    font-family: var(--ic-font-judul);
+    font-weight: 800;
+    font-size: clamp(20px, 3.2vw, 40px);
+    letter-spacing: -0.03em;
+    color: rgba(27, 95, 156, 0.7);
+}
+
+/* Ubin hadiah: gradasi mengikuti .ic-warna-*, tanpa garis tepi; ikon menjadi siluet samar seperti di desain. */
+.ic-ubin {
+    border: 0;
+    border-radius: 34px;
+}
+.ic-ubin__deskripsi {
+    color: inherit;
+    opacity: 0.92;
+}
+/* Warna teks ubin mengikuti warnanya (aturan .ic-ubin di atas menimpa .ic-warna-*, jadi ditegaskan lagi di sini). */
+.ic-ubin.ic-warna-koral,
+.ic-ubin.ic-warna-kuning,
+.ic-ubin.ic-warna-biru {
+    color: #06284a;
+}
+.ic-ubin.ic-warna-lilac,
+.ic-ubin.ic-warna-pink,
+.ic-ubin.ic-warna-hijau,
+.ic-ubin.ic-warna-merah {
+    color: #fff;
+}
+/* Ikon 3D berwarna dijadikan hitam-putih lalu dilebur ke warna ubin (overlay), jadi terbaca sebagai ukiran satu warna. */
+.ic-ubin__ikon {
+    filter: grayscale(1) contrast(0.85);
+    mix-blend-mode: overlay;
+    opacity: 0.6;
+}
+.ic-ubin__panah {
+    border: 0;
+    color: var(--ic-navy);
+}
+.ic-ubin__tag {
+    background: var(--ic-navy);
+}
+
+/* Kartu acara: terang di kiri, biru tua di tepi kanan (tempat panah). Warna tipe acara tidak dipakai di tema ini. */
+.ic-event {
+    padding-right: 20px;
+    border: 1.5px solid var(--ic-judul, #05467c);
+    border-radius: 30px;
+    background: linear-gradient(
+        90deg,
+        #f1fbff 0%,
+        #d6f4ff max(62%, calc(100% - 200px)),
+        #17629a 100%
+    );
+    color: var(--ic-judul, #05467c);
+}
+.ic-event__seni {
+    background: linear-gradient(145deg, #2f76ad 0%, #7fb3d8 100%);
+}
+.ic-event__seni .ic-ikon {
+    filter: grayscale(1) brightness(2.1) contrast(0.8);
+    opacity: 0.95;
+}
+.ic-event__tanggal {
+    color: var(--ic-eyebrow, #1e5688);
+}
+.ic-event__venue {
+    color: var(--ic-judul, #05467c);
+}
+.ic-event__kota {
+    color: var(--ic-redup, #4a6178);
+}
+.ic-event__lencana {
+    border: 1px solid var(--ic-garis-kartu, #b3d4ea);
+    color: var(--ic-judul, #05467c);
+}
+.ic-event__isi {
+    padding-right: 24px;
+}
+.ic-event__panah {
+    border: 0;
+    color: var(--ic-navy, #17629a);
+}
+.ic-event.is-dipilih {
+    outline-color: var(--ic-judul, #05467c);
+}
+
+/* Tema biru di HP: area gelap gradasi dipindah ke sudut supaya teks tetap di atas warna terang (kontras AA), dan pita
+   biru di kartu acara dipersempit supaya tidak menimpa teks. */
+@media (max-width: 780px) {
+    .ic-hero {
+        background:
+            radial-gradient(
+                120% 70% at 0% 100%,
+                rgba(255, 255, 255, 0.9) 0%,
+                rgba(255, 255, 255, 0) 55%
+            ),
+            linear-gradient(150deg, #def6ff 0%, #c9eefc 62%, #7fb4d8 100%);
+    }
+    .ic-event {
+        background: linear-gradient(
+            90deg,
+            #f1fbff 0%,
+            #d6f4ff calc(100% - 84px),
+            #17629a 100%
+        );
+    }
+    .ic-event__isi {
+        padding-right: 10px;
     }
 }
