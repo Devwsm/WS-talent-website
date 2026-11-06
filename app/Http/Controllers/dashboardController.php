@@ -76,14 +76,14 @@ class dashboardController extends Controller
     public function tambahBanner(Request $request)
     {
         $request->validate([
-            'banner_name' => 'required',
-            'link_banner' => 'required|url:http,https|max:2048',
+            'banner_name' => 'required|string|max:255',
+            'link_banner' => 'required|url:http,https|max:255',
             'banner_cover' => 'required|image|mimes:jpg,jpeg,png|max:2048',
         ], [
             'banner_name.required' => 'Judul Banner harus diisi.',
             'link_banner.required' => 'Link Banner harus diisi.',
             'link_banner.url' => 'Link Banner harus berupa alamat lengkap yang diawali http:// atau https://.',
-            'link_banner.max' => 'Link Banner terlalu panjang (maksimal 2048 karakter).',
+            'link_banner.max' => 'Link Banner terlalu panjang (maksimal 255 karakter).',
             'banner_cover.required' => 'Gambar Banner harus diisi.',
             'banner_cover.image' => 'File harus berupa gambar.',
             'banner_cover.max' => 'Gambar Banner tidak boleh lebih dari 2MB.',
@@ -109,14 +109,14 @@ class dashboardController extends Controller
     public function updateBanner(Request $request, $id)
     {
         $request->validate([
-            'banner_name' => 'required',
-            'link_banner' => 'required|url:http,https|max:2048',
+            'banner_name' => 'required|string|max:255',
+            'link_banner' => 'required|url:http,https|max:255',
             'banner_cover' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ], [
             'banner_name.required' => 'Judul Banner harus diisi.',
             'link_banner.required' => 'Link Banner harus diisi.',
             'link_banner.url' => 'Link Banner harus berupa alamat lengkap yang diawali http:// atau https://.',
-            'link_banner.max' => 'Link Banner terlalu panjang (maksimal 2048 karakter).',
+            'link_banner.max' => 'Link Banner terlalu panjang (maksimal 255 karakter).',
             'banner_cover.image' => 'File harus berupa gambar.',
             'banner_cover.max' => 'Gambar Banner tidak boleh lebih dari 2MB.',
         ]);
@@ -174,11 +174,11 @@ class dashboardController extends Controller
     {
         $request->validate([
             'header_color' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
-            'header_title' => 'required',
+            'header_title' => 'required|string|max:255',
             'header_img' => 'required|image|mimes:jpg,jpeg,png|max:1024',
-            'header_name' => 'required',
-            'header_description' => 'required',
-            'link_header' => 'required|url:http,https|max:2048',
+            'header_name' => 'required|string|max:255',
+            'header_description' => 'required|string|max:255',
+            'link_header' => 'required|url:http,https|max:255',
             'header_background'  => 'required|file|mimes:jpg,jpeg,png,mp4,mov,avi,mkv,webm',
         ], [
             'header_color.required' => 'Warna Header harus diisi.',
@@ -192,7 +192,7 @@ class dashboardController extends Controller
             'header_description.required' => 'Deskripsi Header harus diisi.',
             'link_header.required' => 'Link Header harus diisi.',
             'link_header.url' => 'Link Header harus berupa alamat lengkap yang diawali http:// atau https://.',
-            'link_header.max' => 'Link Header terlalu panjang (maksimal 2048 karakter).',
+            'link_header.max' => 'Link Header terlalu panjang (maksimal 255 karakter).',
 
             'header_background.required' => 'Cover Header harus diisi.',
             'header_background.mimes'    => 'File harus berupa gambar (jpg, jpeg, png) atau video (mp4, mov, avi, mkv, webm).',
@@ -267,11 +267,11 @@ class dashboardController extends Controller
 
         $request->validate([
             'header_color'       => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
-            'header_title'       => 'required',
+            'header_title'       => 'required|string|max:255',
             'header_img'         => 'nullable|image|mimes:jpg,jpeg,png|max:1024',
-            'header_name'        => 'required',
-            'header_description' => 'required',
-            'link_header'        => 'required|url:http,https|max:2048',
+            'header_name'        => 'required|string|max:255',
+            'header_description' => 'required|string|max:255',
+            'link_header'        => 'required|url:http,https|max:255',
             'header_background'  => 'nullable|file|mimes:jpg,jpeg,png,mp4,mov,avi,mkv,webm',
         ], [
             'header_color.required' => 'Warna Header harus diisi.',
@@ -284,7 +284,7 @@ class dashboardController extends Controller
             'header_description.required' => 'Deskripsi Header harus diisi.',
             'link_header.required'        => 'Link Header harus diisi.',
             'link_header.url' => 'Link Header harus berupa alamat lengkap yang diawali http:// atau https://.',
-            'link_header.max' => 'Link Header terlalu panjang (maksimal 2048 karakter).',
+            'link_header.max' => 'Link Header terlalu panjang (maksimal 255 karakter).',
 
             'header_background.mimes' => 'File harus berupa gambar (jpg, jpeg, png) atau video (mp4, mov, avi, mkv, webm).',
         ]);
@@ -413,14 +413,14 @@ class dashboardController extends Controller
     public function tambahAlbums(Request $request)
     {
         $request->validate([
-            'albums_name' => 'required',
-            'link_spotify' => 'required|url:http,https|max:2048',
+            'albums_name' => 'required|string|max:255',
+            'link_spotify' => 'required|url:http,https|max:255',
             'albums_cover' => 'required|image|mimes:jpg,jpeg,png|max:1024',
         ], [
             'albums_name.required' => 'Nama Album harus diisi.',
             'link_spotify.required' => 'Link Spotify harus diisi.',
             'link_spotify.url' => 'Link Spotify harus berupa alamat lengkap yang diawali http:// atau https://.',
-            'link_spotify.max' => 'Link Spotify terlalu panjang (maksimal 2048 karakter).',
+            'link_spotify.max' => 'Link Spotify terlalu panjang (maksimal 255 karakter).',
             'albums_cover.required' => 'Cover Album harus diisi.',
             'albums_cover.image' => 'File harus berupa gambar.',
             'albums_cover.max' => 'Cover Album tidak boleh lebih dari 1MB.',
@@ -447,14 +447,14 @@ class dashboardController extends Controller
     public function updateAlbums(Request $request, $id)
     {
         $request->validate([
-            'albums_name' => 'required',
-            'link_spotify' => 'required|url:http,https|max:2048',
+            'albums_name' => 'required|string|max:255',
+            'link_spotify' => 'required|url:http,https|max:255',
             'albums_cover' => 'nullable|image|mimes:jpg,jpeg,png|max:1024',
         ], [
             'albums_name.required' => 'Nama Album harus diisi.',
             'link_spotify.required' => 'Link Spotify harus diisi.',
             'link_spotify.url' => 'Link Spotify harus berupa alamat lengkap yang diawali http:// atau https://.',
-            'link_spotify.max' => 'Link Spotify terlalu panjang (maksimal 2048 karakter).',
+            'link_spotify.max' => 'Link Spotify terlalu panjang (maksimal 255 karakter).',
             'albums_cover.image' => 'File harus berupa gambar.',
             'albums_cover.max' => 'Cover Album tidak boleh lebih dari 1MB.',
         ]);
@@ -513,12 +513,12 @@ class dashboardController extends Controller
     public function tambahnews(Request $request)
     {
         $request->validate([
-            'news_title' => 'required',
-            'news_description' => 'required',
-            'news_source' => 'required',
-            'news_date' => 'required',
+            'news_title' => 'required|string|max:255',
+            'news_description' => 'required|string|max:20000',
+            'news_source' => 'required|string|max:255',
+            'news_date' => 'required|string|max:255',
             'news_cover' => 'required|image|mimes:jpg,jpeg,png|max:1024',
-            'news_link' => 'required|url:http,https|max:2048',
+            'news_link' => 'required|url:http,https|max:255',
         ], [
             'news_title.required' => 'Judul Berita harus diisi.',
             'news_description.required' => 'Deskripsi Berita harus diisi.',
@@ -529,7 +529,7 @@ class dashboardController extends Controller
             'news_cover.max' => 'Cover Berita tidak boleh lebih dari 1MB.',
             'news_link.required' => 'Link Berita harus diisi.',
             'news_link.url' => 'Link Berita harus berupa alamat lengkap yang diawali http:// atau https://.',
-            'news_link.max' => 'Link Berita terlalu panjang (maksimal 2048 karakter).',
+            'news_link.max' => 'Link Berita terlalu panjang (maksimal 255 karakter).',
         ]);
 
         $file     = $request->file('news_cover');
@@ -557,12 +557,12 @@ class dashboardController extends Controller
     public function updatenews(Request $request, $id)
     {
         $request->validate([
-            'news_title' => 'required',
-            'news_description' => 'required',
-            'news_source' => 'required',
-            'news_date' => 'required',
+            'news_title' => 'required|string|max:255',
+            'news_description' => 'required|string|max:20000',
+            'news_source' => 'required|string|max:255',
+            'news_date' => 'required|string|max:255',
             'news_cover' => 'nullable|image|mimes:jpg,jpeg,png|max:1024',
-            'news_link' => 'required|url:http,https|max:2048',
+            'news_link' => 'required|url:http,https|max:255',
         ], [
             'news_title.required' => 'Judul Berita harus diisi.',
             'news_description.required' => 'Deskripsi Berita harus diisi.',
@@ -572,7 +572,7 @@ class dashboardController extends Controller
             'news_cover.max' => 'Cover Berita tidak boleh lebih dari 1MB.',
             'news_link.required' => 'Link Berita harus diisi.',
             'news_link.url' => 'Link Berita harus berupa alamat lengkap yang diawali http:// atau https://.',
-            'news_link.max' => 'Link Berita terlalu panjang (maksimal 2048 karakter).',
+            'news_link.max' => 'Link Berita terlalu panjang (maksimal 255 karakter).',
         ]);
 
         $data = news::findOrFail($id);
@@ -633,14 +633,14 @@ class dashboardController extends Controller
     public function tambahmerchandise(Request $request)
     {
         $request->validate([
-            'merchandise_name' => 'required',
-            'link_merchandise' => 'required|url:http,https|max:2048',
+            'merchandise_name' => 'required|string|max:255',
+            'link_merchandise' => 'required|url:http,https|max:255',
             'merchandise_cover' => 'required|image|mimes:jpg,jpeg,png|max:1024',
         ], [
             'merchandise_name.required' => 'Nama Merchandise harus diisi.',
             'link_merchandise.required' => 'Link Merchandise harus diisi.',
             'link_merchandise.url' => 'Link Merchandise harus berupa alamat lengkap yang diawali http:// atau https://.',
-            'link_merchandise.max' => 'Link Merchandise terlalu panjang (maksimal 2048 karakter).',
+            'link_merchandise.max' => 'Link Merchandise terlalu panjang (maksimal 255 karakter).',
             'merchandise_cover.required' => 'Cover Merchandise harus diisi.',
             'merchandise_cover.image' => 'File harus berupa gambar.',
             'merchandise_cover.max' => 'Cover Merchandise tidak boleh lebih dari 1MB.',
@@ -667,14 +667,14 @@ class dashboardController extends Controller
     public function updatemerchandise(Request $request, $id)
     {
         $request->validate([
-            'merchandise_name' => 'required',
-            'link_merchandise' => 'required|url:http,https|max:2048',
+            'merchandise_name' => 'required|string|max:255',
+            'link_merchandise' => 'required|url:http,https|max:255',
             'merchandise_cover' => 'nullable|image|mimes:jpg,jpeg,png|max:1024',
         ], [
             'merchandise_name.required' => 'Nama Merchandise harus diisi.',
             'link_merchandise.required' => 'Link Merchandise harus diisi.',
             'link_merchandise.url' => 'Link Merchandise harus berupa alamat lengkap yang diawali http:// atau https://.',
-            'link_merchandise.max' => 'Link Merchandise terlalu panjang (maksimal 2048 karakter).',
+            'link_merchandise.max' => 'Link Merchandise terlalu panjang (maksimal 255 karakter).',
             'merchandise_cover.image' => 'File harus berupa gambar.',
             'merchandise_cover.max' => 'Cover Merchandise tidak boleh lebih dari 1MB.',
         ]);

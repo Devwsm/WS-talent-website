@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
  * - HSTS hanya dikirim lewat HTTPS dan di produksi (jangan di lokal: browser akan "mengunci" localhost ke HTTPS)
  *
  * Content-Security-Policy sengaja BELUM dipasang: situs memuat widget Bandsintown, Google Fonts, dan
- * embed video; kebijakan yang terlalu ketat bisa mematikannya. Lihat README (bagian Audit) untuk rencananya.
+ * embed video; kebijakan yang terlalu ketat bisa mematikannya. Rencananya ada di README, bagian 4.8 (Backlog keamanan).
  */
 class SecurityHeaders
 {

@@ -1,5 +1,5 @@
 {{--
-    Pengelola satu daftar berurutan di tab Konten (langkah, FAQ, poin teaser). Dipanggil dari pages/.../konten.blade.php
+    Pengelola satu daftar berurutan di tab Konten (langkah, FAQ, poin teaser). Dipanggil dari pages/dashboard-pages/inner-circle/konten-bagian.blade.php
     di dalam bagian grupnya, dengan variabel: $kodeDaftar, $daftarDef, $butir, $ikonDaftar (sisanya turun dari halaman).
 
     Susunan responsif: tiap butir satu kartu. Teks di atas, tombol aksi di bawahnya (turun baris di HP, di samping dari

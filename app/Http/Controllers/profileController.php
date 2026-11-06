@@ -51,8 +51,8 @@ class profileController extends Controller
     public function tambahStatistik(Request $request)
     {
         $request->validate([
-            'total' => 'required',
-            'platform' => 'required',
+            'total' => 'required|string|max:255',
+            'platform' => 'required|string|max:255',
         ], [
             'total.required' => 'Total harus diisi.',
             'platform.required' => 'Platform harus diisi.',
@@ -70,8 +70,8 @@ class profileController extends Controller
     public function updateStatistik(Request $request, $id)
     {
         $request->validate([
-            'total' => 'required',
-            'platform' => 'required',
+            'total' => 'required|string|max:255',
+            'platform' => 'required|string|max:255',
         ], [
             'total.required' => 'Total harus diisi.',
             'platform.required' => 'Platform harus diisi.',
@@ -105,9 +105,9 @@ class profileController extends Controller
     public function tambahHighlight(Request $request)
     {
         $request->validate([
-            'place' => 'required',
-            'description' => 'required',
-            'year' => 'required',
+            'place' => 'required|string|max:255',
+            'description' => 'required|string|max:255',
+            'year' => 'required|string|max:255',
         ], [
             'place.required' => 'place harus diisi.',
             'description.required' => 'description harus diisi.',
@@ -127,9 +127,9 @@ class profileController extends Controller
     public function updateHighlight(Request $request, $id)
     {
         $request->validate([
-            'place' => 'required',
-            'description' => 'required',
-            'year' => 'required',
+            'place' => 'required|string|max:255',
+            'description' => 'required|string|max:255',
+            'year' => 'required|string|max:255',
         ], [
             'place.required' => 'place harus diisi.',
             'description.required' => 'description harus diisi.',
@@ -165,9 +165,9 @@ class profileController extends Controller
     public function simpanHero(Request $request)
     {
         $request->validate([
-            'judul_singkat' => 'required',
-            'nama' => 'required',
-            'tagline' => 'required',
+            'judul_singkat' => 'required|string|max:255',
+            'nama' => 'required|string|max:255',
+            'tagline' => 'required|string|max:1000',
             'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ], [
             'judul_singkat.required' => 'Judul singkat harus diisi.',
@@ -208,7 +208,7 @@ class profileController extends Controller
     public function simpanBio(Request $request)
     {
         $request->validate([
-            'konten' => 'required',
+            'konten' => 'required|string|max:100000',
         ], [
             'konten.required' => 'Bio harus diisi.',
         ]);
@@ -228,7 +228,7 @@ class profileController extends Controller
     public function tambahGenre(Request $request)
     {
         $request->validate([
-            'nama_genre' => 'required',
+            'nama_genre' => 'required|string|max:255',
         ], [
             'nama_genre.required' => 'Nama genre harus diisi.',
         ]);
@@ -243,7 +243,7 @@ class profileController extends Controller
     public function updateGenre(Request $request, $id)
     {
         $request->validate([
-            'nama_genre' => 'required',
+            'nama_genre' => 'required|string|max:255',
         ], [
             'nama_genre.required' => 'Nama genre harus diisi.',
         ]);
@@ -275,8 +275,8 @@ class profileController extends Controller
     public function tambahCollab(Request $request)
     {
         $request->validate([
-            'nama' => 'required',
-            'role' => 'required',
+            'nama' => 'required|string|max:255',
+            'role' => 'required|string|max:255',
         ], [
             'nama.required' => 'Nama harus diisi.',
             'role.required' => 'Role harus diisi.',
@@ -293,8 +293,8 @@ class profileController extends Controller
     public function updateCollab(Request $request, $id)
     {
         $request->validate([
-            'nama' => 'required',
-            'role' => 'required',
+            'nama' => 'required|string|max:255',
+            'role' => 'required|string|max:255',
         ], [
             'nama.required' => 'Nama harus diisi.',
             'role.required' => 'Role harus diisi.',
@@ -328,7 +328,7 @@ class profileController extends Controller
     public function tambahMediaCoverage(Request $request)
     {
         $request->validate([
-            'nama_media' => 'required',
+            'nama_media' => 'required|string|max:255',
         ], [
             'nama_media.required' => 'Nama media harus diisi.',
         ]);
@@ -343,7 +343,7 @@ class profileController extends Controller
     public function updateMediaCoverage(Request $request, $id)
     {
         $request->validate([
-            'nama_media' => 'required',
+            'nama_media' => 'required|string|max:255',
         ], [
             'nama_media.required' => 'Nama media harus diisi.',
         ]);
@@ -375,8 +375,8 @@ class profileController extends Controller
     public function tambahBooking(Request $request)
     {
         $request->validate([
-            'label' => 'required',
-            'email' => 'required|email',
+            'label' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
         ], [
             'label.required' => 'Label harus diisi.',
             'email.required' => 'Email harus diisi.',
@@ -394,8 +394,8 @@ class profileController extends Controller
     public function updateBooking(Request $request, $id)
     {
         $request->validate([
-            'label' => 'required',
-            'email' => 'required|email',
+            'label' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
         ], [
             'label.required' => 'Label harus diisi.',
             'email.required' => 'Email harus diisi.',
@@ -430,8 +430,8 @@ class profileController extends Controller
     public function tambahMediaSosial(Request $request)
     {
         $request->validate([
-            'platform' => 'required',
-            'url' => 'required|url',
+            'platform' => 'required|string|max:255',
+            'url' => 'required|url:http,https|max:255',
         ], [
             'platform.required' => 'Platform harus diisi.',
             'url.required' => 'URL harus diisi.',
@@ -449,8 +449,8 @@ class profileController extends Controller
     public function updateMediaSosial(Request $request, $id)
     {
         $request->validate([
-            'platform' => 'required',
-            'url' => 'required|url',
+            'platform' => 'required|string|max:255',
+            'url' => 'required|url:http,https|max:255',
         ], [
             'platform.required' => 'Platform harus diisi.',
             'url.required' => 'URL harus diisi.',

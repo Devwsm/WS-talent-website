@@ -36,6 +36,13 @@ class AppServiceProvider extends ServiceProvider
             TrustProxies::at($proxies === '*' ? '*' : array_map('trim', explode(',', $proxies)));
         }
 
+        // Pesan bawaan untuk batas panjang teks (isian CMS yang belum punya pesan sendiri). Nama isian diambil dari
+        // nama field; pesan khusus per isian di controller tetap diutamakan.
+        app('translator')->addLines([
+            'validation.max.string' => ':Attribute terlalu panjang (maksimal :max karakter).',
+            'validation.string' => ':Attribute harus berupa teks.',
+        ], 'en');
+
         View::composer(
             ['template.layout', 'components.navbar', 'components.footer'],
             ThemeColorComposer::class
@@ -159,15 +166,15 @@ class AppServiceProvider extends ServiceProvider
                     ->with('ic_toast_galat', 'Terlalu banyak percobaan. Tunggu sebentar lalu coba lagi.'));
         });
 
-        // Unggah kenangan: per menit (salah klik, skrip) dan per hari (spam galeri). Per ANGGOTA, bukan per IP.
+        // Unggah kenangan: per menit (salah klik, skrip) dan per hari (spam galeri). Per ANGGOTA, bukan per IP. Kunci keduanya HARUS berbeda: kunci sama membuat dua batas berbagi satu penghitung.
         RateLimiter::for('ic-kenangan', function (Request $request) {
             $id = Auth::guard('member')->id();
             $kunci = $id ? 'member:' . $id : 'ip:' . $request->ip();
             $galat = fn() => back()->with('ic_toast_galat', 'Terlalu banyak unggahan. Tunggu sebentar lalu coba lagi.');
 
             return [
-                Limit::perMinute((int) config('inner_circle.batas_kenangan_per_menit', 4))->by($kunci)->response($galat),
-                Limit::perDay((int) config('inner_circle.batas_kenangan_per_hari', 20))->by($kunci)
+                Limit::perMinute((int) config('inner_circle.batas_kenangan_per_menit', 4))->by('menit:' . $kunci)->response($galat),
+                Limit::perDay((int) config('inner_circle.batas_kenangan_per_hari', 20))->by('hari:' . $kunci)
                     ->response(fn() => back()->with('ic_toast_galat', 'Batas unggahan hari ini sudah tercapai. Coba lagi besok.')),
             ];
         });

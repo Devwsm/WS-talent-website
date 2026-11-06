@@ -2,7 +2,7 @@
 
 Situs resmi DJ **Whisnu Santika** (`whisnusantika.com`) beserta komunitas penggemarnya, **WS Inner Circle**. Satu project Laravel yang berisi dua produk: situs artis dengan CMS-nya, dan komunitas Inner Circle dengan CMS-nya.
 
-Status: tayang di production dengan auto deploy (GitHub Actions + SSH). Terakhir **430 tes** (lulus semua; 15 tes gambar dilewati otomatis bila ekstensi `gd` tanpa WebP tidak aktif).
+Status: tayang di production dengan auto deploy (GitHub Actions + SSH). Terakhir **434 tes** (lulus semua; 15 tes gambar dilewati otomatis bila ekstensi `gd` tanpa WebP tidak aktif).
 
 ## Daftar isi
 
@@ -324,17 +324,17 @@ Aturan penulisan: buang komentar `#` di baris yang diisi; beri tanda kutip pada 
 php artisan test
 ```
 
-430 tes. Database SQLite di memori; tes **tidak bergantung pada `.env`** (semua env dipaku di `phpunit.xml`), jadi hasilnya sama di lokal dan di GitHub. `ImageProcessorTest` dilewati otomatis bila ekstensi `gd`/`exif` tidak aktif. SQLite tidak menguji kunci baris (`lockForUpdate`): coba klik ganda klaim dan suka secara manual di MySQL.
+434 tes. Database SQLite di memori; tes **tidak bergantung pada `.env`** (semua env dipaku di `phpunit.xml`), jadi hasilnya sama di lokal dan di GitHub. `ImageProcessorTest` dilewati otomatis bila ekstensi `gd`/`exif` tidak aktif. SQLite tidak menguji kunci baris (`lockForUpdate`): coba klik ganda klaim dan suka secara manual di MySQL.
 
 Berkas tes (`tests/Feature`, kecuali disebut lain):
 
-| Area                    | Berkas                                                                                                                                                                                 |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Inti dan aturan anggota | `InnerCircleTest`, `InnerCircleLokasiTest`, `InnerCircleHadiahTest`, `InnerCircleKomunitasTest`, `InnerCircleFilterBulanTest`                                                          |
-| Akun dan keamanan       | `InnerCircleKeamananTest`, `InnerCircleGoogleTest`, `InnerCircleVerifikasiEmailTest`, `InnerCircleAkunPrivasiTest`, `AdminLogDuaFaktorTest`                                            |
-| Situs publik            | `InnerCircleSitusPublikTest`                                                                                                                                                           |
-| CMS dan tab Konten      | `CmsModeTest`, `CmsResponsifFaseATest`, `InnerCircleKontenTest`, `InnerCircleKontenBagianTest`, `InnerCircleFase3Test` sampai `InnerCircleFase11Test` (tes per fitur CMS Inner Circle) |
-| Unit (`tests/Unit`)     | `HtmlSanitizerTest`, `ImageProcessorTest`, `PratinjauPotonganTest`                                                                                                                     |
+| Area                    | Berkas                                                                                                                                                                                                           |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Inti dan aturan anggota | `InnerCircleTest`, `InnerCircleLokasiTest`, `InnerCircleHadiahTest`, `InnerCircleKomunitasTest`, `InnerCircleFilterBulanTest`                                                                                    |
+| Akun dan keamanan       | `InnerCircleKeamananTest`, `InnerCircleGoogleTest`, `InnerCircleVerifikasiEmailTest`, `InnerCircleAkunPrivasiTest`, `AdminLogDuaFaktorTest`                                                                      |
+| Situs publik            | `InnerCircleSitusPublikTest`                                                                                                                                                                                     |
+| CMS dan tab Konten      | `CmsModeTest`, `CmsResponsifFaseATest`, `CmsValidasiPanjangTest`, `InnerCircleKontenTest`, `InnerCircleKontenBagianTest`, `InnerCircleFase3Test` sampai `InnerCircleFase11Test` (tes per fitur CMS Inner Circle) |
+| Unit (`tests/Unit`)     | `HtmlSanitizerTest`, `ImageProcessorTest`, `PratinjauPotonganTest`                                                                                                                                               |
 
 ### 4.8 Keamanan (ringkas)
 
@@ -348,13 +348,11 @@ Berkas tes (`tests/Feature`, kecuali disebut lain):
 **Backlog keamanan dan perbaikan (urut prioritas):**
 
 1. Cadangan database terjadwal dan HTTPS paksa.
-2. Validasi CMS Artis: hampir semua isian teks hanya `required` tanpa `max:255`, padahal kolomnya `string` (255). Teks lebih panjang membuat error 500 di MySQL. Perketat di `dashboardController` dan `profileController`.
-3. URL Media Sosial (`profileController`) memakai aturan `url` tanpa batasan skema (puluhan skema lolos). Samakan dengan modul lain: `url:http,https|max:2048`.
-4. Batas harian unggah kenangan (`ic-kenangan`) tidak pernah berlaku: batas per menit dan per hari memakai kunci yang sama, sehingga hitungannya berbagi satu penghitung. Beri kunci berbeda (mis. akhiran `:menit` dan `:hari`).
-5. Content-Security-Policy: pasang dulu sebagai `Report-Only` di preview karena widget Bandsintown dan Google Fonts.
-6. Peran admin (saat ini satu bendera sesi tanpa peran) dan pengecekan ulang akun admin di tiap permintaan.
-7. Ganti `throttle:N,M` lama di rute admin dengan pembatas bernama; `composer audit` dan `npm audit` rutin.
-8. Pin host key SSH di workflow (sekarang `ssh-keyscan` mempercayai host saat itu juga).
+2. Content-Security-Policy: pasang dulu sebagai `Report-Only` di preview karena widget Bandsintown dan Google Fonts.
+3. Peran admin (saat ini satu bendera sesi tanpa peran) dan pengecekan ulang akun admin di tiap permintaan (`CekLogin`). Perlu menyiapkan akun di semua tes yang memakai `withSession(['login' => true])`.
+4. Tautan di CMS Artis dibatasi 255 karakter (kolom `string`). Bila perlu tautan lebih panjang (mis. Spotify dengan parameter pelacakan), ubah kolomnya menjadi `text` lewat migrasi.
+5. Ganti `throttle:N,M` lama di rute admin dengan pembatas bernama; `composer audit` dan `npm audit` rutin.
+6. Pin host key SSH di workflow (sekarang `ssh-keyscan` mempercayai host saat itu juga).
 
 ### 4.9 Aturan bisnis penting
 
