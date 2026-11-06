@@ -5,7 +5,7 @@
 | Modul tab Konten di CMS Inner Circle
 |--------------------------------------------------------------------------
 | Sama seperti CMS Artis (halaman Profile: Hero, Genre, Bio, ...), tiap bagian tab Konten dipecah menjadi modul kecil.
-| Satu modul = satu topik: formulir kecil di kiri, pratinjau potongan halaman yang memuat topik itu di kanan.
+| Satu modul = satu topik: formulir kecil di kiri, pratinjau replika topik itu di kanan.
 |
 | Kunci tingkat atas = kode grup di config/ic_konten.php (`grup`). Isi tiap modul:
 | - label  : judul modul
@@ -13,8 +13,8 @@
 | - kunci  : kunci teks (config/ic_konten.php `kunci`) yang diedit di formulir modul ini. Kosong = modul tanpa formulir
 |            (hanya daftar berurutan).
 | - daftar : kode daftar berurutan (langkah, FAQ, poin teaser) yang dikelola di modul ini
-| - fokus  : kunci teks yang menentukan potongan pratinjau; bawaannya kunci pertama modul. Wajib diisi untuk modul
-|            tanpa kunci.
+| - fokus  : kunci teks yang ditampilkan di pratinjau bila modul tidak punya form; bawaannya kunci pertama modul.
+|            Wajib diisi untuk modul tanpa kunci.
 |
 | Aturan yang dijaga tes (InnerCircleKontenBagianTest): setiap kunci teks ada di TEPAT SATU modul, setiap daftar grup
 | terpasang di satu modul, dan setiap fokus adalah kunci yang nyata. Kunci baru di config/ic_konten.php = tambahkan juga

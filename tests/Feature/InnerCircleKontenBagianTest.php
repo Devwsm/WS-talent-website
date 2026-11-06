@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\ic_pengaturan;
 use App\Services\InnerCircle\IcBagian;
 use App\Services\InnerCircle\IcKonten;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -150,9 +149,8 @@ class InnerCircleKontenBagianTest extends TestCase
                 $this->assertStringContainsString('id="form-tentang-' . $slug . '"', $html);
             }
         }
-        $this->assertSame(count($modul), substr_count($html, '<iframe data-pratinjau-frame'));
-        // Modul tidak punya menu pilihan halaman (menu hanya untuk pratinjau seluruh grup).
-        $this->assertStringNotContainsString('id="pilih-pratinjau-', $html);
+        $this->assertSame(count($modul), preg_match_all('/\sdata-replika(?=[\s>])/', $html), 'satu panel replika per modul');
+        $this->assertStringNotContainsString('<iframe', $html);
     }
 
     public function test_menyimpan_satu_modul_tidak_menyentuh_isian_modul_lain(): void
@@ -178,99 +176,33 @@ class InnerCircleKontenBagianTest extends TestCase
             ->assertRedirect(IcBagian::url('checkin', 'modul-checkin-jadwal'));
     }
 
-    // ---------- Fase C: pratinjau potongan ----------
+    // ---------- Pratinjau replika ----------
 
-    public function test_pratinjau_dengan_fokus_hanya_menampilkan_potongan_yang_memuat_teks_itu(): void
-    {
-        $penuh = $this->admin()->post(route('ic.admin.konten.pratinjau'), [
-            'grup' => 'beranda',
-            'k' => ['beranda__eyebrow' => 'Draf Eyebrow Potongan'],
-        ])->assertOk()->getContent();
-
-        $res = $this->admin()->post(route('ic.admin.konten.pratinjau'), [
-            'grup' => 'beranda',
-            'fokus' => 'beranda__eyebrow',
-            'k' => ['beranda__eyebrow' => 'Draf Eyebrow Potongan'],
-        ])->assertOk()->assertSee('Draf Eyebrow Potongan')->assertSee('data-ic-sorot', false);
-
-        $potongan = $res->getContent();
-        $this->assertLessThan(strlen($penuh), strlen($potongan));
-        $this->assertStringNotContainsString("\u{E000}", $potongan);
-        $this->assertStringNotContainsString("\u{E001}", $potongan);
-        $this->assertStringContainsString('icPratinjauTinggi', $potongan);
-        $this->assertStringNotContainsString('ic-dock', $potongan);
-    }
-
-    public function test_potongan_memakai_teks_bawaan_bila_isian_kosong(): void
-    {
-        $this->admin()->post(route('ic.admin.konten.pratinjau'), [
-            'grup' => 'beranda',
-            'fokus' => 'beranda__eyebrow',
-            'k' => ['beranda__eyebrow' => ''],
-        ])->assertOk()->assertSee('Whisnu Santika Official Fanbase');
-    }
-
-    public function test_pratinjau_tanpa_halaman_mencari_halaman_yang_memuat_teksnya(): void
-    {
-        // "daftar.judul" hanya ada di halaman Daftar (bukan halaman Masuk yang dicoba lebih dulu).
-        $this->admin()->post(route('ic.admin.konten.pratinjau'), [
-            'grup' => 'masuk',
-            'fokus' => 'daftar__judul',
-            'k' => ['daftar__judul' => 'Judul Daftar Draf'],
-        ])->assertOk()->assertSee('Judul Daftar Draf');
-    }
-
-    public function test_pratinjau_potongan_tidak_menulis_apa_pun_dan_penanda_mati_lagi(): void
-    {
-        $this->admin()->post(route('ic.admin.konten.pratinjau'), [
-            'grup' => 'beranda',
-            'fokus' => 'beranda__eyebrow',
-            'k' => ['beranda__eyebrow' => 'Draf'],
-        ])->assertOk();
-
-        $this->assertSame(0, ic_pengaturan::count());
-
-        $konten = app(IcKonten::class);
-        $this->assertStringNotContainsString("\u{E000}", $konten->teks('beranda.eyebrow'));
-        $konten->pakaiPenanda();
-        $this->assertStringContainsString("\u{E000}beranda.eyebrow\u{E001}", $konten->teks('beranda.eyebrow'));
-        $konten->lupakanDraf();
-        $this->assertStringNotContainsString("\u{E000}", $konten->teks('beranda.eyebrow'));
-    }
-
-    public function test_fokus_tidak_dikenal_atau_tidak_valid_ditolak(): void
-    {
-        $this->admin()->post(route('ic.admin.konten.pratinjau'), ['grup' => 'beranda', 'fokus' => 'tidak__ada'])->assertNotFound();
-        $this->admin()->post(route('ic.admin.konten.pratinjau'), ['grup' => 'beranda', 'fokus' => 'BAD!'])->assertSessionHasErrors('fokus');
-    }
-
-    public function test_pratinjau_tampilan_menampilkan_bagian_atas_halaman_contoh(): void
-    {
-        $this->admin()->post(route('ic.admin.konten.pratinjau'), [
-            'grup' => 'tampilan',
-            'fokus' => 'tampilan__program',
-            'k' => ['tampilan__program' => 'Whisnu Crew'],
-        ])->assertOk()->assertSee('Whisnu Crew');
-    }
-
-    public function test_panel_pratinjau_modul_siap_untuk_potongan(): void
+    public function test_replika_memuat_teks_tersimpan_atau_bawaan_tanpa_iframe(): void
     {
         $html = $this->admin()->get(route('ic.admin.konten.bagian', 'beranda'))->assertOk()->getContent();
 
         $this->assertStringContainsString('Tampilan di halaman', $html);
-        $this->assertStringContainsString('data-pratinjau-catatan', $html);
-        $this->assertStringContainsString('data-fokus="beranda__eyebrow"', $html);
         $this->assertStringContainsString('data-form="form-beranda-sapaan"', $html);
-        $this->assertStringContainsString("data.set('fokus', fokus)", $html);
-        $this->assertStringContainsString('icPratinjauTinggi', $html);
+        $this->assertStringContainsString('data-replika-teks="beranda__eyebrow"', $html);
+        $this->assertStringContainsString('Whisnu Santika Official Fanbase', $html);
+        $this->assertStringNotContainsString('<iframe', $html);
+        $this->assertStringNotContainsString('data-pratinjau', $html);
+    }
+
+    public function test_replika_memakai_teks_yang_sudah_disimpan(): void
+    {
+        $this->admin()->post(route('ic.admin.konten.simpan', 'beranda'), ['modul' => 'sapaan', 'k' => ['beranda__eyebrow' => 'Eyebrow Tersimpan Uji']]);
+
+        $this->admin()->get(route('ic.admin.konten.bagian', 'beranda'))->assertOk()->assertSee('Eyebrow Tersimpan Uji');
     }
 
     public function test_modul_hanya_daftar_tetap_punya_pratinjau_tanpa_form(): void
     {
         $html = $this->admin()->get(route('ic.admin.konten.bagian', 'teaser'))->assertOk()->getContent();
 
-        $this->assertStringContainsString('data-fokus="teaser__judul"', $html);
         $this->assertStringNotContainsString('id="form-teaser-poin"', $html);
         $this->assertStringContainsString('id="daftar-teaser_poin"', $html);
+        $this->assertStringContainsString('data-replika-teks="teaser__judul"', $html);
     }
 }

@@ -22,7 +22,7 @@
                 'deskripsi' =>
                     $bagian['petunjuk'] ?:
                     'Ubah teks tanpa menyentuh kode. Kosongkan isian untuk memakai teks bawaan.',
-                'pakaiCss' => false,
+                'pakaiCss' => true,
             ])
 
             @include('components/errors')
@@ -76,7 +76,7 @@
                         </div>
                     @endif
 
-                    {{-- Satu modul = satu topik kecil: formulir di kiri, pratinjau bagian itu saja di kanan (di bawah formulir pada layar sempit). --}}
+                    {{-- Satu modul = satu topik kecil: formulir di kiri, pratinjau replika bagian itu di kanan (di bawah formulir pada layar sempit). --}}
                     @foreach ($modul as $slugModul => $m)
                         @php
                             $idForm = 'form-' . $kodeGrup . '-' . $slugModul;
@@ -182,13 +182,13 @@
                                     @endif
                                 </div>
 
-                                @include('components.dashboard.inner-circle.pratinjau', [
+                                @include('components.dashboard.inner-circle.replika', [
                                     'kodeGrup' => $kodeGrup,
                                     'info' => $info,
-                                    'idForm' => $isianModul->isNotEmpty() ? $idForm : null,
-                                    'fokus' => $m['fokus'],
-                                    'judulPanel' => $m['label'],
-                                    'pilih' => false,
+                                    'm' => $m,
+                                    'kunciDef' => $kunci,
+                                    'tersimpan' => $tersimpan,
+                                    'idForm' => $idForm,
                                 ])
                             </div>
                         </section>
@@ -230,108 +230,65 @@
                 });
             });
 
-            // Pratinjau potongan: hanya bagian halaman yang memuat teks yang sedang diubah (isian kosong = teks bawaan).
-            // Diperbarui sebentar setelah berhenti mengetik. Teks yang difokus/diketik menentukan potongan yang tampil.
-            document.querySelectorAll('[data-pratinjau]').forEach((panel) => {
+            // Pratinjau replika: teks di panel kanan mengikuti isian form saat mengetik (tanpa permintaan ke server).
+            // Isian kosong = teks bawaan; teks yang diubah diberi garis putus-putus. {program} dan {tautan} diganti
+            // seperti di halaman asli (peta ada di data-ganti).
+            document.querySelectorAll('[data-replika]').forEach((panel) => {
                 const form = panel.dataset.form ? document.getElementById(panel.dataset.form) : null;
-                const frame = panel.querySelector('[data-pratinjau-frame]');
-                const status = panel.querySelector('[data-pratinjau-status]');
-                const catatan = panel.querySelector('[data-pratinjau-catatan]');
-                const pilih = panel.querySelector('[data-pratinjau-halaman]');
-                if (!frame) return;
+                if (!form) return;
+                let peta = {};
+                try {
+                    peta = JSON.parse(panel.dataset.ganti || '{}');
+                } catch (e) {}
+                const ganti = (teks) => Object.keys(peta).reduce((hasil, k) => hasil.split(k).join(peta[k]), teks);
 
-                const kolomDari = (el) => {
-                    const m = el && el.name ? el.name.match(/^k\[(.+)\]$/) : null;
-                    return m ? m[1] : null;
-                };
-                // Potongan awal: kunci yang ditentukan modul (data-fokus); bila tidak ada, isian pertama di form.
-                let fokus = panel.dataset.fokus || kolomDari(form ? form.querySelector('[name^="k["]') : null);
-                let tunda = null;
-                let batal = null;
+                panel.querySelectorAll('[data-replika-teks]').forEach((el) => {
+                    const kolom = el.dataset.replikaTeks;
+                    const isian = form.querySelector('[name="k[' + kolom + ']"]');
+                    const blok = el.closest('[data-replika-blok]');
+                    if (!isian) return;
 
-                const muat = async () => {
-                    if (batal) batal.abort();
-                    batal = new AbortController();
-                    status.textContent = 'Memuat…';
-
-                    const data = form ? new FormData(form) : new FormData();
-                    // Berkas unggahan (logo) tidak ikut dikirim ke pratinjau; logo baru tampil setelah disimpan.
-                    data.delete('logo');
-                    data.set('grup', panel.dataset.grup);
-                    if (fokus) data.set('fokus', fokus);
-                    if (pilih && pilih.value) data.set('halaman', pilih.value);
-
-                    try {
-                        const res = await fetch(panel.dataset.url, {
-                            method: 'POST',
-                            body: data,
-                            signal: batal.signal,
-                            credentials: 'same-origin',
-                            headers: {
-                                Accept: 'text/html'
-                            },
-                        });
-                        if (!res.ok) throw new Error(String(res.status));
-                        const html = await res.text();
-                        frame.srcdoc = html;
-                        status.textContent = 'Pratinjau diperbarui';
-                        if (catatan) {
-                            const pesan = res.headers.get('X-Pratinjau-Catatan');
-                            catatan.textContent = pesan ? decodeURIComponent(pesan) : '';
-                            catatan.hidden = !pesan;
-                        }
-                    } catch (galat) {
-                        if (galat.name !== 'AbortError') status.textContent =
-                            'Pratinjau gagal dimuat. Coba muat ulang.';
-                    }
-                };
-
-                const jadwalkan = () => {
-                    status.textContent = 'Memperbarui…';
-                    clearTimeout(tunda);
-                    tunda = setTimeout(muat, 350);
-                };
-
-                // Pindah ke isian lain = pindah potongan, tanpa menunggu.
-                if (form) {
-                    form.addEventListener('focusin', (e) => {
-                        const kolom = kolomDari(e.target);
-                        if (kolom && kolom !== fokus) {
-                            fokus = kolom;
-                            clearTimeout(tunda);
-                            muat();
-                        }
-                    });
-                    form.addEventListener('input', (e) => {
-                        const kolom = kolomDari(e.target);
-                        if (kolom) fokus = kolom;
-                        jadwalkan();
-                    });
-                }
-                if (pilih) pilih.addEventListener('change', muat);
-                panel.querySelector('[data-pratinjau-muat]')?.addEventListener('click', muat);
-
-                // Tinggi iframe mengikuti isi potongan (dikirim oleh halaman di dalamnya).
-                window.addEventListener('message', (e) => {
-                    if (e.source !== frame.contentWindow || !e.data || !e.data.icPratinjauTinggi) return;
-                    frame.style.height = Math.min(Math.max(e.data.icPratinjauTinggi + 4, 96), 640) + 'px';
+                    const perbarui = () => {
+                        const nilai = isian.value.trim();
+                        el.textContent = nilai !== '' ? ganti(isian.value.replace(/\s+$/, '')) : el.dataset
+                            .bawaan;
+                        el.classList.toggle('is-diubah', nilai !== '');
+                    };
+                    isian.addEventListener('input', perbarui);
+                    isian.addEventListener('focus', () => blok?.classList.add('is-aktif'));
+                    isian.addEventListener('blur', () => blok?.classList.remove('is-aktif'));
+                    perbarui();
                 });
-
-                // Muat pertama kali hanya saat modulnya mendekati layar, supaya banyak modul tidak merender halaman bersamaan.
-                if ('IntersectionObserver' in window) {
-                    const amati = new IntersectionObserver((baris) => {
-                        if (baris.some((b) => b.isIntersecting)) {
-                            amati.disconnect();
-                            muat();
-                        }
-                    }, {
-                        rootMargin: '300px'
-                    });
-                    amati.observe(panel);
-                } else {
-                    muat();
-                }
             });
+
+            // Pratinjau replika Tampilan: warna dan nama program berubah langsung; warna tidak valid memakai bawaan.
+            document.querySelectorAll('[data-replika-tampilan]').forEach((panel) => {
+                const form = document.getElementById(panel.dataset.form);
+                const kartu = panel.querySelector('[data-replika-latar]');
+                const program = panel.querySelector('[data-replika-program]');
+                if (!form || !kartu) return;
+                const valid = (v) => /^#[0-9a-f]{6}$/i.test(v);
+                const peta = {
+                    aksen: '--ic-aksen',
+                    latar: '--ic-latar',
+                    kartu: '--ic-shell'
+                };
+
+                const perbarui = () => {
+                    Object.keys(peta).forEach((kode) => {
+                        const isian = form.querySelector('[name="k[tampilan__' + kode + ']"]');
+                        const bawaan = isian?.closest('[data-warna]')?.dataset.warnaBawaan;
+                        const nilai = (isian?.value || '').trim();
+                        if (valid(nilai)) kartu.style.setProperty(peta[kode], nilai);
+                        else if (bawaan) kartu.style.setProperty(peta[kode], bawaan);
+                    });
+                    const nama = form.querySelector('[name="k[tampilan__program]"]')?.value.trim();
+                    if (program) program.textContent = nama || panel.dataset.programBawaan;
+                };
+                form.addEventListener('input', perbarui);
+                perbarui();
+            });
+
 
             // Tautan lama ke tab Konten (mis. /konten#grup-tentang, #privasi) dialihkan ke halaman bagiannya.
             (() => {

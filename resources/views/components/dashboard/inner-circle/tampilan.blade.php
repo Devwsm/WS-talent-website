@@ -111,9 +111,10 @@
             </div>
         </form>
 
-        @include('components.dashboard.inner-circle.pratinjau', [
-            'kodeGrup' => 'tampilan',
+        @include('components.dashboard.inner-circle.replika-tampilan', [
             'info' => $infoPratinjau,
+            'tampilanWarna' => $tampilanWarna,
+            'tampilanLogo' => $tampilanLogo,
         ])
     </div>
 </section>

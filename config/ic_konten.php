@@ -18,8 +18,8 @@
 | agar tidak ada isian CMS yang tidak berpengaruh apa-apa. Tambah kunci baru = tambah di sini lalu pakai di view.
 | Tanda < dan > tidak boleh dipakai (teks biasa saja, selalu di-escape saat ditampilkan).
 |
-| Tiap grup punya `pratinjau`: halaman apa saja yang dirender di panel pratinjau samping form (kunci halaman => label;
-| lihat kontenPratinjauController). Satu halaman = tanpa pilihan, lebih dari satu = ada menu pilihan di panel.
+| Tiap grup punya `pratinjau`: nama halaman tempat teks grup itu tampil (kunci halaman => label). Hanya dipakai sebagai
+| keterangan di panel pratinjau replika (components/dashboard/inner-circle/replika.blade.php).
 |
 | `daftar` memuat daftar berurutan (langkah, FAQ, poin teaser) yang dikelola dari tab Konten. Isi awalnya (`bawaan`) ditanam
 | oleh migrasi dan dipakai tombol "Kembalikan daftar bawaan"; sesudah itu sumbernya tabel `ic_item`.
@@ -33,7 +33,7 @@ return [
     /*
     | Tampilan dan merek (tab Konten, bagian "Tampilan"; Fase 6): nama program, tiga warna, dan logo.
     | - kunci   : pengaturan yang disimpan di `ic_pengaturan` hanya bila BEDA dari bawaan (sama seperti teks lain).
-    |             Dipakai juga oleh IcKonten::pakaiDraf() supaya pratinjau langsung ikut berubah.
+    |             Pratinjau replika membacanya langsung dari form, tanpa permintaan ke server.
     | - warna   : `css` = variabel CSS yang ditimpa di area anggota (resources/css/inner-circle.css). Hanya nilai
     |             #RRGGBB yang lolos validasi, jadi tidak ada teks bebas yang masuk ke CSS.
     | - teks    : warna teks area anggota (bukan isian CMS). Dipakai untuk memeriksa kontras; tes menjaga agar nilainya

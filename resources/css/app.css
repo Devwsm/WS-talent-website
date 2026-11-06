@@ -653,3 +653,140 @@ body.cms-ic {
     text-align: center;
     overflow-wrap: break-word;
 }
+
+/* Pratinjau replika tab Konten (CMS Inner Circle): memakai class asli area anggota (inner-circle.css) tanpa iframe. */
+.ic-app.ic-replika {
+    min-height: 0;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.ic-replika .ic-judul {
+    font-size: clamp(34px, 6vw, 54px);
+    margin: 4px 0 6px;
+    overflow-wrap: anywhere;
+}
+.ic-replika .ic-judul > em {
+    font-style: normal;
+}
+.ic-replika .ic-judul-bagian,
+.ic-replika .ic-deskripsi,
+.ic-replika .ic-eyebrow {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+.ic-replika [data-replika-teks] {
+    white-space: pre-line;
+}
+.ic-replika__blok {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    min-width: 0;
+    border-radius: 12px;
+    padding: 8px;
+    margin: -8px;
+    transition: box-shadow 0.15s;
+}
+.ic-replika__blok.is-aktif {
+    box-shadow: 0 0 0 2px var(--ic-aksen);
+}
+.ic-replika__label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--ic-redup);
+}
+.ic-replika [data-replika-teks].is-diubah {
+    outline: 1.5px dashed var(--ic-aksen);
+    outline-offset: 3px;
+}
+.ic-replika__meta-judul {
+    font-size: 18px;
+    color: #1a0dab;
+    overflow-wrap: anywhere;
+}
+.ic-replika__meta-deskripsi {
+    font-size: 13px;
+    color: var(--ic-redup);
+    overflow-wrap: anywhere;
+}
+.ic-replika__pil-baris {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.ic-replika__pil {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    background: color-mix(in srgb, var(--ic-aksen) 14%, #fff);
+    color: var(--ic-judul);
+}
+.ic-replika__daftar {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    width: 100%;
+}
+.ic-replika__daftar li {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+.ic-replika__daftar li > b {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 999px;
+    font-size: 12px;
+    background: color-mix(in srgb, var(--ic-aksen) 14%, #fff);
+    color: var(--ic-judul);
+}
+.ic-replika__daftar li > div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    font-size: 13px;
+    color: var(--ic-redup);
+    overflow-wrap: anywhere;
+}
+.ic-replika__daftar li strong {
+    color: var(--ic-tinta);
+}
+.ic-replika__catatan {
+    font-size: 11px;
+    color: var(--ic-redup);
+}
+.ic-replika--tampilan {
+    background: var(--ic-latar);
+}
+.ic-replika__kartu {
+    background: var(--ic-shell);
+    border-radius: 20px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    min-width: 0;
+}
+.ic-replika__logo {
+    max-height: 56px;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+}

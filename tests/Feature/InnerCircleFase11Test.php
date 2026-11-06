@@ -4,14 +4,12 @@ namespace Tests\Feature;
 
 use App\Models\ic_broadcast;
 use App\Models\ic_memory;
-use App\Models\ic_pengaturan;
-use App\Models\log_aktivitas;
 use App\Models\member;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Fase 11: pratinjau langsung di tab Konten, lencana "belum dibaca" di Komunitas, logo/favicon/Open Graph resmi.
+ * Fase 11: pratinjau replika di tab Konten, lencana "belum dibaca" di Komunitas, logo/favicon/Open Graph resmi.
  */
 class InnerCircleFase11Test extends TestCase
 {
@@ -48,74 +46,7 @@ class InnerCircleFase11Test extends TestCase
         return ic_memory::create($ubah + ['member_id' => $pemilik->id_member, 'caption' => 'Seru', 'kategori' => 'festival', 'status' => 'tayang']);
     }
 
-    // ---------- Pratinjau ----------
-
-    public function test_pratinjau_butuh_login_admin(): void
-    {
-        $this->post(route('ic.admin.konten.pratinjau'), ['grup' => 'beranda'])->assertRedirect(route('login'));
-    }
-
-    public function test_pratinjau_menampilkan_draf_tanpa_menyimpan_apa_pun(): void
-    {
-        $this->admin()->post(route('ic.admin.konten.pratinjau'), [
-            'grup' => 'beranda',
-            'k' => ['beranda__eyebrow' => 'Draf Eyebrow Baru', 'beranda__salam' => 'Halo {nama}!'],
-        ])->assertOk()
-            ->assertSee('Draf Eyebrow Baru')
-            ->assertSee('Halo Anggota!') // anggota contoh
-            ->assertSee('IC-00000');
-
-        $this->assertSame(0, ic_pengaturan::count());
-        $this->assertSame(0, member::count());
-        $this->assertSame(0, log_aktivitas::count(), 'pratinjau bukan aksi tulis, jangan masuk log aktivitas');
-
-        // Permintaan berikutnya tanpa draf kembali ke teks bawaan.
-        $this->admin()->post(route('ic.admin.konten.pratinjau'), ['grup' => 'beranda'])
-            ->assertSee('Whisnu Santika Official Fanbase')->assertDontSee('Draf Eyebrow Baru');
-    }
-
-    public function test_pratinjau_kosong_berarti_teks_bawaan_dan_draf_di_escape(): void
-    {
-        $this->admin()->post(route('ic.admin.konten.pratinjau'), [
-            'grup' => 'beranda',
-            'k' => ['beranda__eyebrow' => '   ', 'beranda__stiker' => '<script>alert(1)</script>'],
-        ])->assertOk()
-            ->assertSee('Whisnu Santika Official Fanbase')
-            ->assertDontSee('<script>alert(1)</script>', false);
-    }
-
-    public function test_semua_halaman_pratinjau_tampil(): void
-    {
-        foreach (config('ic_konten.grup') as $kode => $grup) {
-            foreach (array_keys($grup['pratinjau']) as $halaman) {
-                $this->admin()->post(route('ic.admin.konten.pratinjau'), ['grup' => $kode, 'halaman' => $halaman])
-                    ->assertOk()
-                    ->assertSee('</html>', false);
-            }
-        }
-        $this->assertSame(0, member::count());
-    }
-
-    public function test_pratinjau_komunitas_tidak_menandai_dibaca_dan_menyiapkan_anggota_contoh(): void
-    {
-        $a = $this->anggota();
-        $this->kenangan($a);
-
-        $this->admin()->post(route('ic.admin.konten.pratinjau'), ['grup' => 'komunitas', 'halaman' => 'galeri'])->assertOk();
-
-        $this->assertNull($a->fresh()->galeri_dibaca_pada);
-        $this->assertSame(1, member::count());
-    }
-
-    public function test_pratinjau_menolak_grup_atau_halaman_tidak_dikenal_dan_tautan_dimatikan(): void
-    {
-        $this->admin()->post(route('ic.admin.konten.pratinjau'), ['grup' => 'tidak_ada'])->assertNotFound();
-        $this->admin()->post(route('ic.admin.konten.pratinjau'), ['grup' => 'beranda', 'halaman' => 'hadiah'])->assertNotFound();
-        $this->admin()->post(route('ic.admin.konten.pratinjau'), ['grup' => 'BAD!'])->assertSessionHasErrors('grup');
-
-        $this->admin()->post(route('ic.admin.konten.pratinjau'), ['grup' => 'teaser', 'halaman' => 'teaser'])
-            ->assertOk()->assertSee('getElementById("inner-circle")', false)->assertSee('preventDefault', false);
-    }
+    // ---------- Pratinjau replika ----------
 
     public function test_tiap_modul_konten_memuat_panel_pratinjau_dan_formnya_sendiri(): void
     {
@@ -123,8 +54,8 @@ class InnerCircleFase11Test extends TestCase
         foreach (array_keys(config('ic_konten.grup')) as $kode) {
             $modul = \App\Services\InnerCircle\IcBagian::modul($kode);
             $html = $this->admin()->get(route('ic.admin.konten.bagian', $kode))->assertOk()->getContent();
-            $this->assertSame(count($modul), substr_count($html, '<iframe data-pratinjau-frame'), $kode);
-            $this->assertStringContainsString(route('ic.admin.konten.pratinjau'), $html);
+            $this->assertSame(count($modul), preg_match_all('/\sdata-replika(?=[\s>])/', $html), $kode);
+            $this->assertStringNotContainsString('<iframe', $html, $kode);
             foreach ($modul as $slug => $m) {
                 if ($m['kunci'] !== []) {
                     $this->assertStringContainsString('id="form-' . $kode . '-' . $slug . '"', $html, "$kode/$slug");
@@ -133,7 +64,8 @@ class InnerCircleFase11Test extends TestCase
         }
 
         $tampilan = $this->admin()->get(route('ic.admin.konten.bagian', 'tampilan'))->assertOk()->getContent();
-        $this->assertSame(1, substr_count($tampilan, '<iframe data-pratinjau-frame'));
+        $this->assertSame(1, preg_match_all('/\sdata-replika-tampilan(?=[\s>])/', $tampilan));
+        $this->assertStringNotContainsString('<iframe', $tampilan);
         $this->assertStringContainsString('id="form-tampilan"', $tampilan);
     }
 

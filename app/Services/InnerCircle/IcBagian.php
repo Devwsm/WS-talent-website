@@ -86,8 +86,8 @@ class IcBagian
     }
 
     /**
-     * Modul sebuah grup teks (lihat config/ic_konten_modul.php): formulir kecil + pratinjau potongan masing-masing.
-     * Tiap modul dilengkapi `slug` dan `fokus` (kunci teks yang menentukan potongan pratinjau; bawaannya kunci pertama).
+     * Modul sebuah grup teks (lihat config/ic_konten_modul.php): formulir kecil + pratinjau replika masing-masing.
+     * Tiap modul dilengkapi `slug` dan `fokus` (kunci teks yang ditampilkan di pratinjau bila modul tidak punya form; bawaannya kunci pertama).
      *
      * @return array<string, array{slug: string, label: string, ikon: string, kunci: list<string>, daftar: ?string, fokus: ?string}>
      */

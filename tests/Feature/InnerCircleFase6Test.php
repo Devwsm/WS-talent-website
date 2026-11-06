@@ -360,35 +360,16 @@ class InnerCircleFase6Test extends TestCase
 
     // ---------- Pratinjau dan CMS ----------
 
-    public function test_pratinjau_memakai_isian_belum_disimpan_tanpa_menulis_database(): void
+    public function test_replika_tampilan_memakai_warna_dan_nama_program_tersimpan(): void
     {
-        $res = $this->admin()->post(route('ic.admin.konten.pratinjau'), [
-            'grup' => 'tampilan',
-            'halaman' => 'masuk',
-            'k' => ['tampilan__aksen' => '#1a5fb4', 'tampilan__program' => 'Whisnu Crew'],
-        ])->assertOk();
+        $this->kirim(['tampilan__program' => 'Whisnu Crew', 'tampilan__aksen' => '#1a5fb4']);
 
-        $this->assertStringContainsString('--ic-aksen:#1a5fb4', $res->getContent());
-        $this->assertStringContainsString('Whisnu Crew', $res->getContent());
-        $this->assertSame(0, ic_pengaturan::query()->count());
+        $html = $this->admin()->get(route('ic.admin.konten.bagian', 'tampilan'))->assertOk()->getContent();
 
-        // Permintaan berikutnya tidak terbawa draf.
-        $this->assertSame('', $this->tampilan()->css());
-        $this->assertSame('WS Inner Circle', ic_program());
-    }
-
-    public function test_pratinjau_membuang_warna_tidak_valid_dan_semua_halaman_tampilan_bisa_dirender(): void
-    {
-        foreach (array_keys(config('ic_konten.tampilan.pratinjau')) as $halaman) {
-            $res = $this->admin()->post(route('ic.admin.konten.pratinjau'), [
-                'grup' => 'tampilan',
-                'halaman' => $halaman,
-                'k' => ['tampilan__aksen' => 'bukan-warna</style>'],
-            ])->assertOk();
-
-            $this->assertStringNotContainsString('bukan-warna', $res->getContent());
-            $this->assertStringNotContainsString('body.ic-app{', $res->getContent());
-        }
+        $this->assertStringContainsString('data-replika-tampilan', $html);
+        $this->assertStringContainsString('--ic-aksen: #1a5fb4', $html);
+        $this->assertStringContainsString('data-replika-program>Whisnu Crew<', $html);
+        $this->assertStringNotContainsString('<iframe', $html);
     }
 
     public function test_halaman_konten_menampilkan_bagian_tampilan_dengan_nilai_tersimpan(): void
@@ -433,6 +414,5 @@ class InnerCircleFase6Test extends TestCase
     {
         $this->assertArrayNotHasKey('tampilan', config('ic_konten.grup'));
         $this->admin()->post(route('ic.admin.konten.simpan', 'tampilan'), ['k' => ['tampilan__program' => 'x']])->assertNotFound();
-        $this->admin()->post(route('ic.admin.konten.pratinjau'), ['grup' => 'tidak_ada'])->assertNotFound();
     }
 }

@@ -29,12 +29,6 @@ class IcKonten
     private ?array $memoPengaturan = null;
     private ?array $memoItem = null;
 
-    /** Nilai draf pratinjau CMS (belum disimpan). Bila terisi, menggantikan isi tabel untuk permintaan ini saja. */
-    private ?array $draf = null;
-
-    /** Pratinjau potongan: bila true, tiap teks diberi penanda tak terlihat berisi kuncinya (lihat PratinjauPotongan). */
-    private bool $penanda = false;
-
     /** @return array<string, array<string, mixed>> semua kunci yang terdaftar di config */
     public function definisi(): array
     {
@@ -65,7 +59,7 @@ class IcKonten
 
         $hasil = $this->isiPlaceholder($teks, $def['placeholder'] ?? [], $isi);
 
-        return $this->penanda ? PratinjauPotongan::AWAL . $kunci . PratinjauPotongan::AKHIR . $hasil : $hasil;
+        return $hasil;
     }
 
     /**
@@ -107,62 +101,6 @@ class IcKonten
         }
 
         return new HtmlString($ganti ? strtr($html, $ganti) : $html);
-    }
-
-    /**
-     * Pakai isian form yang BELUM disimpan sebagai pengganti sementara, hanya selama permintaan ini (pratinjau CMS).
-     * Tidak menulis ke database maupun cache. Isian kosong berarti teks bawaan, sama seperti saat disimpan.
-     *
-     * @param  array<string, mixed>  $nilai  nama kolom form (kunci dengan "." diganti "__") => teks
-     */
-    public function pakaiDraf(array $nilai): void
-    {
-        $dasar = $this->tersimpan();
-
-        foreach ($this->definisi() as $kunci => $def) {
-            $kolom = str_replace('.', '__', $kunci);
-            if (! array_key_exists($kolom, $nilai)) {
-                continue;
-            }
-
-            $teks = mb_substr($this->rapikan(is_string($nilai[$kolom]) ? $nilai[$kolom] : '', ! empty($def['baris'])), 0, (int) $def['maks']);
-
-            if ($teks === '') {
-                unset($dasar[$kunci]);
-            } else {
-                $dasar[$kunci] = $teks;
-            }
-        }
-
-        // Pengaturan tampilan (warna, nama program) ikut dipratinjau; nilai yang tidak valid dibuang oleh IcTampilan saat dibaca.
-        foreach ((array) config('ic_konten.tampilan.kunci', []) as $kunci => $def) {
-            $kolom = str_replace('.', '__', $kunci);
-            if (! array_key_exists($kolom, $nilai)) {
-                continue;
-            }
-
-            $teks = mb_substr($this->rapikan(is_string($nilai[$kolom]) ? $nilai[$kolom] : ''), 0, 40);
-            if ($teks === '') {
-                unset($dasar[$kunci]);
-            } else {
-                $dasar[$kunci] = $teks;
-            }
-        }
-
-        $this->draf = $dasar;
-    }
-
-    /** Hentikan pemakaian draf (kembali ke isi database). */
-    public function lupakanDraf(): void
-    {
-        $this->draf = null;
-        $this->penanda = false;
-    }
-
-    /** Nyalakan penanda kunci di depan tiap teks, hanya untuk permintaan pratinjau potongan (dimatikan oleh lupakanDraf). */
-    public function pakaiPenanda(bool $aktif = true): void
-    {
-        $this->penanda = $aktif;
     }
 
     /**
@@ -316,10 +254,6 @@ class IcKonten
     /** @return array<string, string|null> */
     private function pengaturan(): array
     {
-        if ($this->draf !== null) {
-            return $this->draf;
-        }
-
         if ($this->memoPengaturan !== null) {
             return $this->memoPengaturan;
         }
