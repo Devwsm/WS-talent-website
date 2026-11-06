@@ -11,7 +11,6 @@ Status: tayang di production dengan auto deploy (GitHub Actions + SSH). Terakhir
 3. [Halaman dan fitur](#3-halaman-dan-fitur)
 4. [Arsitektur file](#4-arsitektur-file)
 5. [Auto deploy](#5-auto-deploy)
-6. [Rencana: penyempurnaan UI/UX CMS](#6-rencana-penyempurnaan-uiux-cms-sementara)
 
 ---
 
@@ -54,7 +53,7 @@ Komunitas penggemar resmi. Penggemar **hadir di acara, mengumpulkan stempel, dan
 - Anggota bisa **menghapus akunnya sendiri** (kecuali ada klaim yang sedang diproses). Kebijakan ada di `/privasi`.
 - Inner Circle dikendalikan **flag** `INNER_CIRCLE_AKTIF`. Bila mati, semua route-nya 404 dan menu hilang dari dashboard.
 
-**Tampilan terpisah** dari situs artis: tema biru sendiri (lihat 3.5), CSS dan JS sendiri (semua class berprefix `ic-` di bawah `.ic-app`), dengan navigasi dock di bawah.
+**Tampilan terpisah** dari situs artis: tema biru sendiri (lihat 4.4), CSS dan JS sendiri (semua class berprefix `ic-` di bawah `.ic-app`), dengan navigasi dock di bawah.
 
 ---
 
@@ -100,7 +99,7 @@ CMS dibagi dua **mode** dengan navbar bawah yang identik (dock di desktop, botto
 
 ### 3.4 CMS Inner Circle (`/dashboard/inner-circle`)
 
-Tema lavender sendiri (area anggota sudah berganti ke tema biru, CMS ini belum), dibuat lembut di mata (latar lavender muda, teks ungu-tua, bukan putih murni). Dock navigasi dan tombolnya memakai **ungu-tua senada** (bukan hitam), dengan pil aktif lavender muda. Menu CMS ini ada di dock: Anggota, Acara & QR, Klaim (dengan lencana jumlah yang menunggu), Hadiah, Pengumuman, Kenangan, Konten, Email; tombol rumah membuka Ringkasan.
+Tema lavender sendiri (beda dari area anggota yang biru), dibuat lembut di mata: latar lavender muda, teks ungu-tua. Dock navigasi dan tombolnya ungu-tua senada, dengan pil aktif lavender muda. Menu CMS ini ada di dock: Anggota, Acara & QR, Klaim (dengan lencana jumlah yang menunggu), Hadiah, Pengumuman, Kenangan, Konten, Email; tombol rumah membuka Ringkasan.
 
 | Tab        | Fungsi                                                                                                                                                                                                                                                                                                           |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -169,7 +168,7 @@ app/
   Providers/             AppServiceProvider (pembatas laju bernama, policy)
 bootstrap/app.php        middleware, pelaporan error ke Log
 config/                  inner_circle.php, ic_konten.php (teks yang bisa diubah dari CMS), ic_konten_modul.php (modul formulir tab Konten), site.php, log_admin.php, dst.
-database/migrations/     36 migrasi;  database/seeders/  data awal
+database/migrations/     39 migrasi;  database/seeders/  data awal
 public/                  index.php, favicon.ico (= WS Artis), build/ (hasil Vite)
   aset/logo/             logo WS Artis
   aset/inner-circle/     ikon 3D dan logo resmi WS Inner Circle (logo/wsic-*.webp)
@@ -180,7 +179,7 @@ resources/css/           app.css (Tailwind), inner-circle.css (tema biru)
 resources/js/            app.js, dashboard.js, sweetalert.js, inner-circle.js
 resources/views/         template/, pages/, components/, emails/, errors/
 routes/                  web.php, console.php (jadwal)
-tests/                   Feature/ (18 berkas), Unit/ (2 berkas)
+tests/                   Feature/ (24 berkas), Unit/ (3 berkas)
 .github/workflows/       deploy.yml (tes + auto deploy)
 ```
 
@@ -209,7 +208,7 @@ tests/                   Feature/ (18 berkas), Unit/ (2 berkas)
 | `fotoProfilController` | Ganti dan hapus foto profil                                                                                                                                                                                  |
 | `akunController`       | Hapus akun anggota                                                                                                                                                                                           |
 | `tentangController`    | Halaman publik penjelasan program                                                                                                                                                                            |
-| `adminController`      | CMS Inner Circle: 8 tab (anggota, acara, lokasi, klaim, hadiah, pengumuman, kenangan)                                                                                                                        |
+| `adminController`      | CMS Inner Circle: ringkasan, anggota, acara (termasuk QR dan titik lokasi), klaim, hadiah, pengumuman, kenangan                                                                                              |
 | `emailAdminController` | Tab Email: pratinjau, cek pengiriman, email tes                                                                                                                                                              |
 | `kontenController`     | Tab Konten: `index` (membuka bagian pertama), `bagian` (satu bagian + modulnya), simpan per modul/grup, kembalikan bawaan                                                                                    |
 | `konten*Controller`    | Bagian tab Konten: `Daftar` (langkah, FAQ, poin teaser), `Pilihan` (tipe acara, kategori kenangan), `Aturan` (check-in), `Tampilan` (nama, warna, logo), `Privasi` (/privasi), `Pratinjau` (panel pratinjau) |
@@ -268,6 +267,16 @@ tests/                   Feature/ (18 berkas), Unit/ (2 berkas)
 | `resources/css/inner-circle.css`                                                 | Seluruh tema area anggota (`.ic-app`), satu berkas                                                                                                                                                                                                                                                                                                      |
 | `resources/css/app.css`                                                          | Tailwind + tema CMS. `body.dash-theme` (CMS Artis) dan `body.cms-ic` (CMS Inner Circle) menimpa variabel `--color-*` Tailwind, jadi seluruh halaman berganti tema tanpa mengedit view. Kartu QR dan pratinjau email tetap warna asli lewat class `cms-asli`; dock navigasi memakai class `cms-dock` (di CMS Inner Circle diberi palet ungu-tua sendiri) |
 
+**Catatan tema dan pratinjau**
+
+- **Tema biru area anggota:** latar gradasi biru laut, kartu putih, aksen `#1b68a0`, judul biru tua `#05467c`, tombol berbentuk pil. Semua lewat token `--ic-*` di `inner-circle.css` ditambah lapisan "Tema biru" di akhir berkasnya. Warna bawaan di `config/ic_konten.php` (`tampilan.warna` dan `tampilan.teks`) harus sama dengan token CSS (dijaga tes). Nama warna kartu (`koral`, `kuning`, `biru`, `lilac`, `pink`, `hijau`, `merah`) dipertahankan agar data lama aman, tetapi kini memetakan tujuh gradasi biru. Teks di atas ubin terang memakai navy dan di atas ubin gelap putih (lolos kontras AA). Ikon 3D diubah jadi ukiran satu warna lewat CSS (`mix-blend-mode`); mengganti ke ikon garis hanya perlu mengganti berkas di `public/aset/inner-circle/ikon/`.
+- **Dock CMS Inner Circle:** tinta `#27233f` (sama dengan tombol Kelola dan judul halaman), pil aktif lavender `#ebe7f7`. Aturannya di `body.cms-ic .cms-dock` pada `app.css`.
+- **Filter dan tab CMS** memakai satu komponen chip mengalir (`.cms-chips` dan `.cms-chip` di `app.css`), bukan baris yang digeser ke samping.
+- **Pola halaman modul CMS:** judul bagian, kartu form di kiri, kartu pratinjau di kanan (`lg:grid-cols-2`, pratinjau `lg:sticky`; di bawah 1024 px pratinjau turun ke bawah form). CMS Artis dan CMS Inner Circle memakai pola yang sama.
+- **Pratinjau CMS Artis** replika markup komponen publik dan diperbarui di browser (tanpa permintaan ke server). **Pratinjau tab Konten CMS Inner Circle** memakai halaman asli: server merender halaman dengan teks draf (`IcKonten::pakaiDraf`), tiap teks diberi penanda tak terlihat berisi kuncinya (`pakaiPenanda`), lalu `PratinjauPotongan` (DOM murni) hanya mempertahankan bagian halaman yang memuat teks bertanda (dengan pembungkus aslinya agar CSS tetap kena) dan memberi garis putus-putus pada teks yang diubah. Pratinjau memakai anggota contoh (id 0), tidak menulis ke database, tidak masuk log aktivitas, dan mematikan tautan serta form. Diperbarui 350 ms setelah berhenti mengetik dan baru dimuat saat modulnya mendekati layar. Isian kosong tampil sebagai teks bawaan.
+- **`config/ic_konten_modul.php` wajib ikut di-commit** (35 modul). Tanpa berkas ini semua bagian tab Konten tampil tanpa form dan pratinjau. Grup teks baru di `config/ic_konten.php` wajib dibuatkan modulnya; tiap kunci teks harus ada di tepat satu modul (dijaga tes).
+- Peringatan VS Code `invalidConfigPath` pada `config('ic_konten...')` adalah false positive ekstensi Tailwind IntelliSense. Atur `tailwindCSS.lint.invalidConfigPath` ke `ignore` di Settings workspace (folder `.vscode` tidak ikut Git).
+
 ### 4.5 Database
 
 | Tabel                                      | Kolom utama                                                                                                                                                                                        |
@@ -281,7 +290,7 @@ tests/                   Feature/ (18 berkas), Unit/ (2 berkas)
 | `ic_memories`, `ic_memory_likes`           | Kenangan (tayang/disembunyikan) dan tanda suka                                                                                                                                                     |
 | `ic_pengaturan`                            | Teks konten yang **diubah** admin (`kunci` unik, `nilai`, `diubah_oleh`). Tanpa baris = teks bawaan, jadi tabel kosong tidak mengubah tampilan                                                     |
 | `ic_pilihan`                               | Tipe acara dan kategori kenangan (`jenis`, `kunci` tetap, `label`, `ikon`, `sampul`, `warna`, `urutan`, `aktif`); diisi awal dari config oleh migrasi; unik `(jenis, kunci)`                       |
-| `ic_item`                                  | Daftar berurutan untuk konten (`grup`, `urutan`, `judul`, `isi`, `ikon`, `aktif`); dipakai mulai Fase 3                                                                                            |
+| `ic_item`                                  | Daftar berurutan untuk konten (`grup`, `urutan`, `judul`, `isi`, `ikon`, `aktif`)                                                                                                                  |
 | `log_errors`, `log_aktivitas`              | Log error (digabung) dan jejak aksi admin                                                                                                                                                          |
 | Situs artis                                | `banners`, `headers`, `albums`, `news`, `merchandise`, `color_pages`, `statistik`, `highlight`, tabel profil                                                                                       |
 | Sistem                                     | `sessions`, `cache`, `jobs`, `migrations`                                                                                                                                                          |
@@ -317,7 +326,15 @@ php artisan test
 
 430 tes. Database SQLite di memori; tes **tidak bergantung pada `.env`** (semua env dipaku di `phpunit.xml`), jadi hasilnya sama di lokal dan di GitHub. `ImageProcessorTest` dilewati otomatis bila ekstensi `gd`/`exif` tidak aktif. SQLite tidak menguji kunci baris (`lockForUpdate`): coba klik ganda klaim dan suka secara manual di MySQL.
 
-Berkas tes: `InnerCircleTest` (inti), `...Lokasi`, `...Hadiah`, `...Komunitas`, `...Keamanan`, `...Google`, `...VerifikasiEmail`, `...AkunPrivasi`, `...SitusPublik`, `...Fase9`, `...Fase10`, `...FilterBulan`, `...Konten`, `...Fase3`, `...Fase4`, `...Fase5`, `...Fase6`, `...Fase7`, `...Fase8`, `CmsResponsifFaseA`, `InnerCircleKontenBagianTest`, `PratinjauPotonganTest`, `...Fase11`, `CmsMode`, `AdminLogDuaFaktor`, dan `Unit/` (`HtmlSanitizer`, `ImageProcessor`).
+Berkas tes (`tests/Feature`, kecuali disebut lain):
+
+| Area                    | Berkas                                                                                                                                                                                 |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Inti dan aturan anggota | `InnerCircleTest`, `InnerCircleLokasiTest`, `InnerCircleHadiahTest`, `InnerCircleKomunitasTest`, `InnerCircleFilterBulanTest`                                                          |
+| Akun dan keamanan       | `InnerCircleKeamananTest`, `InnerCircleGoogleTest`, `InnerCircleVerifikasiEmailTest`, `InnerCircleAkunPrivasiTest`, `AdminLogDuaFaktorTest`                                            |
+| Situs publik            | `InnerCircleSitusPublikTest`                                                                                                                                                           |
+| CMS dan tab Konten      | `CmsModeTest`, `CmsResponsifFaseATest`, `InnerCircleKontenTest`, `InnerCircleKontenBagianTest`, `InnerCircleFase3Test` sampai `InnerCircleFase11Test` (tes per fitur CMS Inner Circle) |
+| Unit (`tests/Unit`)     | `HtmlSanitizerTest`, `ImageProcessorTest`, `PratinjauPotonganTest`                                                                                                                     |
 
 ### 4.8 Keamanan (ringkas)
 
@@ -328,7 +345,16 @@ Berkas tes: `InnerCircleTest` (inti), `...Lokasi`, `...Hadiah`, `...Komunitas`, 
 - Unggahan: tipe ditentukan dari isi berkas, batas ukuran dan megapiksel, EXIF/GPS dibuang dari foto anggota.
 - `.env`, `storage/`, `bootstrap/cache/` tidak pernah dikirim oleh auto deploy.
 
-**Belum dikerjakan (urut prioritas):** cadangan database terjadwal + HTTPS paksa; Content-Security-Policy (pasang dulu sebagai `Report-Only` di preview karena widget Bandsintown dan Google Fonts); peran admin (saat ini satu bendera sesi tanpa peran); `composer audit` dan `npm audit` rutin; ganti `throttle:N,M` lama di rute admin dengan pembatas bernama; `ic-kenangan` memakai dua batas dengan kunci yang sama sehingga batas harian tidak pernah berlaku; pin host key SSH di workflow (sekarang `ssh-keyscan` mempercayai host saat itu juga).
+**Backlog keamanan dan perbaikan (urut prioritas):**
+
+1. Cadangan database terjadwal dan HTTPS paksa.
+2. Validasi CMS Artis: hampir semua isian teks hanya `required` tanpa `max:255`, padahal kolomnya `string` (255). Teks lebih panjang membuat error 500 di MySQL. Perketat di `dashboardController` dan `profileController`.
+3. URL Media Sosial (`profileController`) memakai aturan `url` tanpa batasan skema (puluhan skema lolos). Samakan dengan modul lain: `url:http,https|max:2048`.
+4. Batas harian unggah kenangan (`ic-kenangan`) tidak pernah berlaku: batas per menit dan per hari memakai kunci yang sama, sehingga hitungannya berbagi satu penghitung. Beri kunci berbeda (mis. akhiran `:menit` dan `:hari`).
+5. Content-Security-Policy: pasang dulu sebagai `Report-Only` di preview karena widget Bandsintown dan Google Fonts.
+6. Peran admin (saat ini satu bendera sesi tanpa peran) dan pengecekan ulang akun admin di tiap permintaan.
+7. Ganti `throttle:N,M` lama di rute admin dengan pembatas bernama; `composer audit` dan `npm audit` rutin.
+8. Pin host key SSH di workflow (sekarang `ssh-keyscan` mempercayai host saat itu juga).
 
 ### 4.9 Aturan bisnis penting
 
@@ -449,95 +475,3 @@ Tulis sandi tanpa spasi. `MAIL_FROM_ADDRESS` harus sama dengan `MAIL_USERNAME`. 
 | "The MAC is invalid" di halaman QR                                         | `APP_KEY` berbeda dari saat token dibuat; klik **Perbaiki token** di Acara & QR                                                                                  |
 | Foto gagal diunggah dengan "419"                                           | `upload_max_filesize`/`post_max_size` server terlalu kecil                                                                                                       |
 | `optimize:clear` di lokal membuat banyak "file terhapus" di GitHub Desktop | File Blade terkompilasi tidak boleh di git; pastikan `storage/framework/views/.gitignore` ada                                                                    |
-
----
-
-## 6. Rencana: penyempurnaan UI/UX CMS (sementara)
-
-> Bagian ini hanya selama pengerjaan. Pemisahan CMS Artis dan CMS Inner Circle (Fase 0 sampai 8) **sudah selesai** dan catatannya dipindah ke bagian 3 dan 4. Setelah semua fase di bawah selesai: **hapus bagian 6 ini** dan perbarui bagian 3.3, 3.4, 4.3, 4.4.
-
-**Prioritas: UI dan UX dulu.** Tidak ada fase di sini yang mengubah aturan bisnis atau data; yang berubah hanya tata letak, navigasi, pratinjau, dan responsivitas. Tiap fase dikerjakan utuh, dites, lalu di-push.
-
-### 6.1 Masalah yang ditemukan (dari tangkapan layar)
-
-| #   | Masalah                                                                                                                                                                                                                   | Dampak                                             |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| 1   | Tab **Konten** CMS Inner Circle adalah **satu halaman sangat panjang** (teks per grup, daftar, tipe acara, kategori, aturan check-in, tampilan, kebijakan privasi, semua bertumpuk)                                       | Harus menggulir jauh; sulit menemukan satu isian   |
-| 2   | Pratinjau di tab Konten menampilkan **halaman utuh** dengan anggota contoh, padahal yang diubah hanya satu teks                                                                                                           | Sulit melihat apa yang berubah; berat di HP        |
-| 3   | Kartu acara ("Acara berikutnya" di Ringkasan dan "Tampilan di halaman check-in" di Acara & QR) **rusak di layar 320 px**: judul terpotong per huruf ("Mar-que-e Nig-htcl-ub"), karena ikon, teks, dan panah berebut lebar | Tidak terbaca di HP kecil                          |
-| 4   | Filter di tab **Kenangan** (kategori dan status) membungkus jadi banyak baris dengan ukuran tidak seragam; filter **Acara & QR** (bulan, tipe, cari) menumpuk satu kolom penuh                                            | Banyak ruang terbuang, tampilan berantakan         |
-| 5   | Tab status di **Klaim hadiah** bisa digeser ke samping (terpotong di "Seles..."), sedangkan halaman lain memakai grid                                                                                                     | Tidak konsisten; tab di ujung kanan tidak terlihat |
-| 6   | Beberapa halaman CMS Artis (contoh: Album) masih punya kartu dan form yang kurang rapi di layar sempit                                                                                                                    | Perlu diaudit bersama                              |
-
-### 6.2 Keputusan
-
-1. **Tab Konten dipecah** menjadi beberapa halaman kecil di dalam CMS Inner Circle, masing-masing satu topik, dengan navigasi bagian berupa chip mengalir (bukan baris yang bisa digeser).
-2. **Pratinjau hanya menampilkan bagian yang sedang diubah**, seperti CMS Artis: satu potongan (judul, kartu, atau tombol) dengan **data bawaan/contoh** bila belum ada isian. Pratinjau halaman utuh dihapus dari form.
-3. **Responsif di semua perangkat**: 320, 375, 768, 1024, 1366 px. Aturan baru: tidak ada teks yang terpotong per huruf, tidak ada halaman yang melebar ke samping.
-4. **Konsisten:** semua baris tab/filter di CMS memakai **grid** (kolom otomatis, ikut membungkus rapi). Tidak ada lagi tab yang digeser ke samping, termasuk di Klaim hadiah.
-5. Pola yang sama nanti dipakai CMS Artis (pratinjau potongan + data contoh), dikerjakan setelah CMS Inner Circle selesai.
-
-### 6.3 Fase
-
-#### Fase A: Perbaikan responsif cepat (SELESAI)
-
-Tanpa mengubah struktur halaman, hanya CSS dan markup kecil:
-
-1. Kartu acara (Ringkasan dan pratinjau check-in): di bawah 480 px ikon pindah ke atas judul, panah turun ke bawah, judul memakai `overflow-wrap: anywhere` dan tidak lagi sempit; tinggi mengikuti isi.
-2. Filter Kenangan dan Klaim memakai satu komponen **chip mengalir** (`.cms-chips`); filter Acara & QR memakai dua kolom di HP.
-3. Tab status Klaim hadiah jadi chip mengalir (tanpa geser samping).
-4. Audit cepat semua halaman CMS Inner Circle dan CMS Artis di 320 px: tidak ada halaman yang melebar, tombol aksi minimal 44 px.
-5. Tes: pemindai view (tidak ada `overflow-x-auto` pada baris tab/filter, tidak ada lebar tetap yang melebihi 320 px).
-
-Yang dikerjakan: class `.cms-chips` dan `.cms-chip` di `app.css` (flex-wrap: chip selebar isinya, mengalir dan turun baris seperti navigasi bagian di tab Konten, tanpa sel kosong) dipakai di tab Klaim hadiah dan dua filter Kenangan; filter Acara & QR tetap 2 kolom (Bulan, Tipe) di HP dengan Cari dan tombol selebar penuh; tombol Anggota dan filter Acara melebar rata di HP; kartu acara di CMS (`body.cms-ic .ic-event` di `inner-circle.css`) di bawah 480 px menaruh ikon dan panah di baris atas dan judul selebar kartu; padding pembungkus kartu di Ringkasan dan pratinjau Acara dikecilkan di HP. Tes: `CmsResponsifFaseATest`. Belum dicek di browser: kartu dan filter di 320, 375, 768 px perlu dilihat langsung, dan audit halaman CMS Artis menunggu Fase D.
-
-#### Fase B: Pecah tab Konten (SELESAI)
-
-Tab Konten tidak lagi satu halaman panjang, dan tidak ada halaman pilihan: **pindah bagian langsung lewat navbar atas**.
-
-- `GET /dashboard/inner-circle/konten` langsung membuka bagian pertama. `GET /konten/bagian/{slug}` membuka bagian lain. Ada 13 bagian: 8 grup teks (`tentang`, `teaser`, `beranda`, `checkin`, `hadiah`, `komunitas`, `profil`, `masuk`) dan 5 bagian khusus (`tipe-acara`, `kategori-kenangan`, `aturan-checkin`, `tampilan`, `privasi`).
-- Navbar atas = chip mengalir (`.cms-chips`) berisi semua bagian; bagian aktif ditandai dan angka kecil menunjukkan jumlah isian yang sudah diubah. Tidak ada tombol sebelumnya/berikutnya.
-- **Tiap grup teks dibagi jadi modul kecil** (`config/ic_konten_modul.php`, 35 modul), meniru CMS Artis: formulir di kiri, pratinjau modul itu saja di kanan. Contoh bagian Halaman Tentang: Tab browser dan pencarian, Hero dan tombol, Cara kerja (+ daftar langkah), Judul bagian hadiah, Acara berikutnya, Tanya jawab (+ daftar FAQ), Ajakan akhir. Tiap kunci teks harus ada di tepat satu modul (dijaga tes).
-- Satu modul = satu formulir yang hanya mengirim kunci miliknya (`IcKonten::simpan` hanya memproses kunci yang dikirim, jadi modul lain tidak tersentuh). Setelah simpan/reset admin kembali ke modul yang sama (`#modul-{grup}-{modul}`).
-- Daftar bagian dan alamatnya ada di `App\Services\InnerCircle\IcBagian`; daftar modul di `config/ic_konten_modul.php`. Grup teks baru di `config/ic_konten.php` wajib dibuatkan modulnya.
-- Semua redirect setelah simpan/reset/tambah/ubah (termasuk redirect galat validasi) kembali ke bagian yang sama lewat `IcBagian::url()`.
-- Tautan lama (`/konten#grup-x`, `#daftar-x`, `#pilihan-tipe`, `#aturan-checkin`, `#tampilan`, `#privasi`) dialihkan oleh skrip kecil di halaman (`IcBagian::petaJangkarLama()`).
-- Tes: `InnerCircleKontenBagianTest`; tes lama (Fase 3 sampai 7, 11, `InnerCircleKontenTest`) diarahkan ke halaman bagian masing-masing.
-
-#### Fase C: Pratinjau potongan (SELESAI untuk CMS Inner Circle)
-
-Setiap modul punya panel **"Tampilan di halaman"** di kanan formulirnya, seperti CMS Artis: hanya menampilkan bagian halaman yang dimiliki modul itu, bukan halaman utuh.
-
-- Cara kerja: halaman asli dirender seperti biasa dengan teks draf (`IcKonten::pakaiDraf`), tetapi tiap teks diberi penanda tak terlihat berisi kuncinya (`IcKonten::pakaiPenanda`, hanya di permintaan pratinjau). `PratinjauPotongan` (DOM murni) mencari teks bertanda itu, mempertahankan bagian terdekat (`section`, `header`, `footer`, `article`, `aside`, `form`, `li`) beserta pembungkus aslinya agar CSS tetap kena, membuang saudaranya dan skrip halaman, lalu memberi garis putus-putus pada teks yang diubah. Penanda dibuang dari hasil akhir.
-- Potongan awal ditentukan kunci pertama modul (atau `fokus` di config modul); memfokus atau mengetik di isian lain memindahkan potongan. Pratinjau diperbarui 350 ms setelah berhenti mengetik, dimuat saat modulnya mendekati layar, dan tinggi iframe mengikuti isi (`postMessage`).
-- Isian kosong tampil sebagai **teks bawaan**, jadi potongan selalu punya isi contoh. Halaman dengan banyak layar (Masuk, Daftar, Lupa sandi, Atur ulang sandi, galeri Komunitas) dicari otomatis sampai teksnya ditemukan.
-- Teks yang hanya tampil di tab browser atau hasil pencarian ditampilkan sebagai kartu hasil pencarian; teks yang tidak tampil di halaman (mis. teks keadaan kosong saat data ada) jatuh ke bagian atas halaman dengan catatan. Pratinjau Tampilan menampilkan bagian atas halaman Masuk.
-- Tetap tidak menulis ke database, tidak masuk log aktivitas, memakai anggota contoh, dan mematikan tautan/form. Endpoint tetap kompatibel: tanpa `fokus` perilakunya halaman utuh seperti sebelumnya.
-- Modul daftar (langkah, FAQ, poin teaser): pratinjau menampilkan data tersimpan dan diperbarui setelah halaman dimuat ulang (butir daftar disimpan lewat formnya sendiri). Pratinjau email tidak berubah.
-- Tes: `PratinjauPotonganTest` (unit, murni DOM, dijalankan di CI) dan `InnerCircleKontenBagianTest`.
-
-#### Fase D: Samakan tampilan CMS Inner Circle dengan pola CMS Artis (SELESAI)
-
-Tujuannya satu: halaman Konten CMS Inner Circle terasa seperti halaman Profile di CMS Artis (judul bagian, **kartu form di kiri, kartu pratinjau di kanan**, tombol simpan selebar kartu), hanya berbeda tema warna.
-
-- **Pola kartu** (sama dengan `components/profile/dashboard/*`): dua kolom mulai 1024 px (`lg:grid-cols-2`), kartu form `rounded-3xl` berpadding `p-6 md:p-8`, tombol simpan selebar kartu (`Simpan {nama modul}`), kartu pratinjau `lg:sticky` dengan **bilah judul "Tampilan di halaman"** (status dan tautan Muat ulang di kanan bilah), isi pratinjau di dalam kartu. Dipakai di semua modul grup teks dan di bagian Tampilan dan merek.
-- **Navbar bagian berkelompok**: 13 bagian dibagi menurut `IcBagian::berkelompok()` (Halaman publik, Halaman anggota, Pilihan dan aturan, Tampilan dan kebijakan), jadi tidak lagi satu gumpalan chip. Tetap chip mengalir tanpa geser samping; bagian aktif ditandai dan angka kecil menunjukkan isian yang sudah diubah.
-- **Perbaikan bug simpan modul**: `simpanKontenRequest::nilai()` dulu mengembalikan semua kunci grup (yang tidak dikirim diisi kosong), sehingga menyimpan satu modul **mengembalikan modul lain di grup yang sama ke teks bawaan**. Sekarang hanya kunci yang dikirim form yang diproses (sesuai aturan Fase B). Dijaga `test_menyimpan_satu_modul_tidak_menyentuh_isian_modul_lain`.
-- **`config/ic_konten_modul.php` wajib ikut di-commit** (35 modul). Tanpa berkas ini semua bagian tampil tanpa form dan pratinjau, dan 10 tes gagal.
-- Berkas lama `pages/dashboard-pages/inner-circle/konten.blade.php` (versi satu halaman panjang) dihapus; sudah tidak dipakai controller mana pun.
-- Belum dicek di browser: tata letak di 320, 375, 768, 1024, 1366 px perlu dilihat langsung (kartu pratinjau pindah ke bawah form di bawah 1024 px).
-
-#### Fase E: Samakan pola ke CMS Artis (belum)
-
-1. Pratinjau potongan + data contoh dipakai di modul CMS Artis yang sekarang menampilkan pratinjau penuh.
-2. Komponen **chip filter/tab** (`.cms-chips`) dipakai di seluruh CMS Artis.
-3. Audit akhir 320, 375, 768, 1024, 1366 px dan uji di HP sungguhan lewat HTTPS; lalu **hapus bagian 6 ini**.
-
-### 6.4 Catatan
-
-- Tidak ada migrasi baru dan tidak ada paket baru yang dibutuhkan.
-- Urutan dikerjakan A, B, C, D, E; Fase A sampai D selesai (CMS Inner Circle sudah mengikuti pola CMS Artis). Tersisa Fase E (pola pratinjau potongan dan chip di CMS Artis) dan audit responsif akhir.
-- Fase 8 (penutup pemisahan CMS) selesai dengan tiga perbaikan terakhir: **email satu tema** dengan Inner Circle (tanpa merah), **editor kebijakan privasi** terbaca di tema lavender, dan **dock CMS Inner Circle** senada dengan tema.
-- **Tema biru area anggota** (desain `Website_Inner_Circle`, Nov 2026): latar gradasi biru laut (tepi = aksen digelapkan, tengah = warna latar), kartu putih, aksen `#1b68a0`, judul biru tua `#05467c`, tombol berbentuk pil, hero bergradasi biru muda ke biru tua. Semua lewat token `--ic-*` di `inner-circle.css` ditambah lapisan "Tema biru" di akhir berkasnya. Warna bawaan di `config/ic_konten.php` (`tampilan.warna` dan `tampilan.teks`) harus tetap sama dengan token CSS (dijaga tes). Nama warna kartu (`koral`, `kuning`, `biru`, `lilac`, `pink`, `hijau`, `merah`) dipertahankan agar data lama aman, tetapi kini memetakan tujuh gradasi biru (label di CMS: Biru es sampai Nila). Teks di atas ubin terang memakai navy dan di atas ubin gelap memakai putih supaya lolos kontras AA. Ikon 3D diubah menjadi ukiran satu warna lewat CSS (`mix-blend-mode`); mengganti ke ikon garis monokrom hanya perlu mengganti berkas di `public/aset/inner-circle/ikon/`.
-- Dock CMS Inner Circle memakai tinta `#27233f` yang sama dengan tombol Kelola dan judul halaman; pil aktifnya lavender `#ebe7f7` (warna latar halaman). Aturannya di `body.cms-ic .cms-dock` pada `app.css`.
-- Peringatan VS Code `invalidConfigPath` pada `config('ic_konten...')` adalah false positive ekstensi Tailwind IntelliSense (bukan galat kode). Atur `tailwindCSS.lint.invalidConfigPath` ke `ignore` di Settings workspace; folder `.vscode` tidak ikut Git.
