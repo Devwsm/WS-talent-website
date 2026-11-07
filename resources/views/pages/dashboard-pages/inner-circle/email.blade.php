@@ -172,7 +172,7 @@
                                 {{ $daftar[$jenis]['label'] }}</span>
                         </div>
                         <iframe title="Pratinjau email {{ $daftar[$jenis]['label'] }}" sandbox=""
-                            src="{{ route('ic.admin.email.pratinjau', $jenis) }}" class="w-full h-160 bg-white"
+                            src="{{ route('ic.admin.email.pratinjau', $jenis) }}" class="w-full h-112 sm:h-160 bg-white"
                             loading="lazy"></iframe>
                     </div>
                 </div>
