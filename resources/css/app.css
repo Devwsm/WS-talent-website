@@ -710,11 +710,30 @@ body.cms-ic .ic-app {
     color: var(--ic-redup);
 }
 .ic-app.ic-replika--halaman {
-    /* Potongan halaman asli: susunan dan ukuran memakai CSS area anggota apa adanya, tanpa penyesuaian replika. */
+    /* Potongan halaman asli: susunan dan ukuran memakai CSS area anggota apa adanya, tanpa penyesuaian replika.
+       Tanpa gradasi latar (kartu sudah cukup rapi di dalam panel); aturan responsifnya mengikuti lebar panel
+       lewat @container ic-panel (disalin saat build oleh vite/ic-kontainer.js). */
     display: block;
     padding: 0;
     overflow: hidden;
     pointer-events: none;
+    background: none;
+    container: ic-panel / inline-size;
+}
+.ic-app.ic-replika--halaman .ic-shell {
+    margin: 0;
+    min-height: 0;
+    max-width: none;
+    border-radius: 20px;
+    box-shadow: none;
+}
+.ic-app.ic-replika--halaman .ic-konten {
+    padding-bottom: 24px;
+}
+/* Pratinjau lain di CMS Inner Circle (Hadiah, Pengumuman, Acara, Kenangan, replika sederhana) juga tanpa gradasi,
+   kecuali pratinjau Tampilan yang justru memperlihatkan warna latar pilihan admin. */
+body.cms-ic .ic-app:not(.ic-replika--tampilan) {
+    background: none;
 }
 .ic-replika--halaman [data-replika-teks] {
     white-space: pre-line;

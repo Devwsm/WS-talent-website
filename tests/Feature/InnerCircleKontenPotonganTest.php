@@ -38,7 +38,7 @@ class InnerCircleKontenPotonganTest extends TestCase
     public function test_setiap_isian_modul_punya_tempat_di_pratinjau_dan_penanda_tidak_bocor(): void
     {
         foreach (config('ic_konten.grup') as $kode => $info) {
-            $slug = collect(IcBagian::semua())->search(fn($b) => ($b['kode'] ?? null) === $kode && $b['jenis'] === 'grup');
+            $slug = collect(IcBagian::semua())->search(fn($b) => $b['kode'] === $kode && $b['jenis'] === 'grup');
             $html = $this->admin()->get(route('ic.admin.konten.bagian', $slug))->assertOk()->getContent();
 
             $this->assertStringNotContainsString("\u{E000}", $html, "$kode: penanda bocor");
@@ -70,8 +70,10 @@ class InnerCircleKontenPotonganTest extends TestCase
         // Susunan asli: judul hero ada di dalam section.ic-hero bersama tombolnya, bukan blok berlabel terpisah.
         $judul = $xp->query('//section[@id="modul-tentang-hero"]//aside//section[contains(@class,"ic-hero")]//h1//*[@data-replika-teks="tentang__hero__judul"]');
         $this->assertSame(1, $judul->length);
-        $this->assertSame('Judul Uji Coba', trim($judul->item(0)->textContent));
-        $this->assertSame('WS Inner Circle', $judul->item(0)->getAttribute('data-bawaan'));
+        /** @var \DOMElement $span */
+        $span = $judul->item(0);
+        $this->assertSame('Judul Uji Coba', trim($span->textContent));
+        $this->assertSame('WS Inner Circle', $span->getAttribute('data-bawaan'));
         $this->assertGreaterThan(0, $xp->query('//section[@id="modul-tentang-hero"]//aside//section[contains(@class,"ic-hero")]//a[contains(@class,"ic-tombol")]')->length);
         // Kontrol di dalam pratinjau tidak bisa diklik.
         $this->assertGreaterThan(0, $xp->query('//section[@id="modul-tentang-hero"]//aside//div[@inert]')->length);

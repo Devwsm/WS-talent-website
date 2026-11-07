@@ -143,7 +143,11 @@ class IcPotongan
         return self::bersihkan($html);
     }
 
-    /** Peta placeholder => teks pratinjau, sama dengan yang dikirim ke skrip pratinjau (data-ganti). */
+    /**
+     * Peta placeholder => teks pratinjau, sama dengan yang dikirim ke skrip pratinjau (data-ganti).
+     *
+     * @return array<string, string>
+     */
     public function peta(string $program): array
     {
         return IcReplika::petaGanti($program, (array) config('ic_konten.tautan', [])) + ['{nama}' => self::NAMA_CONTOH];
@@ -179,6 +183,9 @@ class IcPotongan
             $buang->parentNode?->removeChild($buang);
         }
         foreach (iterator_to_array($xpath->query('//*[@autofocus or @aria-labelledby or @aria-controls or @for or (@id and @id != "ic-akar-potongan")]') ?: []) as $el) {
+            if (! $el instanceof DOMElement) {
+                continue;
+            }
             foreach (['autofocus', 'aria-labelledby', 'aria-controls', 'for', 'id'] as $atribut) {
                 $el->removeAttribute($atribut);
             }
@@ -189,12 +196,13 @@ class IcPotongan
         foreach ($kunci as $k) {
             $kolom = str_replace('.', '__', $k);
             $simpul = $xpath->query('//*[@data-replika-teks="' . $kolom . '"]');
-            if ($simpul === false || $simpul->length === 0) {
+            $pertama = $simpul !== false ? $simpul->item(0) : null;
+            if ($pertama === null) {
                 $hilang[] = $k;
 
                 continue;
             }
-            foreach ($this->cariBlok($simpul->item(0), $akar) as $blok) {
+            foreach ($this->cariBlok($pertama, $akar) as $blok) {
                 $simpan[spl_object_id($blok)] = $blok;
             }
         }
@@ -349,6 +357,7 @@ class IcPotongan
         }
 
         // Anggota contoh (id 0, tidak ada di database) dan route aslinya dibuat "aktif" (sorotan menu dock).
+        /** @var \Illuminate\Auth\SessionGuard $guard */
         $guard = Auth::guard('member');
         $guard->setUser($this->anggotaContoh());
         $asli = request()->getRouteResolver();
@@ -363,6 +372,7 @@ class IcPotongan
                 'komunitas' => app()->call([$kontrol, 'komunitas'], ['request' => Request::create('/', 'GET', ['tab' => 'pengumuman'])]),
                 'galeri' => app()->call([$kontrol, 'komunitas'], ['request' => Request::create('/', 'GET', ['tab' => 'galeri'])]),
                 'profil' => app()->call([$kontrol, 'profil']),
+                default => throw new \InvalidArgumentException("Halaman pratinjau tidak dikenal: $halaman"),
             };
 
             return $tampilan->render();
