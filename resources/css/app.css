@@ -2,6 +2,8 @@
 /* Font Sora dihosting sendiri (bukan Google Fonts): tidak ada request ke domain lain yang memblokir render. */
 @import "@fontsource-variable/sora";
 @import "bootstrap-icons/font/bootstrap-icons.css";
+/* Aturan layar HP area anggota untuk pratinjau CMS Inner Circle; dibuat otomatis oleh vite/buat-kontainer.js. */
+@import "./ic-kontainer.css";
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -709,8 +711,8 @@ body.cms-ic .ic-app {
     text-transform: uppercase;
     color: var(--ic-redup);
 }
-.ic-ponsel {
-    /* Semua pratinjau halaman anggota di CMS memakai skala layar HP (tetap, tidak ikut lebar panel). */
+.ic-app.ic-ponsel {
+    /* Semua pratinjau halaman anggota di CMS memakai skala layar HP (tetap, tidak ikut lebar panel), di tengah panel. */
     width: 100%;
     max-width: 390px;
     margin-inline: auto;
@@ -718,8 +720,8 @@ body.cms-ic .ic-app {
 .ic-app.ic-replika--halaman {
     /* Potongan halaman asli: susunan dan ukuran memakai CSS area anggota apa adanya, tanpa penyesuaian replika.
        Tanpa gradasi latar (kartu sudah cukup rapi di dalam panel); aturan responsifnya mengikuti lebar panel
-       lewat @container ic-panel (disalin saat build oleh vite/ic-kontainer.js); karena lebarnya dikunci 390px (.ic-ponsel),
-       yang berlaku selalu aturan layar HP. */
+       lewat @container ic-panel dan satuan cqw (ic-kontainer.css, dibuat oleh vite/buat-kontainer.js); karena lebarnya dikunci
+       390px (.ic-ponsel), yang berlaku selalu aturan layar HP. */
     display: block;
     padding: 0;
     overflow: hidden;

@@ -1,0 +1,326 @@
+/* DIBUAT OTOMATIS oleh vite/buat-kontainer.js dari inner-circle.css. Jangan diedit manual. */
+.ic-replika--halaman .ic-bar {
+    padding: 20px clamp(22px, 4cqw, 68px);
+}
+.ic-replika--halaman .ic-konten {
+    padding: 30px clamp(20px, 4cqw, 42px) 145px;
+}
+.ic-replika--halaman .ic-judul {
+    font-size: clamp(54px, 8cqw, 92px);
+}
+.ic-replika--halaman .ic-unggulan {
+    padding: clamp(28px, 4cqw, 48px);
+}
+.ic-replika--halaman .ic-unggulan__judul {
+    font-size: clamp(40px, 5cqw, 58px);
+}
+@container ic-panel (max-width: 640px) {
+    .ic-replika--halaman .ic-modal--lembar {
+        place-items: end center;
+        padding: 0;
+    }
+    .ic-replika--halaman .ic-modal--lembar .ic-modal__dialog {
+        width: 100%;
+        max-height: 90vh;
+        max-height: 90dvh;
+        padding: 10px 20px calc(24px + env(safe-area-inset-bottom, 0px));
+        border-radius: 28px 28px 0 0;
+        animation-name: ic-naik-penuh;
+    }
+    .ic-replika--halaman .ic-modal--lembar .ic-modal__pegangan {
+        display: block;
+        width: 44px;
+        height: 5px;
+        margin: 0 auto 14px;
+        border-radius: 99px;
+        background: #b3d1e6;
+    }
+    .ic-replika--halaman .ic-modal--lembar .ic-modal__judul {
+        font-size: 24px;
+        overflow-wrap: anywhere;
+    }
+}
+.ic-replika--halaman .ic-auth__kartu {
+    padding: 34px clamp(22px, 5cqw, 36px);
+}
+.ic-replika--halaman .ic-hero {
+    padding: clamp(24px, 3.5cqw, 34px);
+}
+.ic-replika--halaman .ic-hero .ic-judul {
+    font-size: clamp(54px, 7cqw, 84px);
+}
+.ic-replika--halaman .ic-banner {
+    padding: clamp(24px, 4cqw, 44px);
+}
+.ic-replika--halaman .ic-banner h2 {
+    font-size: clamp(28px, 4.4cqw, 48px);
+}
+@container ic-panel (max-width: 780px) {
+    .ic-replika--halaman .ic-shell {
+        margin: 0 0 95px;
+        min-height: 100vh;
+        border-radius: 0;
+        border-width: 0;
+    }
+    .ic-replika--halaman .ic-konten {
+        padding: 24px 18px 130px;
+    }
+    .ic-replika--halaman .ic-grid--2 {
+        grid-template-columns: 1fr;
+    }
+    .ic-replika--halaman .ic-judul {
+        font-size: 52px;
+    }
+    .ic-replika--halaman .ic-event__venue {
+        font-size: 18px;
+    }
+    .ic-replika--halaman .ic-event__seni {
+        width: 64px;
+        height: 64px;
+    }
+    .ic-replika--halaman .ic-ubin {
+        min-height: 200px;
+    }
+    .ic-replika--halaman .ic-ubin__angka {
+        font-size: 46px;
+    }
+    .ic-replika--halaman .ic-ubin__ikon {
+        width: 72px;
+        height: 72px;
+        font-size: 60px;
+        top: 52px;
+    }
+    .ic-replika--halaman .ic-ubin__deskripsi {
+        max-width: 74%;
+    }
+    .ic-replika--halaman .ic-unggulan__judul {
+        font-size: 42px;
+    }
+    .ic-replika--halaman .ic-beranda {
+        grid-template-columns: 1fr;
+    }
+    .ic-replika--halaman .ic-hero {
+        min-height: 380px;
+    }
+    .ic-replika--halaman .ic-filter__form {
+        grid-template-columns: 1fr 1fr;
+    }
+    .ic-replika--halaman .ic-filter__form .ic-input[type="search"],
+    .ic-replika--halaman .ic-filter__form .ic-tombol {
+        grid-column: 1 / -1;
+    }
+    .ic-replika--halaman .ic-banner {
+        grid-template-columns: 1fr;
+    }
+    .ic-replika--halaman .ic-banner__orbit {
+        display: none;
+    }
+    .ic-replika--halaman .ic-baris-2 {
+        grid-template-columns: 1fr;
+    }
+    .ic-replika--halaman .ic-metrik strong {
+        font-size: 36px;
+    }
+}
+@container ic-panel (max-width: 480px) {
+    .ic-replika--halaman .ic-bar {
+        padding: 14px 18px;
+    }
+    .ic-replika--halaman .ic-pengumuman {
+        grid-template-columns: 48px minmax(0, 1fr);
+        gap: 12px;
+        padding: 16px;
+    }
+    .ic-replika--halaman .ic-pengumuman__ikon {
+        width: 48px;
+        height: 48px;
+        border-radius: 15px;
+    }
+    .ic-replika--halaman .ic-kenangan__sampul {
+        height: 200px;
+    }
+    .ic-replika--halaman .ic-modal__dialog {
+        padding: 22px;
+    }
+    .ic-replika--halaman .ic-klaim {
+        grid-template-columns: 44px minmax(0, 1fr);
+    }
+    .ic-replika--halaman .ic-klaim__bulat {
+        width: 44px;
+        height: 44px;
+        border-radius: 15px;
+    }
+    .ic-replika--halaman .ic-klaim > :last-child {
+        grid-column: 2;
+        justify-self: start;
+    }
+    .ic-replika--halaman .ic-profil-editor {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 18px;
+    }
+    .ic-replika--halaman .ic-profil-foto {
+        width: 100px;
+        height: 100px;
+        border-radius: 28px;
+        font-size: 48px;
+    }
+    .ic-replika--halaman .ic-metrik-grid {
+        gap: 10px;
+    }
+    .ic-replika--halaman .ic-metrik {
+        padding: 14px;
+    }
+    .ic-replika--halaman .ic-metrik strong {
+        font-size: 30px;
+    }
+    .ic-replika--halaman .ic-pilihan-daftar {
+        grid-template-columns: 1fr;
+    }
+}
+.ic-replika--halaman .ic-hero--publik {
+    padding: clamp(30px, 6cqw, 68px) clamp(22px, 5cqw, 60px);
+}
+.ic-replika--halaman .ic-hero--publik .ic-judul {
+    font-size: clamp(44px, 9cqw, 88px);
+}
+.ic-replika--halaman .ic-hero--publik .ic-deskripsi {
+    font-size: clamp(14px, 1.7cqw, 17px);
+}
+.ic-replika--halaman .ic-hero--publik .ic-hero__bintang {
+    top: clamp(18px, 3cqw, 34px);
+    right: clamp(20px, 4cqw, 44px);
+    font-size: clamp(26px, 4cqw, 40px);
+}
+.ic-replika--halaman .ic-hero--publik .ic-hero__cakram {
+    right: clamp(-40px, -3cqw, -20px);
+    bottom: clamp(-40px, -3cqw, -20px);
+    width: clamp(120px, 20cqw, 230px);
+    height: clamp(120px, 20cqw, 230px);
+    border-width: clamp(12px, 2cqw, 22px);
+}
+.ic-replika--halaman .ic-hero--publik .ic-hero__cakram span {
+    border-radius: clamp(14px, 2cqw, 22px);
+}
+.ic-replika--halaman .ic-cta-akhir h2 {
+    font-size: clamp(22px, 4cqw, 32px);
+}
+@container ic-panel (max-width: 1024px) {
+    .ic-replika--halaman .ic-langkah {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+@container ic-panel (max-width: 520px) {
+    .ic-replika--halaman .ic-langkah {
+        grid-template-columns: 1fr;
+    }
+    .ic-replika--halaman .ic-hero--publik .ic-aksi-baris {
+        flex-direction: column;
+        align-self: stretch;
+    }
+    .ic-replika--halaman .ic-hero--publik .ic-aksi-baris .ic-tombol {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+    }
+    .ic-replika--halaman .ic-hero--publik .ic-hero__cakram {
+        display: none;
+    }
+    .ic-replika--halaman .ic-cta-akhir .ic-aksi-baris {
+        flex-direction: column;
+    }
+    .ic-replika--halaman .ic-cta-akhir .ic-aksi-baris .ic-tombol {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+    }
+}
+@container ic-panel (max-width: 780px) {
+    .ic-replika--halaman .ic-shell {
+        min-height: 100dvh;
+    }
+}
+@container ic-panel (max-width: 480px) {
+    .ic-replika--halaman .ic-hero .ic-eyebrow {
+        padding-right: 40px;
+    }
+    .ic-replika--halaman .ic-hero__stiker {
+        position: relative;
+        z-index: 1;
+        max-width: 100%;
+    }
+    .ic-replika--halaman .ic-hero__cakram {
+        width: 132px;
+        height: 132px;
+        right: -14px;
+        bottom: -14px;
+        border-width: 12px;
+    }
+    .ic-replika--halaman .ic-hero__cakram span {
+        border-radius: 12px;
+    }
+    .ic-replika--halaman .ic-dock {
+        bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+        width: calc(100% - 16px);
+        padding: 8px 6px;
+        gap: 2px;
+        border-radius: 26px;
+    }
+    .ic-replika--halaman .ic-dock__item {
+        padding: 8px 0;
+        font-size: 10px;
+    }
+    .ic-replika--halaman .ic-dock__item span {
+        white-space: nowrap;
+    }
+    .ic-replika--halaman .ic-filter__form {
+        grid-template-columns: 1fr;
+    }
+    .ic-replika--halaman .ic-tab {
+        flex-wrap: wrap;
+        gap: 4px 6px;
+        padding: 8px 6px;
+        font-size: 13px;
+        line-height: 1.2;
+        text-align: center;
+    }
+}
+@container ic-panel (max-width: 360px) {
+    .ic-replika--halaman .ic-tab .ic-ikon--mini {
+        display: none;
+    }
+}
+@container ic-panel (max-width: 780px) {
+    .ic-replika--halaman .ic-konten {
+        padding-bottom: calc(130px + env(safe-area-inset-bottom, 0px));
+    }
+    .ic-replika--halaman .ic-konten--publik {
+        padding-bottom: 40px;
+    }
+}
+.ic-replika--halaman .ic-hero__cakram span::after {
+    font-size: clamp(20px, 3.2cqw, 40px);
+}
+@container ic-panel (max-width: 780px) {
+    .ic-replika--halaman .ic-hero {
+        background:
+            radial-gradient(
+                120% 70% at 0% 100%,
+                rgba(255, 255, 255, 0.9) 0%,
+                rgba(255, 255, 255, 0) 55%
+            ),
+            linear-gradient(150deg, #def6ff 0%, #c9eefc 62%, #7fb4d8 100%);
+    }
+    .ic-replika--halaman .ic-event {
+        background: linear-gradient(
+            90deg,
+            #f1fbff 0%,
+            #d6f4ff calc(100% - 84px),
+            #17629a 100%
+        );
+    }
+    .ic-replika--halaman .ic-event__isi {
+        padding-right: 10px;
+    }
+}

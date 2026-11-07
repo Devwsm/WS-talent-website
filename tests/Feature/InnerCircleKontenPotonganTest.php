@@ -91,6 +91,18 @@ class InnerCircleKontenPotonganTest extends TestCase
         $this->assertStringContainsString('hanya tampil pada kondisi tertentu', $html);
     }
 
+    public function test_css_pratinjau_berskala_hp_tersedia_dan_diimpor(): void
+    {
+        $kontainer = file_get_contents(resource_path('css/ic-kontainer.css'));
+        $this->assertStringContainsString('@container ic-panel (max-width: 780px)', $kontainer);
+        $this->assertStringContainsString('.ic-replika--halaman .ic-hero--publik .ic-judul', $kontainer);
+        $this->assertStringContainsString('cqw', $kontainer);
+        $this->assertStringNotContainsString('vw)', $kontainer);
+
+        $this->assertStringContainsString('@import "./ic-kontainer.css";', file_get_contents(resource_path('css/app.css')));
+        $this->assertStringContainsString('node vite/buat-kontainer.js', file_get_contents(base_path('package.json')));
+    }
+
     public function test_membuka_pratinjau_tidak_menulis_ke_database(): void
     {
         $this->admin()->get(route('ic.admin.konten.bagian', 'komunitas'))->assertOk();
