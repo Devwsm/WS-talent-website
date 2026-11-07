@@ -670,18 +670,18 @@ body.cms-ic .ic-app {
     flex-direction: column;
     gap: 16px;
 }
-.ic-replika .ic-judul {
+.ic-replika:not(.ic-replika--halaman) .ic-judul {
     /* Mengikuti lebar panel pratinjau (bukan layar) supaya judul tidak pecah satu kata per baris di kolom sempit. */
     font-size: clamp(26px, 9cqi, 40px);
     margin: 4px 0 6px;
     overflow-wrap: anywhere;
 }
-.ic-replika .ic-judul > em {
+.ic-replika:not(.ic-replika--halaman) .ic-judul > em {
     font-style: normal;
 }
-.ic-replika .ic-judul-bagian,
-.ic-replika .ic-deskripsi,
-.ic-replika .ic-eyebrow {
+.ic-replika:not(.ic-replika--halaman) .ic-judul-bagian,
+.ic-replika:not(.ic-replika--halaman) .ic-deskripsi,
+.ic-replika:not(.ic-replika--halaman) .ic-eyebrow {
     margin: 0;
     overflow-wrap: anywhere;
 }
@@ -708,6 +708,21 @@ body.cms-ic .ic-app {
     letter-spacing: 1.2px;
     text-transform: uppercase;
     color: var(--ic-redup);
+}
+.ic-app.ic-replika--halaman {
+    /* Potongan halaman asli: susunan dan ukuran memakai CSS area anggota apa adanya, tanpa penyesuaian replika. */
+    display: block;
+    padding: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+.ic-replika--halaman [data-replika-teks] {
+    white-space: pre-line;
+}
+.ic-replika [data-replika-teks].is-aktif {
+    outline: 2px solid var(--ic-aksen);
+    outline-offset: 3px;
+    border-radius: 4px;
 }
 .ic-replika [data-replika-teks].is-diubah {
     outline: 1.5px dashed var(--ic-aksen);

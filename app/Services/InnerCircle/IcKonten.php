@@ -29,6 +29,9 @@ class IcKonten
     private ?array $memoPengaturan = null;
     private ?array $memoItem = null;
 
+    /** Pratinjau CMS: bila true, tiap teks diberi penanda tak terlihat berisi kuncinya (lihat IcPotongan). Hanya untuk satu render. */
+    private bool $penanda = false;
+
     /** @return array<string, array<string, mixed>> semua kunci yang terdaftar di config */
     public function definisi(): array
     {
@@ -59,7 +62,13 @@ class IcKonten
 
         $hasil = $this->isiPlaceholder($teks, $def['placeholder'] ?? [], $isi);
 
-        return $hasil;
+        return $this->penanda ? IcPotongan::AWAL . $kunci . IcPotongan::AKHIR . $hasil . IcPotongan::TUTUP : $hasil;
+    }
+
+    /** Nyalakan atau matikan penanda kunci di sekitar tiap teks; hanya dipakai IcPotongan saat merender pratinjau CMS. */
+    public function pakaiPenanda(bool $aktif = true): void
+    {
+        $this->penanda = $aktif;
     }
 
     /**

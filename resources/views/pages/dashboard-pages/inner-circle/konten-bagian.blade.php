@@ -186,6 +186,7 @@
                                     'kodeGrup' => $kodeGrup,
                                     'info' => $info,
                                     'm' => $m,
+                                    'potongan' => $potongan[$slugModul] ?? null,
                                     'kunciDef' => $kunci,
                                     'tersimpan' => $tersimpan,
                                     'idForm' => $idForm,
@@ -245,7 +246,8 @@
                 panel.querySelectorAll('[data-replika-teks]').forEach((el) => {
                     const kolom = el.dataset.replikaTeks;
                     const isian = form.querySelector('[name="k[' + kolom + ']"]');
-                    const blok = el.closest('[data-replika-blok]');
+                    // Replika sederhana menyorot blok berlabelnya; potongan halaman asli menyorot teksnya sendiri.
+                    const blok = el.closest('[data-replika-blok]') || el;
                     if (!isian) return;
 
                     const perbarui = () => {

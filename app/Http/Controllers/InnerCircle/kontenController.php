@@ -11,6 +11,7 @@ use App\Services\InnerCircle\IcBagian;
 use App\Services\InnerCircle\IcDaftar;
 use App\Services\InnerCircle\IcKonten;
 use App\Services\InnerCircle\IcPilihan;
+use App\Services\InnerCircle\IcPotongan;
 use App\Services\InnerCircle\IcPrivasi;
 use App\Services\InnerCircle\IcTampilan;
 use Illuminate\Http\RedirectResponse;
@@ -20,13 +21,13 @@ use Illuminate\View\View;
 class kontenController extends Controller
 {
     /** `/konten` langsung membuka bagian pertama; pindah bagian lewat navbar atas (tanpa halaman pilihan). */
-    public function index(IcKonten $konten, IcDaftar $daftar, IcPilihan $pilihan, IcAturan $aturan, IcTampilan $tampilan, IcPrivasi $privasi): View
+    public function index(IcKonten $konten, IcDaftar $daftar, IcPilihan $pilihan, IcAturan $aturan, IcTampilan $tampilan, IcPrivasi $privasi, IcPotongan $potongan): View
     {
-        return $this->bagian((string) array_key_first(IcBagian::semua()), $konten, $daftar, $pilihan, $aturan, $tampilan, $privasi);
+        return $this->bagian((string) array_key_first(IcBagian::semua()), $konten, $daftar, $pilihan, $aturan, $tampilan, $privasi, $potongan);
     }
 
     /** Satu bagian: hanya formulir dan pratinjau topik itu, bukan seluruh tab. */
-    public function bagian(string $bagian, IcKonten $konten, IcDaftar $daftar, IcPilihan $pilihan, IcAturan $aturan, IcTampilan $tampilan, IcPrivasi $privasi): View
+    public function bagian(string $bagian, IcKonten $konten, IcDaftar $daftar, IcPilihan $pilihan, IcAturan $aturan, IcTampilan $tampilan, IcPrivasi $privasi, IcPotongan $potongan): View
     {
         $info = IcBagian::cari($bagian);
         abort_if($info === null, 404);
@@ -40,12 +41,25 @@ class kontenController extends Controller
             }
         }
 
+        $modul = $info['jenis'] === 'grup' ? IcBagian::modul($info['kode']) : [];
+        $potonganModul = [];
+        if ($modul !== []) {
+            try {
+                $potonganModul = $potongan->untukGrup($info['kode'], $modul);
+            } catch (\Throwable $e) {
+                // Pratinjau tidak boleh menjatuhkan halaman CMS: kembali ke replika sederhana.
+                report($e);
+            }
+        }
+
         return view('pages.dashboard-pages.inner-circle.konten-bagian', [
             'bagian' => $info,
             'semuaBagian' => IcBagian::semua(),
             'kelompokBagian' => IcBagian::berkelompok(),
             'diubahPerBagian' => $diubah,
-            'modul' => $info['jenis'] === 'grup' ? IcBagian::modul($info['kode']) : [],
+            'modul' => $modul,
+            // Potongan halaman ASLI per modul (lihat IcPotongan); modul tanpa potongan memakai replika sederhana.
+            'potongan' => $potonganModul,
             // Tautan lama (#grup-x, #daftar-x, ...) dialihkan ke halaman bagiannya oleh skrip kecil di halaman.
             'petaJangkarLama' => IcBagian::petaJangkarLama(),
             'grup' => config('ic_konten.grup'),
