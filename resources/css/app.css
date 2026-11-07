@@ -709,10 +709,17 @@ body.cms-ic .ic-app {
     text-transform: uppercase;
     color: var(--ic-redup);
 }
+.ic-ponsel {
+    /* Semua pratinjau halaman anggota di CMS memakai skala layar HP (tetap, tidak ikut lebar panel). */
+    width: 100%;
+    max-width: 390px;
+    margin-inline: auto;
+}
 .ic-app.ic-replika--halaman {
     /* Potongan halaman asli: susunan dan ukuran memakai CSS area anggota apa adanya, tanpa penyesuaian replika.
        Tanpa gradasi latar (kartu sudah cukup rapi di dalam panel); aturan responsifnya mengikuti lebar panel
-       lewat @container ic-panel (disalin saat build oleh vite/ic-kontainer.js). */
+       lewat @container ic-panel (disalin saat build oleh vite/ic-kontainer.js); karena lebarnya dikunci 390px (.ic-ponsel),
+       yang berlaku selalu aturan layar HP. */
     display: block;
     padding: 0;
     overflow: hidden;

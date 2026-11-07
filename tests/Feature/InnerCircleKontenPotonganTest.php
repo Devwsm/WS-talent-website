@@ -77,6 +77,8 @@ class InnerCircleKontenPotonganTest extends TestCase
         $this->assertGreaterThan(0, $xp->query('//section[@id="modul-tentang-hero"]//aside//section[contains(@class,"ic-hero")]//a[contains(@class,"ic-tombol")]')->length);
         // Kontrol di dalam pratinjau tidak bisa diklik.
         $this->assertGreaterThan(0, $xp->query('//section[@id="modul-tentang-hero"]//aside//div[@inert]')->length);
+        // Pratinjau selalu berskala layar HP (lebar dikunci), bukan mengikuti lebar panel.
+        $this->assertGreaterThan(0, $xp->query('//section[@id="modul-tentang-hero"]//aside//div[@inert and contains(@class,"ic-ponsel")]')->length);
     }
 
     public function test_isian_yang_tidak_tampil_di_contoh_dilaporkan_dan_tetap_punya_pratinjau(): void

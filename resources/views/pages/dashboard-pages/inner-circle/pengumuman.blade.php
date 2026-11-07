@@ -179,7 +179,7 @@
                         <span class="text-xs uppercase tracking-widest text-white/40">Tampilan di Komunitas › Pengumuman
                             WS</span>
                     </div>
-                    <div class="ic-app p-5" inert>
+                    <div class="ic-app ic-ponsel p-5" inert>
                         <div id="preview-unggulan" hidden>
                             <x-inner-circle.pengumuman-unggulan :pengumuman="$kosong" />
                         </div>

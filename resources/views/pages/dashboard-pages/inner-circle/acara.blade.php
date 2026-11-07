@@ -490,7 +490,7 @@
                             <span class="text-xs uppercase tracking-widest text-white/40">Tampilan di halaman
                                 Check-in</span>
                         </div>
-                        <div class="ic-app p-2 sm:p-5" inert id="preview-acara">
+                        <div class="ic-app ic-ponsel p-2 sm:p-5" inert id="preview-acara">
                             <x-inner-circle.kartu-event :event="$contohAcara" href="#" />
                         </div>
                     </div>

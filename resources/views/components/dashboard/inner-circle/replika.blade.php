@@ -42,9 +42,9 @@
         @if ($potongan !== null)
             {{-- Bagian halaman asli (view yang sama dengan halaman anggota), dirender sekali di server dan diperbarui langsung saat mengetik. `inert` = tautan dan tombol tidak bisa diklik. --}}
             <p class="text-xs text-white/50">Halaman: <span class="text-white/80">{{ $potongan['halaman'] }}</span>
-                &middot; Bagian yang kamu ubah diberi garis.
+                &middot; Tampil seperti di layar HP &middot; bagian yang kamu ubah diberi garis.
             </p>
-            <div class="ic-app ic-replika ic-replika--halaman rounded-2xl" inert
+            <div class="ic-app ic-ponsel ic-replika ic-replika--halaman rounded-2xl" inert
                 style="--ic-aksen: {{ $warna['aksen'] }}; --ic-latar: {{ $warna['latar'] }}; --ic-shell: {{ $warna['kartu'] }};">
                 {!! $potongan['html'] !!}
             </div>
@@ -55,7 +55,7 @@
                 <p class="text-xs text-white/50">Isian di bawah hanya tampil pada kondisi tertentu, jadi tidak ada di
                     contoh di atas:</p>
             @endif
-            <div class="ic-app ic-replika rounded-2xl"
+            <div class="ic-app ic-ponsel ic-replika rounded-2xl"
                 style="--ic-aksen: {{ $warna['aksen'] }}; --ic-latar: {{ $warna['latar'] }}; --ic-shell: {{ $warna['kartu'] }};">
                 @foreach ($kunciTampil as $k)
                     @php

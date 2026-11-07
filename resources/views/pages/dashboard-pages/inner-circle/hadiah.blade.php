@@ -201,7 +201,7 @@
                             <span class="text-xs uppercase tracking-widest text-white/40">Tampilan di halaman Hadiah</span>
                         </div>
 
-                        <div class="ic-app p-5 flex flex-col gap-5" inert>
+                        <div class="ic-app ic-ponsel p-5 flex flex-col gap-5" inert>
                             <div class="max-w-xs w-full mx-auto" id="preview-ubin">
                                 <x-inner-circle.ubin-hadiah :reward="$awal" href="#" />
                             </div>
