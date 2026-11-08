@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\MengonversiGambarWebp;
 use App\Models\albums;
 use App\Models\banner;
 use App\Models\color_pages;
@@ -21,6 +22,8 @@ use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class dashboardController extends Controller
 {
+    use MengonversiGambarWebp;
+
     // dashboard
     public function dashboard()
     {
@@ -722,61 +725,6 @@ class dashboardController extends Controller
         }
     }
     // merchandise end
-
-
-    /**
-     * Batas jumlah piksel (lebar x tinggi) gambar yang mau didecode. Berkas kecil di disk bisa mengembang jadi
-     * ratusan MB di memori (bom dekompresi) dan menjatuhkan request dengan error 500 / kehabisan memori.
-     * 16 MP ~ 4000x4000, decode-nya sekitar 64 MB sehingga masih aman di hosting dengan memory_limit 128 MB.
-     */
-    private const MAKS_PIKSEL = 16_000_000;
-
-    /**
-     * Konversi gambar (JPG/PNG) ke WebP menggunakan PHP GD.
-     * Tidak butuh library tambahan — GD sudah aktif by default di cPanel.
-     *
-     * @param  string  $sourcePath  Path file asli
-     * @param  string  $destPath    Path tujuan file .webp
-     * @param  int     $quality     Kualitas WebP: 0–100 (82 = sweet spot ukuran vs kualitas)
-     */
-    private function convertToWebP(string $sourcePath, int $quality = 82): string
-    {
-        // Periksa ukuran SEBELUM didecode. Pelanggaran jadi pesan validasi (bukan error 500).
-        $info = @getimagesize($sourcePath);
-        if ($info === false || $info[0] < 1 || $info[1] < 1) {
-            throw ValidationException::withMessages(['gambar' => 'Berkas ini bukan gambar yang valid. Pilih gambar JPG atau PNG.']);
-        }
-        if ($info[0] * $info[1] > self::MAKS_PIKSEL) {
-            throw ValidationException::withMessages(['gambar' => 'Resolusi gambar terlalu besar (maksimal 16 megapiksel, misalnya 4000x4000 piksel). Kecilkan gambar lalu unggah ulang.']);
-        }
-
-        $mime = mime_content_type($sourcePath);
-
-        $image = match ($mime) {
-            'image/jpeg' => imagecreatefromjpeg($sourcePath),
-            'image/png'  => imagecreatefrompng($sourcePath),
-            default      => throw new \RuntimeException("Format tidak didukung: {$mime}"),
-        };
-
-        if ($image === false) {
-            throw ValidationException::withMessages(['gambar' => 'Gambar tidak bisa dibaca. Coba simpan ulang gambarnya lalu unggah lagi.']);
-        }
-
-        if ($mime === 'image/png') {
-            imagepalettetotruecolor($image);
-            imagealphablending($image, true);
-            imagesavealpha($image, true);
-        }
-
-        ob_start();
-        imagewebp($image, null, $quality);
-        $webpData = ob_get_clean();
-
-        imagedestroy($image);
-
-        // Intelephense perlu return eksplisit di akhir — ini yang bikin warning hilang
-        return $webpData !== false ? $webpData : '';
-    }
 
     private const PESAN_TANPA_FFMPEG = 'Video belum bisa diproses di server ini karena ffmpeg tidak tersedia. Gunakan gambar (JPG/PNG) sebagai latar header, atau hubungi tim WSM.';
 

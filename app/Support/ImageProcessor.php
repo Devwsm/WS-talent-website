@@ -11,7 +11,8 @@ use Illuminate\Support\Str;
  * miring), kecilkan, lalu simpan ulang sebagai WebP. Karena gambarnya di-encode ulang, metadata EXIF
  * (termasuk lokasi GPS) ikut terbuang.
  *
- * Berbeda dari `convertToWebP()` lama di profileController (private, hanya JPEG/PNG), kelas ini menentukan
+ * Menggantikan `convertToWebP()` lama di dashboardController dan profileController (hanya JPEG/PNG, kini dipakai bersama lewat
+ * trait MengonversiGambarWebp). Kelas ini menentukan
  * format dari ISI berkas (bukan nama atau tipe kiriman browser) dan menjaga memori: hosting bersama sering
  * memberi 128 MB, dan decode foto 48 MP butuh lebih dari itu.
  *

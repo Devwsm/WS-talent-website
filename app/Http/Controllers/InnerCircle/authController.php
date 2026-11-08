@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\InnerCircle\daftarRequest;
 use App\Http\Requests\InnerCircle\masukRequest;
 use App\Models\member;
+use App\Services\InnerCircle\BatasEmailKembar;
 use App\Services\InnerCircle\EmailService;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\RedirectResponse;
@@ -75,6 +76,8 @@ class authController extends Controller
             });
         } catch (UniqueConstraintViolationException) {
             // Dua pendaftaran dengan email sama persis bersamaan: yang kedua kalah di batasan unik database.
+            app(BatasEmailKembar::class)->catat($request);
+
             return back()
                 ->withErrors(['email' => 'Email ini sudah terdaftar. Silakan masuk.'])
                 ->withInput($request->except(['sandi', 'sandi_confirmation']));
