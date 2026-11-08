@@ -3,7 +3,7 @@
     resources/views/components/profile/profile-full.blade.php (baris 25-32).
     Expects: $genre (Illuminate\Support\Collection dari App\Models\genre)
 --}}
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
 
     {{-- FORM --}}
     <div class="rounded-3xl border border-white/10 bg-white/3 p-6 md:p-8">
@@ -29,25 +29,18 @@
     </div>
 
     {{-- PREVIEW --}}
-    <div class="lg:sticky lg:top-8 rounded-3xl border border-white/10 bg-black overflow-hidden">
-        <div class="flex items-center gap-2 px-5 py-3 border-b border-white/10 bg-white/3">
-            <i class="bi bi-eye text-white/40"></i>
-            <span class="text-xs uppercase tracking-widest text-white/40">Tampilan di halaman Profile</span>
+    <x-dashboard.preview-frame>
+        <div id="genrePreviewList" class="flex flex-wrap gap-2">
+            @forelse ($genre as $item)
+                <span
+                    class="text-xs px-3 py-1 rounded-full border border-white/20 text-white/60">{{ $item->nama_genre }}</span>
+            @empty
+            @endforelse
+            <span id="genrePreviewEmpty" class="text-xs text-white/30 {{ $genre->isNotEmpty() ? 'hidden' : '' }}">
+                Belum ada genre.
+            </span>
         </div>
-
-        <div class="p-5">
-            <div id="genrePreviewList" class="flex flex-wrap gap-2">
-                @forelse ($genre as $item)
-                    <span
-                        class="text-xs px-3 py-1 rounded-full border border-white/20 text-white/60">{{ $item->nama_genre }}</span>
-                @empty
-                @endforelse
-                <span id="genrePreviewEmpty" class="text-xs text-white/30 {{ $genre->isNotEmpty() ? 'hidden' : '' }}">
-                    Belum ada genre.
-                </span>
-            </div>
-        </div>
-    </div>
+    </x-dashboard.preview-frame>
 </div>
 
 {{-- List data genre tersimpan --}}

@@ -4,7 +4,7 @@
     resources/views/components/profile/profile-full.blade.php (baris 11-22).
     Expects: $hero (App\Models\profile_hero|null)
 --}}
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
 
     {{-- FORM --}}
     <div class="rounded-3xl border border-white/10 bg-white/3 p-6 md:p-8">
@@ -61,43 +61,36 @@
     </div>
 
     {{-- PREVIEW --}}
-    <div class="lg:sticky lg:top-8 rounded-3xl border border-white/10 bg-black overflow-hidden">
-        <div class="flex items-center gap-2 px-5 py-3 border-b border-white/10 bg-white/3">
-            <i class="bi bi-eye text-white/40"></i>
-            <span class="text-xs uppercase tracking-widest text-white/40">Tampilan di halaman Profile</span>
-        </div>
-
+    <x-dashboard.preview-frame>
         {{-- Replika PERSIS markup section Hero --}}
-        <div class="p-5">
-            <div class="head relative flex w-full justify-center">
-                <div id="heroPreviewImgWrapper"
-                    class="w-full aspect-video rounded-lg overflow-hidden bg-white/5 border border-white/10">
-                    <div id="heroPreviewImgEmpty"
-                        class="w-full h-full flex flex-col items-center justify-center gap-2 text-white/30 {{ $hero->foto ?? null ? 'hidden' : '' }}">
-                        <i class="bi bi-image text-3xl"></i>
-                        <p class="text-xs">Preview foto muncul di sini</p>
-                    </div>
-                    <img id="heroPreviewImg"
-                        src="{{ $hero->foto ?? null ? Storage::url('profile-hero/' . $hero->foto) : '' }}"
-                        alt="Preview foto hero"
-                        class="w-full h-full object-cover object-center {{ $hero->foto ?? null ? '' : 'hidden' }}">
+        <div class="head relative flex w-full justify-center">
+            <div id="heroPreviewImgWrapper"
+                class="w-full aspect-video rounded-lg overflow-hidden bg-white/5 border border-white/10">
+                <div id="heroPreviewImgEmpty"
+                    class="w-full h-full flex flex-col items-center justify-start pt-5 gap-2 text-white/30 {{ $hero->foto ?? null ? 'hidden' : '' }}">
+                    <i class="bi bi-image text-3xl"></i>
+                    <p class="hidden sm:block text-xs">Preview foto muncul di sini</p>
                 </div>
+                <img id="heroPreviewImg"
+                    src="{{ $hero->foto ?? null ? Storage::url('profile-hero/' . $hero->foto) : '' }}"
+                    alt="Preview foto hero"
+                    class="w-full h-full object-cover object-center {{ $hero->foto ?? null ? '' : 'hidden' }}">
+            </div>
 
-                <div class="absolute inset-0 rounded-lg bg-linear-to-t from-black/80 via-black/30 to-transparent"></div>
-                <div class="absolute bottom-4 left-4 text-left max-w-lg">
-                    <h1 id="heroPreviewJudul" class="text-xs text-white/40 uppercase tracking-widest mb-1">
-                        {{ $hero->judul_singkat ?? '—' }}
-                    </h1>
-                    <h1 id="heroPreviewNama" class="text-3xl font-medium text-white mb-1">
-                        {{ $hero->nama ?? '—' }}
-                    </h1>
-                    <h1 id="heroPreviewTagline" class="text-sm text-white/60 leading-relaxed">
-                        {{ $hero->tagline ?? '—' }}
-                    </h1>
-                </div>
+            <div class="absolute inset-0 rounded-lg bg-linear-to-t from-black/80 via-black/30 to-transparent"></div>
+            <div class="absolute bottom-4 left-4 text-left max-w-lg">
+                <h1 id="heroPreviewJudul" class="text-xs text-white/40 uppercase tracking-widest mb-1">
+                    {{ $hero->judul_singkat ?? '—' }}
+                </h1>
+                <h1 id="heroPreviewNama" class="text-3xl font-medium text-white mb-1">
+                    {{ $hero->nama ?? '—' }}
+                </h1>
+                <h1 id="heroPreviewTagline" class="text-sm text-white/60 leading-relaxed">
+                    {{ $hero->tagline ?? '—' }}
+                </h1>
             </div>
         </div>
-    </div>
+    </x-dashboard.preview-frame>
 </div>
 
 <script>

@@ -24,7 +24,10 @@ class SecurityHeaders
 
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
-        $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
+        // Halaman yang membawa token rahasia di URL (atur ulang sandi) menetapkan `no-referrer` sendiri; jangan ditimpa.
+        if (! $response->headers->has('Referrer-Policy')) {
+            $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
+        }
         $response->headers->set(
             'Permissions-Policy',
             'camera=(self), microphone=(), geolocation=(self), payment=(), usb=(), interest-cohort=()'

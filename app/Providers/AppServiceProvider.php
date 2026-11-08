@@ -104,6 +104,19 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('admin-otp', fn(Request $request) => Limit::perMinute(10)->by('admin-otp:' . $request->ip()));
         RateLimiter::for('admin-otp-ulang', fn(Request $request) => Limit::perMinute(3)->by('admin-otp-ulang:' . $request->ip()));
 
+        // Aksi tulis di dashboard (tambah/ubah/hapus/simpan): jatah PER ADMIN (+ IP). `throttle:10,1` bawaan Laravel
+        // berbagi satu penghitung per IP untuk SEMUA rute yang memakainya, jadi tim admin di satu kantor/Wi-Fi saling
+        // menghabiskan jatah dan tiap rute baru ikut memakan jatah rute lain.
+        RateLimiter::for('admin-tulis', fn(Request $request) => Limit::perMinute(30)->by('admin-tulis:' . sha1((string) $request->session()->get('user', 'tamu') . '|' . $request->ip())));
+
+        // Aksi berat/berbiaya di dashboard punya penghitung sendiri-sendiri supaya tidak saling mengunci.
+        RateLimiter::for('admin-bandsintown', fn(Request $request) => Limit::perMinute(3)->by('admin-bandsintown:' . sha1((string) $request->session()->get('user', 'tamu') . '|' . $request->ip())));
+        RateLimiter::for('admin-email-tes', fn(Request $request) => Limit::perMinute(5)->by('admin-email-tes:' . sha1((string) $request->session()->get('user', 'tamu') . '|' . $request->ip())));
+        RateLimiter::for('admin-perbaiki-token', fn(Request $request) => Limit::perMinute(5)->by('admin-perbaiki-token:' . sha1((string) $request->session()->get('user', 'tamu') . '|' . $request->ip())));
+
+        // Hapus kenangan sendiri (anggota): per ANGGOTA, bukan per IP, karena penonton satu venue sering berbagi IP.
+        RateLimiter::for('ic-hapus-kenangan', fn(Request $request) => Limit::perMinute(30)->by('hapus-kenangan:' . (Auth::guard('member')->id() ?? $request->ip())));
+
         // Aksi kecil di dashboard (tampil/sembunyikan, tandai error selesai): jatah sendiri per IP.
         RateLimiter::for('admin-aksi-kecil', fn(Request $request) => Limit::perMinute(30)->by('admin-aksi-kecil:' . $request->ip()));
 

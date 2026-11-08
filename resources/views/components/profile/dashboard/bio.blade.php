@@ -5,7 +5,7 @@
 --}}
 <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
 
     {{-- FORM --}}
     <div class="rounded-3xl border border-white/10 bg-white/3 p-6 md:p-8">
@@ -42,20 +42,15 @@
     </div>
 
     {{-- PREVIEW --}}
-    <div class="lg:sticky lg:top-8 rounded-3xl border border-white/10 bg-black overflow-hidden">
-        <div class="flex items-center gap-2 px-5 py-3 border-b border-white/10 bg-white/3">
-            <i class="bi bi-eye text-white/40"></i>
-            <span class="text-xs uppercase tracking-widest text-white/40">Tampilan di halaman Profile</span>
-        </div>
-
+    <x-dashboard.preview-frame>
         {{-- Replika PERSIS markup section Bio --}}
-        <div class="p-5 flex flex-col gap-3">
+        <div class="flex flex-col gap-3">
             <h2 class="text-xs text-white/30 uppercase tracking-widest">Bio</h2>
             <div id="bioPreviewContent" class="text-sm text-white/70 leading-relaxed flex flex-col gap-3">
                 {!! \App\Support\HtmlSanitizer::clean($bio->konten ?? '') ?: '<span class="text-white/30">—</span>' !!}
             </div>
         </div>
-    </div>
+    </x-dashboard.preview-frame>
 </div>
 
 <style>

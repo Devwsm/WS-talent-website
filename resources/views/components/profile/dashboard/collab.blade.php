@@ -3,7 +3,7 @@
     resources/views/components/profile/profile-full.blade.php (baris ~84-105).
     Expects: $collab (Illuminate\Support\Collection dari App\Models\collab)
 --}}
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
 
     {{-- FORM --}}
     <div class="rounded-3xl border border-white/10 bg-white/3 p-6 md:p-8">
@@ -37,27 +37,20 @@
     </div>
 
     {{-- PREVIEW --}}
-    <div class="lg:sticky lg:top-8 rounded-3xl border border-white/10 bg-black overflow-hidden">
-        <div class="flex items-center gap-2 px-5 py-3 border-b border-white/10 bg-white/3">
-            <i class="bi bi-eye text-white/40"></i>
-            <span class="text-xs uppercase tracking-widest text-white/40">Tampilan di halaman Profile</span>
+    <x-dashboard.preview-frame>
+        <div id="collabPreviewList" class="grid grid-cols-2 gap-3">
+            @forelse ($collab as $item)
+                <div class="flex flex-col gap-0.5 p-4 rounded-lg bg-white/5 border border-white/10">
+                    <span class="text-sm font-medium text-white">{{ $item->nama }}</span>
+                    <span class="text-xs text-white/40">{{ $item->role }}</span>
+                </div>
+            @empty
+            @endforelse
         </div>
-
-        <div class="p-5">
-            <div id="collabPreviewList" class="grid grid-cols-2 gap-3">
-                @forelse ($collab as $item)
-                    <div class="flex flex-col gap-0.5 p-4 rounded-lg bg-white/5 border border-white/10">
-                        <span class="text-sm font-medium text-white">{{ $item->nama }}</span>
-                        <span class="text-xs text-white/40">{{ $item->role }}</span>
-                    </div>
-                @empty
-                @endforelse
-            </div>
-            <p id="collabPreviewEmpty" class="text-xs text-white/30 {{ $collab->isNotEmpty() ? 'hidden' : '' }}">
-                Belum ada kolaborasi.
-            </p>
-        </div>
-    </div>
+        <p id="collabPreviewEmpty" class="text-xs text-white/30 {{ $collab->isNotEmpty() ? 'hidden' : '' }}">
+            Belum ada kolaborasi.
+        </p>
+    </x-dashboard.preview-frame>
 </div>
 
 {{-- List data kolaborasi tersimpan --}}
@@ -93,7 +86,12 @@
         const list = document.getElementById('collabPreviewList');
         const emptyEl = document.getElementById('collabPreviewEmpty');
         let draft = null;
-
+        const el = (tag, cls, teks) => {
+            const n = document.createElement(tag);
+            n.className = cls;
+            n.textContent = teks;
+            return n;
+        };
         const render = () => {
             const namaVal = nama.value.trim();
             const roleVal = role.value.trim();
@@ -112,8 +110,10 @@
                 list.appendChild(draft);
             }
 
-            draft.innerHTML =
-                `<span class="text-sm font-medium text-white">${namaVal || '—'}</span><span class="text-xs text-white/40">${roleVal || '—'}</span>`;
+            draft.replaceChildren(
+                el('span', 'text-sm font-medium text-white', namaVal || '—'),
+                el('span', 'text-xs text-white/40', roleVal || '—'),
+            );
             emptyEl?.classList.add('hidden');
         };
 

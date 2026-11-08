@@ -12,6 +12,10 @@ concurrency:
   group: deploy-production
   cancel-in-progress: false
 
+# Token bawaan GitHub hanya boleh membaca isi repo (prinsip hak akses minimum).
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Tes
@@ -45,6 +49,14 @@ jobs:
           mkdir -p storage/framework/views storage/framework/cache/data storage/framework/sessions storage/framework/testing storage/logs bootstrap/cache
           chmod -R 775 storage bootstrap/cache
 
+      # Cek kerentanan dependensi. Sengaja tidak memblokir deploy (continue-on-error): advis baru bisa muncul kapan
+      # saja dan tidak boleh mengunci perbaikan darurat; hasilnya tampil sebagai peringatan di tab Actions.
+      - name: Audit dependensi (composer dan npm)
+        continue-on-error: true
+        run: |
+          composer audit --locked --no-dev
+          npm audit --omit=dev --audit-level=high
+
       # phpunit.xml sudah memaku semua env tes (sqlite memori), jadi tidak perlu file .env.
       - name: Jalankan tes
         run: vendor/bin/phpunit
@@ -60,6 +72,7 @@ jobs:
       APP_PATH: ${{ secrets.APP_PATH }} # folder Laravel di server, mis. /home/whim4521/laravel
       PUBLIC_PATH: ${{ secrets.PUBLIC_PATH }} # folder web publik, mis. /home/whim4521/public_html
       PHP_BIN: ${{ vars.PHP_BIN || 'php' }} # opsional: path PHP 8.4 di server
+      SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }} # opsional tapi disarankan: hasil `ssh-keyscan -p PORT HOST` yang kamu cek sendiri
     steps:
       - uses: actions/checkout@v4
 
@@ -91,7 +104,13 @@ jobs:
           install -m 700 -d ~/.ssh
           printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -p "$SSH_PORT" "$SSH_HOST" >> ~/.ssh/known_hosts
+          # Sidik jari server dipaku dari secret bila ada. Tanpa itu, ssh-keyscan memercayai jawaban pertama (rawan dicegat).
+          if [ -n "${SSH_KNOWN_HOSTS:-}" ]; then
+            printf '%s\n' "$SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+          else
+            echo "::warning::Secret SSH_KNOWN_HOSTS belum diisi, sidik jari server tidak diverifikasi."
+            ssh-keyscan -p "$SSH_PORT" "$SSH_HOST" >> ~/.ssh/known_hosts
+          fi
 
       # Pengaman: pastikan path benar sebelum apa pun dikirim, supaya tidak menimpa folder yang salah.
       - name: Cek folder tujuan di server
@@ -117,6 +136,14 @@ jobs:
             .
           ls -lh /tmp/deploy.tgz
           ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" 'cat > "$HOME/.deploy.tgz"' < /tmp/deploy.tgz
+
+      # Mode pemeliharaan selama kode ditukar dan migrasi jalan (beberapa detik), supaya pengunjung tidak melihat
+      # halaman setengah jadi. Bila deploy gagal di tengah, langkah "Angkat mode pemeliharaan bila deploy gagal" di bawah menaikkan situs lagi.
+      - name: Aktifkan mode pemeliharaan
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            "cd '$APP_PATH' && $PHP_BIN artisan down --retry=30"
 
       # Server memakai dua folder publik: laravel/public (dibaca Vite manifest) dan public_html (yang diakses browser).
       # index.php dan .htaccess di public_html milik server, jadi tidak disentuh.
@@ -165,7 +192,15 @@ jobs:
           rm -f public/hot '$PUBLIC_PATH/hot'
           $PHP_BIN artisan migrate --force
           $PHP_BIN artisan optimize:clear
+          $PHP_BIN artisan up
           REMOTE
+
+      # Jaring pengaman: bila langkah apa pun gagal, hapus berkas penanda pemeliharaan langsung (tanpa artisan,
+      # karena kode baru yang rusak bisa membuat artisan sendiri gagal) supaya situs tidak terkunci selamanya.
+      - name: Angkat mode pemeliharaan bila deploy gagal
+        if: failure()
+        run: |
+          ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "rm -f '$APP_PATH/storage/framework/down'" || true
 
       - name: Bersihkan kunci SSH
         if: always()

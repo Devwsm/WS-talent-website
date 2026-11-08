@@ -52,7 +52,9 @@ class lupaSandiController extends Controller
         // Tautan berisi token rahasia: jangan disimpan cache browser atau proxy.
         return response()
             ->view('pages.inner-circle.atur-ulang', ['token' => $token, 'email' => is_string($email) ? $email : ''])
-            ->header('Cache-Control', 'no-store');
+            ->header('Cache-Control', 'no-store')
+            // Token ada di URL: jangan ikut terkirim sebagai Referer ke situs lain (font, gambar, dst.).
+            ->header('Referrer-Policy', 'no-referrer');
     }
 
     public function proses(aturUlangSandiRequest $request): RedirectResponse

@@ -106,7 +106,7 @@
                                         <i class="bi bi-download" aria-hidden="true"></i> Unduh
                                     </a>
                                     <a href="{{ route('ic.admin.acara.cetak', $acaraDipilih->kode) }}" target="_blank"
-                                        rel="noopener"
+                                        rel="noopener" rel="noopener"
                                         class="h-11 px-5 inline-flex items-center gap-2 rounded-lg border border-white/15 text-xs font-semibold uppercase tracking-widest text-white/70 hover:bg-white/10 hover:text-white transition-colors">
                                         <i class="bi bi-printer" aria-hidden="true"></i> Cetak
                                     </a>

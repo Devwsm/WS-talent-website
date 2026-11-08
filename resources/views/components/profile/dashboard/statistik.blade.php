@@ -3,7 +3,7 @@
     resources/views/components/profile/profile-full.blade.php (baris ~42-53).
     Expects: $statistik (Illuminate\Support\Collection dari App\Models\statistik)
 --}}
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
 
     {{-- FORM --}}
     <div class="rounded-3xl border border-white/10 bg-white/3 p-6 md:p-8">
@@ -37,27 +37,20 @@
     </div>
 
     {{-- PREVIEW --}}
-    <div class="lg:sticky lg:top-8 rounded-3xl border border-white/10 bg-black overflow-hidden">
-        <div class="flex items-center gap-2 px-5 py-3 border-b border-white/10 bg-white/3">
-            <i class="bi bi-eye text-white/40"></i>
-            <span class="text-xs uppercase tracking-widest text-white/40">Tampilan di halaman Profile</span>
+    <x-dashboard.preview-frame>
+        <div id="statistikPreviewList" class="grid grid-cols-2 gap-3">
+            @forelse ($statistik as $item)
+                <div class="flex flex-col gap-1 p-3 rounded-lg bg-white/5 border border-white/10">
+                    <span class="text-lg font-medium text-white">{{ $item->total }}</span>
+                    <span class="text-xs text-white/50">{{ $item->platform }}</span>
+                </div>
+            @empty
+            @endforelse
         </div>
-
-        <div class="p-5">
-            <div id="statistikPreviewList" class="grid grid-cols-2 gap-3">
-                @forelse ($statistik as $item)
-                    <div class="flex flex-col gap-1 p-3 rounded-lg bg-white/5 border border-white/10">
-                        <span class="text-lg font-medium text-white">{{ $item->total }}</span>
-                        <span class="text-xs text-white/50">{{ $item->platform }}</span>
-                    </div>
-                @empty
-                @endforelse
-            </div>
-            <p id="statistikPreviewEmpty" class="text-xs text-white/30 {{ $statistik->isNotEmpty() ? 'hidden' : '' }}">
-                Belum ada statistik.
-            </p>
-        </div>
-    </div>
+        <p id="statistikPreviewEmpty" class="text-xs text-white/30 {{ $statistik->isNotEmpty() ? 'hidden' : '' }}">
+            Belum ada statistik.
+        </p>
+    </x-dashboard.preview-frame>
 </div>
 
 {{-- List data statistik tersimpan --}}
@@ -93,7 +86,12 @@
         const list = document.getElementById('statistikPreviewList');
         const emptyEl = document.getElementById('statistikPreviewEmpty');
         let draft = null;
-
+        const el = (tag, cls, teks) => {
+            const n = document.createElement(tag);
+            n.className = cls;
+            n.textContent = teks;
+            return n;
+        };
         const render = () => {
             const totalVal = total.value.trim();
             const platformVal = platform.value.trim();
@@ -112,8 +110,10 @@
                 list.appendChild(draft);
             }
 
-            draft.innerHTML =
-                `<span class="text-lg font-medium text-white">${totalVal || '—'}</span><span class="text-xs text-white/50">${platformVal || '—'}</span>`;
+            draft.replaceChildren(
+                el('span', 'text-lg font-medium text-white', totalVal || '—'),
+                el('span', 'text-xs text-white/50', platformVal || '—'),
+            );
             emptyEl?.classList.add('hidden');
         };
 

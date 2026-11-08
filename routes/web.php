@@ -93,7 +93,7 @@ Route::prefix('/innercircle')->middleware('icAktif')->name('ic.')->group(functio
         Route::post('/check-in', [memberController::class, 'prosesCheckin'])->name('checkin.proses')->middleware(['icVerif', 'throttle:ic-checkin']);
         Route::get('/komunitas', [memberController::class, 'komunitas'])->name('komunitas');
         Route::post('/kenangan', [kenanganController::class, 'simpan'])->name('kenangan.simpan')->middleware(['icVerif', 'throttle:ic-kenangan']);
-        Route::delete('/kenangan/{id}', [kenanganController::class, 'hapus'])->whereNumber('id')->name('kenangan.hapus')->middleware('throttle:30,1');
+        Route::delete('/kenangan/{id}', [kenanganController::class, 'hapus'])->whereNumber('id')->name('kenangan.hapus')->middleware('throttle:ic-hapus-kenangan');
         Route::post('/kenangan/{id}/suka', [kenanganController::class, 'suka'])->whereNumber('id')->name('kenangan.suka')->middleware(['icVerif', 'throttle:ic-suka']);
         Route::get('/profil', [memberController::class, 'profil'])->name('profil');
         Route::post('/profil/foto', [fotoProfilController::class, 'simpan'])->name('profil.foto')->middleware('throttle:ic-foto');
@@ -117,159 +117,159 @@ Route::prefix('/dashboard')->middleware(['cekLogin', 'catatAktivitas'])->group(f
     Route::prefix('/inner-circle')->middleware('icAktif')->name('ic.admin.')->group(function () {
         Route::get('/', [adminController::class, 'ringkasan'])->name('ringkasan');
         Route::get('/anggota', [adminController::class, 'anggota'])->name('anggota');
-        Route::post('/anggota/{id}/stempel', [adminController::class, 'tambahStempel'])->whereNumber('id')->name('anggota.stempel')->middleware('throttle:10,1');
+        Route::post('/anggota/{id}/stempel', [adminController::class, 'tambahStempel'])->whereNumber('id')->name('anggota.stempel')->middleware('throttle:admin-tulis');
 
         Route::get('/acara', [adminController::class, 'acara'])->name('acara');
-        Route::post('/acara', [adminController::class, 'simpanAcara'])->name('acara.simpan')->middleware('throttle:10,1');
-        Route::post('/acara/impor', [adminController::class, 'imporAcara'])->name('acara.impor')->middleware('throttle:10,1');
+        Route::post('/acara', [adminController::class, 'simpanAcara'])->name('acara.simpan')->middleware('throttle:admin-tulis');
+        Route::post('/acara/impor', [adminController::class, 'imporAcara'])->name('acara.impor')->middleware('throttle:admin-tulis');
         // Fase 9: jadwal dari Bandsintown, dan perbaikan token QR yang tidak terbaca (APP_KEY berbeda).
-        Route::post('/acara/sinkron-bandsintown', [adminController::class, 'sinkronBandsintown'])->name('acara.bandsintown')->middleware('throttle:3,1');
-        Route::post('/acara/perbaiki-token', [adminController::class, 'perbaikiToken'])->name('acara.perbaiki')->middleware('throttle:5,1');
+        Route::post('/acara/sinkron-bandsintown', [adminController::class, 'sinkronBandsintown'])->name('acara.bandsintown')->middleware('throttle:admin-bandsintown');
+        Route::post('/acara/perbaiki-token', [adminController::class, 'perbaikiToken'])->name('acara.perbaiki')->middleware('throttle:admin-perbaiki-token');
         // Titik lokasi check-in per acara: simpan, hapus, dan cari dari alamat venue (JSON).
-        Route::put('/acara/{kode}/lokasi', [adminController::class, 'simpanLokasi'])->name('acara.lokasi')->middleware('throttle:20,1');
-        Route::delete('/acara/{kode}/lokasi', [adminController::class, 'hapusLokasi'])->name('acara.lokasi.hapus')->middleware('throttle:10,1');
-        Route::post('/acara/{kode}/lokasi/cari', [adminController::class, 'cariLokasi'])->name('acara.lokasi.cari')->middleware('throttle:10,1');
-        Route::put('/acara/{kode}', [adminController::class, 'ubahAcara'])->name('acara.ubah')->middleware('throttle:10,1');
-        Route::delete('/acara/{kode}', [adminController::class, 'hapusAcara'])->name('acara.hapus')->middleware('throttle:10,1');
-        Route::post('/acara/{kode}/token', [adminController::class, 'tokenBaru'])->name('acara.token')->middleware('throttle:10,1');
+        Route::put('/acara/{kode}/lokasi', [adminController::class, 'simpanLokasi'])->name('acara.lokasi')->middleware('throttle:admin-tulis');
+        Route::delete('/acara/{kode}/lokasi', [adminController::class, 'hapusLokasi'])->name('acara.lokasi.hapus')->middleware('throttle:admin-tulis');
+        Route::post('/acara/{kode}/lokasi/cari', [adminController::class, 'cariLokasi'])->name('acara.lokasi.cari')->middleware('throttle:admin-tulis');
+        Route::put('/acara/{kode}', [adminController::class, 'ubahAcara'])->name('acara.ubah')->middleware('throttle:admin-tulis');
+        Route::delete('/acara/{kode}', [adminController::class, 'hapusAcara'])->name('acara.hapus')->middleware('throttle:admin-tulis');
+        Route::post('/acara/{kode}/token', [adminController::class, 'tokenBaru'])->name('acara.token')->middleware('throttle:admin-tulis');
         Route::get('/acara/{kode}/qr', [adminController::class, 'unduhQr'])->name('acara.qr');
         Route::get('/acara/{kode}/cetak', [adminController::class, 'cetakQr'])->name('acara.cetak');
         Route::get('/klaim', [adminController::class, 'klaim'])->name('klaim');
-        Route::patch('/klaim/{id}', [adminController::class, 'ubahKlaim'])->whereNumber('id')->name('klaim.proses')->middleware('throttle:30,1');
+        Route::patch('/klaim/{id}', [adminController::class, 'ubahKlaim'])->whereNumber('id')->name('klaim.proses')->middleware('throttle:admin-tulis');
         Route::get('/hadiah', [adminController::class, 'hadiah'])->name('hadiah');
-        Route::put('/hadiah/{target}', [adminController::class, 'ubahHadiah'])->whereNumber('target')->name('hadiah.ubah')->middleware('throttle:10,1');
+        Route::put('/hadiah/{target}', [adminController::class, 'ubahHadiah'])->whereNumber('target')->name('hadiah.ubah')->middleware('throttle:admin-tulis');
         Route::patch('/hadiah/{target}/aktif', [adminController::class, 'aktifkanHadiah'])->whereNumber('target')->name('hadiah.aktif')->middleware('throttle:admin-aksi-kecil');
         Route::get('/pengumuman', [adminController::class, 'pengumuman'])->name('pengumuman');
-        Route::post('/pengumuman', [adminController::class, 'simpanPengumuman'])->name('pengumuman.simpan')->middleware('throttle:10,1');
-        Route::put('/pengumuman/{id}', [adminController::class, 'ubahPengumuman'])->whereNumber('id')->name('pengumuman.ubah')->middleware('throttle:10,1');
+        Route::post('/pengumuman', [adminController::class, 'simpanPengumuman'])->name('pengumuman.simpan')->middleware('throttle:admin-tulis');
+        Route::put('/pengumuman/{id}', [adminController::class, 'ubahPengumuman'])->whereNumber('id')->name('pengumuman.ubah')->middleware('throttle:admin-tulis');
         Route::patch('/pengumuman/{id}/aktif', [adminController::class, 'aktifkanPengumuman'])->whereNumber('id')->name('pengumuman.aktif')->middleware('throttle:admin-aksi-kecil');
-        Route::delete('/pengumuman/{id}', [adminController::class, 'hapusPengumuman'])->whereNumber('id')->name('pengumuman.hapus')->middleware('throttle:10,1');
+        Route::delete('/pengumuman/{id}', [adminController::class, 'hapusPengumuman'])->whereNumber('id')->name('pengumuman.hapus')->middleware('throttle:admin-tulis');
         Route::get('/kenangan', [adminController::class, 'kenangan'])->name('kenangan');
-        Route::patch('/kenangan/{id}', [adminController::class, 'moderasiKenangan'])->whereNumber('id')->name('kenangan.moderasi')->middleware('throttle:30,1');
+        Route::patch('/kenangan/{id}', [adminController::class, 'moderasiKenangan'])->whereNumber('id')->name('kenangan.moderasi')->middleware('throttle:admin-tulis');
 
         // Tab Konten: teks halaman anggota yang bisa diubah dari CMS (daftar kunci di config/ic_konten.php).
         Route::get('/konten', [kontenController::class, 'index'])->name('konten');
         // Satu halaman per bagian (tab Konten tidak lagi satu halaman panjang). Daftar bagian: IcBagian.
         Route::get('/konten/bagian/{bagian}', [kontenController::class, 'bagian'])->where('bagian', '[a-z_-]+')->name('konten.bagian');
-        Route::post('/konten/{grup}', [kontenController::class, 'simpan'])->where('grup', '[a-z_]+')->name('konten.simpan')->middleware('throttle:20,1');
-        Route::post('/konten/{grup}/reset/{kunci}', [kontenController::class, 'reset'])->where('grup', '[a-z_]+')->name('konten.reset')->middleware('throttle:20,1');
+        Route::post('/konten/{grup}', [kontenController::class, 'simpan'])->where('grup', '[a-z_]+')->name('konten.simpan')->middleware('throttle:admin-tulis');
+        Route::post('/konten/{grup}/reset/{kunci}', [kontenController::class, 'reset'])->where('grup', '[a-z_]+')->name('konten.reset')->middleware('throttle:admin-tulis');
         // Daftar berurutan di tab Konten (langkah, FAQ, poin teaser): tambah, ubah, urutkan, tampil/sembunyikan, hapus.
         // Tipe acara dan kategori kenangan yang bisa diubah dari CMS (IcPilihan).
         Route::prefix('/konten-pilihan')->name('konten.pilihan.')->group(function () {
-            Route::put('/tipe/{kunci}', [kontenPilihanController::class, 'ubahTipe'])->where('kunci', '[a-z0-9_]+')->defaults('jenis', 'tipe')->name('tipe.ubah')->middleware('throttle:20,1');
-            Route::post('/tipe/{kunci}/bawaan', [kontenPilihanController::class, 'bawaanTipe'])->where('kunci', '[a-z0-9_]+')->name('tipe.bawaan')->middleware('throttle:20,1');
-            Route::post('/kategori', [kontenPilihanController::class, 'tambahKategori'])->defaults('jenis', 'kategori')->name('kategori.tambah')->middleware('throttle:20,1');
-            Route::put('/kategori/{kunci}', [kontenPilihanController::class, 'ubahKategori'])->where('kunci', '[a-z0-9_]+')->defaults('jenis', 'kategori')->name('kategori.ubah')->middleware('throttle:20,1');
+            Route::put('/tipe/{kunci}', [kontenPilihanController::class, 'ubahTipe'])->where('kunci', '[a-z0-9_]+')->defaults('jenis', 'tipe')->name('tipe.ubah')->middleware('throttle:admin-tulis');
+            Route::post('/tipe/{kunci}/bawaan', [kontenPilihanController::class, 'bawaanTipe'])->where('kunci', '[a-z0-9_]+')->name('tipe.bawaan')->middleware('throttle:admin-tulis');
+            Route::post('/kategori', [kontenPilihanController::class, 'tambahKategori'])->defaults('jenis', 'kategori')->name('kategori.tambah')->middleware('throttle:admin-tulis');
+            Route::put('/kategori/{kunci}', [kontenPilihanController::class, 'ubahKategori'])->where('kunci', '[a-z0-9_]+')->defaults('jenis', 'kategori')->name('kategori.ubah')->middleware('throttle:admin-tulis');
             Route::patch('/kategori/{kunci}/geser', [kontenPilihanController::class, 'geserKategori'])->where('kunci', '[a-z0-9_]+')->name('kategori.geser')->middleware('throttle:admin-aksi-kecil');
             Route::patch('/kategori/{kunci}/aktif', [kontenPilihanController::class, 'aktifKategori'])->where('kunci', '[a-z0-9_]+')->name('kategori.aktif')->middleware('throttle:admin-aksi-kecil');
-            Route::post('/kategori/{kunci}/bawaan', [kontenPilihanController::class, 'bawaanKategori'])->where('kunci', '[a-z0-9_]+')->name('kategori.bawaan')->middleware('throttle:20,1');
-            Route::delete('/kategori/{kunci}', [kontenPilihanController::class, 'hapusKategori'])->where('kunci', '[a-z0-9_]+')->name('kategori.hapus')->middleware('throttle:20,1');
+            Route::post('/kategori/{kunci}/bawaan', [kontenPilihanController::class, 'bawaanKategori'])->where('kunci', '[a-z0-9_]+')->name('kategori.bawaan')->middleware('throttle:admin-tulis');
+            Route::delete('/kategori/{kunci}', [kontenPilihanController::class, 'hapusKategori'])->where('kunci', '[a-z0-9_]+')->name('kategori.hapus')->middleware('throttle:admin-tulis');
         });
 
         // Aturan bawaan check-in (jendela, radius, akurasi): IcAturan.
-        Route::post('/konten-aturan', [kontenAturanController::class, 'simpan'])->name('konten.aturan.simpan')->middleware('throttle:20,1');
-        Route::post('/konten-aturan/bawaan', [kontenAturanController::class, 'bawaan'])->name('konten.aturan.bawaan')->middleware('throttle:10,1');
+        Route::post('/konten-aturan', [kontenAturanController::class, 'simpan'])->name('konten.aturan.simpan')->middleware('throttle:admin-tulis');
+        Route::post('/konten-aturan/bawaan', [kontenAturanController::class, 'bawaan'])->name('konten.aturan.bawaan')->middleware('throttle:admin-tulis');
 
         // Kebijakan privasi (/privasi): IcPrivasi.
-        Route::post('/konten-privasi', [kontenPrivasiController::class, 'simpan'])->name('konten.privasi.simpan')->middleware('throttle:20,1');
-        Route::post('/konten-privasi/bawaan', [kontenPrivasiController::class, 'bawaan'])->name('konten.privasi.bawaan')->middleware('throttle:10,1');
+        Route::post('/konten-privasi', [kontenPrivasiController::class, 'simpan'])->name('konten.privasi.simpan')->middleware('throttle:admin-tulis');
+        Route::post('/konten-privasi/bawaan', [kontenPrivasiController::class, 'bawaan'])->name('konten.privasi.bawaan')->middleware('throttle:admin-tulis');
 
         // Tampilan dan merek (nama program, warna, logo): IcTampilan.
-        Route::post('/konten-tampilan', [kontenTampilanController::class, 'simpan'])->name('konten.tampilan.simpan')->middleware('throttle:20,1');
-        Route::post('/konten-tampilan/bawaan', [kontenTampilanController::class, 'bawaan'])->name('konten.tampilan.bawaan')->middleware('throttle:10,1');
+        Route::post('/konten-tampilan', [kontenTampilanController::class, 'simpan'])->name('konten.tampilan.simpan')->middleware('throttle:admin-tulis');
+        Route::post('/konten-tampilan/bawaan', [kontenTampilanController::class, 'bawaan'])->name('konten.tampilan.bawaan')->middleware('throttle:admin-tulis');
 
         Route::prefix('/konten-daftar/{daftar}')->where(['daftar' => '[a-z_]+'])->name('konten.item.')->group(function () {
-            Route::post('/', [kontenDaftarController::class, 'tambah'])->name('tambah')->middleware('throttle:20,1');
-            Route::post('/bawaan', [kontenDaftarController::class, 'bawaan'])->name('bawaan')->middleware('throttle:10,1');
-            Route::put('/{id}', [kontenDaftarController::class, 'ubah'])->whereNumber('id')->name('ubah')->middleware('throttle:20,1');
+            Route::post('/', [kontenDaftarController::class, 'tambah'])->name('tambah')->middleware('throttle:admin-tulis');
+            Route::post('/bawaan', [kontenDaftarController::class, 'bawaan'])->name('bawaan')->middleware('throttle:admin-tulis');
+            Route::put('/{id}', [kontenDaftarController::class, 'ubah'])->whereNumber('id')->name('ubah')->middleware('throttle:admin-tulis');
             Route::patch('/{id}/geser', [kontenDaftarController::class, 'geser'])->whereNumber('id')->name('geser')->middleware('throttle:admin-aksi-kecil');
             Route::patch('/{id}/aktif', [kontenDaftarController::class, 'aktif'])->whereNumber('id')->name('aktif')->middleware('throttle:admin-aksi-kecil');
-            Route::delete('/{id}', [kontenDaftarController::class, 'hapus'])->whereNumber('id')->name('hapus')->middleware('throttle:20,1');
+            Route::delete('/{id}', [kontenDaftarController::class, 'hapus'])->whereNumber('id')->name('hapus')->middleware('throttle:admin-tulis');
         });
 
         // Fase 9: format email notifikasi, pratinjau, dan email tes.
         Route::get('/email', [emailAdminController::class, 'index'])->name('email');
         Route::get('/email/pratinjau/{jenis}', [emailAdminController::class, 'pratinjau'])->where('jenis', '[a-z-]+')->name('email.pratinjau');
-        Route::post('/email/tes', [emailAdminController::class, 'tes'])->name('email.tes')->middleware('throttle:5,1');
+        Route::post('/email/tes', [emailAdminController::class, 'tes'])->name('email.tes')->middleware('throttle:admin-email-tes');
         // Fase 7: subjek dan paragraf pembuka tiap jenis email.
-        Route::post('/email/{jenis}/teks', [emailAdminController::class, 'simpanTeks'])->where('jenis', '[a-z-]+')->name('email.teks')->middleware('throttle:20,1');
-        Route::post('/email/{jenis}/teks/bawaan', [emailAdminController::class, 'kembalikanTeks'])->where('jenis', '[a-z-]+')->name('email.teks.bawaan')->middleware('throttle:10,1');
+        Route::post('/email/{jenis}/teks', [emailAdminController::class, 'simpanTeks'])->where('jenis', '[a-z-]+')->name('email.teks')->middleware('throttle:admin-tulis');
+        Route::post('/email/{jenis}/teks/bawaan', [emailAdminController::class, 'kembalikanTeks'])->where('jenis', '[a-z-]+')->name('email.teks.bawaan')->middleware('throttle:admin-tulis');
     });
 
     Route::prefix('/color_pages')->group(function () {
         Route::get('/', [dashboardController::class, 'colorPages'])->name('color_pages.index');
-        Route::post('/', [dashboardController::class, 'updateColorPages'])->name('color_pages.update')->middleware('throttle:10,1');
+        Route::post('/', [dashboardController::class, 'updateColorPages'])->name('color_pages.update')->middleware('throttle:admin-tulis');
     });
 
     Route::prefix('/profile')->group(function () {
         Route::get('/', [profileController::class, 'profile'])->name('dashboard.profile');
 
-        Route::post('/tambahStatistik', [profileController::class, 'tambahStatistik'])->name('statistik.tambah')->middleware('throttle:10,1');
-        Route::delete('/hapusStatistik/{id}', [profileController::class, 'hapusStatistik'])->name('statistik.hapus')->middleware('throttle:10,1');
-        Route::put('/updateStatistik/{id}', [profileController::class, 'updateStatistik'])->name('statistik.update')->middleware('throttle:10,1');
+        Route::post('/tambahStatistik', [profileController::class, 'tambahStatistik'])->name('statistik.tambah')->middleware('throttle:admin-tulis');
+        Route::delete('/hapusStatistik/{id}', [profileController::class, 'hapusStatistik'])->name('statistik.hapus')->middleware('throttle:admin-tulis');
+        Route::put('/updateStatistik/{id}', [profileController::class, 'updateStatistik'])->name('statistik.update')->middleware('throttle:admin-tulis');
 
-        Route::post('/tambahHighlight', [profileController::class, 'tambahHighlight'])->name('highlight.tambah')->middleware('throttle:10,1');
-        Route::delete('/hapusHighlight/{id}', [profileController::class, 'hapusHighlight'])->name('highlight.hapus')->middleware('throttle:10,1');
-        Route::put('/updateHighlight/{id}', [profileController::class, 'updateHighlight'])->name('highlight.update')->middleware('throttle:10,1');
+        Route::post('/tambahHighlight', [profileController::class, 'tambahHighlight'])->name('highlight.tambah')->middleware('throttle:admin-tulis');
+        Route::delete('/hapusHighlight/{id}', [profileController::class, 'hapusHighlight'])->name('highlight.hapus')->middleware('throttle:admin-tulis');
+        Route::put('/updateHighlight/{id}', [profileController::class, 'updateHighlight'])->name('highlight.update')->middleware('throttle:admin-tulis');
 
         // Fase 6 — Profile (backend). UI form kiri/preview kanan menyusul di langkah 2.
-        Route::post('/hero', [profileController::class, 'simpanHero'])->name('hero.simpan')->middleware('throttle:10,1');
+        Route::post('/hero', [profileController::class, 'simpanHero'])->name('hero.simpan')->middleware('throttle:admin-tulis');
 
-        Route::post('/bio', [profileController::class, 'simpanBio'])->name('bio.simpan')->middleware('throttle:10,1');
+        Route::post('/bio', [profileController::class, 'simpanBio'])->name('bio.simpan')->middleware('throttle:admin-tulis');
 
-        Route::post('/tambahGenre', [profileController::class, 'tambahGenre'])->name('genre.tambah')->middleware('throttle:10,1');
-        Route::delete('/hapusGenre/{id}', [profileController::class, 'hapusGenre'])->name('genre.hapus')->middleware('throttle:10,1');
-        Route::put('/updateGenre/{id}', [profileController::class, 'updateGenre'])->name('genre.update')->middleware('throttle:10,1');
+        Route::post('/tambahGenre', [profileController::class, 'tambahGenre'])->name('genre.tambah')->middleware('throttle:admin-tulis');
+        Route::delete('/hapusGenre/{id}', [profileController::class, 'hapusGenre'])->name('genre.hapus')->middleware('throttle:admin-tulis');
+        Route::put('/updateGenre/{id}', [profileController::class, 'updateGenre'])->name('genre.update')->middleware('throttle:admin-tulis');
 
-        Route::post('/tambahCollab', [profileController::class, 'tambahCollab'])->name('collab.tambah')->middleware('throttle:10,1');
-        Route::delete('/hapusCollab/{id}', [profileController::class, 'hapusCollab'])->name('collab.hapus')->middleware('throttle:10,1');
-        Route::put('/updateCollab/{id}', [profileController::class, 'updateCollab'])->name('collab.update')->middleware('throttle:10,1');
+        Route::post('/tambahCollab', [profileController::class, 'tambahCollab'])->name('collab.tambah')->middleware('throttle:admin-tulis');
+        Route::delete('/hapusCollab/{id}', [profileController::class, 'hapusCollab'])->name('collab.hapus')->middleware('throttle:admin-tulis');
+        Route::put('/updateCollab/{id}', [profileController::class, 'updateCollab'])->name('collab.update')->middleware('throttle:admin-tulis');
 
-        Route::post('/tambahMediaCoverage', [profileController::class, 'tambahMediaCoverage'])->name('media_coverage.tambah')->middleware('throttle:10,1');
-        Route::delete('/hapusMediaCoverage/{id}', [profileController::class, 'hapusMediaCoverage'])->name('media_coverage.hapus')->middleware('throttle:10,1');
-        Route::put('/updateMediaCoverage/{id}', [profileController::class, 'updateMediaCoverage'])->name('media_coverage.update')->middleware('throttle:10,1');
+        Route::post('/tambahMediaCoverage', [profileController::class, 'tambahMediaCoverage'])->name('media_coverage.tambah')->middleware('throttle:admin-tulis');
+        Route::delete('/hapusMediaCoverage/{id}', [profileController::class, 'hapusMediaCoverage'])->name('media_coverage.hapus')->middleware('throttle:admin-tulis');
+        Route::put('/updateMediaCoverage/{id}', [profileController::class, 'updateMediaCoverage'])->name('media_coverage.update')->middleware('throttle:admin-tulis');
 
-        Route::post('/tambahBooking', [profileController::class, 'tambahBooking'])->name('booking.tambah')->middleware('throttle:10,1');
-        Route::delete('/hapusBooking/{id}', [profileController::class, 'hapusBooking'])->name('booking.hapus')->middleware('throttle:10,1');
-        Route::put('/updateBooking/{id}', [profileController::class, 'updateBooking'])->name('booking.update')->middleware('throttle:10,1');
+        Route::post('/tambahBooking', [profileController::class, 'tambahBooking'])->name('booking.tambah')->middleware('throttle:admin-tulis');
+        Route::delete('/hapusBooking/{id}', [profileController::class, 'hapusBooking'])->name('booking.hapus')->middleware('throttle:admin-tulis');
+        Route::put('/updateBooking/{id}', [profileController::class, 'updateBooking'])->name('booking.update')->middleware('throttle:admin-tulis');
 
-        Route::post('/tambahMediaSosial', [profileController::class, 'tambahMediaSosial'])->name('media_sosial.tambah')->middleware('throttle:10,1');
-        Route::delete('/hapusMediaSosial/{id}', [profileController::class, 'hapusMediaSosial'])->name('media_sosial.hapus')->middleware('throttle:10,1');
-        Route::put('/updateMediaSosial/{id}', [profileController::class, 'updateMediaSosial'])->name('media_sosial.update')->middleware('throttle:10,1');
+        Route::post('/tambahMediaSosial', [profileController::class, 'tambahMediaSosial'])->name('media_sosial.tambah')->middleware('throttle:admin-tulis');
+        Route::delete('/hapusMediaSosial/{id}', [profileController::class, 'hapusMediaSosial'])->name('media_sosial.hapus')->middleware('throttle:admin-tulis');
+        Route::put('/updateMediaSosial/{id}', [profileController::class, 'updateMediaSosial'])->name('media_sosial.update')->middleware('throttle:admin-tulis');
     });
 
     Route::prefix('/banner')->group(function () {
         Route::get('/', [dashboardController::class, 'banner'])->name('banner');
-        Route::post('/tambahBanner', [dashboardController::class, 'tambahBanner'])->name('banner.tambah')->middleware('throttle:10,1');
-        Route::delete('/hapusBanner/{id}', [dashboardController::class, 'hapusBanner'])->name('banner.hapus')->middleware('throttle:10,1');
-        Route::put('/updateBanner/{id}', [dashboardController::class, 'updateBanner'])->name('banner.update')->middleware('throttle:10,1');
+        Route::post('/tambahBanner', [dashboardController::class, 'tambahBanner'])->name('banner.tambah')->middleware('throttle:admin-tulis');
+        Route::delete('/hapusBanner/{id}', [dashboardController::class, 'hapusBanner'])->name('banner.hapus')->middleware('throttle:admin-tulis');
+        Route::put('/updateBanner/{id}', [dashboardController::class, 'updateBanner'])->name('banner.update')->middleware('throttle:admin-tulis');
     });
 
     Route::prefix('/headers')->group(function () {
         Route::get('/', [dashboardController::class, 'headers'])->name('headers');
-        Route::post('/tambahHeaders', [dashboardController::class, 'tambahHeaders'])->name('headers.tambah')->middleware('throttle:10,1');
-        Route::delete('/hapusHeaders/{id}', [dashboardController::class, 'hapusHeaders'])->name('headers.hapus')->middleware('throttle:10,1');
-        Route::put('/updateHeaders/{id}', [dashboardController::class, 'updateHeaders'])->name('headers.update')->middleware('throttle:10,1');
+        Route::post('/tambahHeaders', [dashboardController::class, 'tambahHeaders'])->name('headers.tambah')->middleware('throttle:admin-tulis');
+        Route::delete('/hapusHeaders/{id}', [dashboardController::class, 'hapusHeaders'])->name('headers.hapus')->middleware('throttle:admin-tulis');
+        Route::put('/updateHeaders/{id}', [dashboardController::class, 'updateHeaders'])->name('headers.update')->middleware('throttle:admin-tulis');
     });
 
     Route::prefix('/albums')->group(function () {
         Route::get('/', [dashboardController::class, 'albums'])->name('albums');
-        Route::post('/tambahAlbums', [dashboardController::class, 'tambahAlbums'])->name('albums.tambah')->middleware('throttle:10,1');
-        Route::delete('/hapusAlbums/{id}', [dashboardController::class, 'hapusAlbums'])->name('albums.hapus')->middleware('throttle:10,1');
-        Route::put('/updateAlbums/{id}', [dashboardController::class, 'updateAlbums'])->name('albums.update')->middleware('throttle:10,1');
+        Route::post('/tambahAlbums', [dashboardController::class, 'tambahAlbums'])->name('albums.tambah')->middleware('throttle:admin-tulis');
+        Route::delete('/hapusAlbums/{id}', [dashboardController::class, 'hapusAlbums'])->name('albums.hapus')->middleware('throttle:admin-tulis');
+        Route::put('/updateAlbums/{id}', [dashboardController::class, 'updateAlbums'])->name('albums.update')->middleware('throttle:admin-tulis');
     });
 
     Route::prefix('/news')->group(function () {
         Route::get('/', [dashboardController::class, 'news'])->name('news');
-        Route::post('/tambahnews', [dashboardController::class, 'tambahnews'])->name('news.tambah')->middleware('throttle:10,1');
-        Route::delete('/hapusnews/{id}', [dashboardController::class, 'hapusnews'])->name('news.hapus')->middleware('throttle:10,1');
-        Route::put('/updatenews/{id}', [dashboardController::class, 'updatenews'])->name('news.update')->middleware('throttle:10,1');
+        Route::post('/tambahnews', [dashboardController::class, 'tambahnews'])->name('news.tambah')->middleware('throttle:admin-tulis');
+        Route::delete('/hapusnews/{id}', [dashboardController::class, 'hapusnews'])->name('news.hapus')->middleware('throttle:admin-tulis');
+        Route::put('/updatenews/{id}', [dashboardController::class, 'updatenews'])->name('news.update')->middleware('throttle:admin-tulis');
     });
 
     Route::prefix('/merchandise')->group(function () {
         Route::get('/', [dashboardController::class, 'merchandise'])->name('merchandise');
-        Route::post('/tambahMerchandise', [dashboardController::class, 'tambahMerchandise'])->name('merchandise.tambah')->middleware('throttle:10,1');
-        Route::delete('/hapusMerchandise/{id}', [dashboardController::class, 'hapusMerchandise'])->name('merchandise.hapus')->middleware('throttle:10,1');
-        Route::put('/updateMerchandise/{id}', [dashboardController::class, 'updateMerchandise'])->name('merchandise.update')->middleware('throttle:10,1');
+        Route::post('/tambahMerchandise', [dashboardController::class, 'tambahMerchandise'])->name('merchandise.tambah')->middleware('throttle:admin-tulis');
+        Route::delete('/hapusMerchandise/{id}', [dashboardController::class, 'hapusMerchandise'])->name('merchandise.hapus')->middleware('throttle:admin-tulis');
+        Route::put('/updateMerchandise/{id}', [dashboardController::class, 'updateMerchandise'])->name('merchandise.update')->middleware('throttle:admin-tulis');
     });
 });

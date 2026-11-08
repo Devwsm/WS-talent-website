@@ -3,7 +3,7 @@
     resources/views/components/profile/profile-full.blade.php (baris ~55-69).
     Expects: $highlight (Illuminate\Support\Collection dari App\Models\highlight)
 --}}
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
 
     {{-- FORM --}}
     <div class="rounded-3xl border border-white/10 bg-white/3 p-6 md:p-8">
@@ -46,30 +46,23 @@
     </div>
 
     {{-- PREVIEW --}}
-    <div class="lg:sticky lg:top-8 rounded-3xl border border-white/10 bg-black overflow-hidden">
-        <div class="flex items-center gap-2 px-5 py-3 border-b border-white/10 bg-white/3">
-            <i class="bi bi-eye text-white/40"></i>
-            <span class="text-xs uppercase tracking-widest text-white/40">Tampilan di halaman Profile</span>
-        </div>
-
-        <div class="p-5">
-            <div id="highlightPreviewList" class="flex flex-col gap-3">
-                @forelse ($highlight as $item)
-                    <div class="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-white/10">
-                        <div class="flex flex-col gap-0.5">
-                            <span class="text-sm font-medium text-white">{{ $item->place }}</span>
-                            <span class="text-xs text-white/40">{{ $item->description }}</span>
-                        </div>
-                        <span class="text-xs text-white/20">{{ $item->year }}</span>
+    <x-dashboard.preview-frame>
+        <div id="highlightPreviewList" class="flex flex-col gap-3">
+            @forelse ($highlight as $item)
+                <div class="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-white/10">
+                    <div class="flex flex-col gap-0.5">
+                        <span class="text-sm font-medium text-white">{{ $item->place }}</span>
+                        <span class="text-xs text-white/40">{{ $item->description }}</span>
                     </div>
-                @empty
-                @endforelse
-            </div>
-            <p id="highlightPreviewEmpty" class="text-xs text-white/30 {{ $highlight->isNotEmpty() ? 'hidden' : '' }}">
-                Belum ada highlight.
-            </p>
+                    <span class="text-xs text-white/20">{{ $item->year }}</span>
+                </div>
+            @empty
+            @endforelse
         </div>
-    </div>
+        <p id="highlightPreviewEmpty" class="text-xs text-white/30 {{ $highlight->isNotEmpty() ? 'hidden' : '' }}">
+            Belum ada highlight.
+        </p>
+    </x-dashboard.preview-frame>
 </div>
 
 {{-- List data highlight tersimpan --}}
@@ -107,7 +100,12 @@
         const list = document.getElementById('highlightPreviewList');
         const emptyEl = document.getElementById('highlightPreviewEmpty');
         let draft = null;
-
+        const el = (tag, cls, teks) => {
+            const n = document.createElement(tag);
+            n.className = cls;
+            n.textContent = teks;
+            return n;
+        };
         const render = () => {
             const placeVal = place.value.trim();
             const descVal = description.value.trim();
@@ -127,8 +125,12 @@
                 list.appendChild(draft);
             }
 
-            draft.innerHTML =
-                `<div class="flex flex-col gap-0.5"><span class="text-sm font-medium text-white">${placeVal || '—'}</span><span class="text-xs text-white/40">${descVal || '—'}</span></div><span class="text-xs text-white/20">${yearVal || '—'}</span>`;
+            const kiri = el('div', 'flex flex-col gap-0.5', '');
+            kiri.append(
+                el('span', 'text-sm font-medium text-white', placeVal || '—'),
+                el('span', 'text-xs text-white/40', descVal || '—'),
+            );
+            draft.replaceChildren(kiri, el('span', 'text-xs text-white/20', yearVal || '—'));
             emptyEl?.classList.add('hidden');
         };
 

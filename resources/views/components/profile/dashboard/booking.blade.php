@@ -3,7 +3,7 @@
     resources/views/components/profile/profile-full.blade.php (baris ~120-152).
     Expects: $booking (Illuminate\Support\Collection dari App\Models\booking)
 --}}
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
 
     {{-- FORM --}}
     <div class="rounded-3xl border border-white/10 bg-white/3 p-6 md:p-8">
@@ -37,28 +37,21 @@
     </div>
 
     {{-- PREVIEW --}}
-    <div class="lg:sticky lg:top-8 rounded-3xl border border-white/10 bg-black overflow-hidden">
-        <div class="flex items-center gap-2 px-5 py-3 border-b border-white/10 bg-white/3">
-            <i class="bi bi-eye text-white/40"></i>
-            <span class="text-xs uppercase tracking-widest text-white/40">Tampilan di halaman Profile</span>
+    <x-dashboard.preview-frame>
+        <h2 class="text-xs text-white/30 uppercase tracking-widest mb-3">Booking & Kontak</h2>
+        <div id="bookingPreviewList" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            @forelse ($booking as $item)
+                <div class="flex flex-col gap-1">
+                    <p class="text-xs uppercase tracking-widest text-white/40">{{ $item->label }}</p>
+                    <p class="text-sm text-white/70">{{ $item->email }}</p>
+                </div>
+            @empty
+            @endforelse
         </div>
-
-        <div class="p-5">
-            <h2 class="text-xs text-white/30 uppercase tracking-widest mb-3">Booking & Kontak</h2>
-            <div id="bookingPreviewList" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                @forelse ($booking as $item)
-                    <div class="flex flex-col gap-1">
-                        <p class="text-xs uppercase tracking-widest text-white/40">{{ $item->label }}</p>
-                        <p class="text-sm text-white/70">{{ $item->email }}</p>
-                    </div>
-                @empty
-                @endforelse
-            </div>
-            <p id="bookingPreviewEmpty" class="text-xs text-white/30 {{ $booking->isNotEmpty() ? 'hidden' : '' }}">
-                Belum ada data booking & kontak.
-            </p>
-        </div>
-    </div>
+        <p id="bookingPreviewEmpty" class="text-xs text-white/30 {{ $booking->isNotEmpty() ? 'hidden' : '' }}">
+            Belum ada data booking & kontak.
+        </p>
+    </x-dashboard.preview-frame>
 </div>
 
 {{-- List data booking tersimpan --}}
@@ -94,7 +87,12 @@
         const list = document.getElementById('bookingPreviewList');
         const emptyEl = document.getElementById('bookingPreviewEmpty');
         let draft = null;
-
+        const el = (tag, cls, teks) => {
+            const n = document.createElement(tag);
+            n.className = cls;
+            n.textContent = teks;
+            return n;
+        };
         const render = () => {
             const labelVal = label.value.trim();
             const emailVal = email.value.trim();
@@ -112,8 +110,10 @@
                 list.appendChild(draft);
             }
 
-            draft.innerHTML =
-                `<p class="text-xs uppercase tracking-widest text-white/40">${labelVal || '—'}</p><p class="text-sm text-white/70">${emailVal || '—'}</p>`;
+            draft.replaceChildren(
+                el('p', 'text-xs uppercase tracking-widest text-white/40', labelVal || '—'),
+                el('p', 'text-sm text-white/70', emailVal || '—'),
+            );
             emptyEl?.classList.add('hidden');
         };
 

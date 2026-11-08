@@ -3,7 +3,7 @@
     resources/views/components/profile/profile-full.blade.php (baris ~107-118).
     Expects: $mediaCoverage (Illuminate\Support\Collection dari App\Models\media_coverage)
 --}}
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
 
     {{-- FORM --}}
     <div class="rounded-3xl border border-white/10 bg-white/3 p-6 md:p-8">
@@ -29,26 +29,19 @@
     </div>
 
     {{-- PREVIEW --}}
-    <div class="lg:sticky lg:top-8 rounded-3xl border border-white/10 bg-black overflow-hidden">
-        <div class="flex items-center gap-2 px-5 py-3 border-b border-white/10 bg-white/3">
-            <i class="bi bi-eye text-white/40"></i>
-            <span class="text-xs uppercase tracking-widest text-white/40">Tampilan di halaman Profile</span>
+    <x-dashboard.preview-frame>
+        <div id="mediaCoveragePreviewList" class="flex flex-wrap gap-2">
+            @forelse ($mediaCoverage as $item)
+                <span
+                    class="text-xs px-4 py-2 rounded-lg border border-white/10 bg-white/5 text-white/50">{{ $item->nama_media }}</span>
+            @empty
+            @endforelse
+            <span id="mediaCoveragePreviewEmpty"
+                class="text-xs text-white/30 {{ $mediaCoverage->isNotEmpty() ? 'hidden' : '' }}">
+                Belum ada media coverage.
+            </span>
         </div>
-
-        <div class="p-5">
-            <div id="mediaCoveragePreviewList" class="flex flex-wrap gap-2">
-                @forelse ($mediaCoverage as $item)
-                    <span
-                        class="text-xs px-4 py-2 rounded-lg border border-white/10 bg-white/5 text-white/50">{{ $item->nama_media }}</span>
-                @empty
-                @endforelse
-                <span id="mediaCoveragePreviewEmpty"
-                    class="text-xs text-white/30 {{ $mediaCoverage->isNotEmpty() ? 'hidden' : '' }}">
-                    Belum ada media coverage.
-                </span>
-            </div>
-        </div>
-    </div>
+    </x-dashboard.preview-frame>
 </div>
 
 {{-- List data media coverage tersimpan --}}
