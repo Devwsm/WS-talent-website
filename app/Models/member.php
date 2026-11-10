@@ -16,6 +16,10 @@ class member extends Authenticatable
     protected $table = 'members';
     protected $primaryKey = 'id_member';
 
+    /** Cara anggota pertama kali mendaftar (kolom `daftar_via`). Tidak ikut fillable: diisi eksplisit oleh kode pendaftaran. */
+    public const VIA_MANUAL = 'manual';
+    public const VIA_GOOGLE = 'google';
+
     protected $fillable = [
         'nama',
         'email',

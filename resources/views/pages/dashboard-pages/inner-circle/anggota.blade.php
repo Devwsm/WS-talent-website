@@ -13,7 +13,8 @@
             @include('components.dashboard.inner-circle.kepala', [
                 'aktif' => 'anggota',
                 'judul' => 'Anggota',
-                'deskripsi' => 'Cari anggota dan tambahkan stempel manual bila ada kehadiran yang perlu dicatat.',
+                'deskripsi' =>
+                    'Cari anggota, lihat status verifikasi dan cara daftarnya, lalu tambahkan stempel manual bila ada kehadiran yang perlu dicatat.',
                 'pakaiCss' => false,
             ])
 
@@ -82,6 +83,39 @@
                                                 {{ $m->terakhir_checkin->locale('id')->translatedFormat('j M Y') }}
                                             @else
                                                 belum pernah check-in
+                                            @endif
+                                        </p>
+                                        {{-- Status email dan cara daftar pertama kali. Teks selalu ada (warna hanya pelengkap). --}}
+                                        <p class="flex flex-wrap items-center gap-1.5 mt-1.5">
+                                            @if ($m->email_verified_at)
+                                                <span
+                                                    title="Diverifikasi {{ $m->email_verified_at->locale('id')->translatedFormat('j M Y') }}"
+                                                    class="inline-flex items-center gap-1 rounded-full border border-emerald-300/30 bg-emerald-300/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-200">
+                                                    <i class="bi bi-patch-check-fill" aria-hidden="true"></i> Terverifikasi
+                                                </span>
+                                            @else
+                                                <span
+                                                    class="inline-flex items-center gap-1 rounded-full border border-amber-300/30 bg-amber-300/10 px-2 py-0.5 text-[11px] font-semibold text-amber-200">
+                                                    <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i> Belum
+                                                    verifikasi
+                                                </span>
+                                            @endif
+                                            @if ($m->daftar_via === \App\Models\member::VIA_GOOGLE)
+                                                <span
+                                                    class="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-[11px] font-semibold text-white/70">
+                                                    <i class="bi bi-google" aria-hidden="true"></i> Daftar via Google
+                                                </span>
+                                            @else
+                                                <span
+                                                    class="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-[11px] font-semibold text-white/70">
+                                                    <i class="bi bi-pencil-square" aria-hidden="true"></i> Daftar manual
+                                                </span>
+                                                @if ($m->google_id)
+                                                    <span
+                                                        class="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-[11px] font-semibold text-white/70">
+                                                        <i class="bi bi-google" aria-hidden="true"></i> Google terhubung
+                                                    </span>
+                                                @endif
                                             @endif
                                         </p>
                                     </div>

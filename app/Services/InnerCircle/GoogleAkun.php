@@ -46,6 +46,7 @@ class GoogleAkun
                 $baru->email = $klaim['email'];
                 $baru->google_id = $klaim['sub'];
                 $baru->email_verified_at = now();
+                $baru->daftar_via = member::VIA_GOOGLE;
                 $baru->save();
 
                 $baru->kode_member = sprintf('IC-%05d', $baru->id_member);

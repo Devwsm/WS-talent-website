@@ -62,11 +62,13 @@ class authController extends Controller
     {
         try {
             $anggota = DB::transaction(function () use ($request) {
-                $baru = member::create([
+                $baru = new member([
                     'nama' => $request->validated('nama'),
                     'email' => $request->validated('email'),
                     'password' => $request->validated('sandi'),
                 ]);
+                $baru->daftar_via = member::VIA_MANUAL;
+                $baru->save();
 
                 // IC-00001: nomor urut dari ID, diisi di transaksi yang sama dengan pembuatan akunnya.
                 $baru->kode_member = sprintf('IC-%05d', $baru->id_member);
