@@ -192,6 +192,8 @@ jobs:
           rm -f public/hot '$PUBLIC_PATH/hot'
           $PHP_BIN artisan migrate --force
           $PHP_BIN artisan optimize:clear
+          # Simpan config, route, dan view dalam bentuk siap pakai (situs jadi lebih cepat). Aman: kode tidak memakai env() di luar config/.
+          $PHP_BIN artisan optimize
           $PHP_BIN artisan up
           REMOTE
 

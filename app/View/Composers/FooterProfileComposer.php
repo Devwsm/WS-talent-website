@@ -6,6 +6,7 @@ use App\Models\booking;
 use App\Models\genre;
 use App\Models\media_coverage;
 use App\Models\media_sosial;
+use App\Support\CachePublik;
 use Illuminate\View\View;
 
 /**
@@ -23,11 +24,19 @@ class FooterProfileComposer
     public function compose(View $view): void
     {
         if ($this->data === null) {
+            // Disimpan sementara (CachePublik); dibuang otomatis saat data Profile berubah di CMS.
+            $polos = CachePublik::ingat('footer', fn() => [
+                'footerBooking' => CachePublik::polos(booking::all()),
+                'footerGenre' => CachePublik::polos(genre::all()),
+                'footerMedia' => CachePublik::polos(media_coverage::all()),
+                'footerSosial' => CachePublik::polos(media_sosial::all()),
+            ]);
+
             $this->data = [
-                'footerBooking' => booking::all(),
-                'footerGenre' => genre::all(),
-                'footerMedia' => media_coverage::all(),
-                'footerSosial' => media_sosial::all(),
+                'footerBooking' => CachePublik::daftar(booking::class, $polos['footerBooking']),
+                'footerGenre' => CachePublik::daftar(genre::class, $polos['footerGenre']),
+                'footerMedia' => CachePublik::daftar(media_coverage::class, $polos['footerMedia']),
+                'footerSosial' => CachePublik::daftar(media_sosial::class, $polos['footerSosial']),
             ];
         }
 

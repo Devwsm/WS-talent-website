@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\ic_memory;
 use App\Policies\MemoryPolicy;
+use App\Support\CachePublik;
 use App\View\Composers\FooterProfileComposer;
 use App\View\Composers\ThemeColorComposer;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -52,6 +53,31 @@ class AppServiceProvider extends ServiceProvider
 
         // Nama model huruf kecil (ic_memory) tidak ditemukan penemuan otomatis policy, jadi didaftarkan manual.
         Gate::policy(ic_memory::class, MemoryPolicy::class);
+
+        // Cache halaman publik (lihat CachePublik) dibuang otomatis begitu data yang tampil di Home, Profile, footer,
+        // atau tema disimpan/dihapus lewat model. Model baru yang tampil di halaman publik: tambahkan ke daftar ini.
+        foreach (
+            [
+                \App\Models\albums::class,
+                \App\Models\banner::class,
+                \App\Models\header::class,
+                \App\Models\news::class,
+                \App\Models\merchandise::class,
+                \App\Models\color_pages::class,
+                \App\Models\statistik::class,
+                \App\Models\highlight::class,
+                \App\Models\profile_hero::class,
+                \App\Models\genre::class,
+                \App\Models\bio::class,
+                \App\Models\collab::class,
+                \App\Models\media_coverage::class,
+                \App\Models\booking::class,
+                \App\Models\media_sosial::class,
+            ] as $model
+        ) {
+            $model::saved(fn() => CachePublik::lupakan());
+            $model::deleted(fn() => CachePublik::lupakan());
+        }
 
         // Masuk anggota: dibatasi per EMAIL+IP (tebak sandi satu akun) dan per IP yang longgar, karena penonton satu
         // venue sering berbagi IP (Wi-Fi/CGNAT) dan tidak boleh saling mengunci.

@@ -16,6 +16,7 @@ use App\Models\media_sosial;
 use App\Models\merchandise;
 use App\Models\news;
 use App\Models\profile_hero;
+use App\Support\CachePublik;
 use Illuminate\Http\Response;
 
 class SeoController extends Controller
@@ -47,24 +48,35 @@ class SeoController extends Controller
      */
     public function sitemap(): Response
     {
-        $homeLastmod = collect([
-            banner::max('updated_at'),
-            header::max('updated_at'),
-            albums::max('updated_at'),
-            merchandise::max('updated_at'),
-            news::max('updated_at'),
-            profile_hero::max('updated_at'),
-        ])->filter()->max();
-
-        $profileLastmod = collect([
-            profile_hero::max('updated_at'),
-            bio::max('updated_at'),
-            genre::max('updated_at'),
-            collab::max('updated_at'),
-            media_coverage::max('updated_at'),
-            booking::max('updated_at'),
-            media_sosial::max('updated_at'),
-        ])->filter()->max();
+        // Tanggal-tanggal "terakhir diubah" butuh belasan query max(); hasilnya disimpan sementara (CachePublik) supaya
+        // tiap kunjungan crawler tidak mengulanginya. Yang disimpan hanya tanggalnya: alamat (url) tetap dibuat per
+        // permintaan, jadi mengikuti domain yang sedang dipakai.
+        $lastmod = CachePublik::ingat('sitemap', function () {
+            return [
+                'home' => collect([
+                    banner::max('updated_at'),
+                    header::max('updated_at'),
+                    albums::max('updated_at'),
+                    merchandise::max('updated_at'),
+                    news::max('updated_at'),
+                    profile_hero::max('updated_at'),
+                ])->filter()->max(),
+                'profile' => collect([
+                    profile_hero::max('updated_at'),
+                    bio::max('updated_at'),
+                    genre::max('updated_at'),
+                    collab::max('updated_at'),
+                    media_coverage::max('updated_at'),
+                    booking::max('updated_at'),
+                    media_sosial::max('updated_at'),
+                ])->filter()->max(),
+                'ic' => config('inner_circle.aktif')
+                    ? collect([ic_reward::max('updated_at'), ic_event::max('updated_at')])->filter()->max()
+                    : null,
+            ];
+        });
+        $homeLastmod = $lastmod['home'];
+        $profileLastmod = $lastmod['profile'];
 
         $urls = [
             [
@@ -85,7 +97,7 @@ class SeoController extends Controller
         ];
 
         if (config('inner_circle.aktif')) {
-            $icLastmod = collect([ic_reward::max('updated_at'), ic_event::max('updated_at')])->filter()->max();
+            $icLastmod = $lastmod['ic'];
 
             $urls[] = [
                 'loc' => route('ic.tentang'),

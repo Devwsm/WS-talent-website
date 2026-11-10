@@ -28,7 +28,8 @@
                             {{ $item->news_title }}
                         </h3>
                         <p class="font-light text-sm text-gray-600 line-clamp-3">
-                            {!! \App\Support\HtmlSanitizer::clean($item->news_description) !!}
+                            {{-- Sudah disaring HtmlSanitizer di homeController saat data disiapkan (jangan diisi data mentah). --}}
+                            {!! $item->news_description !!}
                         </p>
                         <span aria-hidden="true"
                             class="w-full text-center text-white font-bold uppercase tracking-widest p-3 mt-2 bg-(--theme-color) group-hover:bg-(--theme-color)/70 transition rounded-lg">

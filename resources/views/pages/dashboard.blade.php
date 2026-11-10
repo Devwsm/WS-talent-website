@@ -51,14 +51,14 @@
                 {{-- Header: preview meniru hero asli (background + logo kecil + judul) --}}
                 <div class="lg:col-span-2 min-w-0">
                     @component('components.dashboard.card.card', [
-                        'title' => 'Header (' . $header->count() . ')',
+                        'title' => 'Header (' . $headerTotal . ')',
                         'href' => route('headers'),
                         'icon' => 'bi-card-image',
                         'flush' => true,
                     ])
-                        @if ($header->first())
+                        @if ($headerPertama)
                             @php
-                                $h = $header->first();
+                                $h = $headerPertama;
                                 $hBgExt = strtolower(pathinfo($h->header_background, PATHINFO_EXTENSION));
                                 $hIsVideo = in_array($hBgExt, ['mp4', 'webm', 'mov']);
                                 $hBgUrl = Storage::url('header/background/' . $h->header_background);
@@ -89,8 +89,8 @@
                                     <h3 class="text-lg md:text-xl lg:text-2xl font-semibold wrap-anywhere">
                                         {{ $h->header_name }}</h3>
                                     <p class="text-white/70 text-sm line-clamp-2 max-w-md">{{ $h->header_description }}</p>
-                                    @if ($header->count() > 1)
-                                        <p class="text-xs text-white/50">+{{ $header->count() - 1 }} header lainnya</p>
+                                    @if ($headerTotal > 1)
+                                        <p class="text-xs text-white/50">+{{ $headerTotal - 1 }} header lainnya</p>
                                     @endif
                                 </div>
                             </div>
@@ -144,21 +144,21 @@
 
             {{-- Row 2: Banner — selebar konten, gambar utuh (rasio asli) supaya preview nggak terpotong --}}
             @component('components.dashboard.card.card', [
-                'title' => 'Banner (' . $banner->count() . ')',
+                'title' => 'Banner (' . $bannerTotal . ')',
                 'href' => route('banner'),
                 'icon' => 'bi-images',
                 'flush' => true,
             ])
-                @if ($banner->first())
+                @if ($bannerPertama)
                     <div class="bg-black">
-                        <img src="{{ Storage::url('banner/' . $banner->first()->banner_cover) }}"
-                            alt="{{ $banner->first()->banner_name }}" loading="lazy" decoding="async"
+                        <img src="{{ Storage::url('banner/' . $bannerPertama->banner_cover) }}"
+                            alt="{{ $bannerPertama->banner_name }}" loading="lazy" decoding="async"
                             class="w-full h-auto max-h-72 object-contain mx-auto">
                     </div>
                     <div class="flex items-center justify-between gap-3 px-6 py-3 border-t border-white/10">
-                        <p class="font-semibold text-sm truncate">{{ $banner->first()->banner_name }}</p>
-                        @if ($banner->count() > 1)
-                            <p class="text-xs text-white/40 shrink-0">+{{ $banner->count() - 1 }} lainnya</p>
+                        <p class="font-semibold text-sm truncate">{{ $bannerPertama->banner_name }}</p>
+                        @if ($bannerTotal > 1)
+                            <p class="text-xs text-white/40 shrink-0">+{{ $bannerTotal - 1 }} lainnya</p>
                         @endif
                     </div>
                 @else
@@ -174,11 +174,11 @@
 
             {{-- Row 3: News --}}
             @component('components.dashboard.card.card', [
-                'title' => 'Berita Terbaru (' . $news->count() . ')',
+                'title' => 'Berita Terbaru (' . $newsTotal . ')',
                 'href' => route('news'),
                 'icon' => 'bi-newspaper',
             ])
-                @if ($news->isEmpty())
+                @if ($newsTotal === 0)
                     @include('components/dashboard/card/empty-state', [
                         'message' => 'Belum ada berita yang ditambahkan.',
                         'cta_href' => route('news'),
@@ -186,7 +186,7 @@
                     ])
                 @else
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        @foreach ($news->take(3) as $item)
+                        @foreach ($newsTampil as $item)
                             <div class="rounded-2xl border border-white/10 overflow-hidden bg-white/2 min-w-0">
                                 <img src="{{ Storage::url('news/' . $item->news_cover) }}" alt="{{ $item->news_title }}"
                                     loading="lazy" decoding="async" class="w-full aspect-video object-cover">
@@ -197,8 +197,8 @@
                             </div>
                         @endforeach
                     </div>
-                    @if ($news->count() > 3)
-                        <p class="text-xs text-white/40 mt-4">+{{ $news->count() - 3 }} berita lainnya</p>
+                    @if ($newsTotal > 3)
+                        <p class="text-xs text-white/40 mt-4">+{{ $newsTotal - 3 }} berita lainnya</p>
                     @endif
                 @endif
             @endcomponent
@@ -206,17 +206,17 @@
             {{-- Row 4: Album & Merchandise (tidak diubah) --}}
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 @component('components.dashboard.card.card', [
-                    'title' => 'Album (' . $albums->count() . ')',
+                    'title' => 'Album (' . $albumsTotal . ')',
                     'href' => route('albums'),
                     'icon' => 'bi-disc-fill',
                 ])
-                    @if ($albums->isEmpty())
+                    @if ($albumsTotal === 0)
                         @include('components/dashboard/card/empty-state', [
                             'message' => 'Belum ada album yang ditambahkan.',
                         ])
                     @else
                         <div class="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                            @foreach ($albums->take(8) as $item)
+                            @foreach ($albumsTampil as $item)
                                 <div class="group/item">
                                     <div class="rounded-xl aspect-square overflow-hidden">
                                         <img src="{{ Storage::url('albums/' . $item->albums_cover) }}"
@@ -227,24 +227,24 @@
                                 </div>
                             @endforeach
                         </div>
-                        @if ($albums->count() > 8)
-                            <p class="text-xs text-white/40 mt-4">+{{ $albums->count() - 8 }} album lainnya</p>
+                        @if ($albumsTotal > 8)
+                            <p class="text-xs text-white/40 mt-4">+{{ $albumsTotal - 8 }} album lainnya</p>
                         @endif
                     @endif
                 @endcomponent
 
                 @component('components.dashboard.card.card', [
-                    'title' => 'Merchandise (' . $merchandise->count() . ')',
+                    'title' => 'Merchandise (' . $merchandiseTotal . ')',
                     'href' => route('merchandise'),
                     'icon' => 'bi-basket-fill',
                 ])
-                    @if ($merchandise->isEmpty())
+                    @if ($merchandiseTotal === 0)
                         @include('components/dashboard/card/empty-state', [
                             'message' => 'Belum ada merchandise yang ditambahkan.',
                         ])
                     @else
                         <div class="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                            @foreach ($merchandise->take(8) as $item)
+                            @foreach ($merchandiseTampil as $item)
                                 <div class="group/item">
                                     <div class="rounded-xl aspect-square overflow-hidden">
                                         <img src="{{ Storage::url('merchandise/' . $item->merchandise_cover) }}"
@@ -256,8 +256,8 @@
                                 </div>
                             @endforeach
                         </div>
-                        @if ($merchandise->count() > 8)
-                            <p class="text-xs text-white/40 mt-4">+{{ $merchandise->count() - 8 }} merchandise lainnya</p>
+                        @if ($merchandiseTotal > 8)
+                            <p class="text-xs text-white/40 mt-4">+{{ $merchandiseTotal - 8 }} merchandise lainnya</p>
                         @endif
                     @endif
                 @endcomponent

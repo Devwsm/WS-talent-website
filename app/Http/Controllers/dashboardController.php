@@ -27,11 +27,19 @@ class dashboardController extends Controller
     // dashboard
     public function dashboard()
     {
-        $banner = banner::all();
-        $albums = albums::all();
-        $header = header::all();
-        $news = news::all();
-        $merchandise = merchandise::all();
+        // Ringkasan dashboard hanya butuh jumlah dan beberapa data teratas, jadi tidak memuat semua baris
+        // (dulu seluruh isi berita, album, dll. ikut ditarik hanya untuk menampilkan angka). Urutan memakai
+        // kunci utama (sama dengan urutan bawaan ::all() sebelumnya), jadi tampilan tidak berubah.
+        $bannerTotal = banner::count();
+        $bannerPertama = banner::orderBy('id_banner')->first();
+        $headerTotal = header::count();
+        $headerPertama = header::orderBy('id_header')->first();
+        $newsTotal = news::count();
+        $newsTampil = news::orderBy('id_news')->take(3)->get();
+        $albumsTotal = albums::count();
+        $albumsTampil = albums::orderBy('id_albums')->take(8)->get();
+        $merchandiseTotal = merchandise::count();
+        $merchandiseTampil = merchandise::orderBy('id_merchandise')->take(8)->get();
         $color_pages = color_pages::first();
         $highlightCount = highlight::count();
         $statistikCount = statistik::count();
@@ -39,11 +47,16 @@ class dashboardController extends Controller
         return view(
             'pages.dashboard',
             compact(
-                'banner',
-                'albums',
-                'header',
-                'news',
-                'merchandise',
+                'bannerTotal',
+                'bannerPertama',
+                'headerTotal',
+                'headerPertama',
+                'newsTotal',
+                'newsTampil',
+                'albumsTotal',
+                'albumsTampil',
+                'merchandiseTotal',
+                'merchandiseTampil',
                 'color_pages',
                 'highlightCount',
                 'statistikCount',

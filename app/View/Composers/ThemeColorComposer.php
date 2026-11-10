@@ -3,6 +3,7 @@
 namespace App\View\Composers;
 
 use App\Models\color_pages;
+use App\Support\CachePublik;
 use Illuminate\View\View;
 
 /**
@@ -21,12 +22,16 @@ class ThemeColorComposer
     public function compose(View $view): void
     {
         if ($this->color === null) {
-            $color = color_pages::first()->color ?? null;
+            // Disimpan sementara (CachePublik): dipakai di hampir semua halaman publik, dan dulu bisa memicu
+            // query yang sama beberapa kali dalam satu halaman (layout, navbar, footer).
+            $this->color = CachePublik::ingat('tema', function () {
+                $color = color_pages::first()->color ?? null;
 
-            // Fallback hitam (warna universal default) kalau kosong / format hex tidak valid.
-            $this->color = ($color && preg_match('/^#([0-9a-f]{3}){1,2}$/i', $color))
-                ? $color
-                : '#000000';
+                // Fallback hitam (warna universal default) kalau kosong / format hex tidak valid.
+                return ($color && preg_match('/^#([0-9a-f]{3}){1,2}$/i', $color))
+                    ? $color
+                    : '#000000';
+            });
         }
 
         $view->with('color', $this->color);
