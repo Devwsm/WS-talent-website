@@ -108,7 +108,30 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           # Sidik jari server dipaku dari secret bila ada. Tanpa itu, ssh-keyscan memercayai jawaban pertama (rawan dicegat).
           if [ -n "${SSH_KNOWN_HOSTS:-}" ]; then
-            printf '%s\n' "$SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+            printf '%s\n' "$SSH_KNOWN_HOSTS" | tr -d '\r' >> ~/.ssh/known_hosts
+
+            # Pemeriksaan dini supaya salah isi secret langsung jelas, bukan baru gagal di tengah dengan pesan umum.
+            # 1) Harus ada entri untuk host dan port yang dipakai deploy (port selain 22 ditulis [host]:port).
+            if [ "$SSH_PORT" = "22" ]; then NAMA_ENTRI="$SSH_HOST"; else NAMA_ENTRI="[$SSH_HOST]:$SSH_PORT"; fi
+            if ! ssh-keygen -F "$NAMA_ENTRI" -f ~/.ssh/known_hosts > /dev/null 2>&1; then
+              echo "::error::Secret SSH_KNOWN_HOSTS tidak memuat entri untuk $NAMA_ENTRI. Buat ulang dengan: ssh-keyscan -p $SSH_PORT $SSH_HOST"
+              echo "Sidik jari yang ada di secret:"
+              ssh-keygen -lf ~/.ssh/known_hosts || true
+              exit 1
+            fi
+            # 2) Minimal satu kunci di secret harus sama dengan kunci server saat ini. Sidik jari bersifat publik, aman ditampilkan.
+            SIDIK_SECRET=$(ssh-keygen -lf ~/.ssh/known_hosts 2>/dev/null | awk '{print $2}' | sort -u) || true
+            SIDIK_SERVER=$(ssh-keyscan -T 10 -p "$SSH_PORT" "$SSH_HOST" 2>/dev/null | ssh-keygen -lf - 2>/dev/null | awk '{print $2}' | sort -u) || true
+            if [ -z "$SIDIK_SERVER" ]; then
+              echo "::warning::Kunci server tidak bisa dibaca dari GitHub untuk dibandingkan (port ditutup firewall?). Pemeriksaan sidik jari dilewati."
+            elif [ -z "$(comm -12 <(printf '%s\n' "$SIDIK_SECRET") <(printf '%s\n' "$SIDIK_SERVER"))" ]; then
+              echo "::error::Tidak ada kunci di SSH_KNOWN_HOSTS yang cocok dengan kunci server saat ini. Buat ulang secret dari server yang benar (tanpa opsi -t, tempel semua baris)."
+              echo "Sidik jari di secret:"; echo "$SIDIK_SECRET"
+              echo "Sidik jari server saat ini:"; echo "$SIDIK_SERVER"
+              exit 1
+            else
+              echo "Sidik jari server cocok dengan SSH_KNOWN_HOSTS."
+            fi
           else
             echo "::warning::Secret SSH_KNOWN_HOSTS belum diisi, sidik jari server tidak diverifikasi."
             ssh-keyscan -p "$SSH_PORT" "$SSH_HOST" >> ~/.ssh/known_hosts
@@ -143,6 +166,7 @@ jobs:
       # halaman setengah jadi. Bila deploy gagal di tengah, langkah "Pulihkan versi sebelumnya bila deploy gagal" di bawah
       # mengembalikan kode lama dan menaikkan situs lagi.
       - name: Aktifkan mode pemeliharaan
+        id: pemeliharaan
         run: |
           set -euo pipefail
           ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
@@ -237,8 +261,10 @@ jobs:
       # Jaring pengaman: bila langkah apa pun gagal, kode versi sebelumnya dipulihkan dari cadangan (hanya bila deploy
       # ini sudah sempat mengganti kode di server) dan mode pemeliharaan diangkat lewat penghapusan berkas penanda
       # langsung (tanpa artisan, karena kode baru yang rusak bisa membuat artisan sendiri gagal).
+      # Hanya dijalankan bila deploy sudah sampai tahap menyentuh server (mode pemeliharaan sudah dicoba). Gagal lebih
+      # awal (mis. verifikasi SSH) tidak mengubah server, jadi tidak ada yang perlu dipulihkan dan tidak ada galat palsu.
       - name: Pulihkan versi sebelumnya bila deploy gagal
-        if: failure()
+        if: failure() && steps.pemeliharaan.outcome != 'skipped'
         run: |
           tr -d '\r' < deploy/pulihkan.sh | ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
             "APP_PATH='$APP_PATH' PUBLIC_PATH='$PUBLIC_PATH' DEPLOY_ID='$DEPLOY_ID' bash -s" \
