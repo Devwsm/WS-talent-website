@@ -1,11 +1,12 @@
 {{-- Kebijakan privasi di tab Konten: editor teks kaya (Quill). Variabel: $privasiKustom (bool), $privasiHtml (isi awal editor),
-     $privasiTanggal (YYYY-MM-DD). Tanpa isi sendiri, halaman /privasi memakai teks bawaan. --}}
+    $privasiTanggal (YYYY-MM-DD). Tanpa isi sendiri, halaman /privasi memakai teks bawaan. --}}
 @php
     $galat = $errors->getBag('privasi');
     $isiAwal = $galat->any() ? \App\Support\HtmlSanitizer::clean((string) old('isi', '')) : $privasiHtml;
     $tanggalTampil = \Illuminate\Support\Carbon::parse($privasiTanggal)->locale('id')->translatedFormat('j F Y');
 @endphp
-<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+{{-- Quill dibundel Vite (bukan CDN); window.Quill siap sebelum DOMContentLoaded. --}}
+@vite('resources/js/quill-editor.js')
 <section id="privasi" aria-labelledby="judul-privasi" class="scroll-mt-8 flex flex-col gap-4">
     <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
         <div class="min-w-0">
@@ -155,9 +156,8 @@
         }
     }
 </style>
-<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
 <script>
-    (() => {
+    document.addEventListener('DOMContentLoaded', () => {
         const quill = new Quill('#privasi-quill', {
             theme: 'snow',
             placeholder: 'Tulis kebijakan privasi di sini…',
@@ -183,8 +183,9 @@
         quill.root.innerHTML = {!! json_encode($isiAwal, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!};
 
         document.getElementById('form-privasi').addEventListener('submit', () => {
-            document.getElementById('privasi-isi').value = quill.getText().trim() ? quill.root.innerHTML :
+            document.getElementById('privasi-isi').value = quill.getText().trim() ? quill.root
+                .innerHTML :
                 '';
         });
-    })();
+    });
 </script>

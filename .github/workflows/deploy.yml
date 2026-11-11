@@ -73,6 +73,8 @@ jobs:
       PUBLIC_PATH: ${{ secrets.PUBLIC_PATH }} # folder web publik, mis. /home/whim4521/public_html
       PHP_BIN: ${{ vars.PHP_BIN || 'php' }} # opsional: path PHP 8.4 di server
       SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }} # opsional tapi disarankan: hasil `ssh-keyscan -p PORT HOST` yang kamu cek sendiri
+      SITE_URL: ${{ vars.SITE_URL }} # opsional: alamat situs (mis. https://contoh.com) untuk cek otomatis setelah deploy
+      DEPLOY_ID: ${{ github.run_id }}-${{ github.run_attempt }} # penanda cadangan milik deploy ini
     steps:
       - uses: actions/checkout@v4
 
@@ -127,7 +129,7 @@ jobs:
           tar -czf /tmp/deploy.tgz --mode='u+rwX,go+rX,go-w' \
             --exclude='./.git' --exclude='./.github' \
             --exclude='./.env' --exclude='./.env.*' \
-            --exclude='./node_modules' --exclude='./tests' \
+            --exclude='./node_modules' --exclude='./tests' --exclude='./deploy' \
             --exclude='./storage' \
             --exclude='./bootstrap/cache/*' \
             --exclude='./public/hot' --exclude='./public/storage' \
@@ -138,7 +140,8 @@ jobs:
           ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" 'cat > "$HOME/.deploy.tgz"' < /tmp/deploy.tgz
 
       # Mode pemeliharaan selama kode ditukar dan migrasi jalan (beberapa detik), supaya pengunjung tidak melihat
-      # halaman setengah jadi. Bila deploy gagal di tengah, langkah "Angkat mode pemeliharaan bila deploy gagal" di bawah menaikkan situs lagi.
+      # halaman setengah jadi. Bila deploy gagal di tengah, langkah "Pulihkan versi sebelumnya bila deploy gagal" di bawah
+      # mengembalikan kode lama dan menaikkan situs lagi.
       - name: Aktifkan mode pemeliharaan
         run: |
           set -euo pipefail
@@ -151,19 +154,29 @@ jobs:
         run: |
           set -euo pipefail
           ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
-            "APP_PATH='$APP_PATH' PUBLIC_PATH='$PUBLIC_PATH' bash -s" <<'REMOTE'
+            "APP_PATH='$APP_PATH' PUBLIC_PATH='$PUBLIC_PATH' DEPLOY_ID='$DEPLOY_ID' bash -s" <<'REMOTE'
           set -euo pipefail
           STAGE="$HOME/.deploy_stage"
+          PREV="$HOME/.deploy_prev"
           rm -rf "$STAGE"; mkdir -p "$STAGE"
           tar -xzf "$HOME/.deploy.tgz" -C "$STAGE" --no-same-owner
           test -f "$STAGE/artisan" && test -f "$STAGE/vendor/autoload.php" && test -f "$STAGE/public/build/manifest.json"
 
-          # Folder kode diganti utuh (file lama yang sudah dihapus dari repo ikut hilang).
+          # Cadangan SATU versi sebelumnya (dipakai deploy/pulihkan.sh bila deploy ini gagal). Cadangan deploy
+          # sebelumnya diganti. Penanda deploy-id mencegah cadangan lama dipakai oleh deploy yang tidak ada hubungannya.
+          rm -rf "$PREV"; mkdir -p "$PREV"
+          printf '%s\n' "$DEPLOY_ID" > "$PREV/.deploy_id"
+          # Berkas selain folder kode yang akan ditimpa (artisan, composer.*, bootstrap/*.php, public/aset, dll).
+          # Berkas yang belum ada di server (baru) dilewati begitu saja.
+          (cd "$STAGE" && find . -type f ! -path './app/*' ! -path './config/*' ! -path './database/*' ! -path './resources/*' ! -path './routes/*' ! -path './vendor/*' ! -path './public/build/*' -print0) \
+            | tar -C "$APP_PATH" --null -T - --ignore-failed-read -czf "$PREV/lainnya.tgz" 2>/dev/null || echo "Peringatan: cadangan berkas lain tidak lengkap."
+
+          # Folder kode diganti utuh (file lama yang sudah dihapus dari repo ikut hilang). Versi lama dipindah ke
+          # cadangan (bukan dihapus) supaya bisa dipulihkan.
           for d in app config database resources routes vendor public/build; do
-            rm -rf "$APP_PATH/$d.old"
-            if [ -e "$APP_PATH/$d" ]; then mv "$APP_PATH/$d" "$APP_PATH/$d.old"; fi
+            mkdir -p "$PREV/$(dirname "$d")"
+            if [ -e "$APP_PATH/$d" ]; then mv "$APP_PATH/$d" "$PREV/$d"; fi
             mv "$STAGE/$d" "$APP_PATH/$d"
-            rm -rf "$APP_PATH/$d.old"
           done
           # Sisanya (artisan, composer.*, bootstrap/*.php, public/aset, dll) ditimpa; .env dan storage tidak ada di paket.
           cp -a "$STAGE/." "$APP_PATH/"
@@ -197,12 +210,39 @@ jobs:
           $PHP_BIN artisan up
           REMOTE
 
-      # Jaring pengaman: bila langkah apa pun gagal, hapus berkas penanda pemeliharaan langsung (tanpa artisan,
-      # karena kode baru yang rusak bisa membuat artisan sendiri gagal) supaya situs tidak terkunci selamanya.
-      - name: Angkat mode pemeliharaan bila deploy gagal
+      # Cek bahwa situs benar-benar hidup setelah deploy. Gagal di sini membuat deploy dianggap gagal, dan langkah
+      # pemulihan di bawah mengembalikan kode lama. Dilewati (dengan peringatan) bila variabel SITE_URL belum diisi.
+      - name: Cek situs setelah deploy
+        run: |
+          set -uo pipefail
+          if [ -z "${SITE_URL:-}" ]; then
+            echo "::warning::Variabel SITE_URL belum diisi (Settings > Secrets and variables > Actions > Variables), cek otomatis dilewati."
+            exit 0
+          fi
+          base="${SITE_URL%/}"
+          for jalur in /up /; do
+            kode=000
+            for i in 1 2 3 4 5; do
+              kode=$(curl -s -L --max-redirs 3 -o /dev/null -w '%{http_code}' --max-time 20 "$base$jalur" || true)
+              [ "$kode" = "200" ] && break
+              sleep 6
+            done
+            echo "$base$jalur -> HTTP $kode"
+            if [ "$kode" != "200" ]; then
+              echo "::error::$base$jalur membalas HTTP $kode setelah deploy."
+              exit 1
+            fi
+          done
+
+      # Jaring pengaman: bila langkah apa pun gagal, kode versi sebelumnya dipulihkan dari cadangan (hanya bila deploy
+      # ini sudah sempat mengganti kode di server) dan mode pemeliharaan diangkat lewat penghapusan berkas penanda
+      # langsung (tanpa artisan, karena kode baru yang rusak bisa membuat artisan sendiri gagal).
+      - name: Pulihkan versi sebelumnya bila deploy gagal
         if: failure()
         run: |
-          ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "rm -f '$APP_PATH/storage/framework/down'" || true
+          tr -d '\r' < deploy/pulihkan.sh | ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            "APP_PATH='$APP_PATH' PUBLIC_PATH='$PUBLIC_PATH' DEPLOY_ID='$DEPLOY_ID' bash -s" \
+            || echo "::error::Pemulihan otomatis gagal. Periksa server secara manual (lihat deploy/pulihkan.sh)."
 
       - name: Bersihkan kunci SSH
         if: always()

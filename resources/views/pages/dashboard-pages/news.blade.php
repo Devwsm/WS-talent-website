@@ -1,6 +1,7 @@
 @extends('template/dashboardLayout')
 @section('content')
-    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    {{-- Quill dibundel Vite (bukan CDN); window.Quill siap sebelum DOMContentLoaded. --}}
+    @vite('resources/js/quill-editor.js')
 
     <div class="relative w-full flex flex-col justify-center items-center overflow-hidden">
         @include('components/dashboard/navbar')
@@ -204,9 +205,6 @@
         </div>
     </div>
 
-    {{-- Quill JS --}}
-    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
-
     <style>
         /* Override Quill toolbar agar cocok dengan tema gelap */
         #news-form .ql-toolbar.ql-snow {
@@ -289,103 +287,106 @@
     </style>
 
     <script>
-        // ---- field refs ----
-        const newsTitle = document.getElementById('news_title');
-        const newsSource = document.getElementById('news_source');
-        const newsDate = document.getElementById('news_date');
-        const newsLink = document.getElementById('news_link');
-        const newsCover = document.getElementById('news_cover');
+        // Menunggu modul Quill (dimuat Vite, berjalan sebelum DOMContentLoaded) siap.
+        document.addEventListener('DOMContentLoaded', () => {
+            // ---- field refs ----
+            const newsTitle = document.getElementById('news_title');
+            const newsSource = document.getElementById('news_source');
+            const newsDate = document.getElementById('news_date');
+            const newsLink = document.getElementById('news_link');
+            const newsCover = document.getElementById('news_cover');
 
-        // ---- preview refs ----
-        const previewTitle = document.getElementById('previewTitle');
-        const previewSource = document.getElementById('previewSource');
-        const previewDate = document.getElementById('previewDate');
-        const previewLink = document.getElementById('previewLink');
-        const previewImg = document.getElementById('previewImg');
-        const previewImgEmpty = document.getElementById('previewImgEmpty');
-        const previewDesc = document.getElementById('previewDesc');
+            // ---- preview refs ----
+            const previewTitle = document.getElementById('previewTitle');
+            const previewSource = document.getElementById('previewSource');
+            const previewDate = document.getElementById('previewDate');
+            const previewLink = document.getElementById('previewLink');
+            const previewImg = document.getElementById('previewImg');
+            const previewImgEmpty = document.getElementById('previewImgEmpty');
+            const previewDesc = document.getElementById('previewDesc');
 
-        newsTitle?.addEventListener('input', () => {
-            previewTitle.textContent = newsTitle.value.trim() || '—';
-        });
+            newsTitle?.addEventListener('input', () => {
+                previewTitle.textContent = newsTitle.value.trim() || '—';
+            });
 
-        newsSource?.addEventListener('input', () => {
-            previewSource.textContent = newsSource.value.trim() || '—';
-        });
+            newsSource?.addEventListener('input', () => {
+                previewSource.textContent = newsSource.value.trim() || '—';
+            });
 
-        newsDate?.addEventListener('input', () => {
-            previewDate.textContent = newsDate.value || '—';
-        });
+            newsDate?.addEventListener('input', () => {
+                previewDate.textContent = newsDate.value || '—';
+            });
 
-        newsLink?.addEventListener('input', () => {
-            previewLink.textContent = newsLink.value.trim() || '—';
-        });
+            newsLink?.addEventListener('input', () => {
+                previewLink.textContent = newsLink.value.trim() || '—';
+            });
 
-        newsCover?.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                previewImg.src = e.target.result;
-                previewImg.classList.remove('hidden');
-                previewImgEmpty.classList.add('hidden');
-            };
-            reader.readAsDataURL(file);
-        });
+            newsCover?.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    previewImg.src = e.target.result;
+                    previewImg.classList.remove('hidden');
+                    previewImgEmpty.classList.add('hidden');
+                };
+                reader.readAsDataURL(file);
+            });
 
-        // Inisialisasi Quill Editor
-        const quill = new Quill('#quill-editor', {
-            theme: 'snow',
-            placeholder: 'Tulis deskripsi berita di sini...',
-            modules: {
-                toolbar: [
-                    [{
-                        'header': [1, 2, 3, false]
-                    }],
-                    ['bold', 'italic', 'underline', 'strike'],
-                    [{
-                        'color': []
-                    }, {
-                        'background': []
-                    }],
-                    [{
-                        'list': 'ordered'
-                    }, {
-                        'list': 'bullet'
-                    }],
-                    [{
-                        'indent': '-1'
-                    }, {
-                        'indent': '+1'
-                    }],
-                    [{
-                        'align': []
-                    }],
-                    ['blockquote', 'code-block'],
-                    ['link'],
-                    ['clean']
-                ]
-            }
-        });
+            // Inisialisasi Quill Editor
+            const quill = new Quill('#quill-editor', {
+                theme: 'snow',
+                placeholder: 'Tulis deskripsi berita di sini...',
+                modules: {
+                    toolbar: [
+                        [{
+                            'header': [1, 2, 3, false]
+                        }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{
+                            'color': []
+                        }, {
+                            'background': []
+                        }],
+                        [{
+                            'list': 'ordered'
+                        }, {
+                            'list': 'bullet'
+                        }],
+                        [{
+                            'indent': '-1'
+                        }, {
+                            'indent': '+1'
+                        }],
+                        [{
+                            'align': []
+                        }],
+                        ['blockquote', 'code-block'],
+                        ['link'],
+                        ['clean']
+                    ]
+                }
+            });
 
-        // Isi ulang konten jika ada old value (setelah validasi gagal)
-        @if (old('news_description'))
-            quill.root.innerHTML = {!! json_encode(
-                \App\Support\HtmlSanitizer::clean(old('news_description')),
-                JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT,
-            ) !!};
-            previewDesc.innerHTML = quill.root.innerHTML;
-        @endif
+            // Isi ulang konten jika ada old value (setelah validasi gagal)
+            @if (old('news_description'))
+                quill.root.innerHTML = {!! json_encode(
+                    \App\Support\HtmlSanitizer::clean(old('news_description')),
+                    JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT,
+                ) !!};
+                previewDesc.innerHTML = quill.root.innerHTML;
+            @endif
 
-        // Update preview deskripsi secara live tiap kali konten Quill berubah
-        quill.on('text-change', () => {
-            const html = quill.root.innerHTML;
-            previewDesc.innerHTML = quill.getText().trim() ? html : '—';
-        });
+            // Update preview deskripsi secara live tiap kali konten Quill berubah
+            quill.on('text-change', () => {
+                const html = quill.root.innerHTML;
+                previewDesc.innerHTML = quill.getText().trim() ? html : '—';
+            });
 
-        // Sebelum form di-submit, salin konten HTML dari Quill ke hidden input
-        document.getElementById('news-form').addEventListener('submit', function() {
-            document.getElementById('news_description_input').value = quill.root.innerHTML;
+            // Sebelum form di-submit, salin konten HTML dari Quill ke hidden input
+            document.getElementById('news-form').addEventListener('submit', function() {
+                document.getElementById('news_description_input').value = quill.root.innerHTML;
+            });
         });
     </script>
 @endsection

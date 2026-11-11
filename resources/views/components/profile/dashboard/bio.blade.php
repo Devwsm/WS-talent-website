@@ -3,7 +3,8 @@
     resources/views/components/profile/profile-full.blade.php (baris 34-53).
     Expects: $bio (App\Models\bio|null)
 --}}
-<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+{{-- Quill dibundel Vite (bukan CDN); window.Quill siap sebelum DOMContentLoaded. --}}
+@vite('resources/js/quill-editor.js')
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
 
@@ -117,9 +118,8 @@
     }
 </style>
 
-<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
 <script>
-    (() => {
+    document.addEventListener('DOMContentLoaded', () => {
         const previewContent = document.getElementById('bioPreviewContent');
 
         const quill = new Quill('#bio-quill-editor', {
@@ -163,5 +163,5 @@
         document.getElementById('bio-form').addEventListener('submit', function() {
             document.getElementById('bio_konten_input').value = quill.root.innerHTML;
         });
-    })();
+    });
 </script>

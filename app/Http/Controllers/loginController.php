@@ -181,6 +181,9 @@ class loginController extends Controller
         $request->session()->forget('otp_akun');
         $request->session()->put('login', true);
         $request->session()->put('user', $user->username);
+        // Dipakai CekLogin untuk mencabut sesi ini bila akun dihapus atau sandinya diganti.
+        $request->session()->put('admin_id', $user->getKey());
+        $request->session()->put('admin_sidik', $user->sidikSesi());
 
         $aktivitas->catat('Login', $cara, 'berhasil', 'akses', $user->username);
 
