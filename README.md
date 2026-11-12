@@ -350,11 +350,11 @@ Berkas tes (`tests/Feature`, kecuali disebut lain):
 **Backlog keamanan dan perbaikan (urut prioritas):**
 
 1. Cadangan database terjadwal dan HTTPS paksa.
-2. Content-Security-Policy: pasang dulu sebagai `Report-Only` di preview karena widget Bandsintown dan Google Fonts.
-3. Peran admin (saat ini satu bendera sesi tanpa peran) dan pengecekan ulang akun admin di tiap permintaan (`CekLogin`). Perlu menyiapkan akun di semua tes yang memakai `withSession(['login' => true])`.
+2. Content-Security-Policy: **sudah dipasang sebagai `Report-Only`** (bawaan di production, atur lewat `CSP_MODE` di `.env`: `off` / `report` / `enforce`; daftar sumber di `config/keamanan.php`). Pelanggaran dilaporkan ke `/csp-report` dan tampil di halaman Log dashboard sebagai `CSP:<aturan>`. Setelah laporan bersih beberapa hari, ganti ke `CSP_MODE=enforce`. Tahap lanjut: beri `nonce` pada semua `<script>` lalu hapus `'unsafe-inline'` dari `script-src` (tanpa itu CSP belum menghentikan skrip inline yang disuntikkan).
+3. Peran admin (saat ini satu bendera sesi tanpa peran). **Pengecekan ulang akun admin sudah ada** di `CekLogin`: sesi yang dibuat lewat login membawa id akun dan sidik sandi, dan dicabut bila sandi diganti atau akun dihapus. Sesi tanpa penanda (mis. dari tes yang memakai `withSession(['login' => true])`) masih diterima; mewajibkannya berarti menyiapkan akun di semua tes tersebut.
 4. Tautan di CMS Artis dibatasi 255 karakter (kolom `string`). Bila perlu tautan lebih panjang (mis. Spotify dengan parameter pelacakan), ubah kolomnya menjadi `text` lewat migrasi.
 5. Ganti `throttle:N,M` lama di rute admin dengan pembatas bernama; `composer audit` dan `npm audit` rutin.
-6. Pin host key SSH di workflow (sekarang `ssh-keyscan` mempercayai host saat itu juga).
+6. ~~Pin host key SSH di workflow~~ **Selesai**: secret `SSH_KNOWN_HOSTS` diperiksa lebih dulu di langkah Siapkan SSH (entri host:port dan sidik jari harus cocok dengan server). Tanpa secret itu workflow masih jatuh ke `ssh-keyscan` dengan peringatan.
 
 ### 4.9 Aturan bisnis penting
 

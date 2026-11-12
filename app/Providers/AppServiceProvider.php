@@ -81,6 +81,9 @@ class AppServiceProvider extends ServiceProvider
 
         // Masuk anggota: dibatasi per EMAIL+IP (tebak sandi satu akun) dan per IP yang longgar, karena penonton satu
         // venue sering berbagi IP (Wi-Fi/CGNAT) dan tidak boleh saling mengunci.
+        // Laporan pelanggaran CSP dari browser: longgar untuk pengunjung biasa, cukup ketat untuk penyalahgunaan.
+        RateLimiter::for('csp-report', fn(Request $request) => Limit::perMinute(20)->by('csp:' . $request->ip()));
+
         RateLimiter::for('ic-masuk', function (Request $request) {
             $email = mb_strtolower(trim((string) $request->input('email')));
             $galat = fn() => back()

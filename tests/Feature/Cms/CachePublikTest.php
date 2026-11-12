@@ -175,4 +175,23 @@ class CachePublikTest extends TestCase
             ->assertSee('+1 lainnya')
             ->assertSee('B1');
     }
+
+    public function test_kartu_berita_terbaru_di_dashboard_menampilkan_tiga_berita_terbaru(): void
+    {
+        foreach (range(1, 5) as $i) {
+            $this->buatBerita('Judul Nomor ' . $i);
+        }
+
+        $html = $this->withSession(['login' => true, 'user' => 'admin'])->get(route('dashboard'))->assertOk()->getContent();
+
+        foreach ([5, 4, 3] as $nomor) {
+            $this->assertStringContainsString('Judul Nomor ' . $nomor, $html);
+        }
+        foreach ([1, 2] as $nomor) {
+            $this->assertStringNotContainsString('Judul Nomor ' . $nomor, $html, 'Berita lama tidak boleh menggantikan yang terbaru.');
+        }
+
+        // Yang paling baru tampil lebih dulu.
+        $this->assertLessThan(strpos($html, 'Judul Nomor 4'), strpos($html, 'Judul Nomor 5'));
+    }
 }

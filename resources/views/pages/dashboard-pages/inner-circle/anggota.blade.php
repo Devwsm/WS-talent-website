@@ -21,9 +21,11 @@
             @include('components/errors')
             @include('components/success')
 
-            {{-- Cari: GET, jadi bisa dibagikan dan jalan tanpa JavaScript --}}
+            @php($adaFilter = $q !== '' || $status !== '' || $via !== '')
+
+            {{-- Cari dan filter: GET, jadi bisa dibagikan dan jalan tanpa JavaScript --}}
             <form method="GET" action="{{ route('ic.admin.anggota') }}" role="search"
-                class="flex flex-col sm:flex-row gap-3 rounded-3xl border border-white/10 bg-white/3 p-4 md:p-5">
+                class="flex flex-col lg:flex-row gap-3 rounded-3xl border border-white/10 bg-white/3 p-4 md:p-5">
                 <div class="flex flex-col gap-1.5 flex-1 min-w-0">
                     <label for="cari-anggota" class="text-sm font-semibold uppercase tracking-widest text-white/60">
                         Cari anggota
@@ -32,12 +34,35 @@
                         placeholder="Nama, email, atau kode (mis. IC-00248)"
                         class="bg-white/5 border border-white/15 text-white placeholder-white/30 p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition" />
                 </div>
+                <div class="flex flex-col gap-1.5 lg:w-52">
+                    <label for="filter-status" class="text-sm font-semibold uppercase tracking-widest text-white/60">
+                        Status email
+                    </label>
+                    <select id="filter-status" name="status"
+                        class="bg-white/5 border border-white/15 text-white p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition scheme-dark">
+                        <option class="bg-neutral-900" value="" @selected($status === '')>Semua</option>
+                        <option class="bg-neutral-900" value="terverifikasi" @selected($status === 'terverifikasi')>Terverifikasi
+                        </option>
+                        <option class="bg-neutral-900" value="belum" @selected($status === 'belum')>Belum verifikasi</option>
+                    </select>
+                </div>
+                <div class="flex flex-col gap-1.5 lg:w-52">
+                    <label for="filter-via" class="text-sm font-semibold uppercase tracking-widest text-white/60">
+                        Cara daftar
+                    </label>
+                    <select id="filter-via" name="via"
+                        class="bg-white/5 border border-white/15 text-white p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition scheme-dark">
+                        <option class="bg-neutral-900" value="" @selected($via === '')>Semua</option>
+                        <option class="bg-neutral-900" value="google" @selected($via === 'google')>Google</option>
+                        <option class="bg-neutral-900" value="manual" @selected($via === 'manual')>Manual (sandi)</option>
+                    </select>
+                </div>
                 <div class="flex items-end gap-2 *:flex-1 sm:*:flex-none *:justify-center">
                     <button type="submit"
                         class="h-12 px-6 text-white font-bold uppercase tracking-widest bg-red-950 hover:bg-red-900 active:scale-95 transition rounded-lg">
                         Cari
                     </button>
-                    @if ($q !== '')
+                    @if ($adaFilter)
                         <a href="{{ route('ic.admin.anggota') }}"
                             class="h-12 px-5 inline-flex items-center rounded-lg border border-white/15 text-sm font-semibold text-white/70 hover:bg-white/10 hover:text-white transition-colors">
                             Reset
@@ -49,7 +74,7 @@
             <div>
                 <h2 class="font-bold uppercase tracking-wide text-sm mb-4 flex items-center gap-2">
                     <i class="bi bi-people-fill text-white/50" aria-hidden="true"></i>
-                    @if ($q !== '')
+                    @if ($adaFilter)
                         Hasil pencarian ({{ $anggota->total() }} dari {{ $totalAnggota }})
                     @else
                         Anggota terdaftar ({{ $totalAnggota }})
@@ -58,10 +83,9 @@
 
                 @if ($anggota->isEmpty())
                     @include('components/dashboard/card/empty-state', [
-                        'message' =>
-                            $q !== ''
-                                ? 'Tidak ada anggota yang cocok dengan pencarian ini.'
-                                : 'Belum ada anggota yang mendaftar.',
+                        'message' => $adaFilter
+                            ? 'Tidak ada anggota yang cocok dengan pencarian atau filter ini.'
+                            : 'Belum ada anggota yang mendaftar.',
                     ])
                 @else
                     <ul class="grid grid-cols-1 xl:grid-cols-2 gap-3">
@@ -157,7 +181,8 @@
                     </button>
                 </div>
 
-                <form method="POST" action="#" id="formStempel" class="flex flex-col flex-1 min-h-0 overflow-hidden">
+                <form method="POST" action="#" id="formStempel"
+                    class="flex flex-col flex-1 min-h-0 overflow-hidden">
                     @csrf
                     <div class="flex-1 min-h-0 p-6 flex flex-col gap-4 overflow-y-auto">
                         <div class="flex flex-col gap-1.5">

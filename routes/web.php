@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\cspController;
 use App\Http\Controllers\dashboardController;
 use App\Http\Controllers\homeController;
 use App\Http\Controllers\InnerCircle\adminController;
@@ -34,6 +35,18 @@ Route::prefix('/')->group(function () {
 // SEO — robots.txt & sitemap.xml digenerate dinamis (lihat SeoController)
 Route::get('/robots.txt', [SeoController::class, 'robots'])->name('robots');
 Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
+
+// Penampung laporan pelanggaran CSP dari browser: tanpa sesi, cookie, dan CSRF (browser mengirimnya sendiri), dibatasi per IP.
+Route::post('/csp-report', [cspController::class, 'laporan'])
+    ->name('csp.laporan')
+    ->middleware('throttle:csp-report')
+    ->withoutMiddleware([
+        \Illuminate\Cookie\Middleware\EncryptCookies::class,
+        \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+        \Illuminate\Session\Middleware\StartSession::class,
+        \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+        \Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class,
+    ]);
 
 Route::prefix('/')->group(function () {
     Route::get('/login', [loginController::class, 'login'])->name('login');

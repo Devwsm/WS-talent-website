@@ -85,6 +85,9 @@ class adminController extends Controller
     public function anggota(Request $request)
     {
         $q = mb_substr(trim($this->teks($request, 'q')), 0, 60);
+        // Filter status email dan cara daftar pertama. Nilai di luar daftar dianggap "semua" (tautan lama/ngawur aman).
+        $status = in_array($this->teks($request, 'status'), ['terverifikasi', 'belum'], true) ? $this->teks($request, 'status') : '';
+        $via = in_array($this->teks($request, 'via'), [member::VIA_GOOGLE, member::VIA_MANUAL], true) ? $this->teks($request, 'via') : '';
 
         $query = member::query()
             ->withMax(['stempel as terakhir_checkin' => fn($s) => $s->where('sumber', 'checkin')], 'created_at')
@@ -99,10 +102,19 @@ class adminController extends Controller
             });
         }
 
+        if ($status !== '') {
+            $status === 'terverifikasi' ? $query->whereNotNull('email_verified_at') : $query->whereNull('email_verified_at');
+        }
+        if ($via !== '') {
+            $query->where('daftar_via', $via);
+        }
+
         return $this->tampil('anggota', [
             'anggota' => $query->paginate(self::PER_HALAMAN_ANGGOTA)->withQueryString(),
             'totalAnggota' => member::query()->count(),
             'q' => $q,
+            'status' => $status,
+            'via' => $via,
         ]);
     }
 

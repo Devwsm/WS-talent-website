@@ -28,14 +28,14 @@ class dashboardController extends Controller
     public function dashboard()
     {
         // Ringkasan dashboard hanya butuh jumlah dan beberapa data teratas, jadi tidak memuat semua baris
-        // (dulu seluruh isi berita, album, dll. ikut ditarik hanya untuk menampilkan angka). Urutan memakai
-        // kunci utama (sama dengan urutan bawaan ::all() sebelumnya), jadi tampilan tidak berubah.
+        // (dulu seluruh isi berita, album, dll. ikut ditarik hanya untuk menampilkan angka). Kartu "Berita Terbaru"
+        // memakai urutan yang sama dengan halaman Home (paling baru dulu); lainnya memakai kunci utama.
         $bannerTotal = banner::count();
         $bannerPertama = banner::orderBy('id_banner')->first();
         $headerTotal = header::count();
         $headerPertama = header::orderBy('id_header')->first();
         $newsTotal = news::count();
-        $newsTampil = news::orderBy('id_news')->take(3)->get();
+        $newsTampil = news::latest()->orderByDesc('id_news')->take(3)->get();
         $albumsTotal = albums::count();
         $albumsTampil = albums::orderBy('id_albums')->take(8)->get();
         $merchandiseTotal = merchandise::count();

@@ -77,7 +77,9 @@ class AnggotaStatusTest extends TestCase
         app(GoogleAkun::class)->masukkan($this->klaim('kait@contoh.test', 'sub-3'));
 
         // Spasi/baris baru di HTML diratakan dulu supaya teks yang terpecah di beberapa baris tetap terhitung.
+        // Form cari/filter dibuang: pilihan filternya memakai kata yang sama dengan lencana ("Belum verifikasi", dst).
         $html = preg_replace('/\s+/', ' ', $this->admin()->get(route('ic.admin.anggota'))->assertOk()->getContent());
+        $html = preg_replace('#<form[^>]*role="search".*?</form>#s', '', $html);
 
         $this->assertSame(1, substr_count($html, 'Belum verifikasi'), 'Hanya satu anggota yang belum terverifikasi.');
         $this->assertSame(3, substr_count($html, 'Terverifikasi'), 'Anggota Google, manual terverifikasi, dan manual yang dikaitkan ke Google.');
