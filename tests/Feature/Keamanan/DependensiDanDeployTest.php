@@ -66,6 +66,21 @@ class DependensiDanDeployTest extends TestCase
         }
     }
 
+    public function test_runner_dan_aksi_github_memakai_versi_tetap_yang_tidak_usang(): void
+    {
+        $alur = $this->baca('.github/workflows/deploy.yml');
+
+        $this->assertStringNotContainsString('ubuntu-latest', $alur, 'Runner dikunci agar deploy tidak berubah sendiri saat label latest pindah versi.');
+        $this->assertStringContainsString('ubuntu-24.04', $alur);
+
+        // Versi 4 berjalan di Node 20 yang sudah usang di GitHub Actions.
+        $this->assertStringNotContainsString('actions/checkout@v4', $alur);
+        $this->assertStringNotContainsString('actions/setup-node@v4', $alur);
+
+        $this->assertStringContainsString('composer audit --locked --no-dev', $alur);
+        $this->assertStringContainsString('npm audit --omit=dev', $alur);
+    }
+
     public function test_deploy_punya_cadangan_pemulihan_dan_cek_situs(): void
     {
         $alur = $this->baca('.github/workflows/deploy.yml');
