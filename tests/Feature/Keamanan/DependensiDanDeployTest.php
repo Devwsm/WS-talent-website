@@ -66,6 +66,21 @@ class DependensiDanDeployTest extends TestCase
         }
     }
 
+    public function test_semua_berkas_tes_ada_di_folder_yang_dijalankan_phpunit(): void
+    {
+        // phpunit.xml hanya menjalankan tests/Unit dan tests/Feature. Berkas tes di folder lain diam-diam tidak pernah jalan.
+        $nyasar = [];
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(base_path('tests'), \FilesystemIterator::SKIP_DOTS));
+        foreach ($iterator as $berkas) {
+            $jalur = str_replace('\\', '/', $berkas->getPathname());
+            if ($berkas->isFile() && str_ends_with($jalur, 'Test.php') && !str_contains($jalur, '/tests/Unit/') && !str_contains($jalur, '/tests/Feature/')) {
+                $nyasar[] = $jalur;
+            }
+        }
+
+        $this->assertSame([], $nyasar, 'Pindahkan berkas tes ini ke tests/Unit atau tests/Feature.');
+    }
+
     public function test_runner_dan_aksi_github_memakai_versi_tetap_yang_tidak_usang(): void
     {
         $alur = $this->baca('.github/workflows/deploy.yml');
