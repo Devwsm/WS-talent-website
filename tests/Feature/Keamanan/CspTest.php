@@ -43,10 +43,12 @@ class CspTest extends TestCase
 
         $this->assertFalse($respons->headers->has('Content-Security-Policy'), 'Mode lapor tidak boleh memblokir.');
         $nilai = $respons->headers->get('Content-Security-Policy-Report-Only');
-        foreach (["object-src 'none'", "base-uri 'self'", "frame-ancestors 'self'", "form-action 'self'", 'report-uri /csp-report', 'script-src \'self\' \'unsafe-inline\' https://*.bandsintown.com', 'https://fonts.googleapis.com', 'https://fonts.gstatic.com'] as $harus) {
+        foreach (["object-src 'none'", "base-uri 'self'", "frame-ancestors 'self'", "form-action 'self'", 'report-uri /csp-report', 'script-src \'self\' \'unsafe-inline\' https://*.bandsintown.com'] as $harus) {
             $this->assertStringContainsString($harus, $nilai);
         }
         $this->assertStringNotContainsString('unsafe-eval', $nilai);
+        $this->assertStringNotContainsString('googleapis', $nilai, 'Font sudah dimuat dari dalam project, Google Fonts tidak perlu diizinkan.');
+        $this->assertStringNotContainsString('gstatic', $nilai);
     }
 
     public function test_mode_paksa_mengirim_header_yang_memblokir(): void
@@ -176,7 +178,9 @@ class CspTest extends TestCase
         $this->withSession(['login' => true, 'user' => 'admin'])
             ->get(route('log.index'))
             ->assertOk()
-            ->assertSee('CSP:script-src-elem');
+            ->assertSee('CSP:script-src-elem')
+            ->assertSee('Laporan dari browser pengunjung')
+            ->assertDontSee('Pesan lengkap dan jejak penuh ada di storage/logs');
     }
 
     public function test_sumber_luar_yang_dipakai_view_tercakup_kebijakan(): void

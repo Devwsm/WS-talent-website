@@ -6,6 +6,8 @@
  * Teks kecil memakai warna yang sudah dicek terhadap kontras WCAG AA (>= 4.5:1).
  */
 @import "bootstrap-icons/font/bootstrap-icons.css";
+/* Font dimuat dari dalam project (bukan Google Fonts): lebih cepat, tanpa pihak luar, dan CSP lebih ketat. */
+@import "@fontsource-variable/dm-sans";
 
 /* ---------- Token ---------- */
 .ic-app {
@@ -36,9 +38,12 @@
     /* Warna lencana "belum dibaca" di tab Komunitas. Nanti bisa diisi dari CMS lewat :root { --ic-lencana-latar: ... }. */
     --ic-lencana-latar: var(--ic-emas);
     --ic-lencana-teks: var(--ic-tinta);
-    --ic-font: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --ic-font:
+        "DM Sans Variable", "DM Sans", system-ui, -apple-system, "Segoe UI",
+        sans-serif;
     --ic-font-judul:
-        "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+        "DM Sans Variable", "DM Sans", system-ui, -apple-system, "Segoe UI",
+        sans-serif;
 
     margin: 0;
     background: var(--ic-latar);

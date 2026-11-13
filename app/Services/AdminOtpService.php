@@ -79,11 +79,6 @@ class AdminOtpService
         return 'salah';
     }
 
-    public function hapus(account $akun): void
-    {
-        Cache::forget($this->kunci($akun));
-    }
-
     /** a***@gmail.com — untuk memberi tahu ke mana kode dikirim tanpa membuka alamat penuh. */
     public function samarkan(string $email): string
     {

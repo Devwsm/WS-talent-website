@@ -51,6 +51,27 @@ class DependensiDanDeployTest extends TestCase
         $this->assertTrue(version_compare(ltrim($paket['dependencies']['quill'], '^~'), '1.3.7', '>='));
     }
 
+    public function test_font_dimuat_dari_project_dan_paket_tak_terpakai_sudah_dihapus(): void
+    {
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(resource_path('views'), \FilesystemIterator::SKIP_DOTS));
+        foreach ($iterator as $berkas) {
+            if ($berkas->isFile()) {
+                $isi = (string) file_get_contents($berkas->getPathname());
+                $this->assertStringNotContainsString('fonts.googleapis.com', $isi, $berkas->getFilename());
+                $this->assertStringNotContainsString('fonts.gstatic.com', $isi, $berkas->getFilename());
+            }
+        }
+
+        $this->assertStringContainsString('@fontsource-variable/dm-sans', $this->baca('resources/css/inner-circle.css'));
+        $this->assertStringContainsString('"DM Sans Variable"', $this->baca('resources/css/inner-circle.css'));
+
+        $paket = json_decode($this->baca('package.json'), true);
+        $this->assertArrayHasKey('@fontsource-variable/dm-sans', $paket['dependencies']);
+        $this->assertArrayNotHasKey('axios', $paket['dependencies'] + ($paket['devDependencies'] ?? []));
+        $this->assertFileDoesNotExist(base_path('resources/js/bootstrap.js'));
+        $this->assertStringNotContainsString('googleapis', $this->baca('config/keamanan.php'));
+    }
+
     public function test_tinker_hanya_paket_pengembangan(): void
     {
         $composer = json_decode($this->baca('composer.json'), true);

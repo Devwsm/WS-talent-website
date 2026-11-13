@@ -19,10 +19,6 @@
 @if ($pakaiCss ?? true)
     @push('head')
         {{-- CSS area anggota hanya dimuat di tab yang punya preview. Semua class-nya di bawah .ic-app. --}}
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet"
-            href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap">
         @vite('resources/css/inner-circle.css')
     @endpush
 @endif

@@ -194,11 +194,6 @@ class IcTampilan
         return Storage::disk('public')->exists($path) ? Storage::url($path) : null;
     }
 
-    public function punyaLogoKustom(): bool
-    {
-        return $this->logoUrl() !== null;
-    }
-
     // ---------- Simpan ----------
 
     /**

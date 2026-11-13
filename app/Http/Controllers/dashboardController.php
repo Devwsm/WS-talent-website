@@ -66,7 +66,7 @@ class dashboardController extends Controller
     // dashboard end
 
     // color_pages
-    public function ColorPages()
+    public function colorPages()
     {
         $color_pages = color_pages::first();
         return view('pages.dashboard-pages.color_pages', compact('color_pages'));
@@ -195,7 +195,7 @@ class dashboardController extends Controller
             'header_name' => 'required|string|max:255',
             'header_description' => 'required|string|max:255',
             'link_header' => 'required|url:http,https|max:255',
-            'header_background'  => 'required|file|mimes:jpg,jpeg,png,mp4,mov,avi,mkv,webm',
+            'header_background'  => 'required|file|mimes:jpg,jpeg,png,mp4,mov,avi,mkv,webm|max:51200',
         ], [
             'header_color.required' => 'Warna Header harus diisi.',
             'header_color.regex' => 'Warna Header tidak valid. Pilih warna lewat pemilih warna.',
@@ -212,6 +212,8 @@ class dashboardController extends Controller
 
             'header_background.required' => 'Cover Header harus diisi.',
             'header_background.mimes'    => 'File harus berupa gambar (jpg, jpeg, png) atau video (mp4, mov, avi, mkv, webm).',
+            'header_background.max' => 'Cover Header tidak boleh lebih dari 50MB (gambar maksimal 1MB).',
+            'header_background.uploaded' => 'Cover Header gagal diunggah. Ukuran file mungkin melebihi batas unggah server.',
         ]);
         // Validasi ukuran manual (beda batas untuk gambar vs video)
         $bgFile   = $request->file('header_background');
@@ -288,7 +290,7 @@ class dashboardController extends Controller
             'header_name'        => 'required|string|max:255',
             'header_description' => 'required|string|max:255',
             'link_header'        => 'required|url:http,https|max:255',
-            'header_background'  => 'nullable|file|mimes:jpg,jpeg,png,mp4,mov,avi,mkv,webm',
+            'header_background'  => 'nullable|file|mimes:jpg,jpeg,png,mp4,mov,avi,mkv,webm|max:51200',
         ], [
             'header_color.required' => 'Warna Header harus diisi.',
             'header_color.regex' => 'Warna Header tidak valid. Pilih warna lewat pemilih warna.',
@@ -303,6 +305,8 @@ class dashboardController extends Controller
             'link_header.max' => 'Link Header terlalu panjang (maksimal 255 karakter).',
 
             'header_background.mimes' => 'File harus berupa gambar (jpg, jpeg, png) atau video (mp4, mov, avi, mkv, webm).',
+            'header_background.max' => 'Cover Header tidak boleh lebih dari 50MB (gambar maksimal 1MB).',
+            'header_background.uploaded' => 'Cover Header gagal diunggah. Ukuran file mungkin melebihi batas unggah server.',
         ]);
 
         $imgBaru = $request->file('header_img');
@@ -532,7 +536,7 @@ class dashboardController extends Controller
             'news_title' => 'required|string|max:255',
             'news_description' => 'required|string|max:20000',
             'news_source' => 'required|string|max:255',
-            'news_date' => 'required|string|max:255',
+            'news_date' => 'required|date_format:Y-m-d',
             'news_cover' => 'required|image|mimes:jpg,jpeg,png|max:1024',
             'news_link' => 'required|url:http,https|max:255',
         ], [
@@ -540,6 +544,7 @@ class dashboardController extends Controller
             'news_description.required' => 'Deskripsi Berita harus diisi.',
             'news_source.required' => 'Sumber Berita harus diisi.',
             'news_date.required' => 'Tanggal Berita harus diisi.',
+            'news_date.date_format' => 'Tanggal Berita tidak valid. Pilih tanggal lewat pemilih tanggal.',
             'news_cover.required' => 'Cover Berita harus diisi.',
             'news_cover.image' => 'File harus berupa gambar.',
             'news_cover.max' => 'Cover Berita tidak boleh lebih dari 1MB.',
@@ -576,7 +581,7 @@ class dashboardController extends Controller
             'news_title' => 'required|string|max:255',
             'news_description' => 'required|string|max:20000',
             'news_source' => 'required|string|max:255',
-            'news_date' => 'required|string|max:255',
+            'news_date' => 'required|date_format:Y-m-d',
             'news_cover' => 'nullable|image|mimes:jpg,jpeg,png|max:1024',
             'news_link' => 'required|url:http,https|max:255',
         ], [
@@ -584,6 +589,7 @@ class dashboardController extends Controller
             'news_description.required' => 'Deskripsi Berita harus diisi.',
             'news_source.required' => 'Sumber Berita harus diisi.',
             'news_date.required' => 'Tanggal Berita harus diisi.',
+            'news_date.date_format' => 'Tanggal Berita tidak valid. Pilih tanggal lewat pemilih tanggal.',
             'news_cover.image' => 'File harus berupa gambar.',
             'news_cover.max' => 'Cover Berita tidak boleh lebih dari 1MB.',
             'news_link.required' => 'Link Berita harus diisi.',
@@ -646,7 +652,7 @@ class dashboardController extends Controller
         return view('pages.dashboard-pages.merchandise', compact('merchandise'));
     }
 
-    public function tambahmerchandise(Request $request)
+    public function tambahMerchandise(Request $request)
     {
         $request->validate([
             'merchandise_name' => 'required|string|max:255',

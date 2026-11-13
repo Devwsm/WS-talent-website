@@ -158,8 +158,15 @@
                                     @if ($e->jejak)
                                         <pre class="overflow-x-auto rounded-xl bg-black/40 p-3 text-[11px] leading-relaxed text-white/60">{{ $e->jejak }}</pre>
                                     @endif
-                                    <p class="mt-2 text-white/30">Pesan lengkap dan jejak penuh ada di storage/logs di
-                                        server.</p>
+                                    @if (str_starts_with((string) $e->kelas, 'CSP:'))
+                                        <p class="mt-2 text-white/30">Laporan dari browser pengunjung
+                                            (Content-Security-Policy),
+                                            tidak ada jejak di server. Hanya dilaporkan bila tertulis "hanya dilaporkan".
+                                        </p>
+                                    @else
+                                        <p class="mt-2 text-white/30">Pesan lengkap dan jejak penuh ada di storage/logs di
+                                            server.</p>
+                                    @endif
                                 </details>
                             </li>
                         @endforeach
