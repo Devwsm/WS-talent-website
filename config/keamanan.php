@@ -25,7 +25,9 @@ return [
 
         'direktif' => [
             'default-src' => ["'self'"],
-            'script-src' => ["'self'", "'unsafe-inline'", 'https://widgetv3.bandsintown.com'],
+            // Widget Bandsintown dimuat dari widgetv3.bandsintown.com, lalu mengambil data acara lewat skrip dari
+            // rest.bandsintown.com (terlihat di laporan CSP pertama di production), jadi seluruh subdomainnya diizinkan.
+            'script-src' => ["'self'", "'unsafe-inline'", 'https://*.bandsintown.com'],
             'style-src' => ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://*.bandsintown.com'],
             'font-src' => ["'self'", 'data:', 'https://fonts.gstatic.com', 'https://*.bandsintown.com'],
             'img-src' => ["'self'", 'data:', 'blob:', 'https:'],

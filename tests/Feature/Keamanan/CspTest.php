@@ -43,7 +43,7 @@ class CspTest extends TestCase
 
         $this->assertFalse($respons->headers->has('Content-Security-Policy'), 'Mode lapor tidak boleh memblokir.');
         $nilai = $respons->headers->get('Content-Security-Policy-Report-Only');
-        foreach (["object-src 'none'", "base-uri 'self'", "frame-ancestors 'self'", "form-action 'self'", 'report-uri /csp-report', 'https://widgetv3.bandsintown.com', 'https://fonts.googleapis.com', 'https://fonts.gstatic.com'] as $harus) {
+        foreach (["object-src 'none'", "base-uri 'self'", "frame-ancestors 'self'", "form-action 'self'", 'report-uri /csp-report', 'script-src \'self\' \'unsafe-inline\' https://*.bandsintown.com', 'https://fonts.googleapis.com', 'https://fonts.gstatic.com'] as $harus) {
             $this->assertStringContainsString($harus, $nilai);
         }
         $this->assertStringNotContainsString('unsafe-eval', $nilai);
@@ -211,6 +211,9 @@ class CspTest extends TestCase
     public function test_wildcard_host_dan_penolakan_host_asing(): void
     {
         $this->assertTrue(KebijakanCsp::hostDiizinkan('rest.bandsintown.com', ['connect-src']));
+        // Pelanggaran asli dari production: widget memuat skrip data dari rest.bandsintown.com.
+        $this->assertTrue(KebijakanCsp::hostDiizinkan('rest.bandsintown.com', ['script-src']));
+        $this->assertTrue(KebijakanCsp::hostDiizinkan('widgetv3.bandsintown.com', ['script-src']));
         $this->assertFalse(KebijakanCsp::hostDiizinkan('evilbandsintown.com', ['connect-src']));
         $this->assertFalse(KebijakanCsp::hostDiizinkan('evil.example', ['script-src']));
     }
