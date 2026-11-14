@@ -8,6 +8,9 @@ use App\Mail\InnerCircle\PesanIc;
 class PeringatanErrorMail extends PesanIc
 {
     public function __construct(
+        private string $judul,
+        private string $penjelasan,
+        private string $areaLabel,
         private string $kelas,
         private string $pesan,
         private string $lokasi,
@@ -19,7 +22,7 @@ class PeringatanErrorMail extends PesanIc
 
     protected function subjek(): string
     {
-        return '[Error] ' . class_basename($this->kelas) . ' di website Whisnu Santika';
+        return '[Error] ' . $this->judul;
     }
 
     protected function isi(): array
@@ -29,12 +32,11 @@ class PeringatanErrorMail extends PesanIc
             'sapaan' => 'Halo,',
             'pratinjau' => 'Ada error di website yang perlu dicek.',
             'paragraf' => array_values(array_filter([
-                'Ada error yang tidak tertangani di website.',
-                'Jenis: ' . $this->kelas,
-                'Pesan: ' . mb_substr($this->pesan, 0, 300),
-                'Lokasi kode: ' . $this->lokasi,
-                $this->url ? 'Alamat: ' . $this->url : null,
+                $this->judul . '.',
+                $this->penjelasan,
+                'Bagian: ' . $this->areaLabel,
                 'Terakhir terjadi: ' . $this->waktu . ' (' . $this->jumlah . 'x sejauh ini)',
+                'Detail teknis (untuk tim teknis) — Jenis: ' . $this->kelas . '. Pesan: ' . mb_substr($this->pesan, 0, 300) . '. Lokasi kode: ' . $this->lokasi . ($this->url ? '. Alamat: ' . $this->url : '') . '.',
             ])),
             'tombol' => ['teks' => 'Buka halaman Log', 'url' => $this->urlLog],
             'catatan' => ['Email serupa untuk error yang sama tidak dikirim lagi selama satu jam.'],

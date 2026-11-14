@@ -21,7 +21,10 @@
             <nav aria-label="Navigasi utama" class="hidden lg:flex items-center gap-8 ml-12">
                 <a href="{{ route('profile') }}" class="font-bold uppercase">Profile</a>
                 <a href="{{ route('home') }}#tour" class="font-bold uppercase">Tour</a>
-                <a href="{{ route('home') }}#news" class="font-bold uppercase">News</a>
+                {{-- Link News hanya ada bila ada berita (sama seperti bagiannya di beranda) --}}
+                @if ($adaBerita)
+                    <a href="{{ route('home') }}#news" class="font-bold uppercase">News</a>
+                @endif
                 <a href="{{ route('home') }}#new-music" class="font-bold uppercase">Albums</a>
                 {{-- Link komunitas cuma muncul bila fitur WS Inner Circle dinyalakan (INNER_CIRCLE_AKTIF).
                      Tamu otomatis dialihkan ke halaman masuk, anggota langsung ke beranda mereka. --}}
@@ -60,7 +63,9 @@
         </button>
         <a href="{{ route('profile') }}" class="menu-link text-2xl font-bold uppercase">Profile</a>
         <a href="{{ route('home') }}#tour" class="menu-link text-2xl font-bold uppercase">Tour</a>
-        <a href="{{ route('home') }}#news" class="menu-link text-2xl font-bold uppercase">News</a>
+        @if ($adaBerita)
+            <a href="{{ route('home') }}#news" class="menu-link text-2xl font-bold uppercase">News</a>
+        @endif
         <a href="{{ route('home') }}#new-music" class="menu-link text-2xl font-bold uppercase">Albums</a>
         @if (config('inner_circle.aktif'))
             <a href="{{ route('ic.beranda') }}" class="menu-link text-2xl font-bold uppercase">Inner Circle</a>

@@ -129,6 +129,13 @@ Route::prefix('/dashboard')->middleware(['cekLogin', 'catatAktivitas'])->group(f
     // Fase 4-6: semua tab sudah memakai database.
     Route::prefix('/inner-circle')->middleware('icAktif')->name('ic.admin.')->group(function () {
         Route::get('/', [adminController::class, 'ringkasan'])->name('ringkasan');
+
+        // Log CMS Inner Circle: error dan perubahan di CMS Inner Circle saja (login gagal ada di Log CMS Artis).
+        Route::prefix('/log')->name('log.')->group(function () {
+            Route::get('/', [logController::class, 'index'])->name('index');
+            Route::patch('/error/{id}', [logController::class, 'ubahError'])->whereNumber('id')->name('error.ubah')->middleware('throttle:admin-aksi-kecil');
+            Route::delete('/error', [logController::class, 'bersihkanSelesai'])->name('error.bersihkan')->middleware('throttle:admin-aksi-kecil');
+        });
         Route::get('/anggota', [adminController::class, 'anggota'])->name('anggota');
         Route::post('/anggota/{id}/stempel', [adminController::class, 'tambahStempel'])->whereNumber('id')->name('anggota.stempel')->middleware('throttle:admin-tulis');
 

@@ -21,6 +21,14 @@
                 'lencana' => $kunci === 'klaim' ? (int) ($jumlahKlaimMenunggu ?? 0) : 0,
             ];
         }
+        // Log CMS Inner Circle ada di ujung menu (bukan bagian tab_admin, supaya kartu pintasan di Dashboard tetap 9 tab).
+        $navLinks[] = [
+            'route' => 'ic.admin.log.index',
+            'pola' => 'ic.admin.log.*',
+            'icon' => 'bi-journal-text',
+            'label' => 'Log',
+            'lencana' => 0,
+        ];
         $rumah = ['route' => 'ic.admin.ringkasan', 'label' => 'Ringkasan Inner Circle'];
         $judulMenu = 'Menu CMS Inner Circle';
         $saklar = [

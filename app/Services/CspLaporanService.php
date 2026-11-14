@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\log_error;
+use App\Support\AreaLog;
 use Throwable;
 
 /**
@@ -28,7 +29,8 @@ class CspLaporanService
             }
 
             $halaman = $this->jalur((string) ($laporan['document-uri'] ?? ''));
-            $fingerprint = sha1('csp|' . $direktif . '|' . $diblokir);
+            $area = AreaLog::dariUrl($halaman);
+            $fingerprint = AreaLog::sidikJari('csp|' . $direktif . '|' . $diblokir, $area);
             $sekarang = now();
             $disposisi = ($laporan['disposition'] ?? 'report') === 'enforce' ? 'diblokir' : 'hanya dilaporkan';
 
@@ -36,6 +38,7 @@ class CspLaporanService
             $baris = (int) ($laporan['line-number'] ?? 0);
 
             $data = [
+                'area' => $area,
                 'pesan' => "CSP {$direktif}: {$diblokir} ({$disposisi}) di halaman {$halaman}",
                 'url' => mb_substr($halaman, 0, 500),
                 'metode' => 'CSP',

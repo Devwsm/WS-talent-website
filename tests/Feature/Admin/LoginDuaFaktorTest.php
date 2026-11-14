@@ -90,7 +90,7 @@ class LoginDuaFaktorTest extends TestCase
 
         $this->post(route('login.otp.proses'), ['kode' => substr($kode, 0, 3) . ' ' . substr($kode, 3)])
             ->assertRedirect(route('dashboard'))->assertSessionHas('login', true)->assertSessionHas('user', 'admin');
-        $this->assertTrue(log_aktivitas::where('aksi', 'Login')->where('keterangan', 'kode OTP email')->exists());
+        $this->assertSame(0, log_aktivitas::count()); // login berhasil tidak dicatat, hanya yang gagal
 
         // Kode yang sama tidak bisa dipakai di sesi lain.
         $this->flushSession();
@@ -170,7 +170,7 @@ class LoginDuaFaktorTest extends TestCase
 
         $this->login()->assertRedirect(route('dashboard'))->assertSessionHas('login', true);
         Mail::assertNothingSent();
-        $this->assertTrue(log_aktivitas::where('aksi', 'Login tanpa 2FA')->exists());
+        $this->assertTrue(log_aktivitas::where('aksi', 'Masuk tanpa kode verifikasi')->where('status', 'gagal')->exists());
     }
 
     public function test_email_gagal_terkirim_memberi_pesan_jelas_dan_tidak_membuka_dashboard(): void
@@ -182,7 +182,7 @@ class LoginDuaFaktorTest extends TestCase
         $this->login()->assertRedirect(route('login'))->assertSessionHasErrors('login')
             ->assertSessionMissing('login')->assertSessionMissing('otp_akun');
 
-        $this->assertTrue(log_aktivitas::where('aksi', 'Kode OTP gagal dikirim')->exists());
-        $this->assertTrue(log_error::where('pesan', 'smtp mati')->exists()); // tampil di halaman Log
+        $this->assertTrue(log_error::where('pesan', 'smtp mati')->exists()); // tampil di tab Error
+        $this->assertSame(0, log_aktivitas::count()); // dan tidak dicatat lagi di Aktivitas (tidak ganda)
     }
 }

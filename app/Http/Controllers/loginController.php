@@ -40,7 +40,7 @@ class loginController extends Controller
 
         if (!$user || !$sandiCocok) {
             // Username yang diketik TIDAK dicatat: kadang yang terketik di kolom itu justru kata sandinya.
-            $aktivitas->catat('Login gagal', 'Username atau sandi salah', 'gagal');
+            $aktivitas->catatAkses('login_gagal');
 
             // Pesan sengaja dibuat generik — tidak bocorkan mana yang salah
             return back()->withErrors(['login' => 'Username atau password salah.'])->onlyInput('username');
@@ -50,15 +50,15 @@ class loginController extends Controller
         if ($otp->aktif()) {
             if (blank($user->email)) {
                 // Salah konfigurasi (email admin belum diisi) tidak boleh mengunci pemilik dari dashboard-nya sendiri.
-                $aktivitas->catat('Login tanpa 2FA', 'Email admin belum diisi, kode OTP dilewati', 'gagal', 'akses', $user->username);
+                $aktivitas->catatAkses('tanpa_2fa', $user->username);
 
-                return $this->selesaikanLogin($request, $user, $aktivitas, 'sandi saja (email admin kosong)');
+                return $this->selesaikanLogin($request, $user);
             }
 
-            return $this->mulaiOtp($request, $user, $otp, $aktivitas);
+            return $this->mulaiOtp($request, $user, $otp);
         }
 
-        return $this->selesaikanLogin($request, $user, $aktivitas);
+        return $this->selesaikanLogin($request, $user);
     }
 
     // ---------- 2FA: kode OTP lewat email ----------
@@ -88,11 +88,11 @@ class loginController extends Controller
 
         switch ($otp->periksa($akun, $request->input('kode'))) {
             case 'ok':
-                return $this->selesaikanLogin($request, $akun, $aktivitas, 'kode OTP email');
+                return $this->selesaikanLogin($request, $akun);
 
             case 'habis':
                 $request->session()->forget('otp_akun');
-                $aktivitas->catat('Kode OTP salah (habis)', 'Terlalu banyak kode salah, harus masuk ulang', 'gagal', 'akses', $akun->username);
+                $aktivitas->catatAkses('otp_habis', $akun->username);
 
                 return redirect()->route('login')
                     ->withErrors(['login' => 'Terlalu banyak kode yang salah. Masuk ulang untuk meminta kode baru.']);
@@ -101,26 +101,26 @@ class loginController extends Controller
                 return back()->withErrors(['kode' => 'Kode sudah kedaluwarsa. Tekan "Kirim ulang kode".']);
 
             default:
-                $aktivitas->catat('Kode OTP salah', null, 'gagal', 'akses', $akun->username);
+                $aktivitas->catatAkses('otp_salah', $akun->username);
 
                 return back()->withErrors(['kode' => 'Kode salah. Periksa lagi kode di email.']);
         }
     }
 
-    public function kirimUlangOtp(Request $request, AdminOtpService $otp, AktivitasService $aktivitas): RedirectResponse
+    public function kirimUlangOtp(Request $request, AdminOtpService $otp): RedirectResponse
     {
         $akun = $this->akunMenunggu($request);
         if (!$akun) {
             return redirect()->route('login');
         }
 
-        return $this->kirimKode($akun, $otp, $aktivitas)
+        return $this->kirimKode($akun, $otp)
             ?? redirect()->route('login.otp')->with('success', 'Kode baru sudah dikirim.');
     }
 
-    public function logout(Request $request, AktivitasService $aktivitas)
+    public function logout(Request $request)
     {
-        $aktivitas->catat('Logout');
+        // Logout tidak dicatat: Log hanya berisi perubahan konten dan login gagal.
 
         // Invalidate seluruh session + regenerate token — bukan hanya forget satu key
         $request->session()->invalidate();
@@ -131,13 +131,13 @@ class loginController extends Controller
 
     // ---------- internal ----------
 
-    private function mulaiOtp(Request $request, account $user, AdminOtpService $otp, AktivitasService $aktivitas): RedirectResponse
+    private function mulaiOtp(Request $request, account $user, AdminOtpService $otp): RedirectResponse
     {
         // Sesi baru untuk proses OTP (cegah session fixation); belum ada `login` sampai kodenya benar.
         $request->session()->regenerate();
         $request->session()->put('otp_akun', $user->getKey());
 
-        $galat = $this->kirimKode($user, $otp, $aktivitas);
+        $galat = $this->kirimKode($user, $otp);
 
         // Pengiriman gagal: kembali ke form login (bukan form OTP yang tidak akan pernah menerima kode).
         if ($galat) {
@@ -151,13 +151,13 @@ class loginController extends Controller
     }
 
     /** Kirim kode OTP. Mengembalikan null bila terkirim, atau respons galat siap tampil bila gagal. */
-    private function kirimKode(account $akun, AdminOtpService $otp, AktivitasService $aktivitas): ?RedirectResponse
+    private function kirimKode(account $akun, AdminOtpService $otp): ?RedirectResponse
     {
         try {
             $hasil = $otp->kirim($akun);
         } catch (\Throwable $e) {
+            // Sudah masuk tab Error lewat report(); tidak dicatat lagi di Aktivitas supaya tidak ganda.
             report($e);
-            $aktivitas->catat('Kode OTP gagal dikirim', 'Email tidak terkirim, cek pengaturan email', 'gagal', 'akses', $akun->username);
 
             return redirect()->route('login')->withErrors([
                 'login' => 'Kode belum bisa dikirim ke email. Coba lagi sebentar, atau hubungi pengelola website.',
@@ -168,12 +168,10 @@ class loginController extends Controller
             return back()->withErrors(['kode' => 'Kode sudah terlalu sering diminta. Tunggu beberapa menit lalu coba lagi.']);
         }
 
-        $aktivitas->catat('Kode OTP dikirim', null, 'berhasil', 'akses', $akun->username);
-
         return null;
     }
 
-    private function selesaikanLogin(Request $request, account $user, AktivitasService $aktivitas, ?string $cara = null): RedirectResponse
+    private function selesaikanLogin(Request $request, account $user): RedirectResponse
     {
         // Regenerate session ID — cegah session fixation attack
         $request->session()->regenerate();
@@ -185,7 +183,7 @@ class loginController extends Controller
         $request->session()->put('admin_id', $user->getKey());
         $request->session()->put('admin_sidik', $user->sidikSesi());
 
-        $aktivitas->catat('Login', $cara, 'berhasil', 'akses', $user->username);
+        // Login berhasil tidak dicatat: Log hanya berisi perubahan konten dan login gagal.
 
         return redirect()->intended(route('dashboard'));
     }

@@ -6,6 +6,7 @@ use App\Models\ic_memory;
 use App\Policies\MemoryPolicy;
 use App\Support\CachePublik;
 use App\View\Composers\FooterProfileComposer;
+use App\View\Composers\NavbarPublikComposer;
 use App\View\Composers\ThemeColorComposer;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -50,6 +51,9 @@ class AppServiceProvider extends ServiceProvider
         );
 
         View::composer('components.footer', FooterProfileComposer::class);
+
+        // Navbar publik: link News hanya tampil bila ada berita.
+        View::composer('components.navbar', NavbarPublikComposer::class);
 
         // Nama model huruf kecil (ic_memory) tidak ditemukan penemuan otomatis policy, jadi didaftarkan manual.
         Gate::policy(ic_memory::class, MemoryPolicy::class);

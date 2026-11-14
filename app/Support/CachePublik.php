@@ -31,7 +31,7 @@ class CachePublik
     private const DETIK = 3600;
 
     /** Semua kunci yang dibuang saat data publik berubah. */
-    public const KUNCI = ['home', 'profile', 'footer', 'tema', 'sitemap'];
+    public const KUNCI = ['home', 'profile', 'footer', 'tema', 'sitemap', 'nav'];
 
     /**
      * Ambil dari cache; bila belum ada, jalankan $isi lalu simpan. $isi tidak boleh mengembalikan null.

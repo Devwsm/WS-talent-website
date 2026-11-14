@@ -3,7 +3,6 @@
 namespace App\Http\Middleware;
 
 use App\Models\account;
-use App\Services\AktivitasService;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
@@ -26,14 +25,6 @@ class CekLogin
             $akun = account::find($sesi->get('admin_id'));
 
             if (!$akun || !hash_equals($akun->sidikSesi(), (string) $sesi->get('admin_sidik'))) {
-                app(AktivitasService::class)->catat(
-                    'Sesi admin dicabut',
-                    'Sandi akun diganti atau akun dihapus',
-                    'gagal',
-                    'akses',
-                    (string) $sesi->get('user'),
-                );
-
                 $sesi->invalidate();
                 $sesi->regenerateToken();
 

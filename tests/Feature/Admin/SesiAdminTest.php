@@ -66,13 +66,13 @@ class SesiAdminTest extends TestCase
         $this->get(route('dashboard'))->assertOk();
     }
 
-    public function test_pencabutan_tercatat_di_log_aktivitas(): void
+    public function test_pencabutan_tidak_memenuhi_log_aktivitas(): void
     {
         $akun = $this->masuk();
         $akun->update(['password' => Hash::make('SandiBaruLebihPanjang456')]);
         $this->get(route('dashboard'));
 
-        $this->assertDatabaseHas('log_aktivitas', ['aksi' => 'Sesi admin dicabut', 'status' => 'gagal']);
+        $this->assertDatabaseCount('log_aktivitas', 0); // Log hanya berisi perubahan konten dan login gagal
     }
 
     public function test_sesi_lama_tanpa_sidik_tetap_diterima_sampai_habis_masa_berlaku(): void

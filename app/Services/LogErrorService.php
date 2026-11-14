@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Mail\Admin\PeringatanErrorMail;
 use App\Models\log_error;
+use App\Support\AreaLog;
+use App\Support\PenjelasLog;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
@@ -54,12 +56,16 @@ class LogErrorService
     private function simpan(Throwable $e): array
     {
         $lokasi = ltrim(str_replace([base_path(), '\\'], ['', '/'], $e->getFile()), '/') . ':' . $e->getLine();
-        $fingerprint = sha1(get_class($e) . '|' . $lokasi);
+        $url = $this->url();
+        // Area (CMS Artis atau CMS Inner Circle) menentukan halaman Log mana yang menampilkan error ini.
+        $area = AreaLog::dariUrl($url, $lokasi);
+        $fingerprint = AreaLog::sidikJari(get_class($e) . '|' . $lokasi, $area);
         $sekarang = now();
 
         $data = [
+            'area' => $area,
             'pesan' => $this->bersihkan($e->getMessage()),
-            'url' => $this->url(),
+            'url' => $url,
             'metode' => $this->konsol() ? 'CLI' : request()->method(),
             'ip' => $this->konsol() ? null : request()->ip(),
             'pengguna' => $this->pengguna(),
@@ -108,14 +114,20 @@ class LogErrorService
         }
         RateLimiter::hit('log-error-email-global', 3600);
 
+        $penjelasan = PenjelasLog::untuk($log->kelas, (string) $log->pesan, $log->lokasi, $log->url, $log->metode);
+        $inner = $log->area === AreaLog::INNER_CIRCLE && config('inner_circle.aktif');
+
         $surat = new PeringatanErrorMail(
+            judul: $penjelasan['judul'],
+            penjelasan: $penjelasan['deskripsi'],
+            areaLabel: (string) config('log_admin.area.' . AreaLog::valid($log->area), 'CMS Artis'),
             kelas: $log->kelas,
             pesan: $log->pesan,
             lokasi: (string) $log->lokasi,
             url: $log->url,
             waktu: $log->terakhir_pada->locale('id')->translatedFormat('j M Y, H.i') . ' WIB',
             jumlah: (int) $log->jumlah,
-            urlLog: route('log.index'),
+            urlLog: route($inner ? 'ic.admin.log.index' : 'log.index'),
         );
 
         $kirim = function () use ($tujuan, $surat) {
