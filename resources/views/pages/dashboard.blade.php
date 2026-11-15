@@ -13,6 +13,30 @@
             style="background: radial-gradient(circle, var(--cms-glow, #5e0006) 0%, transparent 70%); opacity: 0.35;"></div>
 
         @php
+            $lencana = [
+                'hijau' => 'border-emerald-300/30 bg-emerald-300/10 text-emerald-200',
+                'merah' => 'border-red-400/30 bg-red-400/10 text-red-300',
+                'kuning' => 'border-amber-300/30 bg-amber-300/10 text-amber-200',
+            ];
+            $profilTotal = array_sum($profil->jumlah);
+            $kartuAngka = [
+                ['ikon' => 'bi-card-image', 'angka' => $headerTotal, 'label' => 'Header', 'href' => route('headers')],
+                ['ikon' => 'bi-images', 'angka' => $bannerTotal, 'label' => 'Banner', 'href' => route('banner')],
+                ['ikon' => 'bi-newspaper', 'angka' => $newsTotal, 'label' => 'Berita', 'href' => route('news')],
+                ['ikon' => 'bi-disc-fill', 'angka' => $albumsTotal, 'label' => 'Album', 'href' => route('albums')],
+                [
+                    'ikon' => 'bi-basket-fill',
+                    'angka' => $merchandiseTotal,
+                    'label' => 'Merchandise',
+                    'href' => route('merchandise'),
+                ],
+                [
+                    'ikon' => 'bi-person-fill',
+                    'angka' => $profilTotal,
+                    'label' => 'Isi profil',
+                    'href' => route('dashboard.profile'),
+                ],
+            ];
             $greeting = match (true) {
                 now()->hour < 11 => 'Selamat pagi',
                 now()->hour < 15 => 'Selamat siang',
@@ -45,7 +69,21 @@
                 </a>
             </div>
 
-            {{-- Row 1: Header (hero) + Warna Web & Profil --}}
+            {{-- Angka ringkas: jumlah isi tiap bagian, masing-masing menuju halaman kelolanya --}}
+            <ul class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                @foreach ($kartuAngka as $k)
+                    <li class="min-w-0">
+                        <a href="{{ $k['href'] }}"
+                            class="block h-full rounded-3xl border border-white/10 bg-white/3 p-4 md:p-5 transition-colors hover:border-white/20 hover:bg-white/5">
+                            <i class="bi {{ $k['ikon'] }} text-white/40 text-lg" aria-hidden="true"></i>
+                            <p class="text-2xl md:text-3xl font-bold mt-2">{{ number_format($k['angka'], 0, ',', '.') }}</p>
+                            <p class="text-xs text-white/50 mt-0.5">{{ $k['label'] }}</p>
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+
+            {{-- Row 1: Header (hero) + Warna Web & Log --}}
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
 
                 {{-- Header: preview meniru hero asli (background + logo kecil + judul) --}}
@@ -106,7 +144,7 @@
                     @endcomponent
                 </div>
 
-                {{-- Warna Web & Profil: dua kartu ringkas (sejajar di tablet, ditumpuk di desktop) --}}
+                {{-- Warna Web & Log: dua kartu ringkas (sejajar di tablet, ditumpuk di desktop) --}}
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6 min-w-0">
                     @component('components.dashboard.card.card', [
                         'title' => 'Warna Web',
@@ -124,20 +162,43 @@
                     @endcomponent
 
                     @component('components.dashboard.card.card', [
-                        'title' => 'Profil',
-                        'href' => route('dashboard.profile'),
-                        'icon' => 'bi-person-fill',
+                        'title' => 'Log',
+                        'href' => route('log.index'),
+                        'icon' => 'bi-journal-text',
                     ])
-                        <div class="h-full grid grid-cols-2 gap-3">
-                            <div class="rounded-2xl border border-white/10 bg-white/4 p-4">
-                                <p class="text-2xl font-bold">{{ $highlightCount }}</p>
-                                <p class="text-xs text-white/50 mt-0.5">Highlight</p>
-                            </div>
-                            <div class="rounded-2xl border border-white/10 bg-white/4 p-4">
-                                <p class="text-2xl font-bold">{{ $statistikCount }}</p>
-                                <p class="text-xs text-white/50 mt-0.5">Statistik</p>
-                            </div>
-                        </div>
+                        <a href="{{ route('log.index') }}"
+                            class="flex items-center gap-3 rounded-2xl border p-3 {{ $log->error_terbuka > 0 ? $lencana['merah'] : $lencana['hijau'] }}">
+                            <i class="bi {{ $log->error_terbuka > 0 ? 'bi-exclamation-triangle-fill' : 'bi-check-circle-fill' }}"
+                                aria-hidden="true"></i>
+                            <span class="text-sm font-semibold">
+                                {{ $log->error_terbuka > 0 ? $log->error_terbuka . ' masalah masih terbuka' : 'Tidak ada masalah yang terbuka' }}
+                            </span>
+                        </a>
+                        @if ($log->login_gagal > 0)
+                            <a href="{{ route('log.index', ['tab' => 'aktivitas', 'kategori' => 'akses']) }}"
+                                class="flex items-center gap-3 rounded-2xl border p-3 mt-2 {{ $lencana['kuning'] }}">
+                                <i class="bi bi-shield-exclamation" aria-hidden="true"></i>
+                                <span class="text-sm font-semibold">{{ $log->login_gagal }}x login gagal dalam 24 jam
+                                    terakhir</span>
+                            </a>
+                        @endif
+                        @if ($log->aktivitas->isNotEmpty())
+                            <ul class="flex flex-col gap-2 mt-4">
+                                @foreach ($log->aktivitas as $a)
+                                    <li class="min-w-0">
+                                        <p class="text-sm font-semibold truncate">{{ $a->aksi }}</p>
+                                        <p class="text-xs text-white/50 truncate">
+                                            {{ $a->created_at->locale('id')->translatedFormat('j M Y, H.i') }} ·
+                                            {{ $a->pelaku ?? 'tidak dikenal' }}@if ($a->perangkat)
+                                                · {{ $a->perangkat }}
+                                            @endif
+                                        </p>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @else
+                            <p class="text-xs text-white/40 mt-4">Belum ada perubahan yang tercatat.</p>
+                        @endif
                     @endcomponent
                 </div>
             </div>
@@ -172,7 +233,65 @@
                 @endif
             @endcomponent
 
-            {{-- Row 3: News --}}
+            {{-- Row 3: Profil — hero, bio, dan jumlah tiap daftar --}}
+            @component('components.dashboard.card.card', [
+                'title' => 'Profil',
+                'href' => route('dashboard.profile'),
+                'icon' => 'bi-person-fill',
+            ])
+                @php
+                    $hero = $profil->hero;
+                    $bioTeks = $profil->bio
+                        ? \Illuminate\Support\Str::limit(
+                            trim(html_entity_decode(strip_tags((string) $profil->bio->konten))),
+                            220,
+                        )
+                        : '';
+                @endphp
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="flex items-center gap-4 min-w-0">
+                        @if ($hero && $hero->foto)
+                            <img src="{{ Storage::url('profile-hero/' . $hero->foto) }}" alt="{{ $hero->nama }}"
+                                loading="lazy" decoding="async" class="w-20 h-20 rounded-2xl object-cover shrink-0">
+                        @else
+                            <span aria-hidden="true"
+                                class="w-20 h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/30 text-3xl shrink-0"><i
+                                    class="bi bi-person-fill"></i></span>
+                        @endif
+                        <div class="min-w-0">
+                            @if ($hero)
+                                <p class="text-xs uppercase tracking-widest text-white/40 truncate">{{ $hero->judul_singkat }}
+                                </p>
+                                <p class="font-bold text-lg truncate">{{ $hero->nama }}</p>
+                                <p class="text-sm text-white/60 line-clamp-2">{{ $hero->tagline }}</p>
+                            @else
+                                <p class="text-sm text-white/50">Hero profil belum diisi.</p>
+                                <a href="{{ route('dashboard.profile') }}"
+                                    class="text-xs font-semibold text-white/70 underline underline-offset-4 hover:text-white">Isi
+                                    sekarang</a>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-xs uppercase tracking-widest text-white/40 mb-1">Bio</p>
+                        @if ($bioTeks !== '')
+                            <p class="text-sm text-white/70 wrap-anywhere">{{ $bioTeks }}</p>
+                        @else
+                            <p class="text-sm text-white/50">Bio belum diisi.</p>
+                        @endif
+                    </div>
+                </div>
+                <ul class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 mt-6">
+                    @foreach ($profil->jumlah as $label => $jumlah)
+                        <li class="rounded-2xl border border-white/10 bg-white/4 p-4 min-w-0">
+                            <p class="text-2xl font-bold">{{ number_format($jumlah, 0, ',', '.') }}</p>
+                            <p class="text-xs text-white/50 mt-0.5 truncate">{{ $label }}</p>
+                        </li>
+                    @endforeach
+                </ul>
+            @endcomponent
+
+            {{-- Row 4: News --}}
             @component('components.dashboard.card.card', [
                 'title' => 'Berita Terbaru (' . $newsTotal . ')',
                 'href' => route('news'),
@@ -203,7 +322,7 @@
                 @endif
             @endcomponent
 
-            {{-- Row 4: Album & Merchandise (tidak diubah) --}}
+            {{-- Row 5: Album & Merchandise --}}
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 @component('components.dashboard.card.card', [
                     'title' => 'Album (' . $albumsTotal . ')',
@@ -223,7 +342,8 @@
                                             alt="{{ $item->albums_name }}"
                                             class="w-full h-full object-cover transition-transform group-hover/item:scale-105">
                                     </div>
-                                    <p class="mt-2 text-xs font-semibold text-center line-clamp-1">{{ $item->albums_name }}</p>
+                                    <p class="mt-2 text-xs font-semibold text-center line-clamp-1">{{ $item->albums_name }}
+                                    </p>
                                 </div>
                             @endforeach
                         </div>
@@ -262,28 +382,6 @@
                     @endif
                 @endcomponent
             </div>
-
-            {{-- Row 5: WS Inner Circle — pintasan ke 7 tab (hanya bila flag INNER_CIRCLE_AKTIF menyala) --}}
-            @if (config('inner_circle.aktif'))
-                @component('components.dashboard.card.card', [
-                    'title' => 'WS Inner Circle',
-                    'href' => route('ic.admin.ringkasan'),
-                    'icon' => 'bi-people-fill',
-                ])
-                    <ul class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-                        @foreach (config('inner_circle.tab_admin') as $tab)
-                            <li>
-                                <a href="{{ route($tab['route']) }}"
-                                    class="flex flex-col items-center justify-center gap-2 min-h-24 rounded-2xl border border-white/10 bg-white/4 p-3
-                                    text-white/70 hover:border-white/20 hover:bg-white/10 hover:text-white transition-colors">
-                                    <i class="bi {{ $tab['ikon'] }} text-2xl" aria-hidden="true"></i>
-                                    <span class="text-xs font-semibold text-center">{{ $tab['label'] }}</span>
-                                </a>
-                            </li>
-                        @endforeach
-                    </ul>
-                @endcomponent
-            @endif
         </div>
     </div>
 @endsection

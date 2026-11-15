@@ -5,12 +5,22 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\MengonversiGambarWebp;
 use App\Models\albums;
 use App\Models\banner;
+use App\Models\bio;
+use App\Models\booking;
+use App\Models\collab;
 use App\Models\color_pages;
+use App\Models\genre;
 use App\Models\header;
 use App\Models\highlight;
+use App\Models\log_aktivitas;
+use App\Models\log_error;
+use App\Models\media_coverage;
+use App\Models\media_sosial;
 use App\Models\merchandise;
 use App\Models\news;
+use App\Models\profile_hero;
 use App\Models\statistik;
+use App\Support\AreaLog;
 use App\Support\HtmlSanitizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -44,6 +54,40 @@ class dashboardController extends Controller
         $highlightCount = highlight::count();
         $statistikCount = statistik::count();
 
+        // Ringkasan Profil: hero, bio, dan jumlah tiap daftar (hanya angka, tidak memuat semua baris).
+        $profil = (object) [
+            'hero' => profile_hero::first(),
+            'bio' => bio::first(),
+            'jumlah' => [
+                'Highlight' => $highlightCount,
+                'Statistik' => $statistikCount,
+                'Genre' => genre::count(),
+                'Kolaborasi' => collab::count(),
+                'Media coverage' => media_coverage::count(),
+                'Media sosial' => media_sosial::count(),
+                'Booking' => booking::count(),
+            ],
+        ];
+
+        // Log CMS Artis: masalah yang masih terbuka, login gagal 24 jam terakhir, dan tiga perubahan terakhir.
+        // Bila fitur Inner Circle mati, CMS Artis menampilkan semua error (sama seperti halaman Log).
+        $log = (object) [
+            'error_terbuka' => log_error::query()
+                ->where('selesai', false)
+                ->when(config('inner_circle.aktif'), fn($q) => $q->where('area', AreaLog::ARTIS))
+                ->count(),
+            'login_gagal' => (int) log_aktivitas::query()
+                ->where('kategori', 'akses')
+                ->where('created_at', '>=', now()->subDay())
+                ->sum('jumlah'),
+            'aktivitas' => log_aktivitas::query()
+                ->where('kategori', 'konten')
+                ->orderByDesc('created_at')
+                ->orderByDesc('id_log_aktivitas')
+                ->limit(3)
+                ->get(),
+        ];
+
         return view(
             'pages.dashboard',
             compact(
@@ -60,6 +104,8 @@ class dashboardController extends Controller
                 'color_pages',
                 'highlightCount',
                 'statistikCount',
+                'profil',
+                'log',
             )
         );
     }
