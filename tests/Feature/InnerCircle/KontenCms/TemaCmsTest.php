@@ -9,7 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Satu tema untuk email, editor privasi yang terbaca di tema lavender, dan dock senada.
+ * Satu tema untuk email, editor privasi yang terbaca di tema krem, dan dock senada.
  */
 class TemaCmsTest extends TestCase
 {
@@ -69,7 +69,19 @@ class TemaCmsTest extends TestCase
     {
         $css = file_get_contents(resource_path('css/app.css'));
 
-        $this->assertMatchesRegularExpression('/body\.cms-ic \.cms-dock\s*\{[^}]*--color-neutral-900:\s*#27233f/s', $css);
+        // Dock ikut tema krem (bukan lagi ungu-tua), dan kartu QR/pratinjau email tetap putih asli.
+        $this->assertMatchesRegularExpression('/body\.cms-ic \.cms-dock\s*\{[^}]*--color-neutral-900:\s*#fbf6e9/s', $css);
         $this->assertMatchesRegularExpression('/body\.cms-ic \.cms-asli\s*\{[^}]*--color-white:\s*#fff/s', $css);
+    }
+
+    public function test_tema_cms_inner_circle_krem_dan_tidak_ada_sisa_lavender(): void
+    {
+        $css = file_get_contents(resource_path('css/app.css'));
+
+        $this->assertMatchesRegularExpression('/body\.cms-ic\s*\{[^}]*--color-black:\s*#f5efe0/s', $css);
+        foreach (['#ebe7f7', '#27233f', '#c8b2ff', '#8d73ff', '#a58bff', '#f6f3fd'] as $lavender) {
+            $this->assertStringNotContainsStringIgnoringCase($lavender, $css);
+            $this->assertStringNotContainsStringIgnoringCase($lavender, file_get_contents(resource_path('js/sweetalert.js')));
+        }
     }
 }

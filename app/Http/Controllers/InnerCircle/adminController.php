@@ -17,6 +17,8 @@ use App\Models\ic_event;
 use App\Models\ic_memory;
 use App\Models\ic_reward;
 use App\Models\ic_stempel;
+use App\Models\log_aktivitas;
+use App\Models\log_error;
 use App\Models\member;
 use App\Services\InnerCircle\AcaraService;
 use App\Services\InnerCircle\BandsintownService;
@@ -31,6 +33,7 @@ use App\Services\InnerCircle\PengumumanService;
 use App\Services\InnerCircle\QrService;
 use App\Services\InnerCircle\SinkronGagal;
 use App\Services\InnerCircle\StempelService;
+use App\Support\AreaLog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -78,6 +81,29 @@ class adminController extends Controller
                 ->limit(5)
                 ->get()
                 ->all(),
+            // Ringkasan bagian lain, supaya halaman ini jadi gambaran lengkap seperti Dashboard CMS Artis.
+            'angka' => (object) [
+                'pengumuman_tayang' => ic_broadcast::query()->tayang()->count(),
+                'kenangan_tayang' => ic_memory::query()->tayang()->count(),
+                'kenangan_disembunyikan' => ic_memory::query()->where('status', ic_memory::DISEMBUNYIKAN)->count(),
+            ],
+            'anggotaBaru' => member::query()->orderByDesc('id_member')->limit(5)->get(),
+            'hadiahTahap' => ic_reward::query()
+                ->withCount(['klaim as klaim_menunggu' => fn($q) => $q->whereIn('status', ic_claim::statusMenunggu())])
+                ->orderBy('target_stempel')
+                ->get(),
+            'pengumumanTerbaru' => ic_broadcast::query()->orderByDesc('terbit_pada')->orderByDesc('id_broadcast')->limit(3)->get(),
+            'kenanganTerbaru' => ic_memory::query()->with('member')->orderByDesc('id_memory')->limit(3)->get(),
+            // Log CMS Inner Circle: jumlah masalah yang masih terbuka dan tiga aktivitas admin terakhir.
+            'logRingkas' => (object) [
+                'error_terbuka' => log_error::query()->where('area', AreaLog::INNER_CIRCLE)->where('selesai', false)->count(),
+                'aktivitas' => log_aktivitas::query()
+                    ->where('kategori', 'inner-circle')
+                    ->orderByDesc('created_at')
+                    ->orderByDesc('id_log_aktivitas')
+                    ->limit(3)
+                    ->get(),
+            ],
         ]);
     }
 

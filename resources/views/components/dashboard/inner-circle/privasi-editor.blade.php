@@ -62,7 +62,7 @@
 
 <style>
     /* Warna editor mengikuti tema CMS lewat variabel --color-white (tinta) dan --color-black (latar) milik body.cms-ic,
-       jadi teks tidak lagi putih-di-atas-lavender. Nilai di belakang koma = cadangan bila variabel tidak ada. */
+       jadi teks tidak lagi putih-di-atas-krem. Nilai di belakang koma = cadangan bila variabel tidak ada. */
     #form-privasi .ql-toolbar.ql-snow {
         background-color: color-mix(in srgb, var(--color-white, #fff) 6%, transparent);
         border: none;
