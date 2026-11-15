@@ -8,9 +8,9 @@
             style="background-image: radial-gradient(circle, white 1px, transparent 1px); background-size: 26px 26px;">
         </div>
         <div aria-hidden="true" class="pointer-events-none absolute -top-40 -right-32 w-96 h-96 rounded-full blur-3xl"
-            style="background: radial-gradient(circle, #5e0006 0%, transparent 70%); opacity: 0.5;"></div>
+            style="background: radial-gradient(circle, var(--cms-glow, #5e0006) 0%, transparent 70%); opacity: 0.5;"></div>
         <div aria-hidden="true" class="pointer-events-none absolute top-1/2 -left-40 w-80 h-80 rounded-full blur-3xl"
-            style="background: radial-gradient(circle, #5e0006 0%, transparent 70%); opacity: 0.35;"></div>
+            style="background: radial-gradient(circle, var(--cms-glow, #5e0006) 0%, transparent 70%); opacity: 0.35;"></div>
 
         @php
             $greeting = match (true) {

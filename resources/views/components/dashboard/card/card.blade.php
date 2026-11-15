@@ -27,7 +27,7 @@
         </h2>
         @isset($href)
             <a href="{{ $href }}"
-                class="px-4 py-1.5 rounded-full bg-white text-black text-xs font-semibold hover:bg-white/80 transition-colors shrink-0">
+                class="px-4 py-1.5 rounded-full bg-(--cms-aksen) text-(--cms-aksen-teks) text-xs font-semibold hover:opacity-85 transition-opacity shrink-0">
                 Kelola
             </a>
         @endisset

@@ -2,7 +2,7 @@
 <html lang="id">
 
 {{-- Kerangka CMS Inner Circle. Sama dengan dashboardLayout (CMS Artis); yang beda hanya class `cms-ic` di <body>,
-    yang mengganti tema warna (krem, lihat resources/css/app.css). --}}
+     yang mengganti tema warna (biru terang, lihat resources/css/app.css). --}}
 
 <head>
     <meta charset="UTF-8">

@@ -564,31 +564,38 @@ scroll buat mereka. Autoplay carousel sendiri udah dimatiin lewat JS
     --swiper-pagination-bottom: 18px;
 }
 
-/* ---- Tema dashboard: nero (#252525) menggantikan hitam pekat ----
+/* ---- Tema CMS Artis: Dark Editorial dengan sentuhan Luxury Creative Studio ----
     Dipasang lewat class .dash-theme di <body> dashboardLayout (login juga ikut).
-    Tailwind v4 membaca warna dari variabel --color-*, jadi cukup menimpa
-    --color-black di sini: semua bg-black di dashboard (latar halaman, kartu,
-    modal, bottom sheet) otomatis jadi nero tanpa mengedit puluhan file.
-    Putih, aksen merah, dan hiasan lain sengaja dibiarkan seperti semula.
+    Tailwind v4 membaca warna dari variabel --color-*, jadi menimpa variabel di sini mengubah seluruh dashboard
+    tanpa mengedit puluhan file: bg-black jadi latar #090909, bg-white/3 (kartu) dan border-white/10 mengikuti teks
+    #F5F5F5, bg-neutral-900 (dock, dropdown) jadi permukaan #151515, hover neutral-800 jadi #242424.
+    Aksen merah tua lama (red-950 untuk tombol dan cincin, red-900 untuk hover dan fokus) diganti emas #D6A84B;
+    teks di atas aksen memakai --cms-aksen-teks supaya tetap terbaca. Merah untuk pesan galat (text-red-400) dibiarkan.
     Website publik tidak terpengaruh. */
 body.dash-theme {
-    --color-black: #252525;
+    --color-black: #090909;
+    --color-white: #f5f5f5;
+    --color-neutral-900: #151515;
+    --color-neutral-800: #242424;
+    --color-red-950: #d6a84b;
+    --color-red-900: #e3bb6a;
 }
 
-/* ---- Tema CMS Inner Circle: krem hangat, lembut di mata ----
+/* ---- Tema CMS Inner Circle: Modern SaaS biru, terang dan bersih ----
     Dipasang lewat class .cms-ic di <body> icDashboardLayout. Memakai teknik yang sama dengan .dash-theme:
-    Tailwind v4 membaca warna dari variabel --color-*, jadi menimpa variabel di sini mengubah seluruh halaman
-    tanpa mengedit view. "Putih" dibalik jadi tinta cokelat-tua dan "hitam" jadi latar krem (bukan putih murni,
-    supaya tidak silau), sehingga bg-white/5, border-white/10, text-white/60 dst. otomatis mengikuti.
-    Aksen merah tua CMS Artis (red-950 untuk tombol dan cincin, red-900 untuk hover dan fokus) diganti pasir dan karamel. */
+    menimpa variabel --color-* mengubah seluruh halaman tanpa mengedit view. "Putih" dibalik jadi tinta Dark Blue
+    #0B4778 dan "hitam" jadi latar #F3F8FC, sehingga border-white/10, text-white/60 dst. otomatis mengikuti.
+    Aksen merah tua CMS Artis (red-950 untuk tombol dan cincin, red-900 untuk hover dan fokus) diganti Primary #1769A6
+    dan Dark Blue #0B4778. Kartu berpermukaan putih (#FFFFFF) dan sekunder #E1F2FC, lihat aturan .bg-white/N di bawah. */
 body.cms-ic {
     color-scheme: light;
-    --color-white: #3b3126;
-    --color-black: #f5efe0;
-    --color-red-950: #e6d3a8;
-    --color-red-900: #b98b3e;
-    /* Latar opsi dropdown (bg-neutral-900) */
-    --color-neutral-900: #fbf7ec;
+    --color-white: #0b4778;
+    --color-black: #f3f8fc;
+    --color-red-950: #1769a6;
+    --color-red-900: #0b4778;
+    /* Latar opsi dropdown (bg-neutral-900), hover dock (neutral-800) */
+    --color-neutral-900: #ffffff;
+    --color-neutral-800: #e1f2fc;
     /* Warna teks yang dirancang untuk latar gelap digelapkan supaya terbaca di latar terang. */
     --color-red-100: #7a1d17;
     --color-red-200: #8e231c;
@@ -600,6 +607,25 @@ body.cms-ic {
     --color-emerald-200: #0a6847;
     --color-sky-200: #0b5b8c;
 }
+/* Permukaan: di tema gelap "putih tipis" (bg-white/3) berarti kartu sedikit lebih terang dari latar. Di tema terang
+   itu dibaca sebagai kartu putih (#FFFFFF) di atas latar #F3F8FC; baris di dalam kartu (bg-white/2, /4) memakai warna
+   latar, dan isian/ubin (bg-white/5) memakai warna sekunder #E1F2FC. Aturan tanpa @layer menang atas utilitas Tailwind. */
+body.cms-ic .bg-white\/3 {
+    background-color: #ffffff;
+    box-shadow: 0 1px 3px rgb(11 71 120 / 0.08);
+}
+body.cms-ic .bg-white\/2,
+body.cms-ic .bg-white\/4 {
+    background-color: #f3f8fc;
+}
+body.cms-ic .bg-white\/5 {
+    background-color: #e1f2fc;
+}
+/* Aturan di atas menang atas hover:bg-white/N bawaan; tombol dan tautan yang berlatar sekunder diberi hover sendiri. */
+body.cms-ic a.bg-white\/5:hover,
+body.cms-ic button.bg-white\/5:hover {
+    background-color: #cde6f7;
+}
 /* Input tanggal/pilihan bawaan browser memakai class scheme-dark: di tema terang harus terang. */
 body.cms-ic .scheme-dark {
     color-scheme: light;
@@ -610,33 +636,47 @@ body.cms-ic .cms-asli {
     --color-black: #000;
     --color-neutral-900: #171717;
 }
-/* Dock navigasi (desktop), tombol burger, saklar mode, dan bottom sheet (HP): ikut krem, sama dengan halaman.
-   Kelas aktif `bg-white text-black` jadi pil cokelat-tua berteks krem; hover `bg-white/10` jadi kilap cokelat tipis.
-   Di atas latar krem bayangan hitam tidak terlihat, jadi dock diberi bayangan hangat dan garis tepi tipis sendiri.
-   Tanpa mengedit markup navbar (dipakai bersama CMS Artis). */
-body.cms-ic .cms-dock {
-    --color-white: #3b3126;
-    --color-black: #f5efe0;
-    --color-neutral-900: #fbf6e9;
-    --color-neutral-800: #efe5cf;
-}
+/* Dock navigasi (desktop), tombol burger, saklar mode, dan bottom sheet (HP) ikut tema halaman.
+   Di atas latar terang bayangan hitam tidak terlihat, jadi dock diberi bayangan biru dan garis tepi tipis sendiri. */
 body.cms-ic .cms-dock:not(#dashSheetOverlay) {
     box-shadow:
-        0 0 0 1px rgb(59 49 38 / 0.1),
-        0 18px 40px -14px rgb(90 66 30 / 0.4);
+        0 0 0 1px rgb(11 71 120 / 0.1),
+        0 18px 40px -14px rgb(11 71 120 / 0.35);
 }
 /* Lapisan gelap di belakang bottom sheet (HP) tetap gelap supaya isi halaman redup, bukan memucat. */
 body.cms-ic #dashSheetOverlay {
-    --color-black: #3b3126;
+    --color-black: #0b4778;
 }
 
-/* Warna tombol konfirmasi SweetAlert mengikuti tema (merah tua di CMS Artis, pasir di CMS Inner Circle). */
+/* ---- Aksen CMS (dipakai bersama CMS Artis dan CMS Inner Circle) ----
+    --cms-aksen       : warna utama tombol/menu aktif (emas di CMS Artis, biru Primary di CMS Inner Circle)
+    --cms-aksen-teks  : warna teks di atas aksen (gelap di atas emas, putih di atas biru)
+    --cms-glow        : warna cahaya blur di sudut halaman
+    Dipakai juga oleh tombol konfirmasi SweetAlert dan tombol "Kelola". */
 :root {
-    --cms-aksen: #5e0006;
+    --cms-aksen: #d6a84b;
+    --cms-aksen-teks: #090909;
+    --cms-glow: #9a7430;
 }
 body.cms-ic {
-    --cms-aksen: #e6d3a8;
-    --cms-glow: #e0b873;
+    --cms-aksen: #1769a6;
+    --cms-aksen-teks: #ffffff;
+    --cms-glow: #8cc4ec;
+}
+/* Tombol utama lama (bg-red-950 + text-white) memakai aksen: teks putihnya diganti agar terbaca di atas emas. */
+body.dash-theme .bg-red-950,
+body.cms-ic .bg-red-950 {
+    color: var(--cms-aksen-teks);
+}
+body.dash-theme .file\:bg-red-950::file-selector-button,
+body.cms-ic .file\:bg-red-950::file-selector-button {
+    color: var(--cms-aksen-teks);
+}
+/* Menu aktif di dock dan bottom sheet (bg-white text-black) memakai aksen. */
+.cms-dock .bg-white,
+.cms-dock.bg-white {
+    background-color: var(--cms-aksen);
+    color: var(--cms-aksen-teks);
 }
 
 /* ---- Chip filter/tab CMS (Fase A) ----

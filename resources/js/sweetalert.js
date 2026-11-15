@@ -1,10 +1,10 @@
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
 
-// CMS Inner Circle memakai tema krem lembut (class cms-ic di <body>); CMS Artis tetap gelap.
+// CMS Inner Circle memakai tema biru terang (class cms-ic di <body>); CMS Artis memakai tema gelap emas.
 const temaIc = document.body.classList.contains("cms-ic");
-const latarPopup = temaIc ? "#fbf7ec" : "#252525";
-const warnaTeks = temaIc ? "#3b3126" : "#ffffff";
+const latarPopup = temaIc ? "#ffffff" : "#151515";
+const warnaTeks = temaIc ? "#0b4778" : "#f5f5f5";
 
 const swal = Swal.mixin({
     background: latarPopup,
@@ -17,7 +17,7 @@ const swal = Swal.mixin({
         htmlContainer: "text-white/60",
 
         confirmButton:
-            "px-4 py-2 rounded-lg bg-(--cms-aksen) hover:bg-(--cms-aksen)/80 text-white font-semibold transition",
+            "px-4 py-2 rounded-lg bg-(--cms-aksen) hover:bg-(--cms-aksen)/80 text-(--cms-aksen-teks) font-semibold transition",
 
         cancelButton:
             "px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 font-semibold transition ml-2",
