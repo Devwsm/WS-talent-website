@@ -14,6 +14,10 @@ use Symfony\Component\HttpFoundation\Response;
  * - X-Frame-Options mencegah clickjacking (situs ini tidak pernah di-embed di situs lain)
  * - HSTS hanya dikirim lewat HTTPS dan di produksi (jangan di lokal: browser akan "mengunci" localhost ke HTTPS)
  *
+ * - CMS (/dashboard) dan login admin (/login) tidak boleh masuk hasil pencarian: robots.txt saja hanya melarang crawler
+ *   membuka halamannya, belum mencegah alamatnya diindeks bila ada situs lain yang menautkannya. X-Robots-Tag: noindex
+ *   mencegahnya. Halaman publik (beranda, profil, /innercircle) tidak disentuh.
+ *
  * Content-Security-Policy dikirim menurut config/keamanan.php (mode off / report / enforce). Di production bawaannya
  * `report`: tidak memblokir apa pun, hanya melaporkan ke /csp-report (tampil di halaman Log). Lihat catatan di
  * config/keamanan.php dan README bagian 4.8.
@@ -35,6 +39,10 @@ class SecurityHeaders
             'camera=(self), microphone=(), geolocation=(self), payment=(), usb=(), interest-cohort=()'
         );
         $response->headers->set('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+
+        if ($request->is('dashboard', 'dashboard/*', 'login', 'login/*')) {
+            $response->headers->set('X-Robots-Tag', 'noindex, nofollow');
+        }
 
         if ($csp = KebijakanCsp::header()) {
             $response->headers->set($csp[0], $csp[1]);
