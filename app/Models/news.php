@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Terjadwal;
 use Illuminate\Database\Eloquent\Model;
 
 class news extends Model
 {
-    //
+    use Terjadwal;
+
     protected $table = 'news';
     protected $primaryKey = 'id_news';
     protected $fillable = [
@@ -15,6 +17,7 @@ class news extends Model
         'news_source',
         'news_date',
         'news_cover',
-        'news_link'
+        'news_link',
+        'terbit_pada',
     ];
 }

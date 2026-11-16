@@ -31,8 +31,11 @@ class homeController extends Controller
             // News ditampilin sebagai grid statis (bukan carousel) di homepage,
             // jadi dibatasi ke 8 terbaru aja biar nggak makin berat seiring
             // jumlah berita nambah. List lengkap tetep ada di dashboard admin.
-            $news = news::latest()->take(8)->get();
-            foreach ($news as $item) {
+            // Berita yang masih terjadwal ikut disimpan di cache (terpisah) dan disaring ulang tiap kunjungan,
+            // supaya muncul tepat pada waktunya tanpa menunggu cache habis (lihat trait Terjadwal).
+            $news = news::tayang()->terbaruTayang()->take(8)->get();
+            $newsTerjadwal = news::belumTayang()->get();
+            foreach ($news->concat($newsTerjadwal) as $item) {
                 $item->news_description = HtmlSanitizer::clean($item->news_description);
             }
 
@@ -42,12 +45,14 @@ class homeController extends Controller
             }
 
             return [
-                'albums' => CachePublik::polos(albums::all()),
-                'banner' => CachePublik::polos(banner::all()),
-                'headers' => CachePublik::polos(header::all()),
+                // Album, banner, header, dan merchandise tampil menurut urutan yang diatur di CMS.
+                'albums' => CachePublik::polos(albums::urut()->get()),
+                'banner' => CachePublik::polos(banner::urut()->get()),
+                'headers' => CachePublik::polos(header::urut()->get()),
                 'statistik' => CachePublik::polos(statistik::all()),
                 'news' => CachePublik::polos($news),
-                'merchandise' => CachePublik::polos(merchandise::all()),
+                'newsTerjadwal' => CachePublik::polos($newsTerjadwal),
+                'merchandise' => CachePublik::polos(merchandise::urut()->get()),
                 // Fase 6 langkah 3 — data Profile buat teaser di homepage
                 'hero' => CachePublik::polos(profile_hero::first()),
                 'genre' => CachePublik::polos(genre::all()),
@@ -55,12 +60,23 @@ class homeController extends Controller
             ];
         });
 
+        // Yang masih terjadwal disaring di sini (bukan di cache): berita yang jadwalnya sudah tiba ikut naik ke
+        // daftar dan diurutkan ulang, lalu dipotong 8.
+        $news = news::hanyaTayang(
+            CachePublik::daftar(news::class, $polos['news'])
+                // `?? []`: cache lama (sebelum fitur jadwal) belum punya kunci ini; tidak boleh membuat halaman error.
+                ->concat(CachePublik::daftar(news::class, $polos['newsTerjadwal'] ?? []))
+        )
+            ->sortByDesc(fn(news $n) => [($n->terbit_pada ?? $n->created_at)?->getTimestamp(), $n->id_news])
+            ->take(8)
+            ->values();
+
         return view('pages/home', [
-            'albums' => CachePublik::daftar(albums::class, $polos['albums']),
+            'albums' => albums::hanyaTayang(CachePublik::daftar(albums::class, $polos['albums'])),
             'banner' => CachePublik::daftar(banner::class, $polos['banner']),
             'headers' => CachePublik::daftar(header::class, $polos['headers']),
             'statistik' => CachePublik::daftar(statistik::class, $polos['statistik']),
-            'news' => CachePublik::daftar(news::class, $polos['news']),
+            'news' => $news,
             'merchandise' => CachePublik::daftar(merchandise::class, $polos['merchandise']),
             'hero' => CachePublik::satu(profile_hero::class, $polos['hero']),
             'genre' => CachePublik::daftar(genre::class, $polos['genre']),

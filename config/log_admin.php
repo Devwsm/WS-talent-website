@@ -104,6 +104,12 @@ return [
             'ket_tanpa_nama' => 'Data {objek} diperbarui.',
             'gagal' => '{objek} gagal diubah',
         ],
+        'urutan' => [
+            'judul' => 'Urutan {objek} diubah',
+            'ket' => '“{nama}” dipindahkan di halaman utama.',
+            'ket_tanpa_nama' => 'Urutan {objek} di halaman utama diperbarui.',
+            'gagal' => 'Urutan {objek} gagal diubah',
+        ],
         'hapus' => [
             'judul' => '{objek} dihapus',
             'ket' => '“{nama}” dihapus dari website.',

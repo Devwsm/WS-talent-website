@@ -153,7 +153,9 @@
         @endif
 
         // Update preview secara live tiap kali konten Quill berubah
-        quill.on('text-change', () => {
+        quill.on('text-change', (delta, lama, sumber) => {
+            // Penjaga "perubahan belum disimpan" (cms-form.js) tidak melihat ketikan Quill lewat input biasa.
+            if (sumber === 'user') quill.root.closest('form')?.dispatchEvent(new Event('jaga:ubah'));
             const html = quill.root.innerHTML;
             previewContent.innerHTML = quill.getText().trim() ? html :
                 '<span class="text-white/30">—</span>';

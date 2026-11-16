@@ -110,19 +110,33 @@
 
             {{-- List data merchandise yang udah ditambahkan --}}
             <div>
-                <h2 class="font-bold uppercase tracking-wide text-sm mb-4 flex items-center gap-2">
-                    <i class="bi bi-basket-fill text-white/50"></i> Merchandise Tersimpan ({{ $merchandise->total() }})
-                </h2>
+                <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <h2 class="font-bold uppercase tracking-wide text-sm flex items-center gap-2">
+                        <i class="bi bi-basket-fill text-white/50"></i> Merchandise Tersimpan ({{ $merchandise->total() }})
+                    </h2>
+                    <x-dashboard.cari-daftar :q="$q" placeholder="Cari merchandise atau link"
+                        label="Cari merchandise atau link" />
+                </div>
+
+                @if (!$urutanBisa)
+                    <p class="-mt-2 mb-3 text-xs text-white/40">Urutan tidak bisa diubah saat mencari. Tekan Reset untuk
+                        menggeser.</p>
+                @endif
 
                 @if ($merchandise->isEmpty())
                     @include('components/dashboard/card/empty-state', [
-                        'message' => 'Belum ada merchandise yang ditambahkan.',
+                        'message' =>
+                            $q !== ''
+                                ? 'Tidak ada merchandise yang cocok dengan “' . $q . '”.'
+                                : 'Belum ada merchandise yang ditambahkan.',
                     ])
                 @else
                     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                         @foreach ($merchandise as $item)
-                            <div
-                                class="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/3 p-3 transition-colors hover:border-white/20 min-w-0">
+                            <div id="item-{{ $item->id_merchandise }}"
+                                class="flex scroll-mt-24 items-center gap-3 rounded-2xl border border-white/10 bg-white/3 p-3 transition-colors hover:border-white/20 target:border-white/40 target:bg-white/6 min-w-0">
+                                <x-dashboard.kontrol-urutan modul="merchandise" :id="$item->id_merchandise" :nama="$item->merchandise_name"
+                                    :posisi="$merchandise->firstItem() + $loop->index" :total="$merchandise->total()" :aktif="$urutanBisa" />
                                 <img src="{{ Storage::url('merchandise/' . $item->merchandise_cover) }}"
                                     alt="{{ $item->merchandise_name }}" loading="lazy" decoding="async"
                                     class="w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-xl object-cover border border-white/10">
@@ -132,6 +146,10 @@
                                         {{ $item->link_merchandise }}</p>
                                 </div>
                                 <div class="flex items-center gap-2 shrink-0">
+                                    @if ($urutanBisa)
+                                        <x-dashboard.tombol-pertama modul="merchandise" :id="$item->id_merchandise" :nama="$item->merchandise_name"
+                                            :posisi="$merchandise->firstItem() + $loop->index" />
+                                    @endif
                                     @include('components.dashboard.modal-edit-merchandise')
                                     @include('components.dashboard.btn-hapus-merchandise')
                                 </div>

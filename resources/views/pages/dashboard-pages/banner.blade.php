@@ -116,8 +116,10 @@
                 @else
                     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                         @foreach ($banner as $item)
-                            <div
-                                class="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/3 p-3 transition-colors hover:border-white/20 min-w-0">
+                            <div id="item-{{ $item->id_banner }}"
+                                class="flex scroll-mt-24 items-center gap-3 rounded-2xl border border-white/10 bg-white/3 p-3 transition-colors hover:border-white/20 target:border-white/40 target:bg-white/6 min-w-0">
+                                <x-dashboard.kontrol-urutan modul="banner" :id="$item->id_banner" :nama="$item->banner_name"
+                                    :posisi="$loop->iteration" :total="$banner->count()" :aktif="true" />
                                 <img src="{{ Storage::url('banner/' . $item->banner_cover) }}"
                                     alt="{{ $item->banner_name }}" loading="lazy" decoding="async"
                                     class="w-20 h-14 sm:w-24 sm:h-16 shrink-0 rounded-xl object-cover border border-white/10">
@@ -127,6 +129,10 @@
                                     </p>
                                 </div>
                                 <div class="flex items-center gap-2 shrink-0">
+                                    @if (true)
+                                        <x-dashboard.tombol-pertama modul="banner" :id="$item->id_banner" :nama="$item->banner_name"
+                                            :posisi="$loop->iteration" />
+                                    @endif
                                     @include('components.dashboard.modal-edit-banner')
                                     @include('components.dashboard.btn-hapus-banner')
                                 </div>

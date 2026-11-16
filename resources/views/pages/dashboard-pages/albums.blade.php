@@ -61,6 +61,8 @@
                             <p class="text-xs text-white/30">Gambar maks 1MB &middot; rasio 1:1 (kotak) paling pas.</p>
                         </div>
 
+                        <x-dashboard.isian-jadwal :nilai="old('terbit_pada')" target="#previewJadwal" />
+
                         <button type="submit"
                             class="w-full text-white font-bold uppercase tracking-widest p-3 mt-2 bg-red-950 hover:bg-red-900 active:scale-95 transition rounded-lg">
                             Upload Album
@@ -100,25 +102,43 @@
                             <p class="text-xs uppercase text-black/40">Link Spotify saat cover diklik</p>
                             <p id="previewLink" class="text-sm text-black/60 break-all">—</p>
                         </div>
+                        <div class="flex flex-col gap-1">
+                            <p class="text-xs uppercase text-black/40">Jadwal tayang</p>
+                            <p id="previewJadwal" class="text-sm text-black/60">Langsung tampil</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
             {{-- List data album yang udah ditambahkan --}}
             <div>
-                <h2 class="font-bold uppercase tracking-wide text-sm mb-4 flex items-center gap-2">
-                    <i class="bi bi-disc-fill text-white/50"></i> Album Tersimpan ({{ $albums->total() }})
-                </h2>
+                <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <h2 class="font-bold uppercase tracking-wide text-sm flex items-center gap-2">
+                        <i class="bi bi-disc-fill text-white/50"></i> Album Tersimpan ({{ $albums->total() }})
+                    </h2>
+                    <x-dashboard.cari-daftar :q="$q" placeholder="Cari album atau link"
+                        label="Cari album atau link" />
+                </div>
+
+                @if (!$urutanBisa)
+                    <p class="-mt-2 mb-3 text-xs text-white/40">Urutan tidak bisa diubah saat mencari. Tekan Reset untuk
+                        menggeser.</p>
+                @endif
 
                 @if ($albums->isEmpty())
                     @include('components/dashboard/card/empty-state', [
-                        'message' => 'Belum ada album yang ditambahkan.',
+                        'message' =>
+                            $q !== ''
+                                ? 'Tidak ada album yang cocok dengan “' . $q . '”.'
+                                : 'Belum ada album yang ditambahkan.',
                     ])
                 @else
                     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                         @foreach ($albums as $item)
-                            <div
-                                class="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/3 p-3 transition-colors hover:border-white/20 min-w-0">
+                            <div id="item-{{ $item->id_albums }}"
+                                class="flex scroll-mt-24 items-center gap-3 rounded-2xl border border-white/10 bg-white/3 p-3 transition-colors hover:border-white/20 target:border-white/40 target:bg-white/6 min-w-0">
+                                <x-dashboard.kontrol-urutan modul="albums" :id="$item->id_albums" :nama="$item->albums_name"
+                                    :posisi="$albums->firstItem() + $loop->index" :total="$albums->total()" :aktif="$urutanBisa" />
                                 <img src="{{ Storage::url('albums/' . $item->albums_cover) }}"
                                     alt="{{ $item->albums_name }}" loading="lazy" decoding="async"
                                     class="w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-xl object-cover border border-white/10">
@@ -126,8 +146,13 @@
                                     <p class="font-semibold text-sm text-white truncate">{{ $item->albums_name }}</p>
                                     <p class="text-xs text-white/40 break-all line-clamp-2 mt-0.5">{{ $item->link_spotify }}
                                     </p>
+                                    <div class="mt-1"><x-dashboard.lencana-jadwal :item="$item" /></div>
                                 </div>
                                 <div class="flex items-center gap-2 shrink-0">
+                                    @if ($urutanBisa)
+                                        <x-dashboard.tombol-pertama modul="albums" :id="$item->id_albums" :nama="$item->albums_name"
+                                            :posisi="$albums->firstItem() + $loop->index" />
+                                    @endif
                                     @include('components.dashboard.modal-edit-albums')
                                     @include('components.dashboard.btn-hapus-albums')
                                 </div>

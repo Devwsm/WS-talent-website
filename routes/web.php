@@ -23,6 +23,7 @@ use App\Http\Controllers\logController;
 use App\Http\Controllers\loginController;
 use App\Http\Controllers\profileController;
 use App\Http\Controllers\SeoController;
+use App\Http\Controllers\urutanController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('/')->group(function () {
@@ -263,6 +264,7 @@ Route::prefix('/dashboard')->middleware(['cekLogin', 'catatAktivitas'])->group(f
         Route::post('/tambahBanner', [dashboardController::class, 'tambahBanner'])->name('banner.tambah')->middleware('throttle:admin-tulis');
         Route::delete('/hapusBanner/{id}', [dashboardController::class, 'hapusBanner'])->name('banner.hapus')->middleware('throttle:admin-tulis');
         Route::put('/updateBanner/{id}', [dashboardController::class, 'updateBanner'])->name('banner.update')->middleware('throttle:admin-tulis');
+        Route::patch('/urutan/{id}', [urutanController::class, 'geser'])->whereNumber('id')->defaults('modul', 'banner')->name('banner.urutan')->middleware('throttle:admin-aksi-kecil');
     });
 
     Route::prefix('/headers')->group(function () {
@@ -270,6 +272,7 @@ Route::prefix('/dashboard')->middleware(['cekLogin', 'catatAktivitas'])->group(f
         Route::post('/tambahHeaders', [dashboardController::class, 'tambahHeaders'])->name('headers.tambah')->middleware('throttle:admin-tulis');
         Route::delete('/hapusHeaders/{id}', [dashboardController::class, 'hapusHeaders'])->name('headers.hapus')->middleware('throttle:admin-tulis');
         Route::put('/updateHeaders/{id}', [dashboardController::class, 'updateHeaders'])->name('headers.update')->middleware('throttle:admin-tulis');
+        Route::patch('/urutan/{id}', [urutanController::class, 'geser'])->whereNumber('id')->defaults('modul', 'headers')->name('headers.urutan')->middleware('throttle:admin-aksi-kecil');
     });
 
     Route::prefix('/albums')->group(function () {
@@ -277,6 +280,7 @@ Route::prefix('/dashboard')->middleware(['cekLogin', 'catatAktivitas'])->group(f
         Route::post('/tambahAlbums', [dashboardController::class, 'tambahAlbums'])->name('albums.tambah')->middleware('throttle:admin-tulis');
         Route::delete('/hapusAlbums/{id}', [dashboardController::class, 'hapusAlbums'])->name('albums.hapus')->middleware('throttle:admin-tulis');
         Route::put('/updateAlbums/{id}', [dashboardController::class, 'updateAlbums'])->name('albums.update')->middleware('throttle:admin-tulis');
+        Route::patch('/urutan/{id}', [urutanController::class, 'geser'])->whereNumber('id')->defaults('modul', 'albums')->name('albums.urutan')->middleware('throttle:admin-aksi-kecil');
     });
 
     Route::prefix('/news')->group(function () {
@@ -291,5 +295,6 @@ Route::prefix('/dashboard')->middleware(['cekLogin', 'catatAktivitas'])->group(f
         Route::post('/tambahMerchandise', [dashboardController::class, 'tambahMerchandise'])->name('merchandise.tambah')->middleware('throttle:admin-tulis');
         Route::delete('/hapusMerchandise/{id}', [dashboardController::class, 'hapusMerchandise'])->name('merchandise.hapus')->middleware('throttle:admin-tulis');
         Route::put('/updateMerchandise/{id}', [dashboardController::class, 'updateMerchandise'])->name('merchandise.update')->middleware('throttle:admin-tulis');
+        Route::patch('/urutan/{id}', [urutanController::class, 'geser'])->whereNumber('id')->defaults('modul', 'merchandise')->name('merchandise.urutan')->middleware('throttle:admin-aksi-kecil');
     });
 });

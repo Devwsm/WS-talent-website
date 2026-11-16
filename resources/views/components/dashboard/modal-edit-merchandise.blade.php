@@ -39,7 +39,7 @@
                         <input type="text" name="link_merchandise" value="{{ $item->link_merchandise }}"
                             class="w-full min-w-0 bg-white/5 border border-white/15 text-white placeholder-white/30 p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition">
                     </div>
-                    <div class="flex flex-col gap-1.5">
+                    <div class="flex flex-col gap-1.5" data-media-input>
                         <label class="text-sm font-semibold uppercase tracking-widest text-white/60">
                             Merchandise Cover
                         </label>
@@ -49,12 +49,20 @@
                                 class="max-h-32 rounded-lg border border-white/10 object-cover mb-1">
                         @endif
 
-                        <input type="file" name="merchandise_cover"
+                        <input type="file" name="merchandise_cover" accept="image/jpeg,image/jpg,image/png"
+                            data-preview-target="edit_merchandise_cover_{{ $item->id_merchandise }}"
+                            onchange="new MediaPreview(this).handle(event)"
                             class="w-full bg-white/5 border border-white/15 border-dashed text-white/50 p-3 rounded-lg cursor-pointer
                                 file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0
                                 file:text-sm file:font-semibold file:bg-red-950 file:text-white
                                 hover:file:bg-red-900 transition">
                         <p class="text-xs text-white/30">Kosongkan kalau tidak ingin mengganti gambar.</p>
+                        <div id="preview-edit_merchandise_cover_{{ $item->id_merchandise }}" class="hidden mt-1">
+                            <p class="text-xs text-white/30 mb-1">Preview baru:</p>
+                            <img class="preview-el max-h-32 rounded-lg border border-white/10 object-cover"
+                                alt="Preview cover baru" />
+                        </div>
+                        <p class="error-el hidden text-xs text-red-400"></p>
                     </div>
                 </div>
                 <!-- Footer -->

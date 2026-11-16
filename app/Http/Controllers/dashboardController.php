@@ -20,8 +20,10 @@ use App\Models\merchandise;
 use App\Models\news;
 use App\Models\profile_hero;
 use App\Models\statistik;
+use App\Services\Cms\UrutanTampil;
 use App\Support\AreaLog;
 use App\Support\HtmlSanitizer;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
@@ -39,17 +41,18 @@ class dashboardController extends Controller
     {
         // Ringkasan dashboard hanya butuh jumlah dan beberapa data teratas, jadi tidak memuat semua baris
         // (dulu seluruh isi berita, album, dll. ikut ditarik hanya untuk menampilkan angka). Kartu "Berita Terbaru"
-        // memakai urutan yang sama dengan halaman Home (paling baru dulu); lainnya memakai kunci utama.
+        // memakai urutan yang sama dengan halaman Home (paling baru dulu); album, banner, header, dan merchandise
+        // memakai urutan tampil yang diatur di CMS. Berita dan album yang masih terjadwal belum ikut karena belum tampil.
         $bannerTotal = banner::count();
-        $bannerPertama = banner::orderBy('id_banner')->first();
+        $bannerPertama = banner::urut()->first();
         $headerTotal = header::count();
-        $headerPertama = header::orderBy('id_header')->first();
+        $headerPertama = header::urut()->first();
         $newsTotal = news::count();
-        $newsTampil = news::latest()->orderByDesc('id_news')->take(3)->get();
+        $newsTampil = news::tayang()->terbaruTayang()->take(3)->get();
         $albumsTotal = albums::count();
-        $albumsTampil = albums::orderBy('id_albums')->take(8)->get();
+        $albumsTampil = albums::tayang()->urut()->take(8)->get();
         $merchandiseTotal = merchandise::count();
-        $merchandiseTampil = merchandise::orderBy('id_merchandise')->take(8)->get();
+        $merchandiseTampil = merchandise::urut()->take(8)->get();
         $color_pages = color_pages::first();
         $highlightCount = highlight::count();
         $statistikCount = statistik::count();
@@ -131,7 +134,7 @@ class dashboardController extends Controller
     // banner
     public function banner()
     {
-        $banner = banner::all();
+        $banner = banner::urut()->get();
         return view('pages.dashboard-pages.banner', compact('banner'));
     }
 
@@ -163,6 +166,7 @@ class dashboardController extends Controller
         $data->banner_name = $request->banner_name;
         $data->link_banner = $request->link_banner;
         $data->banner_cover = $filename; // hanya nama file
+        $data->urutan = banner::urutanBerikut();
         $data->save();
 
         return redirect()->route('banner')->with('success', 'inputan berhasil ditambahkan');
@@ -228,7 +232,7 @@ class dashboardController extends Controller
     // header
     public function headers()
     {
-        $header = header::all();
+        $header = header::urut()->get();
         return view('pages.dashboard-pages.header', compact('header'));
     }
 
@@ -317,6 +321,7 @@ class dashboardController extends Controller
             $data->header_description = $request->header_description;
             $data->link_header = $request->link_header;
             $data->header_background = $bgFilename; // hanya nama file
+            $data->urutan = header::urutanBerikut();
             $data->save();
         } catch (\Throwable $e) {
             return $this->gagalProsesHeader($e, $tersimpan);
@@ -470,10 +475,17 @@ class dashboardController extends Controller
 
 
     // albums
-    public function albums()
+    public function albums(Request $request)
     {
-        $albums = albums::latest()->paginate(9)->withQueryString();
-        return view('pages.dashboard-pages.albums', compact('albums'));
+        $q = $this->kataCari($request);
+        $albums = albums::query()
+            ->when($q !== '', fn($query) => $this->cocok($query, ['albums_name', 'link_spotify'], $q))
+            ->urut()
+            ->paginate(UrutanTampil::PER_HALAMAN)
+            ->withQueryString();
+        $urutanBisa = $q === '';
+
+        return view('pages.dashboard-pages.albums', compact('albums', 'q', 'urutanBisa'));
     }
 
     public function tambahAlbums(Request $request)
@@ -482,11 +494,13 @@ class dashboardController extends Controller
             'albums_name' => 'required|string|max:255',
             'link_spotify' => 'required|url:http,https|max:255',
             'albums_cover' => 'required|image|mimes:jpg,jpeg,png|max:1024',
+            'terbit_pada' => self::ATURAN_JADWAL,
         ], [
             'albums_name.required' => 'Nama Album harus diisi.',
             'link_spotify.required' => 'Link Spotify harus diisi.',
             'link_spotify.url' => 'Link Spotify harus berupa alamat lengkap yang diawali http:// atau https://.',
             'link_spotify.max' => 'Link Spotify terlalu panjang (maksimal 255 karakter).',
+            'terbit_pada.date_format' => self::PESAN_JADWAL,
             'albums_cover.required' => 'Cover Album harus diisi.',
             'albums_cover.image' => 'File harus berupa gambar.',
             'albums_cover.max' => 'Cover Album tidak boleh lebih dari 1MB.',
@@ -504,9 +518,11 @@ class dashboardController extends Controller
         $data->albums_name = $request->albums_name;
         $data->link_spotify = $request->link_spotify;
         $data->albums_cover = $filename; // hanya nama file
+        $data->urutan = albums::urutanBerikut();
+        $data->terbit_pada = $this->jadwal($request);
         $data->save();
 
-        return redirect()->route('albums')->with('success', 'inputan berhasil ditambahkan');
+        return redirect()->route('albums')->with('success', $this->pesanTambah('inputan berhasil ditambahkan', 'Album', $data->terbit_pada));
     }
 
 
@@ -516,11 +532,13 @@ class dashboardController extends Controller
             'albums_name' => 'required|string|max:255',
             'link_spotify' => 'required|url:http,https|max:255',
             'albums_cover' => 'nullable|image|mimes:jpg,jpeg,png|max:1024',
+            'terbit_pada' => self::ATURAN_JADWAL,
         ], [
             'albums_name.required' => 'Nama Album harus diisi.',
             'link_spotify.required' => 'Link Spotify harus diisi.',
             'link_spotify.url' => 'Link Spotify harus berupa alamat lengkap yang diawali http:// atau https://.',
             'link_spotify.max' => 'Link Spotify terlalu panjang (maksimal 255 karakter).',
+            'terbit_pada.date_format' => self::PESAN_JADWAL,
             'albums_cover.image' => 'File harus berupa gambar.',
             'albums_cover.max' => 'Cover Album tidak boleh lebih dari 1MB.',
         ]);
@@ -543,6 +561,7 @@ class dashboardController extends Controller
 
         $data->albums_name = $request->albums_name;
         $data->link_spotify = $request->link_spotify;
+        $data->terbit_pada = $this->jadwal($request);
         $data->save();
 
         return redirect()->back()->with('success', 'Data berhasil diupdate');
@@ -570,10 +589,16 @@ class dashboardController extends Controller
 
 
     // news
-    public function news()
+    public function news(Request $request)
     {
-        $news = news::latest()->paginate(9)->withQueryString();
-        return view('pages.dashboard-pages.news', compact('news'));
+        $q = $this->kataCari($request);
+        $news = news::query()
+            ->when($q !== '', fn($query) => $this->cocok($query, ['news_title', 'news_source'], $q))
+            ->terbaruTayang()
+            ->paginate(UrutanTampil::PER_HALAMAN)
+            ->withQueryString();
+
+        return view('pages.dashboard-pages.news', compact('news', 'q'));
     }
 
     public function tambahnews(Request $request)
@@ -585,12 +610,14 @@ class dashboardController extends Controller
             'news_date' => 'required|date_format:Y-m-d',
             'news_cover' => 'required|image|mimes:jpg,jpeg,png|max:1024',
             'news_link' => 'required|url:http,https|max:255',
+            'terbit_pada' => self::ATURAN_JADWAL,
         ], [
             'news_title.required' => 'Judul Berita harus diisi.',
             'news_description.required' => 'Deskripsi Berita harus diisi.',
             'news_source.required' => 'Sumber Berita harus diisi.',
             'news_date.required' => 'Tanggal Berita harus diisi.',
             'news_date.date_format' => 'Tanggal Berita tidak valid. Pilih tanggal lewat pemilih tanggal.',
+            'terbit_pada.date_format' => self::PESAN_JADWAL,
             'news_cover.required' => 'Cover Berita harus diisi.',
             'news_cover.image' => 'File harus berupa gambar.',
             'news_cover.max' => 'Cover Berita tidak boleh lebih dari 1MB.',
@@ -616,9 +643,10 @@ class dashboardController extends Controller
         $data->news_date = $request->news_date;
         $data->news_cover = $filename; // hanya nama file
         $data->news_link = $request->news_link;
+        $data->terbit_pada = $this->jadwal($request);
         $data->save();
 
-        return redirect()->route('news')->with('success', 'inputan berhasil ditambahkan');
+        return redirect()->route('news')->with('success', $this->pesanTambah('inputan berhasil ditambahkan', 'Berita', $data->terbit_pada));
     }
 
     public function updatenews(Request $request, $id)
@@ -630,12 +658,14 @@ class dashboardController extends Controller
             'news_date' => 'required|date_format:Y-m-d',
             'news_cover' => 'nullable|image|mimes:jpg,jpeg,png|max:1024',
             'news_link' => 'required|url:http,https|max:255',
+            'terbit_pada' => self::ATURAN_JADWAL,
         ], [
             'news_title.required' => 'Judul Berita harus diisi.',
             'news_description.required' => 'Deskripsi Berita harus diisi.',
             'news_source.required' => 'Sumber Berita harus diisi.',
             'news_date.required' => 'Tanggal Berita harus diisi.',
             'news_date.date_format' => 'Tanggal Berita tidak valid. Pilih tanggal lewat pemilih tanggal.',
+            'terbit_pada.date_format' => self::PESAN_JADWAL,
             'news_cover.image' => 'File harus berupa gambar.',
             'news_cover.max' => 'Cover Berita tidak boleh lebih dari 1MB.',
             'news_link.required' => 'Link Berita harus diisi.',
@@ -664,6 +694,7 @@ class dashboardController extends Controller
         $data->news_source = $request->news_source;
         $data->news_date = $request->news_date;
         $data->news_link = $request->news_link;
+        $data->terbit_pada = $this->jadwal($request);
         $data->save();
 
         return redirect()->back()->with('success', 'Data berhasil diupdate');
@@ -692,10 +723,17 @@ class dashboardController extends Controller
 
 
     // merchandise
-    public function merchandise()
+    public function merchandise(Request $request)
     {
-        $merchandise = merchandise::latest()->paginate(9)->withQueryString();
-        return view('pages.dashboard-pages.merchandise', compact('merchandise'));
+        $q = $this->kataCari($request);
+        $merchandise = merchandise::query()
+            ->when($q !== '', fn($query) => $this->cocok($query, ['merchandise_name', 'link_merchandise'], $q))
+            ->urut()
+            ->paginate(UrutanTampil::PER_HALAMAN)
+            ->withQueryString();
+        $urutanBisa = $q === '';
+
+        return view('pages.dashboard-pages.merchandise', compact('merchandise', 'q', 'urutanBisa'));
     }
 
     public function tambahMerchandise(Request $request)
@@ -726,6 +764,7 @@ class dashboardController extends Controller
         $data->merchandise_name = $request->merchandise_name;
         $data->link_merchandise = $request->link_merchandise;
         $data->merchandise_cover = $filename; // hanya nama file
+        $data->urutan = merchandise::urutanBerikut();
         $data->save();
 
         return redirect()->route('merchandise')->with('success', 'inputan berhasil ditambahkan');
@@ -790,6 +829,53 @@ class dashboardController extends Controller
         }
     }
     // merchandise end
+
+    // ---------- bantuan: jadwal tayang dan pencarian ----------
+
+    /** Isian `terbit_pada` dari <input type="datetime-local">: boleh kosong (= langsung tampil). */
+    private const ATURAN_JADWAL = ['nullable', 'date_format:Y-m-d\TH:i'];
+
+    private const PESAN_JADWAL = 'Jadwal tayang tidak valid. Pilih tanggal dan jam lewat pemilih yang tersedia, atau kosongkan agar langsung tampil.';
+
+    /** Jadwal tayang dari form (zona waktu aplikasi), atau null bila dikosongkan. */
+    private function jadwal(Request $request): ?Carbon
+    {
+        $nilai = trim((string) $request->input('terbit_pada'));
+
+        return $nilai === '' ? null : Carbon::createFromFormat('Y-m-d\TH:i', $nilai, config('app.timezone'));
+    }
+
+    /** Pesan sukses setelah menambah: bila terjadwal, sebut kapan mulai tampil. */
+    private function pesanTambah(string $biasa, string $objek, ?Carbon $jadwal): string
+    {
+        return $jadwal !== null && $jadwal->isFuture()
+            ? $objek . ' dijadwalkan: mulai tampil di website ' . $jadwal->locale('id')->translatedFormat('j F Y, H.i') . ' WIB.'
+            : $biasa;
+    }
+
+    /** Kata pencarian dari ?q= (dipangkas, maksimal 60 karakter). */
+    private function kataCari(Request $request): string
+    {
+        return mb_substr(trim((string) $request->query('q')), 0, 60);
+    }
+
+    /**
+     * Cari $kata di salah satu kolom. % dan _ yang diketik admin dibaca apa adanya (karakter pelolos `!` dipilih
+     * karena artinya sama di MySQL dan SQLite). Nama kolom ditulis di kode, bukan dari isian pengguna.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  string[]  $kolom
+     */
+    private function cocok($query, array $kolom, string $kata)
+    {
+        $pola = '%' . strtr($kata, ['!' => '!!', '%' => '!%', '_' => '!_']) . '%';
+
+        return $query->where(function ($w) use ($kolom, $pola) {
+            foreach ($kolom as $k) {
+                $w->orWhereRaw("$k LIKE ? ESCAPE '!'", [$pola]);
+            }
+        });
+    }
 
     private const PESAN_TANPA_FFMPEG = 'Video belum bisa diproses di server ini karena ffmpeg tidak tersedia. Gunakan gambar (JPG/PNG) sebagai latar header, atau hubungi tim WSM.';
 

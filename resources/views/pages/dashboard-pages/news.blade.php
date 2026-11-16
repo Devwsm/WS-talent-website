@@ -111,6 +111,8 @@
                                 heading, list, link, dan lainnya.</p>
                         </div>
 
+                        <x-dashboard.isian-jadwal :nilai="old('terbit_pada')" target="#previewJadwal" />
+
                         <button type="submit"
                             class="w-full text-white font-bold uppercase tracking-widest p-3 mt-2 bg-red-950 hover:bg-red-900 active:scale-95 transition rounded-lg">
                             Publish Berita
@@ -161,19 +163,30 @@
                             <p class="text-xs uppercase text-black/40">Link berita saat "Read more" diklik</p>
                             <p id="previewLink" class="text-sm text-black/60 break-all">—</p>
                         </div>
+                        <div class="flex flex-col gap-1">
+                            <p class="text-xs uppercase text-black/40">Jadwal tayang</p>
+                            <p id="previewJadwal" class="text-sm text-black/60">Langsung tampil</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
             {{-- List data berita yang udah ditambahkan --}}
             <div>
-                <h2 class="font-bold uppercase tracking-wide text-sm mb-4 flex items-center gap-2">
-                    <i class="bi bi-newspaper text-white/50"></i> Berita Tersimpan ({{ $news->total() }})
-                </h2>
+                <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <h2 class="font-bold uppercase tracking-wide text-sm flex items-center gap-2">
+                        <i class="bi bi-newspaper text-white/50"></i> Berita Tersimpan ({{ $news->total() }})
+                    </h2>
+                    <x-dashboard.cari-daftar :q="$q" placeholder="Cari judul atau sumber"
+                        label="Cari judul atau sumber berita" />
+                </div>
 
                 @if ($news->isEmpty())
                     @include('components/dashboard/card/empty-state', [
-                        'message' => 'Belum ada berita yang ditambahkan.',
+                        'message' =>
+                            $q !== ''
+                                ? 'Tidak ada berita yang cocok dengan “' . $q . '”.'
+                                : 'Belum ada berita yang ditambahkan.',
                     ])
                 @else
                     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
@@ -189,6 +202,7 @@
                                         <span class="text-red-400 shrink-0">{{ $item->news_date }}</span>
                                     </div>
                                     <p class="font-semibold text-sm text-white line-clamp-2">{{ $item->news_title }}</p>
+                                    <div class="mt-1"><x-dashboard.lencana-jadwal :item="$item" /></div>
                                     <p class="text-xs text-white/40 break-all line-clamp-1 mt-0.5">{{ $item->news_link }}
                                     </p>
                                 </div>
@@ -378,7 +392,10 @@
             @endif
 
             // Update preview deskripsi secara live tiap kali konten Quill berubah
-            quill.on('text-change', () => {
+            quill.on('text-change', (delta, lama, sumber) => {
+                // Penjaga "perubahan belum disimpan" (cms-form.js) tidak melihat ketikan Quill lewat input biasa.
+                if (sumber === 'user') document.getElementById('news-form').dispatchEvent(new Event(
+                    'jaga:ubah'));
                 const html = quill.root.innerHTML;
                 previewDesc.innerHTML = quill.getText().trim() ? html : '—';
             });

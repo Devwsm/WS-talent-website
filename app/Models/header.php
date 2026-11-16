@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Berurutan;
 use Illuminate\Database\Eloquent\Model;
 
 class header extends Model
 {
-    //
+    use Berurutan;
+
     protected $table = 'headers';
     protected $primaryKey = 'id_header';
     protected $fillable = [
@@ -17,5 +19,6 @@ class header extends Model
         'header_description',
         'link_header',
         'header_background',
+        'urutan',
     ];
 }

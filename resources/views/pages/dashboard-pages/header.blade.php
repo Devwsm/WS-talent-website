@@ -191,8 +191,10 @@
                                 $bgExtension = strtolower(pathinfo($item->header_background, PATHINFO_EXTENSION));
                                 $isVideo = in_array($bgExtension, ['mp4', 'webm', 'mov']);
                             @endphp
-                            <div
-                                class="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/3 p-3 transition-colors hover:border-white/20 min-w-0">
+                            <div id="item-{{ $item->id_header }}"
+                                class="flex scroll-mt-24 items-center gap-3 rounded-2xl border border-white/10 bg-white/3 p-3 transition-colors hover:border-white/20 target:border-white/40 target:bg-white/6 min-w-0">
+                                <x-dashboard.kontrol-urutan modul="headers" :id="$item->id_header" :nama="$item->header_name"
+                                    :posisi="$loop->iteration" :total="$header->count()" :aktif="true" />
                                 <div
                                     class="relative w-24 h-16 sm:w-28 sm:h-18 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-black">
                                     @if ($isVideo)
@@ -226,6 +228,10 @@
                                         {{ $item->link_header }}</p>
                                 </div>
                                 <div class="flex items-center gap-2 shrink-0">
+                                    @if (true)
+                                        <x-dashboard.tombol-pertama modul="headers" :id="$item->id_header" :nama="$item->header_name"
+                                            :posisi="$loop->iteration" />
+                                    @endif
                                     @include('components.dashboard.modal-edit-header')
                                     @include('components.dashboard.btn-hapus-header')
                                 </div>
