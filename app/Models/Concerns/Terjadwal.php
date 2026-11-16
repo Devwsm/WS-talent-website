@@ -12,6 +12,14 @@ use Illuminate\Support\Collection;
  * Tampil-tidaknya dinilai saat halaman dibuka (bukan oleh cron), sama seperti pengumuman Inner Circle. Karena
  * halaman publik disimpan sementara (CachePublik), data yang masih terjadwal ikut disimpan dan disaring ulang
  * di setiap kunjungan lewat `hanyaTayang()`, jadi data muncul tepat waktu tanpa menunggu cache habis.
+ *
+ * Dipakai oleh model Eloquent; @mixin dan @property-read memberi tahu editor (Intelephense) tentang
+ * method dan properti milik model yang dipakai trait ini.
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
+ *
+ * @property-read \Illuminate\Support\Carbon|null $terbit_pada
+ * @property-read bool $terjadwal
  */
 trait Terjadwal
 {

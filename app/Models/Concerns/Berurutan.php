@@ -10,6 +10,14 @@ use Illuminate\Database\Eloquent\Builder;
  */
 trait Berurutan
 {
+    /**
+     * Sudah dimiliki Eloquent\Model; dideklarasikan di sini supaya editor (Intelephense) tahu trait ini selalu
+     * dipakai di model. Tidak mengubah perilaku: PHP memakai method milik Model.
+     *
+     * @return Builder
+     */
+    abstract public static function query();
+
     /** Dari paling depan ke belakang. Kunci utama sebagai pemutus supaya urutannya selalu pasti. */
     public function scopeUrut(Builder $query): Builder
     {
