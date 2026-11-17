@@ -3,7 +3,8 @@
     <span class="ic-aktivitas__ikon"><x-inner-circle.ikon :nama="$aktivitas->ikon" kelas="ic-ikon--kecil" /></span>
     <div>
         <b>{{ $aktivitas->judul }}</b>
-        <small>{{ $aktivitas->tanggal->locale('id')->translatedFormat('j M Y') }} · Terverifikasi</small>
+        <small>{{ $aktivitas->tanggal->locale('id')->translatedFormat('j M Y') }} ·
+            {{ $aktivitas->jumlah < 0 ? 'Koreksi' : 'Terverifikasi' }}</small>
     </div>
-    <span class="ic-aktivitas__poin">+{{ $aktivitas->jumlah }} ✦</span>
+    <span class="ic-aktivitas__poin">{{ $aktivitas->jumlah > 0 ? '+' : '−' }}{{ abs($aktivitas->jumlah) }} ✦</span>
 </div>

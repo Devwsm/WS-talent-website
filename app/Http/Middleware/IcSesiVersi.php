@@ -10,13 +10,20 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Mengeluarkan sesi anggota yang "ketinggalan zaman". `members.sesi_versi` dinaikkan saat akun dikaitkan ke Google
  * (lihat GoogleAkun), sehingga sesi yang masuk sebelumnya (mis. dengan sandi lama milik orang lain) langsung berakhir.
- * Dipasang setelah `auth:member`.
+ * Akun yang dinonaktifkan admin juga dikeluarkan di sini, pada permintaan berikutnya. Dipasang setelah `auth:member`.
  */
 class IcSesiVersi
 {
     public function handle(Request $request, Closure $next): Response
     {
+        /** @var \App\Models\member|null $anggota */
         $anggota = Auth::guard('member')->user();
+
+        if ($anggota && $anggota->diblokir()) {
+            Auth::guard('member')->logout();
+
+            return redirect()->route('ic.masuk')->withErrors(['email' => 'Akun ini dinonaktifkan. Hubungi tim WSM bila ini keliru.']);
+        }
 
         if ($anggota && (int) $request->session()->get('ic_sesi_versi', 0) !== (int) $anggota->sesi_versi) {
             Auth::guard('member')->logout();

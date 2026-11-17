@@ -14,14 +14,14 @@
                 'aktif' => 'anggota',
                 'judul' => 'Anggota',
                 'deskripsi' =>
-                    'Cari anggota, lihat status verifikasi dan cara daftarnya, lalu tambahkan stempel manual bila ada kehadiran yang perlu dicatat.',
+                    'Cari anggota, buka profilnya untuk melihat riwayat stempel, lalu tambah atau kurangi stempel, nonaktifkan akun, atau unduh daftar anggota sebagai CSV.',
                 'pakaiCss' => false,
             ])
 
             @include('components/errors')
             @include('components/success')
 
-            @php($adaFilter = $q !== '' || $status !== '' || $via !== '')
+            @php($adaFilter = $q !== '' || $status !== '' || $via !== '' || $akun !== '')
 
             {{-- Cari dan filter: GET, jadi bisa dibagikan dan jalan tanpa JavaScript --}}
             <form method="GET" action="{{ route('ic.admin.anggota') }}" role="search"
@@ -57,6 +57,17 @@
                         <option class="bg-neutral-900" value="manual" @selected($via === 'manual')>Manual (sandi)</option>
                     </select>
                 </div>
+                <div class="flex flex-col gap-1.5 lg:w-52">
+                    <label for="filter-akun" class="text-sm font-semibold uppercase tracking-widest text-white/60">
+                        Status akun
+                    </label>
+                    <select id="filter-akun" name="akun"
+                        class="bg-white/5 border border-white/15 text-white p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition scheme-dark">
+                        <option class="bg-neutral-900" value="" @selected($akun === '')>Semua</option>
+                        <option class="bg-neutral-900" value="aktif" @selected($akun === 'aktif')>Aktif</option>
+                        <option class="bg-neutral-900" value="nonaktif" @selected($akun === 'nonaktif')>Dinonaktifkan</option>
+                    </select>
+                </div>
                 <div class="flex items-end gap-2 *:flex-1 sm:*:flex-none *:justify-center">
                     <button type="submit"
                         class="h-12 px-6 text-white font-bold uppercase tracking-widest bg-red-950 hover:bg-red-900 active:scale-95 transition rounded-lg">
@@ -72,14 +83,22 @@
             </form>
 
             <div>
-                <h2 class="font-bold uppercase tracking-wide text-sm mb-4 flex items-center gap-2">
-                    <i class="bi bi-people-fill text-white/50" aria-hidden="true"></i>
-                    @if ($adaFilter)
-                        Hasil pencarian ({{ $anggota->total() }} dari {{ $totalAnggota }})
-                    @else
-                        Anggota terdaftar ({{ $totalAnggota }})
-                    @endif
-                </h2>
+                <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <h2 class="font-bold uppercase tracking-wide text-sm flex items-center gap-2">
+                        <i class="bi bi-people-fill text-white/50" aria-hidden="true"></i>
+                        @if ($adaFilter)
+                            Hasil pencarian ({{ $anggota->total() }} dari {{ $totalAnggota }})
+                        @else
+                            Anggota terdaftar ({{ $totalAnggota }})
+                        @endif
+                    </h2>
+                    {{-- Unduhan mengikuti pencarian dan filter yang sedang dipakai (halaman diabaikan: semua hasil ikut). --}}
+                    <a href="{{ route('ic.admin.anggota.ekspor', request()->except('page')) }}"
+                        class="h-11 px-5 inline-flex items-center gap-2 rounded-lg border border-white/15 text-xs font-semibold uppercase tracking-widest text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+                        <i class="bi bi-filetype-csv" aria-hidden="true"></i>
+                        {{ $adaFilter ? 'Unduh hasil (CSV)' : 'Unduh semua (CSV)' }}
+                    </a>
+                </div>
 
                 @if ($anggota->isEmpty())
                     @include('components/dashboard/card/empty-state', [
@@ -111,6 +130,12 @@
                                         </p>
                                         {{-- Status email dan cara daftar pertama kali. Teks selalu ada (warna hanya pelengkap). --}}
                                         <p class="flex flex-wrap items-center gap-1.5 mt-1.5">
+                                            @if ($m->diblokir())
+                                                <span
+                                                    class="inline-flex items-center gap-1 rounded-full border border-red-400/30 bg-red-400/10 px-2 py-0.5 text-[11px] font-semibold text-red-300">
+                                                    <i class="bi bi-slash-circle-fill" aria-hidden="true"></i> Dinonaktifkan
+                                                </span>
+                                            @endif
                                             @if ($m->email_verified_at)
                                                 <span
                                                     title="Diverifikasi {{ $m->email_verified_at->locale('id')->translatedFormat('j M Y') }}"
@@ -150,6 +175,10 @@
                                         <span class="text-2xl font-bold">{{ $m->stempel_total }}</span>
                                         <span class="block text-[11px] text-white/40">stempel</span>
                                     </p>
+                                    <a href="{{ route('ic.admin.anggota.detail', $m->id_member) }}"
+                                        class="h-11 px-4 inline-flex items-center gap-2 rounded-full border border-white/15 text-xs font-semibold text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+                                        <i class="bi bi-person-lines-fill" aria-hidden="true"></i> Detail
+                                    </a>
                                     <button type="button" data-ic-stempel data-nama="{{ $m->nama }}"
                                         data-kode="{{ $m->kode_member }}"
                                         data-aksi="{{ route('ic.admin.anggota.stempel', $m->id_member) }}"
@@ -172,8 +201,10 @@
         <div class="min-h-screen w-full flex items-center justify-center p-4">
             <div
                 class="w-full max-w-md max-h-[calc(100vh-2rem)] flex flex-col min-w-0 rounded-3xl border border-white/10 bg-black shadow-xl overflow-hidden">
-                <div class="flex items-center justify-between gap-2 px-6 py-4 border-b border-white/10 bg-white/3 shrink-0">
-                    <h3 id="dialogStempelJudul" class="font-bold uppercase tracking-wide text-sm text-white">Tambah stempel
+                <div
+                    class="flex items-center justify-between gap-2 px-6 py-4 border-b border-white/10 bg-white/3 shrink-0">
+                    <h3 id="dialogStempelJudul" class="font-bold uppercase tracking-wide text-sm text-white">Tambah
+                        stempel
                         manual</h3>
                     <button type="button" onclick="document.getElementById('dialogStempel').close()" aria-label="Tutup"
                         class="text-white/40 hover:text-white transition">

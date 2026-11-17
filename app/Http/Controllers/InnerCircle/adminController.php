@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\InnerCircle;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\InnerCircle\blokirAnggotaRequest;
 use App\Http\Requests\InnerCircle\imporEventRequest;
+use App\Http\Requests\InnerCircle\kurangiStempelRequest;
 use App\Http\Requests\InnerCircle\moderasiKenanganRequest;
 use App\Http\Requests\InnerCircle\simpanEventRequest;
 use App\Http\Requests\InnerCircle\simpanHadiahRequest;
@@ -20,7 +22,9 @@ use App\Models\ic_stempel;
 use App\Models\log_aktivitas;
 use App\Models\log_error;
 use App\Models\member;
+use App\Services\AktivitasService;
 use App\Services\InnerCircle\AcaraService;
+use App\Services\InnerCircle\AkunAnggotaService;
 use App\Services\InnerCircle\BandsintownService;
 use App\Services\InnerCircle\EmailService;
 use App\Services\InnerCircle\CheckinService;
@@ -33,7 +37,9 @@ use App\Services\InnerCircle\PengumumanService;
 use App\Services\InnerCircle\QrService;
 use App\Services\InnerCircle\SinkronGagal;
 use App\Services\InnerCircle\StempelService;
+use App\Services\InnerCircle\TrenRingkasan;
 use App\Support\AreaLog;
+use App\Support\CsvEkspor;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -53,7 +59,7 @@ class adminController extends Controller
     private const PER_HALAMAN_PENGUMUMAN = 15;
     private const PER_HALAMAN_KENANGAN = 12;
 
-    public function ringkasan(CheckinService $checkin)
+    public function ringkasan(CheckinService $checkin, TrenRingkasan $tren)
     {
         $sekarang = now();
 
@@ -71,6 +77,11 @@ class adminController extends Controller
                 'klaim_menunggu' => ic_claim::query()->whereIn('status', ic_claim::statusMenunggu())->count(),
                 'acara_aktif' => $checkin->eventTerbuka($sekarang)->count(),
                 'acara_berikutnya' => $berikutnya,
+            ],
+            // Grafik tren: pendaftaran per minggu (12 minggu) dan check-in per acara (8 acara terakhir).
+            'tren' => (object) [
+                'pendaftaran' => $tren->pendaftaranMingguan(12, $sekarang),
+                'checkin' => $tren->checkinPerAcara(8, $sekarang),
             ],
             // Lima pengajuan tertua yang menunggu (yang paling lama dulu), array supaya `empty()` di view bekerja.
             'klaimMenunggu' => ic_claim::query()
@@ -107,13 +118,19 @@ class adminController extends Controller
         ]);
     }
 
-    /** Cari lewat ?q= (nama, email, atau kode anggota). */
-    public function anggota(Request $request)
+    /**
+     * Cari dan saring anggota dari ?q= (nama, email, atau kode), ?status= (email), ?via= (cara daftar pertama), dan
+     * ?akun= (aktif atau dinonaktifkan). Nilai di luar daftar dianggap "semua" (tautan lama/ngawur aman). Dipakai daftar
+     * di layar dan ekspor CSV, jadi file yang diunduh selalu sama dengan yang sedang terlihat.
+     *
+     * @return array{0: \Illuminate\Database\Eloquent\Builder, 1: string, 2: string, 3: string, 4: string}
+     */
+    private function saringAnggota(Request $request): array
     {
         $q = mb_substr(trim($this->teks($request, 'q')), 0, 60);
-        // Filter status email dan cara daftar pertama. Nilai di luar daftar dianggap "semua" (tautan lama/ngawur aman).
         $status = in_array($this->teks($request, 'status'), ['terverifikasi', 'belum'], true) ? $this->teks($request, 'status') : '';
         $via = in_array($this->teks($request, 'via'), [member::VIA_GOOGLE, member::VIA_MANUAL], true) ? $this->teks($request, 'via') : '';
+        $akun = in_array($this->teks($request, 'akun'), ['aktif', 'nonaktif'], true) ? $this->teks($request, 'akun') : '';
 
         $query = member::query()
             ->withMax(['stempel as terakhir_checkin' => fn($s) => $s->where('sumber', 'checkin')], 'created_at')
@@ -134,6 +151,16 @@ class adminController extends Controller
         if ($via !== '') {
             $query->where('daftar_via', $via);
         }
+        if ($akun !== '') {
+            $akun === 'nonaktif' ? $query->whereNotNull('diblokir_pada') : $query->whereNull('diblokir_pada');
+        }
+
+        return [$query, $q, $status, $via, $akun];
+    }
+
+    public function anggota(Request $request)
+    {
+        [$query, $q, $status, $via, $akun] = $this->saringAnggota($request);
 
         return $this->tampil('anggota', [
             'anggota' => $query->paginate(self::PER_HALAMAN_ANGGOTA)->withQueryString(),
@@ -141,7 +168,148 @@ class adminController extends Controller
             'q' => $q,
             'status' => $status,
             'via' => $via,
+            'akun' => $akun,
         ]);
+    }
+
+    /** Unduh daftar anggota (CSV) dengan pencarian dan filter yang sedang dipakai. */
+    public function eksporAnggota(Request $request, AktivitasService $aktivitas)
+    {
+        [$query,,,,] = $this->saringAnggota($request);
+
+        $query->withCount(['stempel as total_checkin' => fn($s) => $s->where('sumber', 'checkin')])->reorder('id_member');
+        $jumlah = (clone $query)->count();
+
+        $aktivitas->catat('Daftar anggota diunduh', "Ekspor CSV: {$jumlah} anggota.", 'berhasil', 'inner-circle', null, 'ic.admin.anggota.ekspor');
+
+        $baris = (function () use ($query) {
+            foreach ($query->cursor() as $m) {
+                yield [
+                    $m->kode_member,
+                    $m->nama,
+                    $m->email,
+                    $m->email_verified_at ? 'Ya' : 'Belum',
+                    $m->daftar_via === member::VIA_GOOGLE ? 'Google' : 'Manual (sandi)',
+                    $m->google_id ? 'Ya' : 'Tidak',
+                    $m->created_at?->format('Y-m-d H:i'),
+                    $m->stempel_total,
+                    $m->total_checkin,
+                    $m->terakhir_checkin?->format('Y-m-d H:i'),
+                    $m->diblokir() ? 'Dinonaktifkan' : 'Aktif',
+                ];
+            }
+        })();
+
+        return CsvEkspor::unduh(
+            'anggota-inner-circle-' . now()->format('Ymd-His') . '.csv',
+            ['Kode', 'Nama', 'Email', 'Email terverifikasi', 'Daftar via', 'Google terhubung', 'Bergabung', 'Total stempel', 'Jumlah check-in', 'Check-in terakhir', 'Status akun'],
+            $baris,
+        );
+    }
+
+    /** Unduh daftar yang check-in di satu acara (CSV): bahan laporan setelah event. */
+    public function eksporKehadiran(string $kode, AktivitasService $aktivitas)
+    {
+        $acara = ic_event::query()->where('kode', $kode)->firstOrFail();
+
+        $query = ic_stempel::query()
+            ->with('member')
+            ->where('sumber', 'checkin')
+            ->where('event_id', $acara->getKey())
+            ->orderBy('created_at')
+            ->orderBy('id_stempel');
+
+        $jumlah = (clone $query)->count();
+        $label = trim($acara->venue . ', ' . $acara->kota, ', ') . ' (' . $acara->tanggal->toDateString() . ')';
+        $aktivitas->catat('Kehadiran acara diunduh', "Ekspor CSV kehadiran {$label}: {$jumlah} anggota.", 'berhasil', 'inner-circle', null, 'ic.admin.acara.kehadiran');
+
+        $baris = (function () use ($query) {
+            $no = 0;
+            foreach ($query->cursor() as $s) {
+                yield [
+                    ++$no,
+                    $s->member?->kode_member,
+                    $s->member?->nama,
+                    $s->member?->email,
+                    $s->created_at?->format('Y-m-d H:i:s'),
+                    $s->jarak_m,
+                    $s->akurasi_m,
+                    $s->jumlah,
+                ];
+            }
+        })();
+
+        return CsvEkspor::unduh(
+            'kehadiran-' . $acara->kode . '-' . $acara->tanggal->toDateString() . '.csv',
+            ['No', 'Kode anggota', 'Nama', 'Email', 'Waktu check-in', 'Jarak dari titik acara (m)', 'Akurasi lokasi (m)', 'Stempel'],
+            $baris,
+        );
+    }
+
+    /** Profil satu anggota: data akun, tindakan admin, riwayat stempel, dan klaim hadiah. */
+    public function detailAnggota(int $id)
+    {
+        $anggota = member::query()
+            ->withCount(['stempel as total_checkin' => fn($s) => $s->where('sumber', 'checkin')])
+            ->withMax(['stempel as terakhir_checkin' => fn($s) => $s->where('sumber', 'checkin')], 'created_at')
+            ->findOrFail($id);
+
+        return $this->tampil('anggota-detail', [
+            'anggota' => $anggota,
+            'riwayat' => ic_stempel::query()
+                ->with('event')
+                ->where('member_id', $anggota->getKey())
+                ->orderByDesc('created_at')
+                ->orderByDesc('id_stempel')
+                ->paginate(self::PER_HALAMAN_ANGGOTA)
+                ->withQueryString(),
+            'klaimAnggota' => ic_claim::query()->with('reward')->where('member_id', $anggota->getKey())->orderByDesc('id_claim')->get(),
+        ]);
+    }
+
+    /** Kurangi stempel (koreksi salah input). Ditulis sebagai baris negatif di riwayat, tidak menghapus baris lama. */
+    public function kurangiStempel(int $id, kurangiStempelRequest $request, StempelService $stempel): RedirectResponse
+    {
+        $anggota = member::query()->findOrFail($id);
+        $jumlah = (int) $request->validated('jumlah');
+
+        $stempel->kurangi($anggota, $jumlah, $request->validated('catatan'), session('user'));
+
+        $pesan = "{$jumlah} stempel dikurangi dari {$anggota->nama}. Sekarang {$anggota->stempel_total} stempel.";
+
+        // Klaim yang sudah diajukan tidak otomatis dibatalkan; admin diingatkan supaya bisa menindaklanjuti sendiri.
+        $melebihi = ic_claim::query()
+            ->where('member_id', $anggota->getKey())
+            ->where('status', '!=', 'ditolak')
+            ->whereHas('reward', fn($r) => $r->where('target_stempel', '>', $anggota->stempel_total))
+            ->count();
+        if ($melebihi > 0) {
+            $pesan .= " Perhatian: {$melebihi} klaim hadiah anggota ini butuh stempel lebih banyak dari total sekarang. Klaim tidak otomatis dibatalkan; periksa di tab Klaim.";
+        }
+
+        return back()->with('success', $pesan);
+    }
+
+    /** Nonaktifkan akun: tidak bisa masuk dan sesinya berakhir. Data anggota tidak dihapus. */
+    public function nonaktifkanAnggota(int $id, blokirAnggotaRequest $request, AkunAnggotaService $akun): RedirectResponse
+    {
+        $anggota = member::query()->findOrFail($id);
+
+        if ($anggota->diblokir()) {
+            return back()->with('success', "Akun {$anggota->nama} sudah dinonaktifkan.");
+        }
+
+        $akun->nonaktifkan($anggota, $request->validated('alasan'), session('user'));
+
+        return back()->with('success', "Akun {$anggota->nama} dinonaktifkan. Sesi yang sedang berjalan berakhir pada permintaan berikutnya.");
+    }
+
+    public function aktifkanAnggota(int $id, AkunAnggotaService $akun): RedirectResponse
+    {
+        $anggota = member::query()->findOrFail($id);
+        $akun->aktifkan($anggota);
+
+        return back()->with('success', "Akun {$anggota->nama} diaktifkan kembali. Anggota bisa masuk lagi.");
     }
 
     /** Tambah stempel manual (mis. kehadiran di acara privat yang diverifikasi tim WSM). */

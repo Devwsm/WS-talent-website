@@ -111,6 +111,10 @@
                                         <i class="bi bi-printer" aria-hidden="true"></i> Cetak
                                     </a>
                                 @endunless
+                                <a href="{{ route('ic.admin.acara.kehadiran', $acaraDipilih->kode) }}"
+                                    class="h-11 px-5 inline-flex items-center gap-2 rounded-lg border border-white/15 text-xs font-semibold uppercase tracking-widest text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+                                    <i class="bi bi-filetype-csv" aria-hidden="true"></i> Unduh kehadiran
+                                </a>
                             </div>
 
                             <dl class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">

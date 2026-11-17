@@ -112,6 +112,29 @@
                 @endforeach
             </ul>
 
+            {{-- Tren: pendaftaran per minggu dan check-in per acara, supaya Ringkasan bukan hanya angka total --}}
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+                @component('components.dashboard.card.card', [
+                    'title' => 'Pendaftaran per minggu',
+                    'icon' => 'bi-person-plus-fill',
+                    'href' => route('ic.admin.anggota'),
+                ])
+                    <x-dashboard.inner-circle.grafik-batang :data="$tren->pendaftaran" satuan="pendaftar"
+                        kosong="Belum ada pendaftaran." />
+                    <p class="text-xs text-white/30 mt-3">12 minggu terakhir, Senin sampai Minggu.</p>
+                @endcomponent
+
+                @component('components.dashboard.card.card', [
+                    'title' => 'Check-in per acara',
+                    'icon' => 'bi-geo-alt-fill',
+                    'href' => route('ic.admin.acara'),
+                ])
+                    <x-dashboard.inner-circle.grafik-batang :data="$tren->checkin" satuan="check-in"
+                        kosong="Belum ada acara yang sudah berlangsung." />
+                    <p class="text-xs text-white/30 mt-3">8 acara terakhir yang tanggalnya sudah tiba, lama ke baru.</p>
+                @endcomponent
+            </div>
+
             {{-- Baris 1: Klaim menunggu + Acara berikutnya --}}
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
 

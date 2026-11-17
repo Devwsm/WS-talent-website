@@ -50,6 +50,14 @@ class authController extends Controller
                 ->onlyInput('email');
         }
 
+        // Kata sandi benar tapi akun dinonaktifkan admin: pesan khusus baru diberikan SESUDAH kata sandi terbukti benar,
+        // jadi orang lain tidak bisa memakainya untuk menebak email mana yang terdaftar.
+        if ($this->anggota()->diblokir()) {
+            Auth::guard('member')->logout();
+
+            return back()->withErrors(['email' => 'Akun ini dinonaktifkan. Hubungi tim WSM bila ini keliru.'])->onlyInput('email');
+        }
+
         // regenerate() mengganti ID sesi tanpa menghapus isinya (cegah session fixation, sesi admin aman).
         $request->session()->regenerate();
         $request->session()->put('ic_sesi_versi', (int) Auth::guard('member')->user()->sesi_versi);

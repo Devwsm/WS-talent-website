@@ -41,6 +41,11 @@ class googleController extends Controller
             return redirect()->route('ic.masuk')->withErrors(['google' => $e->getMessage()]);
         }
 
+        // Identitas Google sudah terbukti; akun yang dinonaktifkan admin tetap tidak boleh masuk.
+        if ($anggota->diblokir()) {
+            return redirect()->route('ic.masuk')->withErrors(['google' => 'Akun ini dinonaktifkan. Hubungi tim WSM bila ini keliru.']);
+        }
+
         Auth::guard('member')->login($anggota);
         // regenerate() mengganti ID sesi tanpa menghapus isinya (cegah session fixation, sesi admin tetap aman).
         $request->session()->regenerate();

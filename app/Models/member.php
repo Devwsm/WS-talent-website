@@ -47,6 +47,8 @@ class member extends Authenticatable
             // Terakhir membuka tab Pengumuman / Galeri di Komunitas (dasar lencana belum dibaca).
             'pengumuman_dibaca_pada' => 'datetime',
             'galeri_dibaca_pada' => 'datetime',
+            // Akun dinonaktifkan admin (kosong = aktif).
+            'diblokir_pada' => 'datetime',
             // Alias hasil withMax() di tab Anggota dashboard.
             'terakhir_checkin' => 'datetime',
         ];
@@ -65,6 +67,12 @@ class member extends Authenticatable
     protected function avatarEmoji(): Attribute
     {
         return Attribute::get(fn() => '😎');
+    }
+
+    /** Akun sedang dinonaktifkan admin? Anggota ini tidak bisa masuk dan sesinya berakhir. */
+    public function diblokir(): bool
+    {
+        return $this->diblokir_pada !== null;
     }
 
     /** Nama lain untuk created_at supaya view memakai istilah yang sama dengan data contoh. */

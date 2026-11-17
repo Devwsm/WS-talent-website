@@ -138,7 +138,12 @@ Route::prefix('/dashboard')->middleware(['cekLogin', 'catatAktivitas'])->group(f
             Route::delete('/error', [logController::class, 'bersihkanSelesai'])->name('error.bersihkan')->middleware('throttle:admin-aksi-kecil');
         });
         Route::get('/anggota', [adminController::class, 'anggota'])->name('anggota');
+        Route::get('/anggota/ekspor', [adminController::class, 'eksporAnggota'])->name('anggota.ekspor')->middleware('throttle:admin-aksi-kecil');
+        Route::get('/anggota/{id}', [adminController::class, 'detailAnggota'])->whereNumber('id')->name('anggota.detail');
         Route::post('/anggota/{id}/stempel', [adminController::class, 'tambahStempel'])->whereNumber('id')->name('anggota.stempel')->middleware('throttle:admin-tulis');
+        Route::post('/anggota/{id}/stempel/kurangi', [adminController::class, 'kurangiStempel'])->whereNumber('id')->name('anggota.kurangi')->middleware('throttle:admin-tulis');
+        Route::patch('/anggota/{id}/nonaktifkan', [adminController::class, 'nonaktifkanAnggota'])->whereNumber('id')->name('anggota.nonaktifkan')->middleware('throttle:admin-tulis');
+        Route::patch('/anggota/{id}/aktifkan', [adminController::class, 'aktifkanAnggota'])->whereNumber('id')->name('anggota.aktifkan')->middleware('throttle:admin-tulis');
 
         Route::get('/acara', [adminController::class, 'acara'])->name('acara');
         Route::post('/acara', [adminController::class, 'simpanAcara'])->name('acara.simpan')->middleware('throttle:admin-tulis');
@@ -154,6 +159,7 @@ Route::prefix('/dashboard')->middleware(['cekLogin', 'catatAktivitas'])->group(f
         Route::delete('/acara/{kode}', [adminController::class, 'hapusAcara'])->name('acara.hapus')->middleware('throttle:admin-tulis');
         Route::post('/acara/{kode}/token', [adminController::class, 'tokenBaru'])->name('acara.token')->middleware('throttle:admin-tulis');
         Route::get('/acara/{kode}/qr', [adminController::class, 'unduhQr'])->name('acara.qr');
+        Route::get('/acara/{kode}/kehadiran', [adminController::class, 'eksporKehadiran'])->name('acara.kehadiran')->middleware('throttle:admin-aksi-kecil');
         Route::get('/acara/{kode}/cetak', [adminController::class, 'cetakQr'])->name('acara.cetak');
         Route::get('/klaim', [adminController::class, 'klaim'])->name('klaim');
         Route::patch('/klaim/{id}', [adminController::class, 'ubahKlaim'])->whereNumber('id')->name('klaim.proses')->middleware('throttle:admin-tulis');

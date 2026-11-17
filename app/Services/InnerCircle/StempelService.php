@@ -6,11 +6,12 @@ use App\Models\ic_event;
 use App\Models\ic_stempel;
 use App\Models\member;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Satu-satunya tempat stempel ditambahkan: menulis baris buku besar `ic_stempel` dan
- * memperbarui cache `members.stempel_total` di transaksi yang sama. Stempel bersifat kumulatif
- * dan tidak pernah dikurangi.
+ * memperbarui cache `members.stempel_total` di transaksi yang sama. Buku besar hanya ditambah: koreksi
+ * admin (kurangi) juga baris baru, bernilai negatif, bukan mengubah atau menghapus baris lama.
  */
 class StempelService
 {
@@ -41,6 +42,41 @@ class StempelService
             ]);
 
             $anggota->increment('stempel_total', $jumlah);
+
+            return $baris;
+        });
+    }
+
+    /**
+     * Kurangi stempel (koreksi salah input) lewat baris negatif di buku besar. Check-in yang sudah tercatat tetap ada
+     * (anggota tidak bisa check-in ulang di acara yang sama); yang berubah hanya totalnya.
+     *
+     * @throws ValidationException bila jumlahnya melebihi total stempel anggota
+     */
+    public function kurangi(member $anggota, int $jumlah, string $catatan, ?string $admin): ic_stempel
+    {
+        return DB::transaction(function () use ($anggota, $jumlah, $catatan, $admin) {
+            // Total dibaca ulang dengan kunci baris: dua koreksi bersamaan tidak boleh membuat total di bawah nol.
+            $terkini = member::query()->whereKey($anggota->getKey())->lockForUpdate()->firstOrFail();
+
+            if ($jumlah > $terkini->stempel_total) {
+                throw ValidationException::withMessages([
+                    'jumlah' => "Anggota ini hanya punya {$terkini->stempel_total} stempel, tidak bisa dikurangi {$jumlah}.",
+                ]);
+            }
+
+            $baris = ic_stempel::create([
+                'member_id' => $terkini->getKey(),
+                'jumlah' => -$jumlah,
+                'sumber' => 'koreksi',
+                'judul' => 'Koreksi stempel oleh tim WSM',
+                'ikon' => 'sparkles',
+                'catatan' => $catatan,
+                'dicatat_oleh' => $admin,
+            ]);
+
+            $terkini->decrement('stempel_total', $jumlah);
+            $anggota->setAttribute('stempel_total', $terkini->stempel_total)->syncOriginalAttribute('stempel_total');
 
             return $baris;
         });

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * Satu baris buku besar stempel. Hanya ditambah, tidak pernah diubah (tidak ada updated_at).
  * Check-in = sumber `checkin` + event_id terisi; stempel dari admin = sumber `manual`.
+ * Koreksi admin = sumber `koreksi` dengan jumlah NEGATIF (baris baru, baris lama tidak disentuh).
  */
 class ic_stempel extends Model
 {
@@ -42,6 +43,12 @@ class ic_stempel extends Model
     protected function tanggal(): Attribute
     {
         return Attribute::get(fn() => $this->created_at);
+    }
+
+    /** Baris pengurang (koreksi admin). */
+    public function koreksi(): bool
+    {
+        return $this->jumlah < 0;
     }
 
     public function member(): BelongsTo
