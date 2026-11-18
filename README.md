@@ -11,6 +11,7 @@ Status: tayang di production dengan auto deploy (GitHub Actions + SSH). Terakhir
 3. [Halaman dan fitur](#3-halaman-dan-fitur)
 4. [Arsitektur file](#4-arsitektur-file)
 5. [Auto deploy](#5-auto-deploy)
+6. [Rencana: aturan baru Inner Circle (poin, GL, check-in lokasi)](#6-rencana-aturan-baru-inner-circle-poin-gl-check-in-lokasi)
 
 ---
 
@@ -475,3 +476,90 @@ Tulis sandi tanpa spasi. `MAIL_FROM_ADDRESS` harus sama dengan `MAIL_USERNAME`. 
 | "The MAC is invalid" di halaman QR                                         | `APP_KEY` berbeda dari saat token dibuat; klik **Perbaiki token** di Acara & QR                                                                                  |
 | Foto gagal diunggah dengan "419"                                           | `upload_max_filesize`/`post_max_size` server terlalu kecil                                                                                                       |
 | `optimize:clear` di lokal membuat banyak "file terhapus" di GitHub Desktop | File Blade terkompilasi tidak boleh di git; pastikan `storage/framework/views/.gitignore` ada                                                                    |
+
+---
+
+## 6. Rencana: aturan baru Inner Circle (poin, GL, check-in lokasi)
+
+**Status: rencana, belum dikerjakan (menunggu review).** Sumber aturan: `WS_Inner_Circle_Flowcharts_V2_Bahasa_Indonesia.pptx`. Setelah tiap paket selesai dan di-push, bagian 2, 3, 4.5, dan 4.9 di atas diperbarui, lalu bagian ini diringkas jadi catatan riwayat.
+
+### 6.1 Aturan baru (ringkas)
+
+| Topik     | Aturan                                                                                                                                                |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Poin      | **1 kehadiran valid = 1.000 poin.** Poin menggantikan stempel.                                                                                        |
+| Check-in  | Lewat **lokasi GPS**, tanpa petugas pemindai (tanpa QR). Jarak, waktu, dan akurasi diperiksa; satu acara satu kali.                                   |
+| GL gratis | Member ikut **antrean** per acara. Antrean tutup dan **undian acak otomatis pukul 18.00**. Pemenang mendapat kartu GL.                                |
+| Kartu GL  | Memuat Member ID, nama "Whisnu Santika", sandi venue, dan petunjuk masuk.                                                                             |
+| Hadiah    | Ditukar dengan poin: **Meet & Greet 150.000**, **Merchandise 250.000**. Poin ditahan saat mengajukan; batal, ditolak, atau stok habis = poin kembali. |
+| Kendala   | Tiap kendala punya status, penanggung jawab (PIC), batas waktu, notifikasi, dan catatan audit.                                                        |
+
+Catatan: slide menyebut "cek lokasi" masih rancangan, padahal sistem sudah punya pemeriksaan radius dan akurasi GPS (bagian 4.9). Itu dipakai ulang, jadi pekerjaannya lebih ringan dari perkiraan di slide.
+
+### 6.2 Apa yang diubah, ditambah, dan dihapus
+
+**Diubah**
+
+- Stempel jadi **poin** di semua tempat: area anggota, CMS, email, kebijakan privasi, teks bawaan (teks Konten, langkah, FAQ), ekspor CSV, grafik Ringkasan.
+- Check-in: dari "QR + lokasi opsional" jadi **lokasi wajib** (acara tanpa titik lokasi tidak membuka check-in).
+- Hadiah: dari 5 tahap stempel (stempel tidak berkurang) jadi **katalog hadiah berharga poin** (poin berkurang saat ditukar, ada stok).
+- Klaim jadi **Penukaran**: poin ditahan, diperiksa admin, diterima atau dikembalikan.
+- Beranda anggota jadi "Inner Circle Saya": kartu Member ID, ubin GL Gratis, ubin Dompet Poin, ubin Hadiah.
+- Menu bawah anggota: "Check-in" jadi **Acara** (jadwal + antrean GL + check-in dalam satu tempat).
+
+**Ditambah**
+
+- **Dompet poin**: saldo, poin tertahan, riwayat masuk dan keluar.
+- **Antrean GL, undian otomatis 18.00, kartu GL** (anggota) dan tab **Undian GL** (CMS): kuota, sandi venue, petunjuk, persetujuan undian, daftar pemenang, ekspor, salin untuk WhatsApp, tanda "diterima tim Show".
+- **Ajukan pemeriksaan** bila GPS ditolak atau tidak akurat (tanpa poin otomatis), plus penanda aktivitas mencurigakan.
+- Tab **Kendala** di CMS: status, PIC, batas waktu, notifikasi email, catatan audit.
+- Stok hadiah dan daftar tunggu.
+
+**Dihapus**
+
+- Pindai QR di area anggota (kamera, unggah gambar QR, kolom kode) dan pustaka `qr-scanner`.
+- Pembuat dan cetak QR di CMS, "Buat QR baru", "Perbaiki token".
+- Tahap hadiah lama (10, 25, 50, 100, 250 stempel): dinonaktifkan, bukan dihapus, supaya riwayat klaim lama tetap utuh.
+
+**Tidak berubah:** masuk/daftar (termasuk Google), verifikasi email, Komunitas (pengumuman dan kenangan), CMS Artis, mekanisme tab Konten dan pratinjau, Log, auto deploy.
+
+### 6.3 Paket kerja
+
+| Paket                                | Isi                                                                                                                                                                                                                       | Catatan                                                                                                              |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| **1. Poin dan hadiah**               | Stempel jadi poin, dompet poin, +1.000 per check-in, katalog hadiah, penukaran (tahan, kembali, stok, daftar tunggu), migrasi data lama, UI Beranda/Hadiah/Profil, CMS Anggota/Hadiah/Penukaran/Ringkasan, teks dan email | **Harus pertama.** Satu paket karena poin dan penukaran saling bergantung. Deploy sendiri (ada migrasi data).        |
+| **2. Acara: check-in lokasi dan GL** | Check-in tanpa QR, ajukan pemeriksaan, penanda mencurigakan, antrean GL, undian otomatis, kartu GL, tab Undian GL dan Kendala, halaman Acara anggota, hapus QR dari CMS                                                   | Besar. Bisa dipecah **2A** (check-in + pemeriksaan + Kendala) dan **2B** (GL). Butuh keputusan 6.4 nomor 1, 4, 5, 6. |
+| **3. Penyempurnaan** (opsional)      | Akun Tim Show terpisah (peran), kirim WhatsApp otomatis, hapus sisa kolom/berkas QR, kendala stok terhubung, dokumentasi akhir                                                                                            | Dikerjakan setelah Paket 1 dan 2 dipakai di lapangan.                                                                |
+
+Urutan: 1, lalu 2 (atau 2A, 2B), lalu 3. Tiap paket dites penuh dan aman di-deploy sendiri.
+
+### 6.4 Keputusan yang perlu dikonfirmasi
+
+Tiap nomor punya **usulan bawaan**; bila setuju, cukup jawab "ikut usulan".
+
+1. **Undian pukul 18.00 itu hari apa?** Slide tidak menyebut. Usulan: waktu undian disimpan **per acara** (bisa diubah), bawaan **H-1 pukul 18.00**.
+2. **Stempel lama jadi berapa poin?** Usulan: **1 stempel = 1.000 poin**. Klaim lama yang sudah selesai/disetujui **tidak memotong** saldo; klaim lama yang masih diproses diselesaikan dulu sebelum Paket 1 di-deploy.
+3. **Boleh menukar hadiah yang sama berulang kali?** Usulan: **boleh**, selama saldo cukup dan stok ada (aturan lama "satu kali per tahap" tidak berlaku lagi karena poin berkurang).
+4. **QR dihapus total?** Usulan: **hapus dari alur anggota dan CMS**. QR cetakan lama yang dipindai akan diarahkan ke halaman Acara, bukan error. Acara tanpa titik lokasi: check-in ditutup dan CMS memberi peringatan.
+5. **Kirim ke WhatsApp tim Show**: usulan awal **manual tanpa biaya** (tombol salin + tautan `wa.me` + tanda "sudah diterima"). Kirim otomatis lewat layanan WhatsApp berbayar masuk Paket 3 bila perlu.
+6. **Undian otomatis butuh cron.** Jadwal Bandsintown boleh tetap manual, tetapi undian 18.00 tidak bisa menunggu admin. Usulan: pasang **satu cron `schedule:run` tiap menit** di cPanel (cara di 5.4), ditambah **pengaman**: undian juga dipicu oleh kunjungan pertama setelah 18.00 dan ada tombol "Undi sekarang" untuk admin. Tanpa cron, hanya pengaman yang jalan (undian bisa telat bila sepi kunjungan).
+7. **Hak akses sandi venue.** CMS masih satu peran admin. Usulan: sandi **tersembunyi** (klik untuk lihat, tercatat di Log), tidak ikut daftar WhatsApp maupun CSV; anggota melihatnya hanya bila **terpilih dan undian disetujui**. Akun Tim Show terpisah masuk Paket 3.
+8. **Arti "Setujui undian".** Usulan: admin menekan **Setujui** sebelum 18.00 setelah kuota, sandi, dan petunjuk terisi. Tanpa persetujuan, antrean tetap tutup tetapi status jadi **GL tertunda** dan tidak ada undian; undian susulan butuh persetujuan, alasan, dan tercatat.
+
+Asumsi lain (kabari bila tidak cocok): hanya anggota **aktif dan email terverifikasi** yang bisa ikut antrean, satu pendaftaran per acara, anggota boleh keluar dari antrean sebelum ditutup, dan pemenang menerima email.
+
+### 6.5 Catatan teknis penting
+
+| Hal                       | Penanganan                                                                                                                                                                                                                                                         |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Nama tabel dan kolom      | `ic_stempel` jadi `ic_poin`, `members.stempel_total` jadi `poin_total`, `ic_rewards.target_stempel` jadi `harga_poin` (sekitar 425 penyebutan di kode dan tes, penggantian mekanis). Migrasi punya `down()`.                                                       |
+| Ukuran angka              | `ic_stempel.jumlah` (smallint, maks 32.767) dan `ic_rewards.target_stempel` (smallint, maks 65.535) **tidak muat** 150.000/250.000. Keduanya diubah ke integer.                                                                                                    |
+| Data lama                 | Migrasi mengalikan saldo, buku besar, dan harga tahap lama dengan 1.000, lalu menonaktifkan 5 tahap lama dan mengisi 2 hadiah baru. **Cadangkan database (ekspor phpMyAdmin) sebelum push Paket 1**, karena auto deploy langsung `migrate`.                        |
+| Teks yang sudah tersimpan | Teks bawaan lama ("stempel") ada di database (`ic_pengaturan`, dan `ic_item` untuk langkah/FAQ). Teks yang **masih sama dengan bawaan lama** diganti; teks yang sudah pernah kamu ubah **tidak ditimpa** dan daftarnya diberikan untuk dicek.                      |
+| Poin tidak dobel          | Buku besar tetap hanya-ditambah. Kehadiran: kunci unik (anggota, acara). Penukaran: satu baris tahan dan satu baris kembali per pengajuan, dengan kunci unik.                                                                                                      |
+| Undian aman               | Pemilihan acak memakai `random_int`; satu undian per acara dijamin lewat kunci baris dan status; hasil tersimpan dan terkunci; email pemenang bertanda "sudah dikirim" supaya ulang kirim tidak menggandakan. Kunci baris tidak diuji SQLite: uji manual di MySQL. |
+| Sandi venue               | Disimpan terenkripsi (seperti token acara), tidak masuk CSV, tidak dikirim ke browser sebelum berhak.                                                                                                                                                              |
+| Privasi                   | Nama dan Member ID pemenang dibagikan ke tim Show/venue. Kebijakan privasi bawaan dan teks di tombol "Ikut antrean" diperbarui. Koordinat anggota tetap tidak disimpan; penanda mencurigakan memakai sidik (hash) perangkat, bukan IP mentah.                      |
+| Struktur kode             | `adminController` sudah 870+ baris, jadi fitur baru memakai controller dan service sendiri (`PoinService`, `GlService`, `UndianService`, `PemeriksaanService`, `KendalaService`).                                                                                  |
+| Tab Konten dan pratinjau  | Kunci teks baru wajib didaftarkan di `config/ic_konten.php` dan tepat satu modul di `config/ic_konten_modul.php` (dijaga tes). Halaman baru anggota otomatis ikut pratinjau potongan.                                                                              |
+| Tes                       | Sekitar 20 berkas tes yang menyebut stempel dan QR diperbarui; tes baru untuk poin, penukaran, undian, pemeriksaan, dan kendala. Target: semua lulus sebelum tiap push.                                                                                            |
