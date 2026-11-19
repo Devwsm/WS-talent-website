@@ -4,14 +4,20 @@ namespace App\Http\Controllers\InnerCircle;
 
 use App\Http\Controllers\Concerns\PembantuHalamanAdminIc;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\InnerCircle\aturAcaraRequest;
 use App\Http\Requests\InnerCircle\imporEventRequest;
 use App\Http\Requests\InnerCircle\simpanEventRequest;
 use App\Models\ic_event;
 use App\Services\InnerCircle\AcaraService;
+use App\Services\AktivitasService;
 use App\Services\InnerCircle\BandsintownService;
 use App\Services\InnerCircle\SinkronGagal;
+use App\Support\GambarGagal;
+use App\Support\ImageProcessor;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * CMS Inner Circle, menu Acara bagian 1: Pengaturan acara (tambah satuan, impor CSV, sinkron Bandsintown, ubah,
@@ -80,8 +86,110 @@ class acaraController extends Controller
     {
         $event = $acara->buat($request->validated());
 
-        return redirect(route('ic.admin.acara') . '#jadwal')
-            ->with('success', 'Acara ' . ($event->venue ?? $event->kode) . ' ditambahkan.');
+        // Lanjut ke halaman Atur acara supaya GL, poster, jendela, dan lokasi bisa langsung diisi.
+        return redirect(route('ic.admin.acara.atur', $event->kode))
+            ->with('success', 'Acara ' . ($event->venue ?? $event->kode) . ' ditambahkan. Lengkapi pengaturannya di bawah.');
+    }
+
+    /** Halaman Atur acara: semua pengaturan satu acara (dasar, GL, check-in, poster) dan titik lokasi di peta. */
+    public function atur(string $kode)
+    {
+        $event = ic_event::query()->where('kode', $kode)->firstOrFail();
+
+        return $this->tampil('acara.atur', [
+            'event' => $event,
+            'posterUrl' => $this->urlPoster($event),
+        ]);
+    }
+
+    public function simpanAtur(string $kode, aturAcaraRequest $request, ImageProcessor $gambar): RedirectResponse
+    {
+        $event = ic_event::query()->where('kode', $kode)->firstOrFail();
+        $d = $request->validated();
+
+        $data = [
+            'tanggal' => $d['tanggal'],
+            'tipe' => $d['tipe'],
+            'venue' => $d['venue'] ?? null,
+            'kota' => $d['kota'] ?? null,
+            'deskripsi' => $d['deskripsi'] ?? null,
+            'petunjuk_masuk' => $d['petunjuk_masuk'] ?? null,
+            'username_acara' => $d['username_acara'] ?? null,
+            'poin_gl' => $d['poin_gl'] ?? null,
+            'poin_mandiri' => $d['poin_mandiri'] ?? null,
+            'jendela_mulai' => $d['jendela_mulai'] ?? null,
+            'jendela_selesai' => $d['jendela_selesai'] ?? null,
+        ];
+
+        // Setelah undian selesai hasilnya terkunci: kuota dan waktu undian tidak lagi diubah dari sini.
+        if ($event->status_undian !== ic_event::UNDIAN_SELESAI) {
+            $data['kuota_gl'] = (int) ($d['kuota_gl'] ?? 0) > 0 ? (int) $d['kuota_gl'] : null;
+            $data['undian_pada'] = $d['undian_pada'] ?? null;
+        }
+
+        // Sandi tidak pernah ditampilkan kembali di form: kosong = tidak berubah.
+        if (! empty($d['hapus_sandi'])) {
+            $data['sandi_acara'] = null;
+        } elseif (filled($d['sandi_acara'] ?? null)) {
+            $data['sandi_acara'] = $d['sandi_acara'];
+        }
+
+        // Begitu admin mengubah tanggal, kota, atau venue acara hasil Bandsintown, sinkron berikutnya tidak menimpanya lagi.
+        if (
+            $event->sumber === 'bandsintown'
+            && ($event->tanggal->toDateString() !== $data['tanggal'] || $event->kota !== $data['kota'] || $event->venue !== $data['venue'])
+        ) {
+            $data['sumber'] = 'manual';
+        }
+
+        $posterBaru = null;
+        $posterLama = $event->poster;
+        if ($request->hasFile('poster')) {
+            try {
+                $posterBaru = $gambar->simpanWebp($request->file('poster'), 'inner-circle/acara', 1200);
+            } catch (GambarGagal $e) {
+                return back()->withInput()->withErrors(['poster' => $e->getMessage()]);
+            }
+            $data['poster'] = $posterBaru;
+        } elseif (! empty($d['hapus_poster'])) {
+            $data['poster'] = null;
+        }
+
+        $event->update($data);
+
+        // Data GL yang tadinya kurang kini lengkap: antrean tidak lagi berstatus tertunda.
+        $event->refresh();
+        if ($event->status_undian === ic_event::UNDIAN_TERTUNDA && $event->glLengkap()) {
+            $event->update(['status_undian' => ic_event::UNDIAN_BELUM]);
+        }
+
+        if ($posterLama && ($posterBaru || ! empty($d['hapus_poster']))) {
+            Storage::disk('public')->delete($posterLama);
+        }
+
+        return redirect(route('ic.admin.acara.atur', $event->kode))
+            ->with('success', 'Pengaturan acara ' . ($event->venue ?? $event->kode) . ' disimpan.');
+    }
+
+    /** Tampilkan sandi acara atas permintaan (tidak ikut halaman); setiap pembukaan tercatat di Log. */
+    public function lihatSandi(string $kode, AktivitasService $aktivitas): JsonResponse
+    {
+        $event = ic_event::query()->where('kode', $kode)->firstOrFail();
+
+        if ($event->sandi_acara === null) {
+            return response()->json(['pesan' => $event->sandiRusak()
+                ? 'Sandi tersimpan tetapi tidak terbaca (APP_KEY berbeda). Isi ulang sandinya.'
+                : 'Sandi acara belum diisi.'], 404);
+        }
+
+        $aktivitas->catat('Sandi acara dilihat', 'Sandi acara ' . ($event->venue ?? $event->kode) . ' (' . $event->tanggal->toDateString() . ') dibuka di CMS.', 'berhasil', 'inner-circle', null, 'ic.admin.acara.sandi');
+
+        return response()->json(['sandi' => $event->sandi_acara])->header('Cache-Control', 'no-store');
+    }
+
+    private function urlPoster(ic_event $event): ?string
+    {
+        return $event->poster && Storage::disk('public')->exists($event->poster) ? Storage::url($event->poster) : null;
     }
 
     public function ubahAcara(string $kode, simpanEventRequest $request): RedirectResponse

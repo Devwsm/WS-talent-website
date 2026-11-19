@@ -6,6 +6,7 @@ use App\Http\Controllers\Concerns\PembantuHalamanAdminIc;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\InnerCircle\simpanLokasiRequest;
 use App\Models\ic_event;
+use App\Models\ic_gl_antrean;
 use App\Models\ic_poin;
 use App\Services\AktivitasService;
 use App\Services\InnerCircle\GeocodeService;
@@ -44,7 +45,23 @@ class acaraHariHController extends Controller
             ?? $acaraQr->first(fn($e) => $e->status_waktu !== 'lewat')
             ?? $acaraQr->last();
 
+        // Daftar acara Hari H: acara 7 hari terakhir dan yang akan datang; ?semua=1 menampilkan seluruhnya.
+        $semua = $this->teks($request, 'semua') === '1';
+        $daftar = ic_event::query()
+            ->where('tipe', '!=', 'private')
+            ->whereNotNull('venue')
+            ->where('venue', '!=', '')
+            ->withCount(['poin as jumlah_hadir' => fn($q) => $q->where('sumber', 'checkin')])
+            ->when(! $semua, fn($q) => $q->whereDate('tanggal', '>=', now()->subDays(7)->toDateString()))
+            ->orderBy('tanggal')
+            ->orderBy('id_event')
+            ->paginate(10)
+            ->withQueryString()
+            ->fragment('daftar');
+
         return $this->tampil('acara.hari-h', [
+            'daftar' => $daftar,
+            'semuaAcara' => $semua,
             'acaraQr' => $acaraQr,
             'acaraDipilih' => $acaraDipilih,
             // Token yang tidak terbaca (APP_KEY berbeda) tidak bisa dijadikan QR: tampilkan peringatan, bukan galat.
@@ -54,23 +71,26 @@ class acaraHariHController extends Controller
         ]);
     }
 
-    /** Unduh daftar yang check-in di satu acara (CSV): bahan laporan setelah event. */
-    public function eksporKehadiran(string $kode, AktivitasService $aktivitas)
+    /**
+     * Unduh daftar yang check-in di satu acara (CSV): bahan laporan setelah event. ?jenis=gl (pemenang GL gratis) atau
+     * ?jenis=tiket (beli tiket sendiri) menyaring; tanpa jenis = semuanya. Kolom terakhir menandai sumber kehadiran.
+     */
+    public function eksporKehadiran(string $kode, Request $request, AktivitasService $aktivitas)
     {
         $acara = ic_event::query()->where('kode', $kode)->firstOrFail();
+        $jenis = $this->jenisKehadiran($request);
 
-        $query = ic_poin::query()
+        $query = $this->kehadiran($acara, $jenis)
             ->with('member')
-            ->where('sumber', 'checkin')
-            ->where('event_id', $acara->getKey())
             ->orderBy('created_at')
             ->orderBy('id_poin');
 
+        $pemenang = $this->idPemenang($acara)->pluck('member_id')->flip();
         $jumlah = (clone $query)->count();
         $label = trim($acara->venue . ', ' . $acara->kota, ', ') . ' (' . $acara->tanggal->toDateString() . ')';
-        $aktivitas->catat('Kehadiran acara diunduh', "Ekspor CSV kehadiran {$label}: {$jumlah} anggota.", 'berhasil', 'inner-circle', null, 'ic.admin.acara.kehadiran');
+        $aktivitas->catat('Kehadiran acara diunduh', "Ekspor CSV kehadiran {$label}" . ($jenis ? " ({$jenis})" : '') . ": {$jumlah} anggota.", 'berhasil', 'inner-circle', null, 'ic.admin.acara.kehadiran');
 
-        $baris = (function () use ($query) {
+        $baris = (function () use ($query, $pemenang) {
             $no = 0;
             foreach ($query->cursor() as $s) {
                 yield [
@@ -82,15 +102,81 @@ class acaraHariHController extends Controller
                     $s->jarak_m,
                     $s->akurasi_m,
                     $s->jumlah,
+                    $pemenang->has($s->member_id) ? 'GL gratis' : 'Beli tiket sendiri',
                 ];
             }
         })();
 
         return CsvEkspor::unduh(
-            'kehadiran-' . $acara->kode . '-' . $acara->tanggal->toDateString() . '.csv',
-            ['No', 'Kode anggota', 'Nama', 'Email', 'Waktu check-in', 'Jarak dari titik acara (m)', 'Akurasi lokasi (m)', 'Poin'],
+            'kehadiran-' . $acara->kode . ($jenis ? '-' . $jenis : '') . '-' . $acara->tanggal->toDateString() . '.csv',
+            ['No', 'Kode anggota', 'Nama', 'Email', 'Waktu check-in', 'Jarak dari titik acara (m)', 'Akurasi lokasi (m)', 'Poin', 'Sumber kehadiran'],
             $baris,
         );
+    }
+
+    /**
+     * Halaman detail Hari H satu acara: ringkasan, info GL, dan daftar yang hadir dengan dua tab
+     * (?tab=tiket beli tiket sendiri, ?tab=gl pemenang GL gratis). Pemenang GL = status `menang` di antrean acara itu.
+     */
+    public function detail(string $kode, Request $request)
+    {
+        $event = ic_event::query()->where('kode', $kode)->firstOrFail();
+        abort_unless($event->bisa_checkin, 404);
+
+        $tab = $this->teks($request, 'tab') === 'gl' ? 'gl' : 'tiket';
+
+        $hadirGl = $this->kehadiran($event, 'gl')->count();
+        $hadirTiket = $this->kehadiran($event, 'tiket')->count();
+
+        $hadir = $this->kehadiran($event, $tab)
+            ->with('member')
+            ->orderBy('created_at')
+            ->orderBy('id_poin')
+            ->paginate(20)
+            ->withQueryString();
+
+        return $this->tampil('acara.hari-h-detail', [
+            'event' => $event,
+            'tab' => $tab,
+            'hadir' => $hadir,
+            'jumlahGl' => $hadirGl,
+            'jumlahTiket' => $hadirTiket,
+            'totalPoin' => (int) $this->kehadiran($event, null)->sum('jumlah'),
+            'antrean' => $event->antreanGl()->count(),
+            'pemenang' => $event->antreanGl()->where('status', ic_gl_antrean::MENANG)->count(),
+            'tokenRusak' => $event->tokenRusak(),
+        ]);
+    }
+
+    /** Baris poin check-in satu acara; $jenis `gl` = hanya pemenang GL, `tiket` = selain pemenang, null = semua. */
+    private function kehadiran(ic_event $acara, ?string $jenis)
+    {
+        $query = ic_poin::query()
+            ->where('sumber', 'checkin')
+            ->where('event_id', $acara->getKey());
+
+        if ($jenis === 'gl') {
+            $query->whereIn('member_id', $this->idPemenang($acara));
+        } elseif ($jenis === 'tiket') {
+            $query->whereNotIn('member_id', $this->idPemenang($acara));
+        }
+
+        return $query;
+    }
+
+    private function idPemenang(ic_event $acara)
+    {
+        return ic_gl_antrean::query()
+            ->where('event_id', $acara->getKey())
+            ->where('status', ic_gl_antrean::MENANG)
+            ->select('member_id');
+    }
+
+    private function jenisKehadiran(Request $request): ?string
+    {
+        $jenis = $this->teks($request, 'jenis');
+
+        return in_array($jenis, ['gl', 'tiket'], true) ? $jenis : null;
     }
 
     /**
@@ -159,12 +245,12 @@ class acaraHariHController extends Controller
             'lokasi_diatur_pada' => now(),
         ]);
 
-        return redirect(route('ic.admin.acara.harih', ['acara' => $event->kode]) . '#lokasi')
+        return redirect($this->kembaliLokasi($request, $event))
             ->with('success', 'Titik lokasi check-in ' . ($event->venue ?? $event->kode) . ' disimpan (radius ' . $event->radius_efektif . ' m).');
     }
 
     /** Matikan pemeriksaan lokasi untuk satu acara: QR-nya kembali bisa dipakai dari mana saja. */
-    public function hapusLokasi(string $kode): RedirectResponse
+    public function hapusLokasi(string $kode, Request $request): RedirectResponse
     {
         $event = ic_event::query()->where('kode', $kode)->firstOrFail();
 
@@ -177,7 +263,7 @@ class acaraHariHController extends Controller
             'lokasi_diatur_pada' => null,
         ]);
 
-        return redirect(route('ic.admin.acara.harih', ['acara' => $event->kode]) . '#lokasi')
+        return redirect($this->kembaliLokasi($request, $event))
             ->with('success', 'Titik lokasi dihapus. Check-in acara ini tidak lagi memeriksa lokasi.');
     }
 
@@ -232,5 +318,13 @@ class acaraHariHController extends Controller
         abort_if($event->tokenRusak(), 409, 'Token acara ini tidak terbaca. Buka Acara > Hari H lalu pakai tombol Perbaiki token.');
 
         return $event;
+    }
+
+    /** Titik lokasi bisa disimpan dari halaman Hari H atau dari peta di halaman Atur acara (field tersembunyi `kembali`). */
+    private function kembaliLokasi(Request $request, ic_event $event): string
+    {
+        return $request->input('kembali') === 'atur'
+            ? route('ic.admin.acara.atur', $event->kode) . '#lokasi'
+            : route('ic.admin.acara.harih', ['acara' => $event->kode]) . '#lokasi';
     }
 }

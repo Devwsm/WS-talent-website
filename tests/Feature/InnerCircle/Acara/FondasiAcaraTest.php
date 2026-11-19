@@ -71,10 +71,14 @@ class FondasiAcaraTest extends TestCase
         $this->get(route('ic.admin.acara.harih'))->assertRedirect(route('login'));
     }
 
-    public function test_tambah_acara_kembali_ke_pengaturan_bukan_hari_h(): void
+    public function test_tambah_acara_lanjut_ke_halaman_atur_bukan_hari_h(): void
     {
-        $this->admin()->post(route('ic.admin.acara.simpan'), ['tanggal' => '2030-06-01', 'tipe' => 'club', 'venue' => 'Klub Baru', 'kota' => 'Bandung'])
-            ->assertRedirect(route('ic.admin.acara') . '#jadwal');
+        $this->admin()->post(route('ic.admin.acara.simpan'), ['tanggal' => '2030-06-01', 'tipe' => 'club', 'venue' => 'Klub Baru', 'kota' => 'Bandung']);
+
+        $e = ic_event::query()->where('venue', 'Klub Baru')->firstOrFail();
+        $this->admin()->post(route('ic.admin.acara.simpan'), ['tanggal' => '2030-06-02', 'tipe' => 'club', 'venue' => 'Klub Dua'])
+            ->assertRedirect(route('ic.admin.acara.atur', ic_event::query()->where('venue', 'Klub Dua')->value('kode')));
+        $this->assertNotNull($e->kode);
     }
 
     public function test_token_baru_kembali_ke_hari_h(): void

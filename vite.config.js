@@ -12,6 +12,7 @@ export default defineConfig({
                 "resources/js/quill-editor.js",
                 "resources/css/inner-circle.css",
                 "resources/js/inner-circle.js",
+                "resources/js/peta-acara.js",
             ],
             refresh: true,
         }),

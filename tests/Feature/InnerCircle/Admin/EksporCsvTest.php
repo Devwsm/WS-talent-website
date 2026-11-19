@@ -123,10 +123,10 @@ class EksporCsvTest extends TestCase
         $this->assertStringContainsString('kehadiran-' . $acaraIni->kode . '-2026-11-10.csv', $r->headers->get('Content-Disposition'));
 
         $baris = $this->baris($r->streamedContent());
-        $this->assertSame(['No', 'Kode anggota', 'Nama', 'Email', 'Waktu check-in', 'Jarak dari titik acara (m)', 'Akurasi lokasi (m)', 'Poin'], $baris[0]);
+        $this->assertSame(['No', 'Kode anggota', 'Nama', 'Email', 'Waktu check-in', 'Jarak dari titik acara (m)', 'Akurasi lokasi (m)', 'Poin', 'Sumber kehadiran'], $baris[0]);
         $this->assertCount(2, $baris);
         $this->assertSame(['1', 'IC-00001', 'Ani', 'a@contoh.test'], array_slice($baris[1], 0, 4));
-        $this->assertSame(['35', '12', '1'], array_slice($baris[1], 5, 3));
+        $this->assertSame(['35', '12', '1', 'Beli tiket sendiri'], array_slice($baris[1], 5, 4));
     }
 
     public function test_acara_tanpa_check_in_menghasilkan_file_berisi_judul_saja_dan_kode_asing_404(): void

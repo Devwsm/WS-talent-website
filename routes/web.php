@@ -150,6 +150,8 @@ Route::prefix('/dashboard')->middleware(['cekLogin', 'catatAktivitas'])->group(f
         // Menu Acara dibagi dua: Pengaturan acara (/acara) dan Hari H (/acara/hari-h). /acara?acara=KODE dialihkan ke Hari H.
         Route::get('/acara', [acaraController::class, 'index'])->name('acara');
         Route::get('/acara/hari-h', [acaraHariHController::class, 'index'])->name('acara.harih');
+        // Detail Hari H satu acara (Fase 4): ringkasan, yang hadir (GL gratis / beli tiket sendiri), ekspor CSV.
+        Route::get('/acara/hari-h/{kode}', [acaraHariHController::class, 'detail'])->name('acara.harih.detail');
         Route::post('/acara', [acaraController::class, 'simpanAcara'])->name('acara.simpan')->middleware('throttle:admin-tulis');
         Route::post('/acara/impor', [acaraController::class, 'imporAcara'])->name('acara.impor')->middleware('throttle:admin-tulis');
         // Fase 9: jadwal dari Bandsintown, dan perbaikan token QR yang tidak terbaca (APP_KEY berbeda).
@@ -159,6 +161,10 @@ Route::prefix('/dashboard')->middleware(['cekLogin', 'catatAktivitas'])->group(f
         Route::put('/acara/{kode}/lokasi', [acaraHariHController::class, 'simpanLokasi'])->name('acara.lokasi')->middleware('throttle:admin-tulis');
         Route::delete('/acara/{kode}/lokasi', [acaraHariHController::class, 'hapusLokasi'])->name('acara.lokasi.hapus')->middleware('throttle:admin-tulis');
         Route::post('/acara/{kode}/lokasi/cari', [acaraHariHController::class, 'cariLokasi'])->name('acara.lokasi.cari')->middleware('throttle:admin-tulis');
+        // Halaman Atur acara (Fase 3): pengaturan lengkap satu acara, peta lokasi, dan sandi acara (dilihat atas permintaan).
+        Route::get('/acara/{kode}/atur', [acaraController::class, 'atur'])->name('acara.atur');
+        Route::put('/acara/{kode}/atur', [acaraController::class, 'simpanAtur'])->name('acara.atur.simpan')->middleware('throttle:admin-tulis');
+        Route::post('/acara/{kode}/sandi', [acaraController::class, 'lihatSandi'])->name('acara.sandi')->middleware('throttle:admin-aksi-kecil');
         Route::put('/acara/{kode}', [acaraController::class, 'ubahAcara'])->name('acara.ubah')->middleware('throttle:admin-tulis');
         Route::delete('/acara/{kode}', [acaraController::class, 'hapusAcara'])->name('acara.hapus')->middleware('throttle:admin-tulis');
         Route::post('/acara/{kode}/token', [acaraHariHController::class, 'tokenBaru'])->name('acara.token')->middleware('throttle:admin-tulis');

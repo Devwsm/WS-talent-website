@@ -60,6 +60,52 @@
                 </div>
             @endif
 
+            {{-- ============ DAFTAR ACARA HARI H ============ --}}
+            <section id="daftar" aria-labelledby="judul-daftar" class="flex flex-col gap-4 scroll-mt-8">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <h2 id="judul-daftar" class="font-bold uppercase tracking-wide text-sm flex items-center gap-2">
+                        <i class="bi bi-calendar-check text-white/50" aria-hidden="true"></i> Acara
+                    </h2>
+                    <a href="{{ route('ic.admin.acara.harih', $semuaAcara ? [] : ['semua' => 1]) }}#daftar"
+                        class="text-xs text-white/60 underline underline-offset-4 min-h-11 inline-flex items-center">
+                        {{ $semuaAcara ? 'Tampilkan acara terbaru saja' : 'Tampilkan semua acara' }}</a>
+                </div>
+                @if ($daftar->isEmpty())
+                    @include('components/dashboard/card/empty-state', [
+                        'message' => 'Belum ada acara yang bisa dipakai check-in.',
+                    ])
+                @else
+                    <ul class="flex flex-col gap-3">
+                        @foreach ($daftar as $e)
+                            <li
+                                class="rounded-2xl border border-white/10 bg-white/3 p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-[11px] font-semibold uppercase tracking-wide text-white/50">
+                                        {{ $e->tanggal->locale('id')->translatedFormat('D, j M Y') }} ·
+                                        {{ $tipeEvent[$e->tipe]['label'] ?? $e->tipe }}</p>
+                                    <p class="font-semibold truncate">{{ $e->venue }}</p>
+                                    <p class="text-xs text-white/50 truncate">{{ $e->kota ?? 'Kota belum diumumkan' }} ·
+                                        {{ $e->jumlah_hadir }} hadir
+                                        @if ($e->punya_gl)
+                                            · GL {{ $e->kuota_gl }}
+                                        @endif
+                                    </p>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-2 shrink-0">
+                                    <a href="{{ route('ic.admin.acara.harih.detail', $e->kode) }}"
+                                        class="h-11 px-4 inline-flex items-center gap-1.5 rounded-full bg-white text-black text-xs font-semibold hover:bg-white/80 transition-colors">
+                                        <i class="bi bi-people" aria-hidden="true"></i> Detail</a>
+                                    <a href="{{ route('ic.admin.acara.harih', ['acara' => $e->kode]) }}#qr"
+                                        class="h-11 px-4 inline-flex items-center gap-1.5 rounded-full border border-white/20 text-xs font-semibold hover:bg-white/10 transition-colors">
+                                        <i class="bi bi-qr-code" aria-hidden="true"></i> QR</a>
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                    @include('components.dashboard.pagination', ['paginator' => $daftar])
+                @endif
+            </section>
+
             {{-- ============ 1. PEMBUAT QR ============ --}}
             <section id="qr" aria-labelledby="judul-qr" class="flex flex-col gap-4 scroll-mt-8">
                 <h2 id="judul-qr" class="font-bold uppercase tracking-wide text-sm flex items-center gap-2">
@@ -79,7 +125,8 @@
                                     @foreach ($acaraQr as $e)
                                         <option class="bg-neutral-900" value="{{ $e->kode }}"
                                             @selected($e->kode === $acaraDipilih->kode)>
-                                            {{ $e->tanggal->locale('id')->translatedFormat('j M') }} · {{ $e->venue }} ·
+                                            {{ $e->tanggal->locale('id')->translatedFormat('j M') }} · {{ $e->venue }}
+                                            ·
                                             {{ $e->kota ?? 'Kota belum diumumkan' }}
                                         </option>
                                     @endforeach
@@ -156,7 +203,8 @@
                                     {!! $qrSvg !!}
                                 </div>
                                 <div class="min-w-0 text-center sm:text-left">
-                                    <p class="text-[11px] font-bold uppercase tracking-widest text-black/50">WS Inner Circle
+                                    <p class="text-[11px] font-bold uppercase tracking-widest text-black/50">WS Inner
+                                        Circle
                                         ·
                                         Tanda check-in</p>
                                     <p id="qr-venue" class="text-2xl font-bold mt-1 wrap-anywhere">

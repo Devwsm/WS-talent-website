@@ -267,6 +267,12 @@
                                         @elseif (!$e->bisa_checkin)
                                             · tanpa check-in
                                         @endif
+                                        @if ($e->punya_gl)
+                                            · GL {{ $e->kuota_gl }}
+                                        @endif
+                                        @if ($e->bisa_checkin && !$e->lokasi_aktif)
+                                            · belum ada lokasi
+                                        @endif
                                     </p>
                                 </div>
                                 <div class="flex items-center gap-1 shrink-0">
@@ -277,6 +283,11 @@
                                             <i class="bi bi-qr-code" aria-hidden="true"></i> QR
                                         </a>
                                     @endif
+                                    <a href="{{ route('ic.admin.acara.atur', $e->kode) }}"
+                                        class="h-11 px-3 inline-flex items-center gap-1.5 rounded-full border border-white/20 text-white text-xs font-semibold hover:bg-white/10 transition-colors"
+                                        aria-label="Atur acara {{ $e->venue ?? $e->kode }}">
+                                        <i class="bi bi-gear-fill" aria-hidden="true"></i> Atur
+                                    </a>
                                     <button type="button" data-ic-acara-ubah
                                         data-aksi="{{ route('ic.admin.acara.ubah', $e->kode) }}"
                                         data-tanggal="{{ $e->tanggal->format('Y-m-d') }}"
