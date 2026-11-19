@@ -2,7 +2,7 @@
 
 Situs resmi DJ **Whisnu Santika** (`whisnusantika.com`) beserta komunitas penggemarnya, **WS Inner Circle**. Satu project Laravel yang berisi dua produk: situs artis dengan CMS-nya, dan komunitas Inner Circle dengan CMS-nya.
 
-Status: tayang di production dengan auto deploy (GitHub Actions + SSH). Terakhir **423 tes** (lulus semua; 15 tes gambar dilewati otomatis bila ekstensi `gd` tanpa WebP tidak aktif).
+Status: tayang di production dengan auto deploy (GitHub Actions + SSH) dan sudah dipakai anggota. Rencana berikutnya ada di bagian 6. Terakhir **423 tes** (lulus semua; 15 tes gambar dilewati otomatis bila ekstensi `gd` tanpa WebP tidak aktif).
 
 ## Daftar isi
 
@@ -11,7 +11,7 @@ Status: tayang di production dengan auto deploy (GitHub Actions + SSH). Terakhir
 3. [Halaman dan fitur](#3-halaman-dan-fitur)
 4. [Arsitektur file](#4-arsitektur-file)
 5. [Auto deploy](#5-auto-deploy)
-6. [Rencana: aturan baru Inner Circle (poin, GL, check-in lokasi)](#6-rencana-aturan-baru-inner-circle-poin-gl-check-in-lokasi)
+6. [Rencana: aturan baru Inner Circle (poin, GL, CMS acara dua bagian)](#6-rencana-aturan-baru-inner-circle-poin-gl-cms-acara-dua-bagian)
 
 ---
 
@@ -180,7 +180,7 @@ resources/css/           app.css (Tailwind), inner-circle.css (tema biru)
 resources/js/            app.js, dashboard.js, sweetalert.js, inner-circle.js
 resources/views/         template/, pages/, components/, emails/, errors/
 routes/                  web.php, console.php (jadwal)
-tests/                   Feature/ (25 berkas), Unit/ (3 berkas)
+tests/                   Feature/ (InnerCircle/, Cms/, Admin/, Keamanan/), Unit/
 .github/workflows/       deploy.yml (tes + auto deploy)
 ```
 
@@ -327,17 +327,17 @@ Aturan penulisan: buang komentar `#` di baris yang diisi; beri tanda kutip pada 
 php artisan test
 ```
 
-416 tes. Database SQLite di memori; tes **tidak bergantung pada `.env`** (semua env dipaku di `phpunit.xml`), jadi hasilnya sama di lokal dan di GitHub. `ImageProcessorTest` dilewati otomatis bila ekstensi `gd`/`exif` tidak aktif. SQLite tidak menguji kunci baris (`lockForUpdate`): coba klik ganda klaim dan suka secara manual di MySQL.
+Jumlah tes ada di baris Status di atas. Database SQLite di memori; tes **tidak bergantung pada `.env`** (semua env dipaku di `phpunit.xml`), jadi hasilnya sama di lokal dan di GitHub. `ImageProcessorTest` dilewati otomatis bila ekstensi `gd`/`exif` tidak aktif. SQLite tidak menguji kunci baris (`lockForUpdate`): coba klik ganda klaim dan suka secara manual di MySQL.
 
-Berkas tes (`tests/Feature`, kecuali disebut lain):
+Tes dikelompokkan per area di `tests/` (nama berkas berakhiran `Test`):
 
-| Area                    | Berkas                                                                                                                                                                                                           |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Inti dan aturan anggota | `InnerCircleTest`, `InnerCircleLokasiTest`, `InnerCircleHadiahTest`, `InnerCircleKomunitasTest`, `InnerCircleFilterBulanTest`                                                                                    |
-| Akun dan keamanan       | `InnerCircleKeamananTest`, `InnerCircleGoogleTest`, `InnerCircleVerifikasiEmailTest`, `InnerCircleAkunPrivasiTest`, `AdminLogDuaFaktorTest`                                                                      |
-| Situs publik            | `InnerCircleSitusPublikTest`                                                                                                                                                                                     |
-| CMS dan tab Konten      | `CmsModeTest`, `CmsResponsifFaseATest`, `CmsValidasiPanjangTest`, `InnerCircleKontenTest`, `InnerCircleKontenBagianTest`, `InnerCircleFase3Test` sampai `InnerCircleFase11Test` (tes per fitur CMS Inner Circle) |
-| Unit (`tests/Unit`)     | `HtmlSanitizerTest`, `ImageProcessorTest`, `IcReplikaTest`                                                                                                                                                       |
+| Folder                       | Isi                                                                                                   |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `tests/Feature/InnerCircle/` | Subfolder `Acara`, `Admin`, `Akun`, `Checkin`, `Hadiah`, `Komunitas`, `KontenCms`, `Publik`           |
+| `tests/Feature/Cms/`         | CMS Artis: cache publik, jadwal tayang, urutan, pencarian, validasi, konversi WebP, mode dan navigasi |
+| `tests/Feature/Admin/`       | Login admin, OTP, sesi, log error dan aktivitas                                                       |
+| `tests/Feature/Keamanan/`    | CSP, header keamanan, noindex CMS, dependensi dan deploy                                              |
+| `tests/Unit/`                | `HtmlSanitizer`, `ImageProcessor`, `IcReplika`, `PenjelasLog`, dan lainnya                            |
 
 ### 4.8 Keamanan (ringkas)
 
@@ -479,87 +479,140 @@ Tulis sandi tanpa spasi. `MAIL_FROM_ADDRESS` harus sama dengan `MAIL_USERNAME`. 
 
 ---
 
-## 6. Rencana: aturan baru Inner Circle (poin, GL, check-in lokasi)
+## 6. Rencana: aturan baru Inner Circle (poin, GL, CMS acara dua bagian)
 
-**Status: rencana, belum dikerjakan (menunggu review).** Sumber aturan: `WS_Inner_Circle_Flowcharts_V2_Bahasa_Indonesia.pptx`. Setelah tiap paket selesai dan di-push, bagian 2, 3, 4.5, dan 4.9 di atas diperbarui, lalu bagian ini diringkas jadi catatan riwayat.
+**Status: rencana, belum dikerjakan (menunggu jawaban di 6.6).** Sumber: `WS_Inner_Circle_Flowcharts_V2_Bahasa_Indonesia.pptx` dan permintaan 18 Nov 2026 (termasuk revisi: QR dan pemindai tetap dipakai, poin GL dan check-in mandiri berbeda). Situs **sudah tayang dan dipakai anggota**, jadi tiap fase yang punya migrasi harus aman untuk data yang ada, dan **database dicadangkan (ekspor phpMyAdmin) sebelum push** fase tersebut karena auto deploy langsung menjalankan `migrate`. Setelah tiap fase selesai dan di-push, bagian 2, 3, 4.5, dan 4.9 diperbarui; bagian ini diringkas jadi catatan riwayat setelah Fase 10.
 
 ### 6.1 Aturan baru (ringkas)
 
-| Topik     | Aturan                                                                                                                                                |
-| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Poin      | **1 kehadiran valid = 1.000 poin.** Poin menggantikan stempel.                                                                                        |
-| Check-in  | Lewat **lokasi GPS**, tanpa petugas pemindai (tanpa QR). Jarak, waktu, dan akurasi diperiksa; satu acara satu kali.                                   |
-| GL gratis | Member ikut **antrean** per acara. Antrean tutup dan **undian acak otomatis pukul 18.00**. Pemenang mendapat kartu GL.                                |
-| Kartu GL  | Memuat Member ID, nama "Whisnu Santika", sandi venue, dan petunjuk masuk.                                                                             |
-| Hadiah    | Ditukar dengan poin: **Meet & Greet 150.000**, **Merchandise 250.000**. Poin ditahan saat mengajukan; batal, ditolak, atau stok habis = poin kembali. |
-| Kendala   | Tiap kendala punya status, penanggung jawab (PIC), batas waktu, notifikasi, dan catatan audit.                                                        |
+| Topik            | Aturan                                                                                                                                                                                                             |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Poin             | **GL gratis = 1.000 poin. Check-in mandiri (tanpa GL) = 2.000 poin.** Keduanya angka bawaan yang bisa diubah admin kapan saja. Poin menggantikan stempel. Satu kehadiran per anggota per acara.                    |
+| Antrean GL       | Dibuka sejak admin menginput acara, **ditutup dan diundi otomatis pada hari H pukul 18.00 WIB**. Satu pendaftaran per anggota per acara.                                                                           |
+| Kartu GL         | Pemenang mendapat kartu berisi **nama anggota, nama acara, username acara, dan sandi acara**. Di pintu, pemenang cukup **menunjukkan kartu**.                                                                      |
+| Check-in mandiri | Untuk anggota **yang tidak menang GL** (beli tiket sendiri): bawaan **pukul 22.00 sampai 04.00** (hari H sampai H+1), **bisa diubah admin** (bawaan global dan per acara), lewat lokasi GPS di dalam radius venue. |
+| Pemenang GL      | **Tidak bisa check-in mandiri** (tombolnya tertutup) supaya poin tidak dobel. Kehadirannya dicatat lewat **pemindaian QR** acara, bernilai 1.000 poin (keputusan 2).                                               |
+| Hadiah           | Ditukar dengan poin: **Meet & Greet 150.000**, **Merchandise 250.000**. Poin ditahan saat mengajukan; batal, ditolak, atau stok habis = poin kembali.                                                              |
+| Pengaduan        | Anggota bisa mengirim pengaduan; isinya tampil di **detail anggota** di CMS, dengan pintasan di **Ringkasan**.                                                                                                     |
+| Kendala (slide)  | Tiap kendala punya status, penanggung jawab, batas waktu, notifikasi, dan catatan audit. Tab khusus ada di Fase 11 (opsional); pengaduan (Fase 9) menutup sisi anggotanya.                                         |
 
-Catatan: slide menyebut "cek lokasi" masih rancangan, padahal sistem sudah punya pemeriksaan radius dan akurasi GPS (bagian 4.9). Itu dipakai ulang, jadi pekerjaannya lebih ringan dari perkiraan di slide.
+Perbedaan dengan slide (sudah mengikuti permintaanmu): slide menyebut undian "pukul 18.00" tanpa hari, kini **hari H**; slide menyebut check-in "tanpa QR", sedangkan **QR dan pemindai tetap dipakai**; slide menyebut kartu GL berisi Member ID, kini nama anggota (Member ID ditawarkan sebagai tambahan kecil, keputusan 4); slide hanya menyebut 1.000 poin, kini 1.000 (GL) dan 2.000 (mandiri). Pemeriksaan radius dan akurasi GPS **sudah ada** (4.9), jadi dipakai ulang.
 
-### 6.2 Apa yang diubah, ditambah, dan dihapus
+### 6.2 Gambaran hasil akhir
+
+**Satu acara dari awal sampai akhir**
+
+| Kapan                               | Yang terjadi                                                                                                                                                                                     |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Admin menginput acara               | Dari input satuan, CSV, atau sinkron Bandsintown. Admin mengisi venue, titik + radius di peta, kuota GL, username dan sandi acara. Antrean GL langsung terbuka.                                  |
+| Sebelum hari H                      | Anggota membuka detail acara dan menekan **Antri GL**; boleh keluar dari antrean selama belum ditutup.                                                                                           |
+| Hari H pukul 18.00                  | Antrean ditutup, sistem mengundi acak sebanyak kuota, hasil terkunci, pemenang dikabari. Pemenang melihat **kartu GL**.                                                                          |
+| Hari H pukul 22.00 sampai H+1 04.00 | Tombol **Check-in** aktif untuk anggota **non-pemenang** di dalam radius: +2.000 poin. Pemenang GL menunjukkan kartu di pintu dan memindai QR acara: +1.000 poin. Jendela jam bisa diubah admin. |
+| Sesudahnya                          | Admin melihat siapa yang hadir, dipisah **GL gratis** dan **beli tiket sendiri**, lengkap dengan poin yang diberikan.                                                                            |
+
+**CMS Inner Circle: menu Acara jadi dua bagian**, dipilih lewat navbar atas (chip mengalir seperti di tab Konten, bukan lagi satu halaman 986 baris). Bagian 1 fokus **pengaturan acara**, bagian 2 fokus **hari H**:
+
+| Bagian                  | Isi                                                                                                                                                                                                                                                                                                 |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1. Pengaturan acara** | Tambah acara satuan, impor CSV, sinkron Bandsintown, **username dan sandi per acara**, **titik dan radius lewat peta**, kuota GL, jadwal undian, **jendela check-in mandiri dan nilai poin per acara** (bila beda dari bawaan), poster dan deskripsi, serta **daftar jadwal** untuk ubah dan hapus. |
+| **2. Hari H**           | **Daftar acara beserta QR-nya** (cetak/unduh). Tiap acara punya halaman detail: yang hadir, dipisah tab **GL gratis** dan **beli tiket sendiri**, ekspor CSV, dan panel undian (antrean, pemenang, tunda/undi sekarang, salin untuk WhatsApp).                                                      |
+
+**Aplikasi anggota:** mengetuk acara membuka **halaman detail acara** (bukan lagi modal). Tata letak mengikuti contoh aplikasi referensi: tombol kembali di kiri atas, **poster acara** selebar layar di atas, lalu judul, tanggal, tempat (venue dan kota), tipe acara, deskripsi singkat, dan **dua tombol di bawah**: **kiri Antri GL**, **kanan Check-in** (mandiri). Tombol berubah sesuai keadaan: antrean dibuka/ditutup, sudah antri, menang (tampil kartu GL, tombol Check-in tertutup), tidak terpilih, check-in belum dibuka/terbuka/sudah dilakukan. **Pemindai QR tetap ada** (menu bawah, dipakai pemenang GL). Tema tetap biru Inner Circle, bukan tema gelap-kuning contoh. Menu bawah "Check-in" menjadi **Acara**.
+
+### 6.3 Apa yang diubah, ditambah, dan dihapus
 
 **Diubah**
 
-- Stempel jadi **poin** di semua tempat: area anggota, CMS, email, kebijakan privasi, teks bawaan (teks Konten, langkah, FAQ), ekspor CSV, grafik Ringkasan.
-- Check-in: dari "QR + lokasi opsional" jadi **lokasi wajib** (acara tanpa titik lokasi tidak membuka check-in).
-- Hadiah: dari 5 tahap stempel (stempel tidak berkurang) jadi **katalog hadiah berharga poin** (poin berkurang saat ditukar, ada stok).
-- Klaim jadi **Penukaran**: poin ditahan, diperiksa admin, diterima atau dikembalikan.
-- Beranda anggota jadi "Inner Circle Saya": kartu Member ID, ubin GL Gratis, ubin Dompet Poin, ubin Hadiah.
-- Menu bawah anggota: "Check-in" jadi **Acara** (jadwal + antrean GL + check-in dalam satu tempat).
+- Stempel jadi **poin** di semua tempat: area anggota, CMS, email, kebijakan privasi, teks bawaan (Konten, langkah, FAQ), ekspor CSV, grafik Ringkasan.
+- Jendela check-in mandiri bawaan: dari "tanggal show 12.00 sampai H+1 06.00" jadi **22.00 sampai H+1 04.00** (bisa diubah dari Konten, Aturan check-in, dan per acara). Aturan check-in juga memuat **poin GL (1.000)** dan **poin mandiri (2.000)**.
+- Acara **tanpa titik lokasi** tidak membuka check-in (sebelumnya boleh dari mana saja); CMS memberi peringatan.
+- Hadiah: dari 5 tahap stempel (stempel tidak berkurang) jadi **katalog hadiah berharga poin** (poin berkurang saat ditukar, ada stok). Klaim jadi **Penukaran**.
+- Beranda anggota jadi "Inner Circle Saya": kartu Member ID, ubin GL Gratis, Dompet Poin, Hadiah.
+- Menu Acara & QR di CMS dibagi dua (6.2); modal check-in diganti halaman detail acara (pemindai QR tetap).
 
 **Ditambah**
 
-- **Dompet poin**: saldo, poin tertahan, riwayat masuk dan keluar.
-- **Antrean GL, undian otomatis 18.00, kartu GL** (anggota) dan tab **Undian GL** (CMS): kuota, sandi venue, petunjuk, persetujuan undian, daftar pemenang, ekspor, salin untuk WhatsApp, tanda "diterima tim Show".
-- **Ajukan pemeriksaan** bila GPS ditolak atau tidak akurat (tanpa poin otomatis), plus penanda aktivitas mencurigakan.
-- Tab **Kendala** di CMS: status, PIC, batas waktu, notifikasi email, catatan audit.
-- Stok hadiah dan daftar tunggu.
+- Kolom acara: username, sandi (terenkripsi), kuota GL, jadwal undian, status undian, petunjuk masuk. Tabel antrean GL dan kartu GL.
+- Peta interaktif untuk titik dan radius (pustaka Leaflet + peta OpenStreetMap; input koordinat manual tetap ada sebagai cadangan).
+- Dompet poin (saldo, poin tertahan, riwayat), stok hadiah, daftar tunggu.
+- Panel undian di detail acara: antrean, pemenang, **Undi sekarang** (pengaman), **Tunda undian**, ekspor, salin untuk WhatsApp, tanda "diterima tim Show".
+- Tabel dan halaman **pengaduan** (anggota mengirim, admin menindaklanjuti dari detail anggota).
 
-**Dihapus**
+**Dihapus atau dipensiunkan**
 
-- Pindai QR di area anggota (kamera, unggah gambar QR, kolom kode) dan pustaka `qr-scanner`.
-- Pembuat dan cetak QR di CMS, "Buat QR baru", "Perbaiki token".
-- Tahap hadiah lama (10, 25, 50, 100, 250 stempel): dinonaktifkan, bukan dihapus, supaya riwayat klaim lama tetap utuh.
+- Tahap hadiah lama (10, 25, 50, 100, 250 stempel): dinonaktifkan, bukan dihapus, supaya riwayat klaim lama utuh.
+- Tidak ada fitur QR yang dihapus: **pembuat/cetak QR di CMS dan pemindai di area anggota tetap ada.** Yang berubah hanya siapa memakainya (keputusan 2).
 
-**Tidak berubah:** masuk/daftar (termasuk Google), verifikasi email, Komunitas (pengumuman dan kenangan), CMS Artis, mekanisme tab Konten dan pratinjau, Log, auto deploy.
+**Tidak berubah:** masuk/daftar (termasuk Google), verifikasi email, Komunitas, CMS Artis, mekanisme tab Konten dan pratinjau, Log, auto deploy.
 
-### 6.3 Paket kerja
+### 6.4 Fase pengerjaan
 
-| Paket                                | Isi                                                                                                                                                                                                                       | Catatan                                                                                                              |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| **1. Poin dan hadiah**               | Stempel jadi poin, dompet poin, +1.000 per check-in, katalog hadiah, penukaran (tahan, kembali, stok, daftar tunggu), migrasi data lama, UI Beranda/Hadiah/Profil, CMS Anggota/Hadiah/Penukaran/Ringkasan, teks dan email | **Harus pertama.** Satu paket karena poin dan penukaran saling bergantung. Deploy sendiri (ada migrasi data).        |
-| **2. Acara: check-in lokasi dan GL** | Check-in tanpa QR, ajukan pemeriksaan, penanda mencurigakan, antrean GL, undian otomatis, kartu GL, tab Undian GL dan Kendala, halaman Acara anggota, hapus QR dari CMS                                                   | Besar. Bisa dipecah **2A** (check-in + pemeriksaan + Kendala) dan **2B** (GL). Butuh keputusan 6.4 nomor 1, 4, 5, 6. |
-| **3. Penyempurnaan** (opsional)      | Akun Tim Show terpisah (peran), kirim WhatsApp otomatis, hapus sisa kolom/berkas QR, kendala stok terhubung, dokumentasi akhir                                                                                            | Dikerjakan setelah Paket 1 dan 2 dipakai di lapangan.                                                                |
+Tiap fase dites penuh dan aman di-deploy sendiri. Kolom **Syarat** = fase yang harus sudah selesai.
 
-Urutan: 1, lalu 2 (atau 2A, 2B), lalu 3. Tiap paket dites penuh dan aman di-deploy sendiri.
+| Fase   | Isi                                                                                                                                                                                                                                                                                                                                   | Syarat     | Deploy                    |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ------------------------- |
+| **1**  | **Stempel jadi poin.** Ganti nama tabel/kolom/model, ubah ke integer, ganti teks di kode, tes, dan database, ekspor, grafik. Sementara 1 kehadiran = 1.000 poin (setara 1 stempel); nilai 1.000/2.000 diatur di Fase 5. Tahap hadiah lama ikut dikali 1.000 supaya hadiah tetap jalan.                                                | -          | Sendiri, **cadangkan DB** |
+| **2**  | **Fondasi acara.** Kolom acara baru (username, sandi, kuota GL, jadwal undian, status undian, jendela dan poin per acara, poster, deskripsi), tabel antrean/kartu GL, kerangka navbar atas "Acara" (dua tab kosong), memecah `adminController` dan `acara.blade.php`, alamat lama dialihkan.                                          | 1          | Bisa digabung dengan 3, 4 |
+| **3**  | **CMS Pengaturan acara.** Tambah satuan, impor CSV, Bandsintown, username dan sandi, peta titik + radius, kuota GL dan jadwal undian, jendela check-in dan poin per acara, poster dan deskripsi, daftar jadwal (ubah, hapus).                                                                                                         | 2          | Sendiri                   |
+| **4**  | **CMS Hari H.** Daftar acara + QR, halaman detail, daftar yang hadir dengan tab GL gratis / beli tiket sendiri, ekspor CSV. Tab GL tampil kosong sampai Fase 6.                                                                                                                                                                       | 2          | Sendiri                   |
+| **5**  | **Aturan check-in baru.** Jendela 22.00 sampai H+1 04.00 (bisa diubah), lokasi wajib, **tombol mandiri tertutup untuk pemenang GL**, poin 2.000 (mandiri) dan 1.000 (GL lewat scan QR) dari pengaturan, penanda sumber (GL / tiket), ajukan pemeriksaan bila GPS ditolak, penanda mencurigakan. Ubah `IcAturan` dan `CheckinService`. | 2          | Sendiri                   |
+| **6A** | **GL: mesin undian.** `GlService`, `UndianService`, perintah artisan + jadwal tiap menit, pengaman (kunjungan pertama setelah 18.00 dan tombol Undi sekarang), status GL tertunda, kartu GL, email pemenang, audit.                                                                                                                   | 2          | Sendiri, **cadangkan DB** |
+| **6B** | **GL: panel di CMS.** Panel undian di halaman detail acara: antrean, pemenang, tunda/undi sekarang, ekspor, salin WhatsApp, tanda diterima. Mengisi tab GL gratis di Fase 4.                                                                                                                                                          | 4, 6A      | Sendiri                   |
+| **7**  | **Aplikasi anggota.** Halaman detail acara (poster, tempat, waktu, tombol Antri GL dan Check-in) menggantikan modal, kartu GL, menu bawah "Acara", Beranda "Inner Circle Saya". Pemindai QR dipertahankan.                                                                                                                            | 5, 6A      | Sendiri                   |
+| **8**  | **Hadiah dan penukaran.** Katalog 150.000 / 250.000, dompet poin, tahan poin, kembalikan, stok, daftar tunggu; CMS Hadiah dan Penukaran; UI Hadiah dan Profil.                                                                                                                                                                        | 1          | Sendiri, **cadangkan DB** |
+| **9**  | **Pengaduan anggota.** Formulir di area anggota, daftar di detail anggota (CMS), pintasan dan angka di Ringkasan, email status.                                                                                                                                                                                                       | 1          | Sendiri                   |
+| **10** | **Penutup.** Teks Konten (tentang, langkah, FAQ, aturan check-in), kebijakan privasi, email, README final, daftar uji lapangan (6.7), ringkas bagian 6.                                                                                                                                                                               | 3 sampai 9 | Sendiri                   |
+| 11     | _Opsional_ setelah dipakai di lapangan: tab Kendala (status, PIC, batas waktu), akun Tim Show terpisah (peran), kirim WhatsApp otomatis.                                                                                                                                                                                              | 10         | -                         |
 
-### 6.4 Keputusan yang perlu dikonfirmasi
+### 6.5 Yang bisa dikerjakan barengan
 
-Tiap nomor punya **usulan bawaan**; bila setuju, cukup jawab "ikut usulan".
+Fase **1 harus sendirian dan paling dulu**: ia mengganti nama di sekitar 425 tempat (termasuk file CMS acara dan anggota), sehingga fase lain yang berjalan bersamanya pasti bentrok. **Fase 2 menyusul** (kecil, tetapi semua fase lain bersandar padanya). Setelah itu ada tiga jalur yang tidak saling menunggu:
 
-1. **Undian pukul 18.00 itu hari apa?** Slide tidak menyebut. Usulan: waktu undian disimpan **per acara** (bisa diubah), bawaan **H-1 pukul 18.00**.
-2. **Stempel lama jadi berapa poin?** Usulan: **1 stempel = 1.000 poin**. Klaim lama yang sudah selesai/disetujui **tidak memotong** saldo; klaim lama yang masih diproses diselesaikan dulu sebelum Paket 1 di-deploy.
-3. **Boleh menukar hadiah yang sama berulang kali?** Usulan: **boleh**, selama saldo cukup dan stok ada (aturan lama "satu kali per tahap" tidak berlaku lagi karena poin berkurang).
-4. **QR dihapus total?** Usulan: **hapus dari alur anggota dan CMS**. QR cetakan lama yang dipindai akan diarahkan ke halaman Acara, bukan error. Acara tanpa titik lokasi: check-in ditutup dan CMS memberi peringatan.
-5. **Kirim ke WhatsApp tim Show**: usulan awal **manual tanpa biaya** (tombol salin + tautan `wa.me` + tanda "sudah diterima"). Kirim otomatis lewat layanan WhatsApp berbayar masuk Paket 3 bila perlu.
-6. **Undian otomatis butuh cron.** Jadwal Bandsintown boleh tetap manual, tetapi undian 18.00 tidak bisa menunggu admin. Usulan: pasang **satu cron `schedule:run` tiap menit** di cPanel (cara di 5.4), ditambah **pengaman**: undian juga dipicu oleh kunjungan pertama setelah 18.00 dan ada tombol "Undi sekarang" untuk admin. Tanpa cron, hanya pengaman yang jalan (undian bisa telat bila sepi kunjungan).
-7. **Hak akses sandi venue.** CMS masih satu peran admin. Usulan: sandi **tersembunyi** (klik untuk lihat, tercatat di Log), tidak ikut daftar WhatsApp maupun CSV; anggota melihatnya hanya bila **terpilih dan undian disetujui**. Akun Tim Show terpisah masuk Paket 3.
-8. **Arti "Setujui undian".** Usulan: admin menekan **Setujui** sebelum 18.00 setelah kuota, sandi, dan petunjuk terisi. Tanpa persetujuan, antrean tetap tutup tetapi status jadi **GL tertunda** dan tidak ada undian; undian susulan butuh persetujuan, alasan, dan tercatat.
+| Jalur                      | Urutan                      | File utama yang disentuh                                                                                |
+| -------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------- |
+| **A. CMS Acara**           | 3 dan 4 (barengan), lalu 6B | controller dan view CMS acara baru, komponen peta, `AcaraService`, `BandsintownService`                 |
+| **B. Aturan dan GL**       | 5 dan 6A (barengan), lalu 7 | `CheckinService`, `IcAturan`, `ic_event`, service GL baru, `memberController`, view area anggota        |
+| **C. Poin dan komunikasi** | 8 dan 9 (barengan)          | `ClaimService`, view Hadiah/Profil/Beranda anggota, `anggota-detail`, `ringkasan`, tabel dan model baru |
 
-Asumsi lain (kabari bila tidak cocok): hanya anggota **aktif dan email terverifikasi** yang bisa ikut antrean, satu pendaftaran per acara, anggota boleh keluar dari antrean sebelum ditutup, dan pemenang menerima email.
+- **Barengan aman:** jalur A, B, dan C hampir tidak berbagi file. Di dalam jalur: 3 dengan 4, 5 dengan 6A, dan 8 dengan 9 juga aman.
+- **Harus menunggu:** 6B menunggu 4 (halamannya) dan 6A (datanya); 7 menunggu 5 dan 6A (aturan dan kartu yang ditampilkan); 10 menunggu semuanya.
+- **Titik rawan bentrok** (file bersama): `routes/web.php`, `config/ic_konten.php` dan `config/ic_konten_modul.php`, `config/inner_circle.php`, komponen `dashboard/navbar`, dan view Ringkasan (jalur A dan C sama-sama menambah kartu). Aturan agar rapi: tiap jalur menaruh route-nya di blok berkomentar sendiri, dan teks Konten baru didaftarkan sekali di Fase 10 bila bisa.
+- **Cara praktis:** satu jalur = satu percakapan dan satu cabang Git; unggah zip terbaru pada tiap percakapan. Disarankan **paling banyak dua jalur sekaligus** (A dengan C paling bersih), dan gabungkan satu per satu ke `main` dengan tes hijau sebelum jalur berikutnya di-merge.
 
-### 6.5 Catatan teknis penting
+### 6.6 Keputusan yang perlu dikonfirmasi
 
-| Hal                       | Penanganan                                                                                                                                                                                                                                                         |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Nama tabel dan kolom      | `ic_stempel` jadi `ic_poin`, `members.stempel_total` jadi `poin_total`, `ic_rewards.target_stempel` jadi `harga_poin` (sekitar 425 penyebutan di kode dan tes, penggantian mekanis). Migrasi punya `down()`.                                                       |
-| Ukuran angka              | `ic_stempel.jumlah` (smallint, maks 32.767) dan `ic_rewards.target_stempel` (smallint, maks 65.535) **tidak muat** 150.000/250.000. Keduanya diubah ke integer.                                                                                                    |
-| Data lama                 | Migrasi mengalikan saldo, buku besar, dan harga tahap lama dengan 1.000, lalu menonaktifkan 5 tahap lama dan mengisi 2 hadiah baru. **Cadangkan database (ekspor phpMyAdmin) sebelum push Paket 1**, karena auto deploy langsung `migrate`.                        |
-| Teks yang sudah tersimpan | Teks bawaan lama ("stempel") ada di database (`ic_pengaturan`, dan `ic_item` untuk langkah/FAQ). Teks yang **masih sama dengan bawaan lama** diganti; teks yang sudah pernah kamu ubah **tidak ditimpa** dan daftarnya diberikan untuk dicek.                      |
-| Poin tidak dobel          | Buku besar tetap hanya-ditambah. Kehadiran: kunci unik (anggota, acara). Penukaran: satu baris tahan dan satu baris kembali per pengajuan, dengan kunci unik.                                                                                                      |
-| Undian aman               | Pemilihan acak memakai `random_int`; satu undian per acara dijamin lewat kunci baris dan status; hasil tersimpan dan terkunci; email pemenang bertanda "sudah dikirim" supaya ulang kirim tidak menggandakan. Kunci baris tidak diuji SQLite: uji manual di MySQL. |
-| Sandi venue               | Disimpan terenkripsi (seperti token acara), tidak masuk CSV, tidak dikirim ke browser sebelum berhak.                                                                                                                                                              |
-| Privasi                   | Nama dan Member ID pemenang dibagikan ke tim Show/venue. Kebijakan privasi bawaan dan teks di tombol "Ikut antrean" diperbarui. Koordinat anggota tetap tidak disimpan; penanda mencurigakan memakai sidik (hash) perangkat, bukan IP mentah.                      |
-| Struktur kode             | `adminController` sudah 870+ baris, jadi fitur baru memakai controller dan service sendiri (`PoinService`, `GlService`, `UndianService`, `PemeriksaanService`, `KendalaService`).                                                                                  |
-| Tab Konten dan pratinjau  | Kunci teks baru wajib didaftarkan di `config/ic_konten.php` dan tepat satu modul di `config/ic_konten_modul.php` (dijaga tes). Halaman baru anggota otomatis ikut pratinjau potongan.                                                                              |
-| Tes                       | Sekitar 20 berkas tes yang menyebut stempel dan QR diperbarui; tes baru untuk poin, penukaran, undian, pemeriksaan, dan kendala. Target: semua lulus sebelum tiap push.                                                                                            |
+Tiap nomor punya **usulan bawaan**; bila setuju cukup jawab "ikut usulan".
+
+1. **Stempel lama jadi berapa poin?** Usulan: **1 stempel = 1.000 poin**. Klaim lama yang sudah selesai/disetujui tidak memotong saldo; klaim yang masih diproses diselesaikan dulu sebelum Fase 1 di-deploy.
+2. **Cara pemenang GL dicatat hadir (1.000 poin).** Pemenang tidak boleh check-in mandiri. Usulan: kehadiran pemenang dicatat lewat **pemindaian QR acara** (QR yang sama di CMS Hari H, tetap dalam jendela jam dan radius), bernilai **1.000 poin**; non-pemenang memakai tombol **Check-in mandiri** (GPS) bernilai **2.000 poin**. Kunci unik satu kehadiran per anggota per acara membuat poin tidak mungkin dobel. Nilai 1.000 dan 2.000 disimpan di Aturan check-in (admin bisa mengubah; poin yang sudah diberikan tidak berubah). Bila maksudnya GL dicatat otomatis atau oleh petugas tanpa scan, kabari.
+3. **QR dan pemindai tetap.** QR per acara tetap dibuat dan dicetak dari CMS Hari H, pemindai kamera tetap ada di area anggota. Pertanyaan: apakah **non-pemenang boleh juga memakai scan QR** sebagai cara check-in? Usulan: **boleh**, hasilnya sama dengan tombol mandiri (2.000); yang menentukan poin adalah status GL, bukan cara check-in. Jendela jam pemenang GL usulannya sama dengan mandiri.
+4. **Isi kartu GL.** Sesuai permintaanmu: nama anggota, nama acara, username, sandi. Usulan tambahan: **Member ID kecil** di kartu (slide menyebutnya) agar petugas mudah mencocokkan. Username dan sandi **satu per acara**, sama untuk semua pemenang acara itu, diisi admin.
+5. **Arti "disetujui" sebelum undian.** Usulan: undian jalan bila **kuota, username, dan sandi sudah terisi**; admin bisa menekan **Tunda undian** kapan saja sebelum 18.00. Bila data belum lengkap pada 18.00, antrean ditutup, status **GL tertunda**, admin dan anggota dikabari; undian susulan butuh alasan dan tercatat.
+6. **Undian otomatis butuh cron.** Usulan: pasang **satu cron `schedule:run` tiap menit** di cPanel (cara di 5.4), ditambah pengaman: undian juga dipicu kunjungan pertama setelah 18.00 dan ada tombol **Undi sekarang**. Tanpa cron, hanya pengaman yang jalan (undian bisa telat bila sepi). Apakah cron sudah terpasang di hosting sekarang?
+7. **Hak akses sandi acara.** Masih satu peran admin. Usulan: sandi **tersembunyi** di CMS (klik untuk lihat, tercatat di Log), tidak ikut CSV maupun daftar WhatsApp; anggota melihatnya hanya bila **terpilih dan undian selesai**. Akun Tim Show terpisah masuk Fase 11.
+8. **Hadiah ditukar berulang?** Usulan: **boleh**, selama saldo cukup dan stok ada.
+9. **Pengaduan.** Usulan: dikirim dari halaman Profil; isian: kategori, acara terkait (opsional), isi maks 1.000 karakter, tanpa lampiran; status **Baru, Diproses, Selesai** plus catatan admin; maks 3 pengaduan per hari per anggota; email ke anggota saat status berubah. Pintasan di Ringkasan menampilkan jumlah pengaduan yang belum selesai dan membuka daftar anggota yang punya pengaduan terbuka.
+
+10. **Poster dan deskripsi acara.** Contoh tata letak memakai poster dan deskripsi, sedangkan `ic_events` belum punya keduanya. Usulan: tambah kolom opsional poster (unggah, otomatis WebP, maks 1 MB) dan deskripsi (maks 500 karakter) di Pengaturan acara; bila kosong, halaman detail memakai ikon dan warna tipe acara seperti kartu sekarang. Poster dari Bandsintown dipakai bila tersedia.
+
+Asumsi lain (kabari bila tidak cocok): hanya anggota **aktif dan email terverifikasi** yang bisa antri dan check-in; satu pendaftaran per acara; "hari H" = tanggal acara di `ic_events` dan semua jam memakai WIB; acara yang diinput setelah pukul 18.00 hari H tidak punya antrean GL.
+
+### 6.7 Catatan teknis penting
+
+| Hal                       | Penanganan                                                                                                                                                                                                                                                                                               |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Nama tabel dan kolom      | `ic_stempel` jadi `ic_poin`, `members.stempel_total` jadi `poin_total`, `ic_rewards.target_stempel` jadi `harga_poin` (sekitar 425 penyebutan di kode dan tes, penggantian mekanis). Migrasi punya `down()`.                                                                                             |
+| Ukuran angka              | `ic_stempel.jumlah` (smallint) dan `ic_rewards.target_stempel` (smallint) **tidak muat** 150.000 / 250.000. Keduanya, dan `members.stempel_total`, diubah ke integer. Migrasi `kelola_anggota_inner_circle` (17 Nov) sudah memakai smallint bertanda untuk `jumlah`; Fase 1 menimpanya.                  |
+| Data lama (produksi)      | Migrasi mengalikan saldo, buku besar, dan harga tahap lama dengan 1.000 (keputusan 1). **Cadangkan database sebelum push Fase 1, 6A, dan 8.** Fase yang hanya menambah kolom/tabel (2, 9) tidak mengubah data lama.                                                                                      |
+| Teks yang sudah tersimpan | Teks bawaan lama ("stempel") ada di database (`ic_pengaturan`, `ic_item`). Teks yang **masih sama dengan bawaan lama** diganti; teks yang pernah diubah admin **tidak ditimpa** dan daftarnya diberikan untuk dicek.                                                                                     |
+| Poin tidak dobel          | Buku besar tetap hanya-ditambah. Kehadiran: kunci unik (anggota, acara). Penukaran: satu baris tahan dan satu baris kembali per pengajuan, dengan kunci unik.                                                                                                                                            |
+| Undian aman               | Pemilihan acak memakai `random_int`; satu undian per acara dijamin lewat kunci baris dan status; hasil tersimpan dan terkunci; email pemenang bertanda "sudah dikirim" supaya ulang kirim tidak menggandakan. Kunci baris tidak diuji SQLite: uji manual di MySQL.                                       |
+| Sandi acara               | Disimpan terenkripsi (seperti token acara), tidak masuk CSV, tidak dikirim ke browser sebelum berhak; melihatnya di CMS tercatat di Log.                                                                                                                                                                 |
+| Peta                      | Leaflet dibundel lewat Vite (bukan CDN, sesuai CSP). Ubin OpenStreetMap perlu atribusi dan lolos `img-src https:`; pakai ubin hanya di halaman CMS yang butuh peta. Pencarian alamat tetap lewat `GeocodeService`.                                                                                       |
+| Jam dan zona waktu        | Jendela 22.00 sampai H+1 04.00 melewati tengah malam: hitung dari tanggal acara + jam, bukan dari "hari ini". Uji di batas 21.59, 22.00, 03.59, 04.01 dan pergantian tanggal.                                                                                                                            |
+| Privasi                   | Nama dan Member ID pemenang dibagikan ke tim Show/venue. Kebijakan privasi bawaan dan teks tombol "Antri GL" diperbarui. Koordinat anggota tetap tidak disimpan; penanda mencurigakan memakai sidik (hash) perangkat, bukan IP mentah. Pengaduan masuk daftar data yang ikut terhapus saat akun dihapus. |
+| Struktur kode             | `adminController` sudah 870+ baris dan `acara.blade.php` 986 baris, jadi Fase 2 memecahnya; fitur baru memakai controller dan service sendiri (`PoinService`, `GlService`, `UndianService`, `PemeriksaanService`, `PengaduanService`).                                                                   |
+| Tab Konten dan pratinjau  | Kunci teks baru wajib didaftarkan di `config/ic_konten.php` dan tepat satu modul di `config/ic_konten_modul.php` (dijaga tes). Halaman baru anggota otomatis ikut pratinjau potongan.                                                                                                                    |
+| Tes                       | Sekitar 20 berkas tes yang menyebut stempel dan QR diperbarui di Fase 1 dan 7; tes baru untuk poin, jendela jam, undian, penukaran, dan pengaduan. Target: semua lulus sebelum tiap push.                                                                                                                |
+
+**Daftar uji lapangan (Fase 10):** undian dengan data lengkap dan tidak lengkap pada 18.00; undian tidak berulang saat dipicu dua kali; kartu GL hanya tampil untuk pemenang; check-in di 21.59 ditolak dan 22.00 diterima, di luar radius ditolak, kedua kali tidak dobel; sandi acara tidak ada di CSV; penukaran memotong dan mengembalikan poin; pengaduan muncul di detail anggota dan Ringkasan; uji di HP (Safari iOS dan Chrome Android, HTTPS) termasuk peta.
