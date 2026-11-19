@@ -42,7 +42,7 @@ class TokenQrTest extends TestCase
 
         $this->assertTrue($e->fresh()->tokenRusak());
 
-        $this->admin()->get(route('ic.admin.acara'))
+        $this->admin()->get(route('ic.admin.acara.harih'))
             ->assertOk()
             ->assertSee('Perbaiki token');
 
@@ -51,7 +51,7 @@ class TokenQrTest extends TestCase
         $baru = $e->fresh();
         $this->assertFalse($baru->tokenRusak());
         $this->assertMatchesRegularExpression('/^WS-[A-Z0-9]{12}$/', $baru->token);
-        $this->admin()->get(route('ic.admin.acara'))->assertOk()->assertDontSee('Perbaiki token');
+        $this->admin()->get(route('ic.admin.acara.harih'))->assertOk()->assertDontSee('Perbaiki token');
     }
 
     public function test_unduh_qr_token_rusak_ditolak_dengan_jelas(): void

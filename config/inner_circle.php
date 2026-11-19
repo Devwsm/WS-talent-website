@@ -63,6 +63,18 @@ return [
     ],
 
     /*
+    | GL gratis (aturan baru Inner Circle).
+    | - undian_jam / undian_hari_sebelum: waktu undian bawaan per acara = hari H pukul 18.00 WIB. Admin bisa menggantinya
+    |   per acara (kolom ic_events.undian_pada). Undian TIDAK jalan otomatis: admin menekan "Undi sekarang" (tanpa cron).
+    | - kuota_maks: batas isian kuota GL per acara di CMS.
+    */
+    'gl' => [
+        'undian_jam' => '18:00',
+        'undian_hari_sebelum' => 0,
+        'kuota_maks' => 500,
+    ],
+
+    /*
     | Jendela check-in bawaan untuk acara yang tidak punya jendela sendiri: dibuka pada jam `buka` di tanggal show,
     | ditutup pada jam `tutup` setelah `tutup_hari` hari (1 = H+1, karena show klub selesai lewat tengah malam).
     | Nilai ini hanya cadangan: bila admin mengubahnya di CMS (Konten > Aturan check-in), nilai dari CMS yang dipakai
@@ -241,7 +253,7 @@ return [
     'tab_admin' => [
         'ringkasan' => ['label' => 'Ringkasan', 'ikon' => 'bi-speedometer2', 'route' => 'ic.admin.ringkasan', 'fase' => 4],
         'anggota' => ['label' => 'Anggota', 'ikon' => 'bi-people-fill', 'route' => 'ic.admin.anggota', 'fase' => 4],
-        'acara' => ['label' => 'Acara & QR', 'ikon' => 'bi-qr-code', 'route' => 'ic.admin.acara', 'fase' => 4],
+        'acara' => ['label' => 'Acara', 'ikon' => 'bi-qr-code', 'route' => 'ic.admin.acara', 'fase' => 4],
         'klaim' => ['label' => 'Klaim', 'ikon' => 'bi-inbox-fill', 'route' => 'ic.admin.klaim', 'fase' => 5],
         'hadiah' => ['label' => 'Hadiah', 'ikon' => 'bi-gift-fill', 'route' => 'ic.admin.hadiah', 'fase' => 5],
         'pengumuman' => ['label' => 'Pengumuman', 'ikon' => 'bi-megaphone-fill', 'route' => 'ic.admin.pengumuman', 'fase' => 6],

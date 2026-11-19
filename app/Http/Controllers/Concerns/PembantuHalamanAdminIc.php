@@ -1,0 +1,48 @@
+<?php
+
+namespace App\Http\Controllers\Concerns;
+
+use App\Models\ic_claim;
+use Illuminate\Http\Request;
+
+/**
+ * Pembantu bersama controller halaman CMS Inner Circle (adminController, acaraController, acaraHariHController):
+ * merender satu tab dengan angka lencana, peta ikon untuk preview, dan membaca parameter query sebagai teks.
+ */
+trait PembantuHalamanAdminIc
+{
+    /** Render satu tab; angka lencana di bar tab selalu ikut dikirim. */
+    protected function tampil(string $tab, array $data)
+    {
+        return view('pages.dashboard-pages.inner-circle.' . $tab, $data + [
+            'jumlahKlaimMenunggu' => ic_claim::query()->whereIn('status', ic_claim::statusMenunggu())->count(),
+        ]);
+    }
+
+    /**
+     * Peta ikon -> alamat gambar (atau emoji bila berkas WebP belum ada) untuk JavaScript preview.
+     * Logikanya sama dengan komponen <x-inner-circle.ikon>.
+     *
+     * @return array<string, array{url?: string, emoji?: string}>
+     */
+    protected function ikonPeta(): array
+    {
+        $peta = [];
+        foreach (config('inner_circle.ikon') as $nama => $emoji) {
+            $berkas = 'aset/inner-circle/ikon/' . $nama . '.webp';
+            $peta[$nama] = file_exists(public_path($berkas))
+                ? ['url' => asset($berkas)]
+                : ['emoji' => $emoji];
+        }
+
+        return $peta;
+    }
+
+    /** Ambil parameter query sebagai teks; array atau nilai aneh dianggap kosong. */
+    protected function teks(Request $request, string $kunci): string
+    {
+        $nilai = $request->query($kunci);
+
+        return is_string($nilai) ? $nilai : '';
+    }
+}

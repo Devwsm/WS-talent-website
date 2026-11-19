@@ -3,6 +3,8 @@
 use App\Http\Controllers\cspController;
 use App\Http\Controllers\dashboardController;
 use App\Http\Controllers\homeController;
+use App\Http\Controllers\InnerCircle\acaraController;
+use App\Http\Controllers\InnerCircle\acaraHariHController;
 use App\Http\Controllers\InnerCircle\adminController;
 use App\Http\Controllers\InnerCircle\akunController;
 use App\Http\Controllers\InnerCircle\emailAdminController;
@@ -145,22 +147,24 @@ Route::prefix('/dashboard')->middleware(['cekLogin', 'catatAktivitas'])->group(f
         Route::patch('/anggota/{id}/nonaktifkan', [adminController::class, 'nonaktifkanAnggota'])->whereNumber('id')->name('anggota.nonaktifkan')->middleware('throttle:admin-tulis');
         Route::patch('/anggota/{id}/aktifkan', [adminController::class, 'aktifkanAnggota'])->whereNumber('id')->name('anggota.aktifkan')->middleware('throttle:admin-tulis');
 
-        Route::get('/acara', [adminController::class, 'acara'])->name('acara');
-        Route::post('/acara', [adminController::class, 'simpanAcara'])->name('acara.simpan')->middleware('throttle:admin-tulis');
-        Route::post('/acara/impor', [adminController::class, 'imporAcara'])->name('acara.impor')->middleware('throttle:admin-tulis');
+        // Menu Acara dibagi dua: Pengaturan acara (/acara) dan Hari H (/acara/hari-h). /acara?acara=KODE dialihkan ke Hari H.
+        Route::get('/acara', [acaraController::class, 'index'])->name('acara');
+        Route::get('/acara/hari-h', [acaraHariHController::class, 'index'])->name('acara.harih');
+        Route::post('/acara', [acaraController::class, 'simpanAcara'])->name('acara.simpan')->middleware('throttle:admin-tulis');
+        Route::post('/acara/impor', [acaraController::class, 'imporAcara'])->name('acara.impor')->middleware('throttle:admin-tulis');
         // Fase 9: jadwal dari Bandsintown, dan perbaikan token QR yang tidak terbaca (APP_KEY berbeda).
-        Route::post('/acara/sinkron-bandsintown', [adminController::class, 'sinkronBandsintown'])->name('acara.bandsintown')->middleware('throttle:admin-bandsintown');
-        Route::post('/acara/perbaiki-token', [adminController::class, 'perbaikiToken'])->name('acara.perbaiki')->middleware('throttle:admin-perbaiki-token');
+        Route::post('/acara/sinkron-bandsintown', [acaraController::class, 'sinkronBandsintown'])->name('acara.bandsintown')->middleware('throttle:admin-bandsintown');
+        Route::post('/acara/perbaiki-token', [acaraHariHController::class, 'perbaikiToken'])->name('acara.perbaiki')->middleware('throttle:admin-perbaiki-token');
         // Titik lokasi check-in per acara: simpan, hapus, dan cari dari alamat venue (JSON).
-        Route::put('/acara/{kode}/lokasi', [adminController::class, 'simpanLokasi'])->name('acara.lokasi')->middleware('throttle:admin-tulis');
-        Route::delete('/acara/{kode}/lokasi', [adminController::class, 'hapusLokasi'])->name('acara.lokasi.hapus')->middleware('throttle:admin-tulis');
-        Route::post('/acara/{kode}/lokasi/cari', [adminController::class, 'cariLokasi'])->name('acara.lokasi.cari')->middleware('throttle:admin-tulis');
-        Route::put('/acara/{kode}', [adminController::class, 'ubahAcara'])->name('acara.ubah')->middleware('throttle:admin-tulis');
-        Route::delete('/acara/{kode}', [adminController::class, 'hapusAcara'])->name('acara.hapus')->middleware('throttle:admin-tulis');
-        Route::post('/acara/{kode}/token', [adminController::class, 'tokenBaru'])->name('acara.token')->middleware('throttle:admin-tulis');
-        Route::get('/acara/{kode}/qr', [adminController::class, 'unduhQr'])->name('acara.qr');
-        Route::get('/acara/{kode}/kehadiran', [adminController::class, 'eksporKehadiran'])->name('acara.kehadiran')->middleware('throttle:admin-aksi-kecil');
-        Route::get('/acara/{kode}/cetak', [adminController::class, 'cetakQr'])->name('acara.cetak');
+        Route::put('/acara/{kode}/lokasi', [acaraHariHController::class, 'simpanLokasi'])->name('acara.lokasi')->middleware('throttle:admin-tulis');
+        Route::delete('/acara/{kode}/lokasi', [acaraHariHController::class, 'hapusLokasi'])->name('acara.lokasi.hapus')->middleware('throttle:admin-tulis');
+        Route::post('/acara/{kode}/lokasi/cari', [acaraHariHController::class, 'cariLokasi'])->name('acara.lokasi.cari')->middleware('throttle:admin-tulis');
+        Route::put('/acara/{kode}', [acaraController::class, 'ubahAcara'])->name('acara.ubah')->middleware('throttle:admin-tulis');
+        Route::delete('/acara/{kode}', [acaraController::class, 'hapusAcara'])->name('acara.hapus')->middleware('throttle:admin-tulis');
+        Route::post('/acara/{kode}/token', [acaraHariHController::class, 'tokenBaru'])->name('acara.token')->middleware('throttle:admin-tulis');
+        Route::get('/acara/{kode}/qr', [acaraHariHController::class, 'unduhQr'])->name('acara.qr');
+        Route::get('/acara/{kode}/kehadiran', [acaraHariHController::class, 'eksporKehadiran'])->name('acara.kehadiran')->middleware('throttle:admin-aksi-kecil');
+        Route::get('/acara/{kode}/cetak', [acaraHariHController::class, 'cetakQr'])->name('acara.cetak');
         Route::get('/klaim', [adminController::class, 'klaim'])->name('klaim');
         Route::patch('/klaim/{id}', [adminController::class, 'ubahKlaim'])->whereNumber('id')->name('klaim.proses')->middleware('throttle:admin-tulis');
         Route::get('/hadiah', [adminController::class, 'hadiah'])->name('hadiah');

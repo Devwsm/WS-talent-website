@@ -71,7 +71,8 @@ class PenjelasLogTest extends TestCase
     {
         $this->assertSame('Beranda website', PenjelasLog::halaman('/', 'GET'));
         $this->assertSame('CMS Artis › Album', PenjelasLog::halaman('https://x.test/dashboard/albums/tambahAlbums', 'POST'));
-        $this->assertSame('CMS Inner Circle › Acara & QR', PenjelasLog::halaman('/dashboard/inner-circle/acara', 'GET'));
+        $this->assertSame('CMS Inner Circle › Acara', PenjelasLog::halaman('/dashboard/inner-circle/acara', 'GET'));
+        $this->assertSame('CMS Inner Circle › Acara', PenjelasLog::halaman('/dashboard/inner-circle/acara/hari-h', 'GET'));
         $this->assertNull(PenjelasLog::halaman('artisan'));
         $this->assertNull(PenjelasLog::halaman('/halaman-ngawur'));
     }

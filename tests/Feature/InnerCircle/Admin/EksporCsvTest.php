@@ -167,7 +167,7 @@ class EksporCsvTest extends TestCase
             ->assertSee(route('ic.admin.anggota.ekspor'), false);
         $this->admin()->get(route('ic.admin.anggota', ['q' => 'ani']))->assertSee('Unduh hasil (CSV)')
             ->assertSee(route('ic.admin.anggota.ekspor', ['q' => 'ani']), false);
-        $this->admin()->get(route('ic.admin.acara', ['acara' => $e->kode]))->assertOk()
+        $this->admin()->get(route('ic.admin.acara.harih', ['acara' => $e->kode]))->assertOk()
             ->assertSee(route('ic.admin.acara.kehadiran', $e->kode), false);
     }
 }

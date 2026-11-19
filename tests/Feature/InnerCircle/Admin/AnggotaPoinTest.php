@@ -65,10 +65,10 @@ class AnggotaPoinTest extends TestCase
         $this->checkin($m, $e->token, $e->kode);
         $this->app['auth']->guard('member')->logout();
 
-        foreach (['ic.admin.ringkasan', 'ic.admin.anggota', 'ic.admin.acara', 'ic.admin.klaim'] as $r) {
+        foreach (['ic.admin.ringkasan', 'ic.admin.anggota', 'ic.admin.acara', 'ic.admin.acara.harih', 'ic.admin.klaim'] as $r) {
             $admin->get(route($r))->assertOk();
         }
-        $admin->get(route('ic.admin.acara', ['acara' => $e->kode]))->assertOk()->assertSee('<svg', false)->assertSee($e->token);
+        $admin->get(route('ic.admin.acara.harih', ['acara' => $e->kode]))->assertOk()->assertSee('<svg', false)->assertSee($e->token);
         $admin->get(route('ic.admin.anggota', ['q' => 'IC-0000']))->assertOk()->assertSee('Anggota Uji');
 
         $admin->post(route('ic.admin.anggota.poin', $m->id_member), ['jumlah' => 3000, 'catatan' => 'Acara privat'])->assertRedirect();

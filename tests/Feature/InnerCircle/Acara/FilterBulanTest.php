@@ -91,8 +91,7 @@ class FilterBulanTest extends TestCase
         $this->acara('2026-12-20', 'Klub Desember');
         $this->acara('2027-01-15', 'Klub Januari');
 
-        // Panel QR di halaman yang sama memuat acara terdekat, jadi yang dipastikan hanya: pilihan bulan tampil
-        // dan acara Januari ada di jadwal hasil filter.
+        // Jadwal ada di halaman Pengaturan acara; yang dipastikan: pilihan bulan tampil dan acara Januari ada di hasil filter.
         $this->withSession(['login' => true, 'user' => 'admin'])
             ->get(route('ic.admin.acara', ['bulan' => '2027-01']))
             ->assertOk()

@@ -24,6 +24,7 @@ class ModeDanNavigasiTest extends TestCase
             'ic.admin.ringkasan',
             'ic.admin.anggota',
             'ic.admin.acara',
+            'ic.admin.acara.harih',
             'ic.admin.klaim',
             'ic.admin.hadiah',
             'ic.admin.pengumuman',

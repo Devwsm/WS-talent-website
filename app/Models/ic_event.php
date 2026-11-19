@@ -44,9 +44,26 @@ class ic_event extends Model
         'lokasi_sumber',
         'lokasi_diatur_oleh',
         'lokasi_diatur_pada',
+        'username_acara',
+        'sandi_acara',
+        'kuota_gl',
+        'undian_pada',
+        'status_undian',
+        'undian_selesai_pada',
+        'poin_gl',
+        'poin_mandiri',
+        'poster',
+        'deskripsi',
+        'petunjuk_masuk',
     ];
 
-    protected $hidden = ['token'];
+    /** Status undian GL: belum dijalankan | ditunda admin | tertunda (data belum lengkap) | selesai (hasil terkunci). */
+    public const UNDIAN_BELUM = 'belum';
+    public const UNDIAN_DITUNDA = 'ditunda';
+    public const UNDIAN_TERTUNDA = 'tertunda';
+    public const UNDIAN_SELESAI = 'selesai';
+
+    protected $hidden = ['token', 'sandi_acara'];
 
     protected function casts(): array
     {
@@ -61,6 +78,13 @@ class ic_event extends Model
             'lokasi_lng' => 'float',
             'lokasi_radius' => 'integer',
             'lokasi_diatur_pada' => 'datetime',
+            // Sandi acara terenkripsi seperti token; sandi yang tidak terbaca (APP_KEY berbeda) jadi null, bukan galat.
+            'sandi_acara' => TokenAcara::class,
+            'kuota_gl' => 'integer',
+            'undian_pada' => 'datetime',
+            'undian_selesai_pada' => 'datetime',
+            'poin_gl' => 'integer',
+            'poin_mandiri' => 'integer',
         ];
     }
 
@@ -223,5 +247,48 @@ class ic_event extends Model
     public function poin(): HasMany
     {
         return $this->hasMany(ic_poin::class, 'event_id', 'id_event');
+    }
+
+    /**
+     * Waktu undian GL: isian admin, atau bawaan (config inner_circle.gl: hari H pukul 18.00 WIB). Dihitung dari tanggal
+     * acara, jadi acara baru otomatis punya waktu undian tanpa diisi.
+     */
+    protected function undianEfektif(): Attribute
+    {
+        return Attribute::get(function () {
+            if ($this->undian_pada !== null) {
+                return $this->undian_pada;
+            }
+
+            [$jam, $menit] = array_map('intval', explode(':', (string) config('inner_circle.gl.undian_jam')));
+
+            return $this->tanggal->copy()
+                ->subDays((int) config('inner_circle.gl.undian_hari_sebelum'))
+                ->setTime($jam, $menit);
+        });
+    }
+
+    /** Acara ini punya antrean GL (kuota diisi dan lebih dari nol). */
+    protected function punyaGl(): Attribute
+    {
+        return Attribute::get(fn() => ($this->kuota_gl ?? 0) > 0);
+    }
+
+    /** Data yang dibutuhkan pemenang sudah lengkap: kuota, username, dan sandi acara terisi (sandi harus terbaca). */
+    public function glLengkap(): bool
+    {
+        return $this->punya_gl && filled($this->username_acara) && filled($this->sandi_acara);
+    }
+
+    /** Sandi tersimpan tetapi tidak bisa dibuka (APP_KEY berbeda); admin perlu mengisinya ulang. */
+    public function sandiRusak(): bool
+    {
+        return filled($this->attributes['sandi_acara'] ?? null) && $this->sandi_acara === null;
+    }
+
+    /** Pendaftar antrean GL acara ini. */
+    public function antreanGl(): HasMany
+    {
+        return $this->hasMany(ic_gl_antrean::class, 'event_id', 'id_event');
     }
 }
