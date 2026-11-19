@@ -25,7 +25,7 @@
 
         <div class="ic-beranda__sisi">
             <x-inner-circle.kartu-anggota :member="$member" />
-            <x-inner-circle.bar-stempel :member="$member" :berikutnya="$berikutnya" />
+            <x-inner-circle.bar-poin :member="$member" :berikutnya="$berikutnya" />
         </div>
     </div>
 

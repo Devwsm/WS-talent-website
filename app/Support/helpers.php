@@ -84,3 +84,11 @@ if (! function_exists('ic_program')) {
         return app(IcKonten::class)->namaProgram();
     }
 }
+
+if (! function_exists('ic_angka')) {
+    /** Angka dengan pemisah ribuan gaya Indonesia (10000 jadi 10.000). Dipakai untuk poin. */
+    function ic_angka(int|float|string|null $angka): string
+    {
+        return number_format((float) $angka, 0, ',', '.');
+    }
+}

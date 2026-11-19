@@ -382,14 +382,14 @@ class IcPotongan
         }
     }
 
-    /** Anggota contoh: tidak ada di database, email terverifikasi, bergabung setahun lalu, 10 stempel. */
+    /** Anggota contoh: tidak ada di database, email terverifikasi, bergabung setahun lalu, 10.000 poin. */
     private function anggotaContoh(): member
     {
         $anggota = new member(['nama' => 'Anggota Contoh', 'email' => 'anggota@contoh.id']);
         $anggota->forceFill([
             'id_member' => 0,
             'kode_member' => 'IC-00000',
-            'stempel_total' => 10,
+            'poin_total' => 10000,
             'email_verified_at' => now(),
             'created_at' => now()->subYear(),
         ]);

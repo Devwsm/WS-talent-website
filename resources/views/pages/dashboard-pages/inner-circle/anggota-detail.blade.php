@@ -5,7 +5,7 @@
         $inputKelas =
             'bg-white/5 border border-white/15 text-white placeholder-white/30 p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition';
         $labelKelas = 'text-sm font-semibold uppercase tracking-widest text-white/60';
-        $sumberLabel = ['checkin' => 'Check-in', 'manual' => 'Stempel manual', 'koreksi' => 'Koreksi admin'];
+        $sumberLabel = ['checkin' => 'Check-in', 'manual' => 'Poin manual', 'koreksi' => 'Koreksi admin'];
     @endphp
     <div class="relative w-full flex flex-col justify-center items-center overflow-hidden">
         @include('components/dashboard/navbar')
@@ -18,7 +18,7 @@
             @include('components.dashboard.inner-circle.kepala', [
                 'aktif' => 'anggota',
                 'judul' => 'Detail anggota',
-                'deskripsi' => 'Riwayat stempel, klaim hadiah, dan pengaturan akun satu anggota.',
+                'deskripsi' => 'Riwayat poin, klaim hadiah, dan pengaturan akun satu anggota.',
                 'pakaiCss' => false,
             ])
 
@@ -98,8 +98,8 @@
 
                 <dl class="grid grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
                     <div class="rounded-2xl border border-white/10 bg-white/2 p-4">
-                        <dt class="text-xs uppercase tracking-widest text-white/40">Total stempel</dt>
-                        <dd class="text-2xl font-bold mt-1">{{ $anggota->stempel_total }}</dd>
+                        <dt class="text-xs uppercase tracking-widest text-white/40">Total poin</dt>
+                        <dd class="text-2xl font-bold mt-1">{{ ic_angka($anggota->poin_total) }}</dd>
                     </div>
                     <div class="rounded-2xl border border-white/10 bg-white/2 p-4">
                         <dt class="text-xs uppercase tracking-widest text-white/40">Check-in</dt>
@@ -121,12 +121,12 @@
                 <div class="flex flex-wrap gap-2">
                     <button type="button" onclick="document.getElementById('dialogTambah').showModal()"
                         class="h-11 px-5 inline-flex items-center gap-2 rounded-full bg-white text-black text-xs font-semibold hover:bg-white/80 transition-colors">
-                        <i class="bi bi-plus-circle-fill" aria-hidden="true"></i> Tambah stempel
+                        <i class="bi bi-plus-circle-fill" aria-hidden="true"></i> Tambah poin
                     </button>
                     <button type="button" onclick="document.getElementById('dialogKurangi').showModal()"
-                        @disabled($anggota->stempel_total < 1)
+                        @disabled($anggota->poin_total < 1)
                         class="h-11 px-5 inline-flex items-center gap-2 rounded-full border border-white/15 text-xs font-semibold text-white/70 hover:bg-white/10 hover:text-white transition-colors disabled:opacity-40 disabled:pointer-events-none">
-                        <i class="bi bi-dash-circle-fill" aria-hidden="true"></i> Kurangi stempel
+                        <i class="bi bi-dash-circle-fill" aria-hidden="true"></i> Kurangi poin
                     </button>
                     @unless ($anggota->diblokir())
                         <button type="button" onclick="document.getElementById('dialogNonaktif').showModal()"
@@ -138,15 +138,15 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-                {{-- Riwayat stempel: buku besar lengkap, termasuk koreksi --}}
+                {{-- Riwayat poin: buku besar lengkap, termasuk koreksi --}}
                 <div class="lg:col-span-2 min-w-0">
                     <h2 class="font-bold uppercase tracking-wide text-sm mb-4 flex items-center gap-2">
-                        <i class="bi bi-stars text-white/50" aria-hidden="true"></i> Riwayat stempel
+                        <i class="bi bi-stars text-white/50" aria-hidden="true"></i> Riwayat poin
                         ({{ $riwayat->total() }})
                     </h2>
                     @if ($riwayat->isEmpty())
                         @include('components/dashboard/card/empty-state', [
-                            'message' => 'Anggota ini belum punya riwayat stempel.',
+                            'message' => 'Anggota ini belum punya riwayat poin.',
                         ])
                     @else
                         <ul class="flex flex-col gap-3">
@@ -172,7 +172,7 @@
                                     </div>
                                     <span
                                         class="shrink-0 text-lg font-bold tabular-nums {{ $s->koreksi() ? 'text-red-300' : 'text-emerald-200' }}">
-                                        {{ $s->jumlah > 0 ? '+' : '−' }}{{ abs($s->jumlah) }}
+                                        {{ $s->jumlah > 0 ? '+' : '−' }}{{ ic_angka(abs($s->jumlah)) }}
                                     </span>
                                 </li>
                             @endforeach
@@ -196,7 +196,7 @@
                             @foreach ($klaimAnggota as $k)
                                 <li class="rounded-2xl border border-white/10 bg-white/3 p-4 min-w-0">
                                     <p class="font-semibold text-sm wrap-anywhere">{{ $k->reward?->judul ?? 'Hadiah' }}</p>
-                                    <p class="text-xs text-white/50">{{ $k->reward?->target_stempel }} stempel ·
+                                    <p class="text-xs text-white/50">{{ ic_angka($k->reward?->harga_poin) }} poin ·
                                         {{ $k->created_at->locale('id')->translatedFormat('j M Y') }} ·
                                         {{ $statusKlaim[$k->status]['label'] ?? $k->status }}</p>
                                 </li>
@@ -211,13 +211,14 @@
         </div>
     </div>
 
-    <x-dashboard.inner-circle.dialog-aksi id="dialogTambah" judul="Tambah stempel manual" :aksi="route('ic.admin.anggota.stempel', $anggota->id_member)" tombol="Tambah">
+    <x-dashboard.inner-circle.dialog-aksi id="dialogTambah" judul="Tambah poin manual" :aksi="route('ic.admin.anggota.poin', $anggota->id_member)" tombol="Tambah">
         <div class="flex flex-col gap-1.5">
-            <label for="tambah-jumlah" class="{{ $labelKelas }}">Jumlah stempel <span
-                    class="text-red-400">*</span></label>
-            <input type="number" id="tambah-jumlah" name="jumlah" min="1" max="10" value="1"
-                required class="{{ $inputKelas }}" />
-            <p class="text-xs text-white/30">Satu sampai sepuluh stempel per penambahan.</p>
+            <label for="tambah-jumlah" class="{{ $labelKelas }}">Jumlah poin <span class="text-red-400">*</span></label>
+            <input type="number" id="tambah-jumlah" name="jumlah" min="1"
+                max="{{ config('inner_circle.poin.manual_maks') }}" value="1000" required
+                class="{{ $inputKelas }}" />
+            <p class="text-xs text-white/30">Maksimal {{ ic_angka(config('inner_circle.poin.manual_maks')) }} poin per
+                penambahan.</p>
         </div>
         <div class="flex flex-col gap-1.5">
             <label for="tambah-catatan" class="{{ $labelKelas }}">Alasan <span class="text-red-400">*</span></label>
@@ -226,9 +227,9 @@
         </div>
     </x-dashboard.inner-circle.dialog-aksi>
 
-    <x-dashboard.inner-circle.dialog-aksi id="dialogKurangi" judul="Kurangi stempel (koreksi)" :aksi="route('ic.admin.anggota.kurangi', $anggota->id_member)"
+    <x-dashboard.inner-circle.dialog-aksi id="dialogKurangi" judul="Kurangi poin (koreksi)" :aksi="route('ic.admin.anggota.kurangi', $anggota->id_member)"
         tombol="Kurangi">
-        <p class="text-sm text-white/60">Dipakai untuk memperbaiki stempel yang salah dicatat. Pengurangan ditulis sebagai
+        <p class="text-sm text-white/60">Dipakai untuk memperbaiki poin yang salah dicatat. Pengurangan ditulis sebagai
             baris
             koreksi di riwayat; baris lama tidak dihapus. Check-in yang sudah tercatat tetap ada, jadi anggota tidak bisa
             check-in ulang di acara yang sama.</p>
@@ -236,15 +237,15 @@
             <label for="kurangi-jumlah" class="{{ $labelKelas }}">Jumlah dikurangi <span
                     class="text-red-400">*</span></label>
             <input type="number" id="kurangi-jumlah" name="jumlah" min="1"
-                max="{{ max(1, min(100, $anggota->stempel_total)) }}" value="1" required
-                class="{{ $inputKelas }}" />
-            <p class="text-xs text-white/30">Anggota ini punya {{ $anggota->stempel_total }} stempel.</p>
+                max="{{ max(1, min((int) config('inner_circle.poin.koreksi_maks'), $anggota->poin_total)) }}"
+                value="1" required class="{{ $inputKelas }}" />
+            <p class="text-xs text-white/30">Anggota ini punya {{ ic_angka($anggota->poin_total) }} poin.</p>
         </div>
         <div class="flex flex-col gap-1.5">
             <label for="kurangi-catatan" class="{{ $labelKelas }}">Alasan koreksi <span
                     class="text-red-400">*</span></label>
             <textarea id="kurangi-catatan" name="catatan" rows="3" maxlength="160" required
-                placeholder="Mis. salah input, seharusnya 1 stempel bukan 3" class="{{ $inputKelas }}"></textarea>
+                placeholder="Mis. salah input, seharusnya 1.000 poin bukan 3.000" class="{{ $inputKelas }}"></textarea>
         </div>
     </x-dashboard.inner-circle.dialog-aksi>
 
@@ -252,7 +253,7 @@
         :aksi="route('ic.admin.anggota.nonaktifkan', $anggota->id_member)" tombol="Nonaktifkan">
         <p class="text-sm text-white/60">{{ $anggota->nama }} tidak akan bisa masuk (kata sandi maupun Google) dan sesi
             yang
-            sedang berjalan berakhir. Stempel, kenangan, dan klaimnya tidak dihapus; akun bisa diaktifkan kembali kapan
+            sedang berjalan berakhir. Poin, kenangan, dan klaimnya tidak dihapus; akun bisa diaktifkan kembali kapan
             saja.</p>
         <div class="flex flex-col gap-1.5">
             <label for="nonaktif-alasan" class="{{ $labelKelas }}">Alasan <span class="text-red-400">*</span></label>

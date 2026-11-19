@@ -6,7 +6,7 @@ use App\Models\ic_event;
 use App\Models\ic_reward;
 use App\Models\member;
 use App\Services\InnerCircle\AcaraService;
-use App\Services\InnerCircle\StempelService;
+use App\Services\InnerCircle\PoinService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -21,13 +21,13 @@ class HalamanPenjelasanTest extends TestCase
     // ---------- tampil / sembunyikan hadiah ----------
     // ---------- tampil / sembunyikan pengumuman ----------
 
-    private function anggota(int $stempel = 0): member
+    private function anggota(int $poin = 0): member
     {
         $m = member::create(['nama' => 'Anggota Uji', 'email' => 'a@contoh.test', 'password' => 'rahasia123']);
         $m->kode_member = sprintf('IC-%05d', $m->id_member);
         $m->save();
-        if ($stempel > 0) {
-            app(StempelService::class)->tambahManual($m, $stempel, 'Uji', 'admin');
+        if ($poin > 0) {
+            app(PoinService::class)->tambahManual($m, $poin, 'Uji', 'admin');
         }
 
         return $m->fresh();

@@ -4,7 +4,7 @@
     $gambarOg = asset('aset/og/og-ws-inner-circle.jpg');
     $deskripsiOg =
         $deskripsi ?:
-        'Komunitas penggemar resmi Whisnu Santika. Datang ke acara, kumpulkan stempel, dan buka hadiah eksklusif.';
+        'Komunitas penggemar resmi Whisnu Santika. Datang ke acara, kumpulkan poin, dan buka hadiah eksklusif.';
 @endphp
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="{{ ic_program() }}">

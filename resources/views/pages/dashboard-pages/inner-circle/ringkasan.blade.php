@@ -155,7 +155,7 @@
                                         <p class="font-semibold text-sm truncate">{{ $k->nama_member }}
                                             <span class="text-white/40 font-normal">· {{ $k->kode_member }}</span>
                                         </p>
-                                        <p class="text-xs text-white/50 truncate">{{ $k->target_stempel }} stempel ·
+                                        <p class="text-xs text-white/50 truncate">{{ ic_angka($k->harga_poin) }} poin ·
                                             {{ $k->judul }} ·
                                             {{ $k->diajukan_pada->locale('id')->translatedFormat('j M Y') }}</p>
                                     </div>
@@ -224,8 +224,8 @@
                                             · {{ $m->created_at->locale('id')->translatedFormat('j M Y') }}</p>
                                     </div>
                                     <span
-                                        class="shrink-0 text-xs font-semibold text-white/70">{{ number_format($m->stempel_total, 0, ',', '.') }}
-                                        stempel</span>
+                                        class="shrink-0 text-xs font-semibold text-white/70">{{ number_format($m->poin_total, 0, ',', '.') }}
+                                        poin</span>
                                 </li>
                             @endforeach
                         </ul>
@@ -247,7 +247,7 @@
                                 <li
                                     class="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/2 p-3 min-w-0 {{ $h->aktif ? '' : 'opacity-60' }}">
                                     <span
-                                        class="shrink-0 min-w-12 text-center rounded-xl bg-white/10 px-2 py-1.5 text-sm font-bold">{{ $h->target_stempel }}</span>
+                                        class="shrink-0 min-w-12 text-center rounded-xl bg-white/10 px-2 py-1.5 text-sm font-bold">{{ ic_angka($h->harga_poin) }}</span>
                                     <div class="min-w-0 flex-1">
                                         <p class="font-semibold text-sm truncate">{{ $h->judul }}</p>
                                         <p class="text-xs text-white/50 truncate">{{ $h->deskripsi }}</p>

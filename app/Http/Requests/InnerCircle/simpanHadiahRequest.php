@@ -6,7 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 /**
- * Ubah satu tahapan hadiah di dashboard. Target stempel tetap (dari URL), jadi tidak ikut diubah.
+ * Ubah satu tahapan hadiah di dashboard. Target poin tetap (dari URL), jadi tidak ikut diubah.
  * `opsi` dikirim sebagai teks satu pilihan per baris; hasilnya daftar kosong atau tepat dua pilihan.
  */
 class simpanHadiahRequest extends FormRequest

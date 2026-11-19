@@ -3,7 +3,7 @@
     @if ($tampilTag)
         <span class="ic-ubin__tag">{{ $reward->status_member === 'terkunci' ? 'TERKUNCI' : 'TERBUKA' }}</span>
     @endif
-    <span class="ic-ubin__angka">{{ $reward->target_stempel }}<small>Stempel</small></span>
+    <span class="ic-ubin__angka">{{ ic_angka($reward->harga_poin) }}<small>Poin</small></span>
     <x-inner-circle.ikon :nama="$reward->ikon" kelas="ic-ubin__ikon" />
     <span class="ic-ubin__judul">{{ $reward->judul }}</span>
     <span class="ic-ubin__deskripsi">{{ $reward->deskripsi }}</span>

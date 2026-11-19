@@ -143,7 +143,7 @@
         </div>
 
         <p class="langkah">Pindai QR ini dengan kamera HP, masuk ke akun Inner Circle, lalu ketuk
-            <b>Verifikasi</b> untuk mendapat stempel.
+            <b>Verifikasi</b> untuk mendapat poin.
         </p>
 
         <p class="kode-label">QR tidak bisa dipindai? Ketik kode ini di halaman Check-in:</p>

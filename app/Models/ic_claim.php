@@ -65,9 +65,9 @@ class ic_claim extends Model
         return Attribute::get(fn() => $this->reward->judul);
     }
 
-    protected function targetStempel(): Attribute
+    protected function hargaPoin(): Attribute
     {
-        return Attribute::get(fn() => $this->reward->target_stempel);
+        return Attribute::get(fn() => $this->reward->harga_poin);
     }
 
     protected function ikon(): Attribute

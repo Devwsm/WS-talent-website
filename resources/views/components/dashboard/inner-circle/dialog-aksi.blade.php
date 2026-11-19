@@ -1,5 +1,5 @@
 {{--
-    Dialog form kecil di halaman detail anggota (tambah stempel, kurangi stempel, nonaktifkan akun).
+    Dialog form kecil di halaman detail anggota (tambah poin, kurangi poin, nonaktifkan akun).
     Props: id, judul, aksi (URL), method (POST|PATCH), tombol (teks), bahaya (tombol merah penuh peringatan)
     Isian form ada di slot. Dibuka dengan: document.getElementById(id).showModal()
 --}}

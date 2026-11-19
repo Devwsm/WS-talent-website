@@ -6,5 +6,6 @@
         <small>{{ $aktivitas->tanggal->locale('id')->translatedFormat('j M Y') }} ·
             {{ $aktivitas->jumlah < 0 ? 'Koreksi' : 'Terverifikasi' }}</small>
     </div>
-    <span class="ic-aktivitas__poin">{{ $aktivitas->jumlah > 0 ? '+' : '−' }}{{ abs($aktivitas->jumlah) }} ✦</span>
+    <span class="ic-aktivitas__poin">{{ $aktivitas->jumlah > 0 ? '+' : '−' }}{{ ic_angka(abs($aktivitas->jumlah)) }}
+        ✦</span>
 </div>

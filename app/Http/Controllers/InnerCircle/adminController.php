@@ -5,20 +5,20 @@ namespace App\Http\Controllers\InnerCircle;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\InnerCircle\blokirAnggotaRequest;
 use App\Http\Requests\InnerCircle\imporEventRequest;
-use App\Http\Requests\InnerCircle\kurangiStempelRequest;
+use App\Http\Requests\InnerCircle\kurangiPoinRequest;
 use App\Http\Requests\InnerCircle\moderasiKenanganRequest;
 use App\Http\Requests\InnerCircle\simpanEventRequest;
 use App\Http\Requests\InnerCircle\simpanHadiahRequest;
 use App\Http\Requests\InnerCircle\simpanLokasiRequest;
 use App\Http\Requests\InnerCircle\simpanPengumumanRequest;
-use App\Http\Requests\InnerCircle\stempelManualRequest;
+use App\Http\Requests\InnerCircle\poinManualRequest;
 use App\Http\Requests\InnerCircle\ubahKlaimRequest;
 use App\Models\ic_broadcast;
 use App\Models\ic_claim;
 use App\Models\ic_event;
 use App\Models\ic_memory;
 use App\Models\ic_reward;
-use App\Models\ic_stempel;
+use App\Models\ic_poin;
 use App\Models\log_aktivitas;
 use App\Models\log_error;
 use App\Models\member;
@@ -36,7 +36,7 @@ use App\Services\InnerCircle\KlaimGagal;
 use App\Services\InnerCircle\PengumumanService;
 use App\Services\InnerCircle\QrService;
 use App\Services\InnerCircle\SinkronGagal;
-use App\Services\InnerCircle\StempelService;
+use App\Services\InnerCircle\PoinService;
 use App\Services\InnerCircle\TrenRingkasan;
 use App\Support\AreaLog;
 use App\Support\CsvEkspor;
@@ -73,7 +73,7 @@ class adminController extends Controller
         return $this->tampil('ringkasan', [
             'ringkasan' => (object) [
                 'anggota_total' => member::query()->count(),
-                'kehadiran_terverifikasi' => ic_stempel::query()->where('sumber', 'checkin')->count(),
+                'kehadiran_terverifikasi' => ic_poin::query()->where('sumber', 'checkin')->count(),
                 'klaim_menunggu' => ic_claim::query()->whereIn('status', ic_claim::statusMenunggu())->count(),
                 'acara_aktif' => $checkin->eventTerbuka($sekarang)->count(),
                 'acara_berikutnya' => $berikutnya,
@@ -101,7 +101,7 @@ class adminController extends Controller
             'anggotaBaru' => member::query()->orderByDesc('id_member')->limit(5)->get(),
             'hadiahTahap' => ic_reward::query()
                 ->withCount(['klaim as klaim_menunggu' => fn($q) => $q->whereIn('status', ic_claim::statusMenunggu())])
-                ->orderBy('target_stempel')
+                ->orderBy('harga_poin')
                 ->get(),
             'pengumumanTerbaru' => ic_broadcast::query()->orderByDesc('terbit_pada')->orderByDesc('id_broadcast')->limit(3)->get(),
             'kenanganTerbaru' => ic_memory::query()->with('member')->orderByDesc('id_memory')->limit(3)->get(),
@@ -133,7 +133,7 @@ class adminController extends Controller
         $akun = in_array($this->teks($request, 'akun'), ['aktif', 'nonaktif'], true) ? $this->teks($request, 'akun') : '';
 
         $query = member::query()
-            ->withMax(['stempel as terakhir_checkin' => fn($s) => $s->where('sumber', 'checkin')], 'created_at')
+            ->withMax(['poin as terakhir_checkin' => fn($s) => $s->where('sumber', 'checkin')], 'created_at')
             ->orderByDesc('id_member');
 
         if ($q !== '') {
@@ -177,7 +177,7 @@ class adminController extends Controller
     {
         [$query,,,,] = $this->saringAnggota($request);
 
-        $query->withCount(['stempel as total_checkin' => fn($s) => $s->where('sumber', 'checkin')])->reorder('id_member');
+        $query->withCount(['poin as total_checkin' => fn($s) => $s->where('sumber', 'checkin')])->reorder('id_member');
         $jumlah = (clone $query)->count();
 
         $aktivitas->catat('Daftar anggota diunduh', "Ekspor CSV: {$jumlah} anggota.", 'berhasil', 'inner-circle', null, 'ic.admin.anggota.ekspor');
@@ -192,7 +192,7 @@ class adminController extends Controller
                     $m->daftar_via === member::VIA_GOOGLE ? 'Google' : 'Manual (sandi)',
                     $m->google_id ? 'Ya' : 'Tidak',
                     $m->created_at?->format('Y-m-d H:i'),
-                    $m->stempel_total,
+                    $m->poin_total,
                     $m->total_checkin,
                     $m->terakhir_checkin?->format('Y-m-d H:i'),
                     $m->diblokir() ? 'Dinonaktifkan' : 'Aktif',
@@ -202,7 +202,7 @@ class adminController extends Controller
 
         return CsvEkspor::unduh(
             'anggota-inner-circle-' . now()->format('Ymd-His') . '.csv',
-            ['Kode', 'Nama', 'Email', 'Email terverifikasi', 'Daftar via', 'Google terhubung', 'Bergabung', 'Total stempel', 'Jumlah check-in', 'Check-in terakhir', 'Status akun'],
+            ['Kode', 'Nama', 'Email', 'Email terverifikasi', 'Daftar via', 'Google terhubung', 'Bergabung', 'Total poin', 'Jumlah check-in', 'Check-in terakhir', 'Status akun'],
             $baris,
         );
     }
@@ -212,12 +212,12 @@ class adminController extends Controller
     {
         $acara = ic_event::query()->where('kode', $kode)->firstOrFail();
 
-        $query = ic_stempel::query()
+        $query = ic_poin::query()
             ->with('member')
             ->where('sumber', 'checkin')
             ->where('event_id', $acara->getKey())
             ->orderBy('created_at')
-            ->orderBy('id_stempel');
+            ->orderBy('id_poin');
 
         $jumlah = (clone $query)->count();
         $label = trim($acara->venue . ', ' . $acara->kota, ', ') . ' (' . $acara->tanggal->toDateString() . ')';
@@ -241,50 +241,50 @@ class adminController extends Controller
 
         return CsvEkspor::unduh(
             'kehadiran-' . $acara->kode . '-' . $acara->tanggal->toDateString() . '.csv',
-            ['No', 'Kode anggota', 'Nama', 'Email', 'Waktu check-in', 'Jarak dari titik acara (m)', 'Akurasi lokasi (m)', 'Stempel'],
+            ['No', 'Kode anggota', 'Nama', 'Email', 'Waktu check-in', 'Jarak dari titik acara (m)', 'Akurasi lokasi (m)', 'Poin'],
             $baris,
         );
     }
 
-    /** Profil satu anggota: data akun, tindakan admin, riwayat stempel, dan klaim hadiah. */
+    /** Profil satu anggota: data akun, tindakan admin, riwayat poin, dan klaim hadiah. */
     public function detailAnggota(int $id)
     {
         $anggota = member::query()
-            ->withCount(['stempel as total_checkin' => fn($s) => $s->where('sumber', 'checkin')])
-            ->withMax(['stempel as terakhir_checkin' => fn($s) => $s->where('sumber', 'checkin')], 'created_at')
+            ->withCount(['poin as total_checkin' => fn($s) => $s->where('sumber', 'checkin')])
+            ->withMax(['poin as terakhir_checkin' => fn($s) => $s->where('sumber', 'checkin')], 'created_at')
             ->findOrFail($id);
 
         return $this->tampil('anggota-detail', [
             'anggota' => $anggota,
-            'riwayat' => ic_stempel::query()
+            'riwayat' => ic_poin::query()
                 ->with('event')
                 ->where('member_id', $anggota->getKey())
                 ->orderByDesc('created_at')
-                ->orderByDesc('id_stempel')
+                ->orderByDesc('id_poin')
                 ->paginate(self::PER_HALAMAN_ANGGOTA)
                 ->withQueryString(),
             'klaimAnggota' => ic_claim::query()->with('reward')->where('member_id', $anggota->getKey())->orderByDesc('id_claim')->get(),
         ]);
     }
 
-    /** Kurangi stempel (koreksi salah input). Ditulis sebagai baris negatif di riwayat, tidak menghapus baris lama. */
-    public function kurangiStempel(int $id, kurangiStempelRequest $request, StempelService $stempel): RedirectResponse
+    /** Kurangi poin (koreksi salah input). Ditulis sebagai baris negatif di riwayat, tidak menghapus baris lama. */
+    public function kurangiPoin(int $id, kurangiPoinRequest $request, PoinService $poin): RedirectResponse
     {
         $anggota = member::query()->findOrFail($id);
         $jumlah = (int) $request->validated('jumlah');
 
-        $stempel->kurangi($anggota, $jumlah, $request->validated('catatan'), session('user'));
+        $poin->kurangi($anggota, $jumlah, $request->validated('catatan'), session('user'));
 
-        $pesan = "{$jumlah} stempel dikurangi dari {$anggota->nama}. Sekarang {$anggota->stempel_total} stempel.";
+        $pesan = ic_angka($jumlah) . " poin dikurangi dari {$anggota->nama}. Sekarang " . ic_angka($anggota->poin_total) . ' poin.';
 
         // Klaim yang sudah diajukan tidak otomatis dibatalkan; admin diingatkan supaya bisa menindaklanjuti sendiri.
         $melebihi = ic_claim::query()
             ->where('member_id', $anggota->getKey())
             ->where('status', '!=', 'ditolak')
-            ->whereHas('reward', fn($r) => $r->where('target_stempel', '>', $anggota->stempel_total))
+            ->whereHas('reward', fn($r) => $r->where('harga_poin', '>', $anggota->poin_total))
             ->count();
         if ($melebihi > 0) {
-            $pesan .= " Perhatian: {$melebihi} klaim hadiah anggota ini butuh stempel lebih banyak dari total sekarang. Klaim tidak otomatis dibatalkan; periksa di tab Klaim.";
+            $pesan .= " Perhatian: {$melebihi} klaim hadiah anggota ini butuh poin lebih banyak dari total sekarang. Klaim tidak otomatis dibatalkan; periksa di tab Klaim.";
         }
 
         return back()->with('success', $pesan);
@@ -312,15 +312,15 @@ class adminController extends Controller
         return back()->with('success', "Akun {$anggota->nama} diaktifkan kembali. Anggota bisa masuk lagi.");
     }
 
-    /** Tambah stempel manual (mis. kehadiran di acara privat yang diverifikasi tim WSM). */
-    public function tambahStempel(int $id, stempelManualRequest $request, StempelService $stempel): RedirectResponse
+    /** Tambah poin manual (mis. kehadiran di acara privat yang diverifikasi tim WSM). */
+    public function tambahPoin(int $id, poinManualRequest $request, PoinService $poin): RedirectResponse
     {
         $anggota = member::query()->findOrFail($id);
         $jumlah = (int) $request->validated('jumlah');
 
-        $stempel->tambahManual($anggota, $jumlah, $request->validated('catatan'), session('user'));
+        $poin->tambahManual($anggota, $jumlah, $request->validated('catatan'), session('user'));
 
-        return back()->with('success', "{$jumlah} stempel ditambahkan untuk {$anggota->nama}.");
+        return back()->with('success', ic_angka($jumlah) . " poin ditambahkan untuk {$anggota->nama}.");
     }
 
     /**
@@ -355,7 +355,7 @@ class adminController extends Controller
             ?? $acaraQr->last();
 
         $jadwal = ic_event::query()
-            ->withCount(['stempel as jumlah_checkin' => fn($s) => $s->where('sumber', 'checkin')])
+            ->withCount(['poin as jumlah_checkin' => fn($s) => $s->where('sumber', 'checkin')])
             ->orderBy('tanggal')
             ->orderBy('id_event');
         if ($filter['bulan'] !== 'all') {
@@ -422,7 +422,7 @@ class adminController extends Controller
     {
         $event = ic_event::query()->where('kode', $kode)->firstOrFail();
 
-        if ($event->stempel()->exists()) {
+        if ($event->poin()->exists()) {
             return back()->with('error', 'Acara ini sudah punya check-in anggota, jadi tidak bisa dihapus. Ubah datanya saja bila ada yang salah.');
         }
 
@@ -676,13 +676,13 @@ class adminController extends Controller
     {
         $rewards = ic_reward::query()
             ->orderBy('urutan')
-            ->orderBy('target_stempel')
+            ->orderBy('harga_poin')
             ->get()
             ->all();
 
         $tahap = (int) $this->teks($request, 'tahap');
-        $tahapAwal = collect($rewards)->first(fn($r) => $r->target_stempel === $tahap)?->target_stempel
-            ?? ($rewards[0]->target_stempel ?? null);
+        $tahapAwal = collect($rewards)->first(fn($r) => $r->harga_poin === $tahap)?->harga_poin
+            ?? ($rewards[0]->harga_poin ?? null);
 
         return $this->tampil('hadiah', [
             'rewards' => $rewards,
@@ -691,17 +691,17 @@ class adminController extends Controller
         ]);
     }
 
-    /** Ubah teks dan tampilan satu tahap. Target stempel tidak bisa diubah (kunci di URL dan aturan klaim). */
+    /** Ubah teks dan tampilan satu tahap. Target poin tidak bisa diubah (kunci di URL dan aturan klaim). */
     public function ubahHadiah(int $target, simpanHadiahRequest $request): RedirectResponse
     {
-        $reward = ic_reward::query()->where('target_stempel', $target)->firstOrFail();
+        $reward = ic_reward::query()->where('harga_poin', $target)->firstOrFail();
 
         $data = $request->validated();
         $data['opsi'] = $data['opsi'] ?: null;
         $reward->update($data);
 
         return redirect(route('ic.admin.hadiah', ['tahap' => $target]))
-            ->with('success', "Tahap {$target} stempel diperbarui.");
+            ->with('success', "Tahap " . ic_angka($target) . " poin diperbarui.");
     }
 
     /**
@@ -711,7 +711,7 @@ class adminController extends Controller
     public function aktifkanHadiah(int $target, Request $request): RedirectResponse
     {
         $aktif = (bool) $request->validate(['aktif' => ['required', 'boolean']])['aktif'];
-        $reward = ic_reward::query()->where('target_stempel', $target)->firstOrFail();
+        $reward = ic_reward::query()->where('harga_poin', $target)->firstOrFail();
 
         if (! $aktif && ! ic_reward::query()->where('aktif', true)->where('id_reward', '!=', $reward->getKey())->exists()) {
             return redirect(route('ic.admin.hadiah', ['tahap' => $target]))
@@ -721,8 +721,8 @@ class adminController extends Controller
         $reward->update(['aktif' => $aktif]);
 
         return redirect(route('ic.admin.hadiah', ['tahap' => $target]))->with('success', $aktif
-            ? "Tahap {$target} stempel aktif lagi dan tampil ke anggota."
-            : "Tahap {$target} stempel disembunyikan dari anggota. Pengajuan yang sudah masuk tetap diproses.");
+            ? "Tahap " . ic_angka($target) . " poin aktif lagi dan tampil ke anggota."
+            : "Tahap " . ic_angka($target) . " poin disembunyikan dari anggota. Pengajuan yang sudah masuk tetap diproses.");
     }
 
     /**

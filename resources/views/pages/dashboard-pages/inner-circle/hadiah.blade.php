@@ -1,11 +1,11 @@
 @extends('template/icDashboardLayout')
 @section('content')
     @php
-        // Data awal untuk form dan preview JavaScript: satu entri per tahapan, kunci = target stempel.
+        // Data awal untuk form dan preview JavaScript: satu entri per tahapan, kunci = target poin.
         $dataHadiah = collect($rewards)
             ->mapWithKeys(
                 fn($r) => [
-                    $r->target_stempel => [
+                    $r->harga_poin => [
                         'judul' => $r->judul,
                         'deskripsi' => $r->deskripsi,
                         'ikon' => $r->ikon,
@@ -18,7 +18,7 @@
 
         // Alamat simpan per tahapan (form dipakai bergantian untuk kelima tahap).
         $urlUbah = collect($rewards)
-            ->mapWithKeys(fn($r) => [$r->target_stempel => route('ic.admin.hadiah.ubah', $r->target_stempel)])
+            ->mapWithKeys(fn($r) => [$r->harga_poin => route('ic.admin.hadiah.ubah', $r->harga_poin)])
             ->all();
 
         // Isian yang gagal divalidasi tampil lagi di tahap yang sedang dibuka.
@@ -37,7 +37,7 @@
         $awal = empty($rewards)
             ? null
             : (object) array_merge($dataHadiah[$tahapAwal], [
-                'target_stempel' => $tahapAwal,
+                'harga_poin' => $tahapAwal,
                 'status_member' => 'terbuka',
             ]);
         $kelasInput =
@@ -79,13 +79,13 @@
                         {{-- Pilih tahapan. Isian yang belum disimpan tetap ada saat berpindah tahapan, tapi hilang bila halaman dimuat ulang. --}}
                         <div role="group" aria-label="Pilih tahapan hadiah" class="flex flex-wrap gap-2 mb-6">
                             @foreach ($rewards as $r)
-                                @php $dipilih = $r->target_stempel === $tahapAwal; @endphp
-                                <button type="button" data-tahap="{{ $r->target_stempel }}"
+                                @php $dipilih = $r->harga_poin === $tahapAwal; @endphp
+                                <button type="button" data-tahap="{{ $r->harga_poin }}"
                                     aria-pressed="{{ $dipilih ? 'true' : 'false' }}"
                                     class="h-11 min-w-16 px-4 rounded-full border text-sm font-semibold transition-colors
                                 {{ $dipilih ? 'bg-white text-black border-white' : 'border-white/10 text-white/60 hover:bg-white/10 hover:text-white' }} {{ $r->aktif ? '' : 'opacity-60 border-dashed' }}"
                                     @unless ($r->aktif) title="Disembunyikan dari anggota" @endunless>
-                                    {{ $r->target_stempel }}
+                                    {{ $r->harga_poin }}
                                 </button>
                             @endforeach
                         </div>
@@ -96,8 +96,8 @@
                             @method('PUT')
                             <div class="flex flex-col gap-1.5">
                                 <span class="text-sm font-semibold uppercase tracking-widest text-white/60">Target
-                                    stempel</span>
-                                <p class="text-sm text-white/70"><b id="h-target">{{ $awal->target_stempel }}</b> stempel
+                                    poin</span>
+                                <p class="text-sm text-white/70"><b id="h-target">{{ $awal->harga_poin }}</b> poin
                                     <span class="text-white/30">· tetap, tidak bisa diubah</span>
                                 </p>
                             </div>
@@ -172,13 +172,12 @@
                                     <li
                                         class="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/3 px-4 py-2.5">
                                         <p class="min-w-0 flex-1 text-sm">
-                                            <b>{{ $r->target_stempel }}</b> stempel
+                                            <b>{{ $r->harga_poin }}</b> poin
                                             <span class="text-white/50">· {{ $r->judul }}</span>
                                         </p>
                                         <span
                                             class="shrink-0 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold {{ $r->aktif ? 'border-emerald-300/30 bg-emerald-300/10 text-emerald-200' : 'border-white/15 text-white/50' }}">{{ $r->aktif ? 'Aktif' : 'Disembunyikan' }}</span>
-                                        <form method="POST"
-                                            action="{{ route('ic.admin.hadiah.aktif', $r->target_stempel) }}"
+                                        <form method="POST" action="{{ route('ic.admin.hadiah.aktif', $r->harga_poin) }}"
                                             class="shrink-0">
                                             @csrf
                                             @method('PATCH')
@@ -212,7 +211,7 @@
                                         <x-inner-circle.ikon :nama="$awal->ikon" kelas="ic-ikon--kecil" />
                                     </span>
                                     <div>
-                                        <h3>{{ $awal->target_stempel }} stempel · {{ $awal->judul }}</h3>
+                                        <h3>{{ $awal->harga_poin }} poin · {{ $awal->judul }}</h3>
                                         <p class="ic-bantuan">{{ $awal->deskripsi }}</p>
                                     </div>
                                     <button type="button" class="ic-tombol ic-tombol--kecil">Klaim <i
@@ -239,7 +238,7 @@
                 const DATA = @json($dataHadiah);
                 const URL_UBAH = @json($urlUbah);
                 const $ = (id) => document.getElementById(id);
-                let aktif = String(@json($awal->target_stempel));
+                let aktif = String(@json($awal->harga_poin));
 
                 const ubin = document.querySelector('#preview-ubin .ic-ubin');
                 const klaim = $('preview-klaim');
@@ -258,7 +257,7 @@
                     const bulat = klaim.querySelector('.ic-klaim__bulat');
                     bulat.className = bulat.className.replace(/ic-warna-\S+/g, '').trim() + ` ic-warna-${d.warna}`;
                     bulat.replaceChildren(window.icBuatIkon(d.ikon, 'ic-ikon--kecil'));
-                    klaim.querySelector('h3').textContent = `${aktif} stempel · ${d.judul}`;
+                    klaim.querySelector('h3').textContent = `${Number(aktif).toLocaleString('id-ID')} poin · ${d.judul}`;
                     klaim.querySelector('p').textContent = d.deskripsi;
 
                     $('preview-opsi').textContent = d.opsi.length ? d.opsi.join(' · ') : 'Tanpa pilihan';

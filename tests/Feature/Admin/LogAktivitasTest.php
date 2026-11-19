@@ -41,11 +41,11 @@ class LogAktivitasTest extends TestCase
 
     public function test_aksi_tulis_admin_tercatat_dengan_teks_jelas_dan_isi_form_tidak_disimpan(): void
     {
-        $this->admin()->patch(route('ic.admin.hadiah.aktif', 10), ['aktif' => 0, 'rahasia' => 'JANGAN-DISIMPAN'])
+        $this->admin()->patch(route('ic.admin.hadiah.aktif', 10000), ['aktif' => 0, 'rahasia' => 'JANGAN-DISIMPAN'])
             ->assertRedirect();
 
         $baris = log_aktivitas::first();
-        $reward = ic_reward::where('target_stempel', 10)->first();
+        $reward = ic_reward::where('harga_poin', 10000)->first();
         $this->assertSame('Tampilan hadiah diubah', $baris->aksi);
         $this->assertSame('Hadiah “' . $reward->judul . '” disembunyikan.', $baris->keterangan);
         $this->assertSame('admin', $baris->pelaku);
@@ -85,12 +85,12 @@ class LogAktivitasTest extends TestCase
 
     public function test_gagal_validasi_tidak_dicatat_tapi_penolakan_aturan_dicatat_sebagai_gagal(): void
     {
-        $this->admin()->patch(route('ic.admin.hadiah.aktif', 10), ['aktif' => 'sembarang'])->assertSessionHasErrors('aktif');
+        $this->admin()->patch(route('ic.admin.hadiah.aktif', 10000), ['aktif' => 'sembarang'])->assertSessionHasErrors('aktif');
         $this->assertSame(0, log_aktivitas::count());
 
         // Menyembunyikan tahap terakhir yang aktif ditolak aturan bisnis -> dicatat sebagai gagal, dengan pesan dari sistem.
-        ic_reward::query()->where('target_stempel', '!=', 10)->update(['aktif' => false]);
-        $this->admin()->patch(route('ic.admin.hadiah.aktif', 10), ['aktif' => 0]);
+        ic_reward::query()->where('harga_poin', '!=', 10000)->update(['aktif' => false]);
+        $this->admin()->patch(route('ic.admin.hadiah.aktif', 10000), ['aktif' => 0]);
 
         $baris = log_aktivitas::first();
         $this->assertSame('gagal', $baris->status);
@@ -100,12 +100,12 @@ class LogAktivitasTest extends TestCase
 
     public function test_klik_ganda_pada_aksi_yang_sama_dicatat_sekali(): void
     {
-        $this->admin()->patch(route('ic.admin.hadiah.aktif', 10), ['aktif' => 0]);
-        $this->admin()->patch(route('ic.admin.hadiah.aktif', 10), ['aktif' => 0]);
+        $this->admin()->patch(route('ic.admin.hadiah.aktif', 10000), ['aktif' => 0]);
+        $this->admin()->patch(route('ic.admin.hadiah.aktif', 10000), ['aktif' => 0]);
         $this->assertSame(1, log_aktivitas::count());
 
         // Aksi berbeda (hadiah lain, atau nilai lain) tetap tercatat.
-        $this->admin()->patch(route('ic.admin.hadiah.aktif', 10), ['aktif' => 1]);
+        $this->admin()->patch(route('ic.admin.hadiah.aktif', 10000), ['aktif' => 1]);
         $this->assertSame(2, log_aktivitas::count());
     }
 
@@ -122,7 +122,7 @@ class LogAktivitasTest extends TestCase
         $this->admin()->get(route('ic.admin.hadiah'))->assertOk();
         $this->assertSame(0, log_aktivitas::count());
 
-        $this->admin()->patch(route('ic.admin.hadiah.aktif', 10), ['aktif' => 0]);
+        $this->admin()->patch(route('ic.admin.hadiah.aktif', 10000), ['aktif' => 0]);
         $this->admin()->post(route('login.proses'), ['username' => 'x', 'password' => 'salahsalah']);
 
         $this->admin()->get(route('log.index', ['tab' => 'aktivitas']))

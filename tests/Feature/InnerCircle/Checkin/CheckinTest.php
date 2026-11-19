@@ -3,7 +3,7 @@
 namespace Tests\Feature\InnerCircle\Checkin;
 
 use App\Models\ic_event;
-use App\Models\ic_stempel;
+use App\Models\ic_poin;
 use App\Models\member;
 use App\Services\InnerCircle\AcaraService;
 use Carbon\Carbon;
@@ -11,7 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Aturan check-in: token QR, jendela waktu, satu stempel per acara, acara privat/tanpa venue, dan pembatas laju.
+ * Aturan check-in: token QR, jendela waktu, satu poin per acara, acara privat/tanpa venue, dan pembatas laju.
  */
 class CheckinTest extends TestCase
 {
@@ -70,15 +70,15 @@ class CheckinTest extends TestCase
             ->assertOk()->assertSee('tidak cocok dengan acara');
     }
 
-    public function test_check_in_berhasil_menambah_satu_stempel_dan_masuk_riwayat(): void
+    public function test_check_in_berhasil_menambah_satu_poin_dan_masuk_riwayat(): void
     {
         $m = $this->anggota();
         $e = $this->acara();
 
         $this->checkin($m, $e->token, $e->kode)->assertRedirect(route('ic.beranda'));
 
-        $this->assertSame(1, $m->fresh()->stempel_total);
-        $baris = ic_stempel::first();
+        $this->assertSame(1000, $m->fresh()->poin_total);
+        $baris = ic_poin::first();
         $this->assertSame('checkin', $baris->sumber);
         $this->assertSame($e->id_event, $baris->event_id);
         $this->actingAs($m->fresh(), 'member')->get(route('ic.profil'))->assertOk()->assertSee('Check-in di Superhouse Satrio');
@@ -91,7 +91,7 @@ class CheckinTest extends TestCase
         $lain = $this->acara(['venue' => 'Blackowl']);
 
         $this->checkin($m, route('ic.checkin', ['kode' => $e->token]), $lain->kode)->assertRedirect(route('ic.beranda'));
-        $this->assertSame($e->id_event, ic_stempel::first()->event_id);
+        $this->assertSame($e->id_event, ic_poin::first()->event_id);
     }
 
     public function test_check_in_kedua_di_acara_yang_sama_ditolak(): void
@@ -102,8 +102,8 @@ class CheckinTest extends TestCase
         $this->checkin($m, $e->token, $e->kode);
         $this->checkin($m, $e->token, $e->kode)->assertSessionHasErrors('kode');
 
-        $this->assertSame(1, ic_stempel::count());
-        $this->assertSame(1, $m->fresh()->stempel_total);
+        $this->assertSame(1, ic_poin::count());
+        $this->assertSame(1000, $m->fresh()->poin_total);
     }
 
     public function test_token_lama_setelah_dibuat_ulang_ditolak(): void
@@ -117,7 +117,7 @@ class CheckinTest extends TestCase
         $this->assertNotSame($lama, $e->fresh()->token);
 
         $this->checkin($m, $lama, $e->kode)->assertSessionHasErrors('kode');
-        $this->assertSame(0, ic_stempel::count());
+        $this->assertSame(0, ic_poin::count());
         $this->checkin($m, $e->fresh()->token, $e->kode)->assertRedirect(route('ic.beranda'));
     }
 
@@ -129,7 +129,7 @@ class CheckinTest extends TestCase
 
         $this->checkin($m, $privat->token, $privat->kode)->assertSessionHasErrors(['kode' => 'Acara privat tidak bisa dipakai untuk check-in.']);
         $this->checkin($m, $kosong->token, $kosong->kode)->assertSessionHasErrors('kode');
-        $this->assertSame(0, ic_stempel::count());
+        $this->assertSame(0, ic_poin::count());
     }
 
     public function test_di_luar_jendela_waktu_ditolak_dan_jendela_malam_diterima(): void
@@ -142,12 +142,12 @@ class CheckinTest extends TestCase
 
         Carbon::setTestNow('2026-10-11 06:01:00');
         $this->checkin($m, $e->token, $e->kode)->assertSessionHasErrors('kode');
-        $this->assertSame(0, ic_stempel::count());
+        $this->assertSame(0, ic_poin::count());
 
         // Show klub selesai lewat tengah malam: H+1 pukul 05.59 masih boleh.
         Carbon::setTestNow('2026-10-11 05:59:00');
         $this->checkin($m, $e->token, $e->kode)->assertRedirect(route('ic.beranda'));
-        $this->assertSame(1, ic_stempel::count());
+        $this->assertSame(1, ic_poin::count());
     }
 
     public function test_jendela_khusus_per_acara_dihormati(): void

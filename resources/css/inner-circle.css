@@ -436,7 +436,7 @@
     filter: drop-shadow(0 14px 10px rgba(4, 38, 84, 0.18));
 }
 
-/* ---------- Kartu anggota & bar stempel ---------- */
+/* ---------- Kartu anggota & bar poin ---------- */
 .ic-kartu-anggota {
     position: relative;
     overflow: hidden;
@@ -468,17 +468,17 @@
     letter-spacing: -0.03em;
 }
 
-.ic-bar-stempel {
+.ic-bar-poin {
     padding: 23px;
     background: #fff;
     border: 1px solid #c3dcee;
     border-radius: 25px;
 }
 
-.ic-bar-stempel__angka {
+.ic-bar-poin__angka {
     font-size: 17px;
 }
-.ic-bar-stempel__angka strong {
+.ic-bar-poin__angka strong {
     font-family: var(--ic-font-judul);
     font-size: 35px;
 }
@@ -499,14 +499,14 @@
     transition: width 0.3s;
 }
 
-.ic-bar-stempel__catatan {
+.ic-bar-poin__catatan {
     display: flex;
     align-items: center;
     gap: 12px;
     font-size: 12px;
     color: #3f566b;
 }
-.ic-bar-stempel__catatan small {
+.ic-bar-poin__catatan small {
     display: block;
     margin-top: 2px;
 }
@@ -2393,7 +2393,7 @@ a.ic-event:hover {
 .ic-app .ic-faq p,
 .ic-app .ic-cta-akhir h2,
 .ic-app .ic-cta-akhir p,
-.ic-app .ic-bar-stempel__catatan,
+.ic-app .ic-bar-poin__catatan,
 .ic-app .ic-kartu-anggota .ic-sub,
 .ic-app .ic-intro-kenangan,
 .ic-app .ic-catatan {

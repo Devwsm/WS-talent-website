@@ -19,7 +19,7 @@ class tentangController extends Controller
         $hadiah = ic_reward::query()
             ->where('aktif', true)
             ->orderBy('urutan')
-            ->orderBy('target_stempel')
+            ->orderBy('harga_poin')
             ->get();
 
         // Acara mendatang yang bisa dihadiri (bukan privat, venue sudah diumumkan), paling dekat dulu.

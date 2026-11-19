@@ -7,7 +7,7 @@ use App\Models\ic_claim;
 use App\Models\ic_claim_log;
 use App\Models\ic_reward;
 use App\Models\member;
-use App\Services\InnerCircle\StempelService;
+use App\Services\InnerCircle\PoinService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
@@ -28,13 +28,13 @@ class BukaKembaliKlaimTest extends TestCase
         return $this->withSession(['login' => true, 'user' => 'admin']);
     }
 
-    private function anggota(int $stempel = 0): member
+    private function anggota(int $poin = 0): member
     {
         $m = member::create(['nama' => 'Anggota Uji', 'email' => 'a@contoh.test', 'password' => 'rahasia123']);
         $m->kode_member = sprintf('IC-%05d', $m->id_member);
         $m->save();
-        if ($stempel > 0) {
-            app(StempelService::class)->tambahManual($m, $stempel, 'Uji', 'admin');
+        if ($poin > 0) {
+            app(PoinService::class)->tambahManual($m, $poin, 'Uji', 'admin');
         }
 
         return $m->fresh();
@@ -42,7 +42,7 @@ class BukaKembaliKlaimTest extends TestCase
 
     private function klaim(member $m, string $status, ?string $catatan = null): ic_claim
     {
-        $reward = ic_reward::where('target_stempel', 10)->firstOrFail();
+        $reward = ic_reward::where('harga_poin', 10000)->firstOrFail();
         $k = ic_claim::create(['member_id' => $m->id_member, 'reward_id' => $reward->id_reward, 'status' => $status, 'catatan_admin' => $catatan]);
         ic_claim_log::create(['claim_id' => $k->id_claim, 'status' => 'diajukan']);
 
@@ -52,7 +52,7 @@ class BukaKembaliKlaimTest extends TestCase
     public function test_klaim_ditolak_bisa_dibuka_kembali_dan_anggota_diberi_kabar(): void
     {
         Mail::fake();
-        $m = $this->anggota(12);
+        $m = $this->anggota(12000);
         $k = $this->klaim($m, 'ditolak', 'Stok habis');
 
         $this->admin()->patch(route('ic.admin.klaim.proses', $k->id_claim), ['aksi' => 'buka_kembali', 'dari' => 'ditolak', 'catatan' => ''])
@@ -74,7 +74,7 @@ class BukaKembaliKlaimTest extends TestCase
     public function test_buka_kembali_boleh_membawa_catatan_baru(): void
     {
         Mail::fake();
-        $k = $this->klaim($this->anggota(12), 'ditolak', 'Alasan lama');
+        $k = $this->klaim($this->anggota(12000), 'ditolak', 'Alasan lama');
 
         $this->admin()->patch(route('ic.admin.klaim.proses', $k->id_claim), ['aksi' => 'buka_kembali', 'dari' => 'ditolak', 'catatan' => 'Stok sudah ada lagi']);
 
@@ -85,7 +85,7 @@ class BukaKembaliKlaimTest extends TestCase
     public function test_hanya_klaim_ditolak_yang_bisa_dibuka_kembali(): void
     {
         Mail::fake();
-        $m = $this->anggota(12);
+        $m = $this->anggota(12000);
 
         foreach (['diajukan', 'ditinjau', 'disetujui', 'selesai'] as $status) {
             ic_claim::query()->delete();
@@ -102,7 +102,7 @@ class BukaKembaliKlaimTest extends TestCase
     public function test_klik_ganda_buka_kembali_ditolak_karena_status_sudah_berubah(): void
     {
         Mail::fake();
-        $k = $this->klaim($this->anggota(12), 'ditolak', 'x');
+        $k = $this->klaim($this->anggota(12000), 'ditolak', 'x');
         $url = route('ic.admin.klaim.proses', $k->id_claim);
 
         $this->admin()->patch($url, ['aksi' => 'buka_kembali', 'dari' => 'ditolak'])->assertSessionHas('success');
@@ -114,7 +114,7 @@ class BukaKembaliKlaimTest extends TestCase
 
     public function test_lanjut_pada_klaim_ditolak_menunjuk_ke_buka_kembali(): void
     {
-        $k = $this->klaim($this->anggota(12), 'ditolak', 'x');
+        $k = $this->klaim($this->anggota(12000), 'ditolak', 'x');
 
         $this->admin()->patch(route('ic.admin.klaim.proses', $k->id_claim), ['aksi' => 'lanjut', 'dari' => 'ditolak'])
             ->assertSessionHas('error', fn($pesan) => str_contains($pesan, 'Buka kembali'));
@@ -122,7 +122,7 @@ class BukaKembaliKlaimTest extends TestCase
 
     public function test_tombol_buka_kembali_hanya_muncul_di_baris_yang_ditolak(): void
     {
-        $this->klaim($this->anggota(12), 'ditolak', 'x');
+        $this->klaim($this->anggota(12000), 'ditolak', 'x');
 
         $this->admin()->get(route('ic.admin.klaim', ['status' => 'ditolak']))->assertOk()->assertSee('data-aksi="buka_kembali"', false);
         $this->admin()->get(route('ic.admin.klaim', ['status' => 'menunggu']))->assertDontSee('data-aksi="buka_kembali"', false);

@@ -8,7 +8,7 @@ use App\Models\member;
  * Menonaktifkan dan mengaktifkan kembali akun anggota oleh admin.
  *
  * Menonaktifkan = tidak bisa masuk (kata sandi maupun Google) dan sesi yang sedang berjalan berakhir pada permintaan
- * berikutnya (middleware IcSesiVersi). Data anggota (stempel, kenangan, klaim) tidak diubah atau dihapus, jadi akun bisa
+ * berikutnya (middleware IcSesiVersi). Data anggota (poin, kenangan, klaim) tidak diubah atau dihapus, jadi akun bisa
  * diaktifkan kembali kapan saja tanpa kehilangan apa pun.
  */
 class AkunAnggotaService

@@ -182,7 +182,7 @@ class ic_event extends Model
         $format = fn(Carbon $w) => $w->locale('id')->translatedFormat('D, j M Y \p\u\k\u\l H.i') . ' WIB';
 
         return match ($status) {
-            'sudah' => 'Kamu sudah check-in di acara ini. Satu acara hanya memberi satu stempel.',
+            'sudah' => 'Kamu sudah check-in di acara ini. Satu acara hanya memberi poin satu kali.',
             'belum' => 'Check-in belum dibuka. Dibuka ' . $format($this->jendela_buka) . '.',
             'tutup' => 'Check-in untuk acara ini sudah ditutup.',
             default => 'Check-in dibuka sampai ' . $format($this->jendela_tutup) . '.',
@@ -220,8 +220,8 @@ class ic_event extends Model
             && $sekarang->lessThanOrEqualTo($this->jendela_tutup);
     }
 
-    public function stempel(): HasMany
+    public function poin(): HasMany
     {
-        return $this->hasMany(ic_stempel::class, 'event_id', 'id_event');
+        return $this->hasMany(ic_poin::class, 'event_id', 'id_event');
     }
 }

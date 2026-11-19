@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Storage;
 /**
  * Penghapusan akun anggota oleh anggota sendiri (hak hapus data, lihat halaman /privasi).
  *
- * Semua kunci asing ke `members` bersifat cascade, jadi menghapus barisnya otomatis ikut menghapus stempel,
+ * Semua kunci asing ke `members` bersifat cascade, jadi menghapus barisnya otomatis ikut menghapus poin,
  * pengajuan hadiah beserta lognya, kenangan, dan tanda suka. Berkas fotonya (avatar dan foto kenangan) berada di
  * disk, bukan di database, jadi dikumpulkan dulu lalu dihapus setelah transaksi berhasil.
  *

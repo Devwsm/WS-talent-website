@@ -54,8 +54,8 @@
 
     <div class="ic-metrik-grid">
         <div class="ic-metrik">
-            <strong>{{ $metrik->total_stempel }}</strong>
-            <small>Total stempel</small>
+            <strong>{{ ic_angka($metrik->total_poin) }}</strong>
+            <small>Total poin</small>
         </div>
         <div class="ic-metrik">
             <strong>{{ $metrik->tahap_terbuka }}</strong>
@@ -82,7 +82,7 @@
             @php $status = config('inner_circle.status_klaim.' . $k->status); @endphp
             <div class="ic-klaim-baris">
                 <div>
-                    <h3>{{ $k->target_stempel }} stempel · {{ $k->judul }}</h3>
+                    <h3>{{ ic_angka($k->harga_poin) }} poin · {{ $k->judul }}</h3>
                     <p class="ic-bantuan">{{ $k->opsi ?? 'Hadiah tahapan' }} ·
                         {{ $k->diajukan_pada->locale('id')->translatedFormat('j M Y') }}</p>
                     @if ($k->catatan_admin)
@@ -122,7 +122,7 @@
             <form method="POST" action="{{ route('ic.akun.hapus') }}" data-ic-sekali novalidate>
                 @csrf
                 @method('DELETE')
-                <p class="ic-bantuan">Yang ikut terhapus permanen: akun dan foto profilmu, riwayat check-in dan stempel,
+                <p class="ic-bantuan">Yang ikut terhapus permanen: akun dan foto profilmu, riwayat check-in dan poin,
                     pengajuan hadiah, serta kenangan beserta fotonya dan tanda suka.</p>
 
                 @if ($punyaSandi)

@@ -99,10 +99,10 @@ return [
             'ikon' => 'bi-person-vcard',
             'kunci' => ['beranda.kartu.label'],
         ],
-        'stempel' => [
-            'label' => 'Progres stempel',
+        'poin' => [
+            'label' => 'Progres poin',
             'ikon' => 'bi-stars',
-            'kunci' => ['beranda.stempel.sisa', 'beranda.stempel.selesai', 'beranda.stempel.catatan'],
+            'kunci' => ['beranda.poin.sisa', 'beranda.poin.selesai', 'beranda.poin.catatan'],
         ],
     ],
 
@@ -187,7 +187,7 @@ return [
             'kunci' => ['profil.foto.judul', 'profil.foto.deskripsi'],
         ],
         'riwayat' => [
-            'label' => 'Riwayat stempel',
+            'label' => 'Riwayat poin',
             'ikon' => 'bi-clock-history',
             'kunci' => ['profil.riwayat.judul', 'profil.riwayat.kosong'],
         ],

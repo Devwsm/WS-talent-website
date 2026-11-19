@@ -7,7 +7,7 @@ use App\Models\ic_claim_log;
 use App\Models\ic_memory;
 use App\Models\ic_reward;
 use App\Models\member;
-use App\Services\InnerCircle\StempelService;
+use App\Services\InnerCircle\PoinService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -63,7 +63,7 @@ class HapusAkunPrivasiTest extends TestCase
 
     private function klaim(member $m, string $status): ic_claim
     {
-        $reward = ic_reward::orderBy('target_stempel')->firstOrFail();
+        $reward = ic_reward::orderBy('harga_poin')->firstOrFail();
         $k = ic_claim::create(['member_id' => $m->id_member, 'reward_id' => $reward->id_reward, 'status' => $status]);
         ic_claim_log::create(['claim_id' => $k->id_claim, 'status' => 'diajukan']);
 
@@ -185,8 +185,8 @@ class HapusAkunPrivasiTest extends TestCase
         $m = $this->anggota('hapus@contoh.test');
         $lain = $this->anggota('lain@contoh.test');
 
-        app(StempelService::class)->tambahManual($m, 2, 'Uji', 'admin');
-        app(StempelService::class)->tambahManual($lain, 3, 'Uji', 'admin');
+        app(PoinService::class)->tambahManual($m, 2, 'Uji', 'admin');
+        app(PoinService::class)->tambahManual($lain, 3, 'Uji', 'admin');
         $this->klaim($m, 'selesai');
         $m->forceFill(['avatar' => 'inner-circle/avatar/saya.webp'])->save();
         Storage::disk('public')->put('inner-circle/avatar/saya.webp', 'avatar');
@@ -202,7 +202,7 @@ class HapusAkunPrivasiTest extends TestCase
         $this->hapus($m, ['konfirmasi' => 'HAPUS', 'sandi' => 'sandi-benar-123'])->assertRedirect(route('ic.masuk'));
 
         // Milik anggota yang dihapus: hilang semua.
-        $this->assertSame(0, DB::table('ic_stempel')->where('member_id', $m->id_member)->count());
+        $this->assertSame(0, DB::table('ic_poin')->where('member_id', $m->id_member)->count());
         $this->assertSame(0, ic_claim::where('member_id', $m->id_member)->count());
         $this->assertSame(0, DB::table('ic_claim_logs')->count());
         $this->assertSame(0, ic_memory::where('member_id', $m->id_member)->count());
@@ -211,8 +211,8 @@ class HapusAkunPrivasiTest extends TestCase
         $this->assertFalse($this->adaBerkas('inner-circle/kenangan/saya.webp'), 'Foto kenangan ikut terhapus dari disk.');
 
         // Milik orang lain: utuh.
-        $this->assertDatabaseHas('members', ['id_member' => $lain->id_member, 'stempel_total' => 3]);
-        $this->assertSame(1, DB::table('ic_stempel')->where('member_id', $lain->id_member)->count());
+        $this->assertDatabaseHas('members', ['id_member' => $lain->id_member, 'poin_total' => 3]);
+        $this->assertSame(1, DB::table('ic_poin')->where('member_id', $lain->id_member)->count());
         $this->assertDatabaseHas('ic_memories', ['id_memory' => $kenanganLain->id_memory]);
         $this->assertTrue($this->adaBerkas('inner-circle/kenangan/lain.webp'), 'Foto milik anggota lain tetap ada.');
     }

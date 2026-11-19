@@ -22,7 +22,7 @@
 <ul class="{{ $ul }}">
     <li><b>Data akun:</b> nama, alamat email, dan kata sandi bila kamu mendaftar dengan email. Kata sandi
         disimpan dalam bentuk hash, jadi tidak bisa dibaca siapa pun, termasuk kami.</li>
-    <li><b>Aktivitas komunitas:</b> riwayat check-in acara dan stempel, serta pengajuan hadiah beserta
+    <li><b>Aktivitas komunitas:</b> riwayat check-in acara dan poin, serta pengajuan hadiah beserta
         catatan penanganannya.</li>
     <li><b>Konten yang kamu bagikan:</b> foto profil, kenangan (teks, tempat, kategori, foto), dan tanda
         suka. Kenangan yang tayang bisa dilihat anggota lain dengan nama yang disingkat.</li>
@@ -51,7 +51,7 @@
 
 <h2 class="{{ $h2 }}">4. Untuk apa data dipakai</h2>
 <ul class="{{ $ul }}">
-    <li>menjalankan akunmu: masuk, check-in acara, stempel, hadiah, dan galeri kenangan;</li>
+    <li>menjalankan akunmu: masuk, check-in acara, poin, hadiah, dan galeri kenangan;</li>
     <li>memproses dan menghubungimu soal pengajuan hadiah;</li>
     <li>menjaga keamanan, mencegah penyalahgunaan, dan memoderasi konten.</li>
 </ul>
@@ -76,7 +76,7 @@
 </p>
 <ul class="{{ $ul }}">
     <li>data akun, foto profil, dan ID Google yang tertaut;</li>
-    <li>riwayat check-in dan stempel;</li>
+    <li>riwayat check-in dan poin;</li>
     <li>pengajuan hadiah beserta lognya;</li>
     <li>kenangan beserta fotonya, dan tanda suka.</li>
 </ul>

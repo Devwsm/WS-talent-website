@@ -189,7 +189,7 @@ return [
         'beranda' => [
             'label' => 'Beranda anggota',
             'ikon' => 'bi-house-door',
-            'petunjuk' => 'Sapaan, aktivitas terbaru, kartu anggota, dan kotak progres stempel.',
+            'petunjuk' => 'Sapaan, aktivitas terbaru, kartu anggota, dan kotak progres poin.',
             'halaman' => 'ic.beranda',
             'pratinjau' => ['beranda' => 'Beranda anggota'],
         ],
@@ -240,7 +240,7 @@ return [
         'tentang.meta.deskripsi' => [
             'grup' => 'tentang',
             'label' => 'Deskripsi untuk mesin pencari',
-            'bawaan' => 'Komunitas penggemar resmi DJ Whisnu Santika. Datang ke acara, kumpulkan stempel lewat check-in QR, dan buka hadiah eksklusif di setiap tahap.',
+            'bawaan' => 'Komunitas penggemar resmi DJ Whisnu Santika. Datang ke acara, kumpulkan poin lewat check-in QR, dan buka hadiah eksklusif di setiap tahap.',
             'maks' => 200,
             'baris' => true,
         ],
@@ -259,7 +259,7 @@ return [
         'tentang.hero.deskripsi' => [
             'grup' => 'tentang',
             'label' => 'Penjelasan di bawah judul',
-            'bawaan' => 'Rumah bagi penggemar Whisnu Santika. Datang ke acaranya, kumpulkan stempel, dan buka hadiah eksklusif: dari merchandise sampai pengalaman personal.',
+            'bawaan' => 'Rumah bagi penggemar Whisnu Santika. Datang ke acaranya, kumpulkan poin, dan buka hadiah eksklusif: dari merchandise sampai pengalaman personal.',
             'maks' => 260,
             'baris' => true,
         ],
@@ -321,7 +321,7 @@ return [
         'tentang.cta.deskripsi' => [
             'grup' => 'tentang',
             'label' => 'Ajakan akhir: penjelasan',
-            'bawaan' => 'Buat akunmu dan mulai kumpulkan stempel di acara berikutnya.',
+            'bawaan' => 'Buat akunmu dan mulai kumpulkan poin di acara berikutnya.',
             'maks' => 200,
             'baris' => true,
         ],
@@ -346,7 +346,7 @@ return [
         'teaser.deskripsi' => [
             'grup' => 'teaser',
             'label' => 'Penjelasan',
-            'bawaan' => 'Kumpulkan stempel setiap kali hadir di acara Whisnu Santika, buka hadiah di tiap tahap, dan bagikan kenanganmu bersama penggemar lain.',
+            'bawaan' => 'Kumpulkan poin setiap kali hadir di acara Whisnu Santika, buka hadiah di tiap tahap, dan bagikan kenanganmu bersama penggemar lain.',
             'maks' => 260,
             'baris' => true,
         ],
@@ -409,7 +409,7 @@ return [
         'beranda.aktivitas.kosong' => [
             'grup' => 'beranda',
             'label' => 'Teks bila belum ada aktivitas',
-            'bawaan' => 'Belum ada aktivitas. Datang ke acara dan check-in untuk mendapat stempel pertamamu.',
+            'bawaan' => 'Belum ada aktivitas. Datang ke acara dan check-in untuk mendapat poin pertamamu.',
             'maks' => 200,
             'baris' => true,
         ],
@@ -419,34 +419,34 @@ return [
             'bawaan' => 'KARTU KEANGGOTAAN DIGITAL',
             'maks' => 40,
         ],
-        'beranda.stempel.sisa' => [
+        'beranda.poin.sisa' => [
             'grup' => 'beranda',
-            'label' => 'Kotak progres: teks setelah angka sisa stempel',
-            'bawaan' => 'stempel lagi untuk membuka hadiah berikutnya.',
+            'label' => 'Kotak progres: teks setelah angka sisa poin',
+            'bawaan' => 'poin lagi untuk membuka hadiah berikutnya.',
             'maks' => 120,
         ],
-        'beranda.stempel.selesai' => [
+        'beranda.poin.selesai' => [
             'grup' => 'beranda',
             'label' => 'Kotak progres: bila semua hadiah terbuka',
             'bawaan' => 'Semua tahapan hadiah sudah terbuka.',
             'maks' => 100,
         ],
-        'beranda.stempel.catatan' => [
+        'beranda.poin.catatan' => [
             'grup' => 'beranda',
             'label' => 'Kotak progres: catatan kecil',
-            'bawaan' => 'Stempel terus terkumpul dan tidak hangus',
+            'bawaan' => 'Poin terus terkumpul dan tidak hangus',
             'maks' => 80,
         ],
         'checkin.eyebrow' => [
             'grup' => 'checkin',
             'label' => 'Teks kecil di atas judul',
-            'bawaan' => 'Datang. Kumpulkan stempel.',
+            'bawaan' => 'Datang. Kumpulkan poin.',
             'maks' => 60,
         ],
         'checkin.deskripsi' => [
             'grup' => 'checkin',
             'label' => 'Penjelasan di bawah judul',
-            'bawaan' => 'Jadilah bagian dari perjalanan ini. Temukan kegiatan Inner Circle dan kumpulkan stempel ketika hadir.',
+            'bawaan' => 'Jadilah bagian dari perjalanan ini. Temukan kegiatan Inner Circle dan kumpulkan poin ketika hadir.',
             'maks' => 220,
             'baris' => true,
         ],
@@ -459,7 +459,7 @@ return [
         'checkin.jadwal.deskripsi' => [
             'grup' => 'checkin',
             'label' => 'Penjelasan kartu jadwal',
-            'bawaan' => 'Jadwal berdasarkan rencana WSM dan bersifat tentatif. Tidak semua acara otomatis memberi stempel.',
+            'bawaan' => 'Jadwal berdasarkan rencana WSM dan bersifat tentatif. Tidak semua acara otomatis memberi poin.',
             'maks' => 220,
             'baris' => true,
         ],
@@ -479,7 +479,7 @@ return [
         'hadiah.deskripsi' => [
             'grup' => 'hadiah',
             'label' => 'Penjelasan di bawah judul',
-            'bawaan' => 'Setiap stempel membuatmu lebih dekat dengan Whisnu Santika.',
+            'bawaan' => 'Setiap poin membuatmu lebih dekat dengan Whisnu Santika.',
             'maks' => 260,
             'baris' => true,
         ],
@@ -498,7 +498,7 @@ return [
         'hadiah.cara.deskripsi' => [
             'grup' => 'hadiah',
             'label' => 'Isi catatan cara kerja (syarat hadiah)',
-            'bawaan' => 'Stempel bersifat kumulatif dan tidak berkurang setelah klaim. Setiap tahapan hanya dapat diklaim satu kali. Benefit pengalaman bergantung pada kapasitas, jadwal artis, dan izin promotor atau venue.',
+            'bawaan' => 'Poin bersifat kumulatif dan tidak berkurang setelah klaim. Setiap tahapan hanya dapat diklaim satu kali. Benefit pengalaman bergantung pada kapasitas, jadwal artis, dan izin promotor atau venue.',
             'maks' => 400,
             'baris' => true,
         ],
@@ -645,14 +645,14 @@ return [
         ],
         'profil.riwayat.judul' => [
             'grup' => 'profil',
-            'label' => 'Riwayat stempel: judul bagian',
-            'bawaan' => 'Riwayat stempel',
+            'label' => 'Riwayat poin: judul bagian',
+            'bawaan' => 'Riwayat poin',
             'maks' => 60,
         ],
         'profil.riwayat.kosong' => [
             'grup' => 'profil',
-            'label' => 'Riwayat stempel: teks bila kosong',
-            'bawaan' => 'Belum ada stempel. Datang ke acara dan check-in untuk mulai mengumpulkan.',
+            'label' => 'Riwayat poin: teks bila kosong',
+            'bawaan' => 'Belum ada poin. Datang ke acara dan check-in untuk mulai mengumpulkan.',
             'maks' => 200,
             'baris' => true,
         ],
@@ -706,7 +706,7 @@ return [
         'daftar.intro' => [
             'grup' => 'masuk',
             'label' => 'Daftar: kalimat pembuka',
-            'bawaan' => 'Buat akun untuk mulai mengumpulkan stempel dan membuka hadiah.',
+            'bawaan' => 'Buat akun untuk mulai mengumpulkan poin dan membuka hadiah.',
             'maks' => 160,
             'baris' => true,
         ],
@@ -758,8 +758,8 @@ return [
             'bawaan' => [
                 ['judul' => 'Daftar', 'isi' => 'Buat akun dengan email dan kata sandi, atau langsung dengan akun Google.'],
                 ['judul' => 'Datang ke acara', 'isi' => 'Pindai QR check-in di venue saat Whisnu Santika tampil.'],
-                ['judul' => 'Kumpulkan stempel', 'isi' => 'Setiap acara yang kamu hadiri memberi satu stempel. Stempel tidak pernah berkurang.'],
-                ['judul' => 'Buka hadiah', 'isi' => 'Di setiap tahap stempel, ajukan hadiahmu dan pantau statusnya sampai selesai.'],
+                ['judul' => 'Kumpulkan poin', 'isi' => 'Setiap acara yang kamu hadiri memberi poin. Poin tidak berkurang saat kamu mengajukan hadiah.'],
+                ['judul' => 'Buka hadiah', 'isi' => 'Di setiap tahap poin, ajukan hadiahmu dan pantau statusnya sampai selesai.'],
             ],
         ],
         'faq' => [
@@ -772,9 +772,9 @@ return [
             'tautan' => ['privasi'],
             'maks_item' => 12,
             'bawaan' => [
-                ['judul' => 'Apa itu stempel?', 'isi' => 'Stempel adalah bukti kehadiranmu di sebuah acara. Setiap acara memberi satu stempel, dan jumlahnya tidak berkurang saat kamu mengajukan hadiah.'],
+                ['judul' => 'Apa itu poin?', 'isi' => 'Poin adalah bukti kehadiranmu di sebuah acara. Setiap acara memberi poin, dan jumlahnya tidak berkurang saat kamu mengajukan hadiah.'],
                 ['judul' => 'Bagaimana cara check-in di acara?', 'isi' => 'Di venue, pindai QR resmi acara dengan kamera HP, lalu masuk ke akunmu. Check-in dibuka pada hari acara dan hanya bisa dilakukan satu kali per acara.'],
-                ['judul' => 'Bagaimana cara mengajukan hadiah?', 'isi' => 'Saat stempelmu mencapai target sebuah tahap, buka halaman Hadiah lalu ajukan. Tim WSM akan meninjau dan memberi kabar lewat halaman Hadiah dan email.'],
+                ['judul' => 'Bagaimana cara mengajukan hadiah?', 'isi' => 'Saat poinmu mencapai target sebuah tahap, buka halaman Hadiah lalu ajukan. Tim WSM akan meninjau dan memberi kabar lewat halaman Hadiah dan email.'],
                 ['judul' => 'Bagaimana data saya digunakan?', 'isi' => 'Kami hanya menyimpan data yang dibutuhkan untuk menjalankan komunitas ini. Penjelasan lengkapnya ada di {privasi}, dan kamu bisa menghapus akunmu kapan saja dari halaman Profil.'],
             ],
         ],
@@ -788,7 +788,7 @@ return [
             'maks_item' => 6,
             'bawaan' => [
                 ['judul' => 'Check-in QR di acara', 'ikon' => 'qr-code-scan'],
-                ['judul' => 'Hadiah di tiap tahap stempel', 'ikon' => 'gift'],
+                ['judul' => 'Hadiah di tiap tahap poin', 'ikon' => 'gift'],
                 ['judul' => 'Galeri kenangan penggemar', 'ikon' => 'images'],
             ],
         ],

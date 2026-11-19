@@ -35,7 +35,7 @@
 
     <div class="ic-bagian-kepala" id="klaim">
         <h2 class="ic-judul-bagian">{{ ic_teks('hadiah.klaim.judul') }}</h2>
-        <span class="ic-pil">{{ $member->stempel_total }} stempel terkumpul</span>
+        <span class="ic-pil">{{ ic_angka($member->poin_total) }} poin terkumpul</span>
     </div>
     <div class="ic-panel ic-klaim-daftar">
         @foreach ($rewards as $reward)
@@ -44,7 +44,7 @@
                     <x-inner-circle.ikon :nama="$reward->ikon" kelas="ic-ikon--kecil" />
                 </span>
                 <div>
-                    <h3>{{ $reward->target_stempel }} stempel · {{ $reward->judul }}</h3>
+                    <h3>{{ ic_angka($reward->harga_poin) }} poin · {{ $reward->judul }}</h3>
                     <p class="ic-bantuan">{{ $reward->deskripsi }}</p>
                     @if ($reward->catatan_admin)
                         <p class="ic-bantuan"><b>Catatan WSM:</b> {{ $reward->catatan_admin }}</p>
@@ -58,13 +58,13 @@
                     @if ($reward->opsi)
                         {{-- Hadiah dengan pilihan A/B: buka modal pilihan (bukan prompt() seperti di prototype). --}}
                         <button type="button" class="ic-tombol ic-tombol--kecil"
-                            data-ic-modal-buka="modal-opsi-{{ $reward->target_stempel }}">Klaim <i
-                                class="bi bi-arrow-right" aria-hidden="true"></i></button>
+                            data-ic-modal-buka="modal-opsi-{{ $reward->harga_poin }}">Klaim <i class="bi bi-arrow-right"
+                                aria-hidden="true"></i></button>
                     @else
                         {{-- Konfirmasi lewat JS (data-ic-konfirmasi); tanpa JS form tetap terkirim dan dicek di server. --}}
-                        <form method="POST" action="{{ route('ic.hadiah.klaim', $reward->target_stempel) }}"
+                        <form method="POST" action="{{ route('ic.hadiah.klaim', $reward->harga_poin) }}"
                             data-ic-konfirmasi data-ic-sekali
-                            data-judul="{{ $reward->target_stempel }} stempel · {{ $reward->judul }}">
+                            data-judul="{{ ic_angka($reward->harga_poin) }} poin · {{ $reward->judul }}">
                             @csrf
                             <button type="submit" class="ic-tombol ic-tombol--kecil">Klaim <i class="bi bi-arrow-right"
                                     aria-hidden="true"></i></button>
@@ -88,8 +88,8 @@
 
 @push('modal')
     @foreach ($semua->whereNotNull('opsi') as $reward)
-        <x-inner-circle.modal :id="'modal-opsi-' . $reward->target_stempel" :judul="$reward->judul" :eyebrow="$reward->target_stempel . ' stempel'">
-            <form method="POST" action="{{ route('ic.hadiah.klaim', $reward->target_stempel) }}" data-ic-sekali>
+        <x-inner-circle.modal :id="'modal-opsi-' . $reward->harga_poin" :judul="$reward->judul" :eyebrow="ic_angka($reward->harga_poin) . ' poin'">
+            <form method="POST" action="{{ route('ic.hadiah.klaim', $reward->harga_poin) }}" data-ic-sekali>
                 @csrf
                 <fieldset class="ic-pilihan-daftar">
                     <legend class="ic-bantuan">Pilih salah satu hadiah:</legend>

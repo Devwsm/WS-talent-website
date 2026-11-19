@@ -50,11 +50,11 @@ class TeksLayarAnggotaTest extends TestCase
             ->assertSee('Scan dan check-in sekarang')->assertDontSee('Setiap momen berarti')->assertSee('Aktivitas terbaru ✦')
             ->assertSee('<a class="ic-hero__stiker" href="' . route('ic.checkin') . '">', false)
             ->assertSee('aset/inner-circle/logo/wsic-wordmark-kompak.webp', false)
-            ->assertSee('KARTU KEANGGOTAAN DIGITAL')->assertSee('Stempel terus terkumpul dan tidak hangus');
+            ->assertSee('KARTU KEANGGOTAAN DIGITAL')->assertSee('Poin terus terkumpul dan tidak hangus');
 
         $this->actingAs($m, 'member')->get(route('ic.hadiah'))->assertOk()
             ->assertSee('Rewards')->assertDontSee('Kumpulkan • Buka • Rasakan')
-            ->assertSee('Setiap stempel membuatmu lebih dekat dengan Whisnu Santika.')->assertDontSee('Buka merchandise eksklusif')
+            ->assertSee('Setiap poin membuatmu lebih dekat dengan Whisnu Santika.')->assertDontSee('Buka merchandise eksklusif')
             ->assertSee('Klaim hadiahmu ↗')->assertSee('✦ Cara kerja hadiah');
 
         $this->actingAs($m, 'member')->get(route('ic.komunitas'))->assertOk()
@@ -79,9 +79,9 @@ class TeksLayarAnggotaTest extends TestCase
         $this->ubah('beranda', [
             'beranda__salam' => 'Halo {nama}, apa kabar?',
             'beranda__stiker' => 'Lihat kabar',
-            'beranda__stempel__sisa' => 'langkah lagi menuju hadiah.',
+            'beranda__poin__sisa' => 'langkah lagi menuju hadiah.',
         ]);
-        $this->ubah('hadiah', ['hadiah__deskripsi' => 'Kumpulkan stempel, buka kejutan.']);
+        $this->ubah('hadiah', ['hadiah__deskripsi' => 'Kumpulkan poin, buka kejutan.']);
         $this->ubah('komunitas', ['komunitas__banner__judul' => "Satu musik.\nSatu keluarga."]);
         $this->ubah('profil', ['profil__klaim__kosong' => 'Kosong. Lihat {hadiah} ya.']);
         $this->ubah('masuk', ['masuk__judul' => 'Masuk Dulu', 'atur__intro' => 'Sandi baru ya.']);
@@ -93,7 +93,7 @@ class TeksLayarAnggotaTest extends TestCase
         $this->actingAs($m, 'member')->get(route('ic.beranda'))
             ->assertSee('Halo Ancha, apa kabar?')->assertSee('Lihat kabar')->assertSee('langkah lagi menuju hadiah.')
             ->assertDontSee('Hai, Ancha!');
-        $this->actingAs($m, 'member')->get(route('ic.hadiah'))->assertSee('Kumpulkan stempel, buka kejutan.');
+        $this->actingAs($m, 'member')->get(route('ic.hadiah'))->assertSee('Kumpulkan poin, buka kejutan.');
         $this->actingAs($m, 'member')->get(route('ic.komunitas'))->assertSee('Satu musik.<br>Satu keluarga.', false);
         $this->actingAs($m, 'member')->get(route('ic.profil'))
             ->assertSee('Kosong. Lihat <a class="ic-tautan" href="' . route('ic.hadiah') . '">Hadiah</a> ya.', false);

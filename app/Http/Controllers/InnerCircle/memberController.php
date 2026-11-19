@@ -8,7 +8,7 @@ use App\Http\Requests\InnerCircle\checkinRequest;
 use App\Models\ic_broadcast;
 use App\Models\ic_event;
 use App\Models\ic_memory;
-use App\Models\ic_stempel;
+use App\Models\ic_poin;
 use App\Models\member;
 use App\Services\InnerCircle\CheckinGagal;
 use App\Services\InnerCircle\CheckinService;
@@ -34,8 +34,8 @@ class memberController extends Controller
 
         return view('pages.inner-circle.beranda', [
             'member' => $anggota,
-            'berikutnya' => $klaim->berikutnya($anggota->stempel_total),
-            'aktivitas' => $this->riwayatStempel($anggota, 5),
+            'berikutnya' => $klaim->berikutnya($anggota->poin_total),
+            'aktivitas' => $this->riwayatPoin($anggota, 5),
         ]);
     }
 
@@ -49,7 +49,7 @@ class memberController extends Controller
         ]);
     }
 
-    /** Ajukan hadiah satu tahap (target stempel dari URL). Aturannya ada di ClaimService. */
+    /** Ajukan hadiah satu tahap (target poin dari URL). Aturannya ada di ClaimService. */
     public function ajukanKlaim(int $target, ajukanKlaimRequest $request, ClaimService $klaim): RedirectResponse
     {
         try {
@@ -59,7 +59,7 @@ class memberController extends Controller
         }
 
         return redirect(route('ic.hadiah') . '#klaim')
-            ->with('ic_toast', 'Pengajuan terkirim! Tim WSM akan meninjau hadiah ' . $pengajuan->target_stempel . ' stempel.');
+            ->with('ic_toast', 'Pengajuan terkirim! Tim WSM akan meninjau hadiah ' . ic_angka($pengajuan->harga_poin) . ' poin.');
     }
 
     /**
@@ -108,7 +108,7 @@ class memberController extends Controller
 
         $events = $query->get();
 
-        $sudahCheckin = ic_stempel::query()
+        $sudahCheckin = ic_poin::query()
             ->where('member_id', $anggota->getKey())
             ->whereNotNull('event_id')
             ->pluck('event_id')
@@ -164,7 +164,7 @@ class memberController extends Controller
             : null;
 
         try {
-            $stempel = $checkin->checkin($anggota, $request->validated('kode'), $kodeAcara, null, $lokasi);
+            $poin = $checkin->checkin($anggota, $request->validated('kode'), $kodeAcara, null, $lokasi);
         } catch (CheckinGagal $e) {
             // Kembali ke halaman yang sama dengan acaranya terpilih: lembar check-in terbuka lagi dan menampilkan galatnya.
             return redirect(route('ic.checkin', array_filter(['acara' => $kodeAcara])))
@@ -173,7 +173,7 @@ class memberController extends Controller
         }
 
         return redirect()->route('ic.beranda')
-            ->with('ic_toast', 'Check-in berhasil! +' . $stempel->jumlah . ' stempel. ' . $stempel->judul . '.');
+            ->with('ic_toast', 'Check-in berhasil! +' . ic_angka($poin->jumlah) . ' poin. ' . $poin->judul . '.');
     }
 
     /**
@@ -224,11 +224,11 @@ class memberController extends Controller
             'member' => $anggota,
             'maksFotoMb' => config('inner_circle.foto_profil_maks_kb') / 1024,
             'metrik' => (object) [
-                'total_stempel' => $anggota->stempel_total,
+                'total_poin' => $anggota->poin_total,
                 'tahap_terbuka' => $rewards->filter(fn($r) => $r->status_member !== 'terkunci')->count(),
                 'jumlah_klaim' => $pengajuan->count(),
             ],
-            'riwayat' => $this->riwayatStempel($anggota, 100),
+            'riwayat' => $this->riwayatPoin($anggota, 100),
             'klaim' => $pengajuan->all(),
         ]);
     }
@@ -284,13 +284,13 @@ class memberController extends Controller
         return $jumlah;
     }
 
-    /** Stempel terbaru anggota (check-in dan stempel manual), terbaru di atas. */
-    private function riwayatStempel(member $anggota, int $batas): array
+    /** Poin terbaru anggota (check-in dan poin manual), terbaru di atas. */
+    private function riwayatPoin(member $anggota, int $batas): array
     {
-        return ic_stempel::query()
+        return ic_poin::query()
             ->where('member_id', $anggota->getKey())
             ->orderByDesc('created_at')
-            ->orderByDesc('id_stempel')
+            ->orderByDesc('id_poin')
             ->limit($batas)
             ->get()
             ->all();

@@ -4,8 +4,7 @@ namespace App\Http\Requests\InnerCircle;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-/** Koreksi (kurangi) stempel anggota. Batas atas sebenarnya (total stempel anggota) dicek di StempelService. */
-class kurangiStempelRequest extends FormRequest
+class poinManualRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -20,7 +19,7 @@ class kurangiStempelRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'jumlah' => ['required', 'integer', 'min:1', 'max:100'],
+            'jumlah' => ['required', 'integer', 'min:1', 'max:' . (int) config('inner_circle.poin.manual_maks', 10000)],
             'catatan' => ['required', 'string', 'max:160'],
         ];
     }
@@ -28,8 +27,8 @@ class kurangiStempelRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'jumlah' => 'Jumlah stempel',
-            'catatan' => 'Alasan koreksi',
+            'jumlah' => 'Jumlah poin',
+            'catatan' => 'Alasan',
         ];
     }
 
@@ -38,9 +37,9 @@ class kurangiStempelRequest extends FormRequest
         return [
             'required' => ':attribute wajib diisi.',
             'integer' => ':attribute harus berupa angka.',
-            'jumlah.min' => 'Jumlah stempel minimal :min.',
-            'jumlah.max' => 'Jumlah stempel maksimal :max per koreksi.',
-            'catatan.max' => ':attribute terlalu panjang (maksimal :max karakter).',
+            'jumlah.min' => 'Jumlah poin minimal :min.',
+            'jumlah.max' => 'Jumlah poin maksimal :max per penambahan.',
+            'catatan.max' => 'Alasan terlalu panjang (maksimal :max karakter).',
         ];
     }
 }

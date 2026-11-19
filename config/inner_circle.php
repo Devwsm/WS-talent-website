@@ -30,6 +30,18 @@ return [
     'batas_checkin_per_menit' => 8,
 
     /*
+    | Poin (menggantikan stempel; 1 stempel lama = 1.000 poin).
+    | - kehadiran: poin untuk satu check-in valid. Fase 5 memindahkannya ke Aturan check-in di CMS
+    |   (GL 1.000, mandiri 2.000).
+    | - manual_maks: batas sekali tambah manual oleh admin. koreksi_maks: batas sekali kurangi (koreksi).
+    */
+    'poin' => [
+        'kehadiran' => 1000,
+        'manual_maks' => 10000,
+        'koreksi_maks' => 100000,
+    ],
+
+    /*
     | Check-in dengan lokasi. Acara yang punya titik lokasi (dashboard > Acara & QR) hanya bisa check-in bila HP
     | anggota berada di dalam radius titik itu; acara tanpa titik tetap bisa check-in seperti sebelumnya.
     | - radius_bawaan_m: radius bila petugas tidak mengisi (meter), selalu dijepit antara radius_min_m dan radius_maks_m.

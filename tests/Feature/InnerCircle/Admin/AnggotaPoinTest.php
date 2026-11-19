@@ -3,7 +3,7 @@
 namespace Tests\Feature\InnerCircle\Admin;
 
 use App\Models\ic_event;
-use App\Models\ic_stempel;
+use App\Models\ic_poin;
 use App\Models\member;
 use App\Services\InnerCircle\AcaraService;
 use Carbon\Carbon;
@@ -11,9 +11,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Tab Anggota di CMS: daftar anggota dan stempel manual.
+ * Tab Anggota di CMS: daftar anggota dan poin manual.
  */
-class AnggotaStempelTest extends TestCase
+class AnggotaPoinTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -56,7 +56,7 @@ class AnggotaStempelTest extends TestCase
         return $this->actingAs($m, 'member')->post(route('ic.checkin.proses'), array_filter(['kode' => $kode, 'acara' => $acara]));
     }
 
-    public function test_admin_tab_tampil_dan_stempel_manual_menambah_total(): void
+    public function test_admin_tab_tampil_dan_poin_manual_menambah_total(): void
     {
         $m = $this->anggota();
         $e = $this->acara();
@@ -71,12 +71,12 @@ class AnggotaStempelTest extends TestCase
         $admin->get(route('ic.admin.acara', ['acara' => $e->kode]))->assertOk()->assertSee('<svg', false)->assertSee($e->token);
         $admin->get(route('ic.admin.anggota', ['q' => 'IC-0000']))->assertOk()->assertSee('Anggota Uji');
 
-        $admin->post(route('ic.admin.anggota.stempel', $m->id_member), ['jumlah' => 3, 'catatan' => 'Acara privat'])->assertRedirect();
-        $this->assertSame(4, $m->fresh()->stempel_total);
-        $this->assertSame('admin', ic_stempel::where('sumber', 'manual')->first()->dicatat_oleh);
+        $admin->post(route('ic.admin.anggota.poin', $m->id_member), ['jumlah' => 3000, 'catatan' => 'Acara privat'])->assertRedirect();
+        $this->assertSame(4000, $m->fresh()->poin_total);
+        $this->assertSame('admin', ic_poin::where('sumber', 'manual')->first()->dicatat_oleh);
 
-        $admin->post(route('ic.admin.anggota.stempel', $m->id_member), ['jumlah' => 11, 'catatan' => 'x'])->assertSessionHasErrors('jumlah');
-        $admin->post(route('ic.admin.anggota.stempel', $m->id_member), ['jumlah' => 1, 'catatan' => ''])->assertSessionHasErrors('catatan');
+        $admin->post(route('ic.admin.anggota.poin', $m->id_member), ['jumlah' => 10001, 'catatan' => 'x'])->assertSessionHasErrors('jumlah');
+        $admin->post(route('ic.admin.anggota.poin', $m->id_member), ['jumlah' => 1, 'catatan' => ''])->assertSessionHasErrors('catatan');
     }
 
     public function test_admin_tab_butuh_login_admin(): void

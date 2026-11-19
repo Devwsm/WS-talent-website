@@ -56,7 +56,7 @@
         <ol class="ic-langkah">
             <li>Pilih acara, lalu izinkan akses lokasi bila diminta (hanya untuk memastikan kamu ada di venue).</li>
             <li>Pindai QR panitia atau ketik kodenya, lalu tekan Check-in sekarang.</li>
-            <li>Check-in hanya bisa dilakukan saat acara berlangsung. Satu acara memberi satu stempel.</li>
+            <li>Check-in hanya bisa dilakukan saat acara berlangsung. Satu acara memberi poin satu kali.</li>
         </ol>
         <p class="ic-bantuan">Acara privat tidak tersedia untuk check-in.</p>
         <div class="ic-aksi-baris ic-aksi-baris--rapat">

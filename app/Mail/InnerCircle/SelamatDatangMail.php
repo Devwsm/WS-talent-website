@@ -23,7 +23,7 @@ class SelamatDatangMail extends PesanIc
             'pratinjau' => 'Akun ' . ic_program() . ' kamu sudah aktif.',
             'paragraf' => [
                 ic_email('selamat-datang', 'pembuka', ['nama' => $this->nama, 'kode' => $this->kodeMember]),
-                'Datang ke show, pindai QR check-in di venue, kumpulkan stempel, lalu tukarkan dengan hadiah.',
+                'Datang ke show, pindai QR check-in di venue, kumpulkan poin, lalu tukarkan dengan hadiah.',
             ],
             'tombol' => ['teks' => 'Buka ' . ic_program(), 'url' => $this->url],
             'catatan' => [],

@@ -145,19 +145,19 @@ return [
         ],
 
         // ---- CMS Inner Circle: anggota, acara, hadiah ----
-        'ic.admin.anggota.stempel' => [
-            'judul' => 'Stempel manual ditambahkan',
-            'ket' => 'Menambah {input.jumlah} stempel untuk {nama}.',
-            'ket_tanpa_nama' => 'Stempel manual ditambahkan untuk seorang anggota.',
-            'gagal' => 'Stempel manual gagal ditambahkan',
+        'ic.admin.anggota.poin' => [
+            'judul' => 'Poin manual ditambahkan',
+            'ket' => 'Menambah {input.jumlah} poin untuk {nama}.',
+            'ket_tanpa_nama' => 'Poin manual ditambahkan untuk seorang anggota.',
+            'gagal' => 'Poin manual gagal ditambahkan',
             'nama' => ['{nama}'],
             'sumber' => ['model' => \App\Models\member::class, 'param' => 'id', 'kolom' => 'id_member'],
         ],
         'ic.admin.anggota.kurangi' => [
-            'judul' => 'Stempel dikurangi',
-            'ket' => 'Mengurangi {input.jumlah} stempel dari {nama} (koreksi).',
-            'ket_tanpa_nama' => 'Stempel seorang anggota dikurangi (koreksi).',
-            'gagal' => 'Stempel gagal dikurangi',
+            'judul' => 'Poin dikurangi',
+            'ket' => 'Mengurangi {input.jumlah} poin dari {nama} (koreksi).',
+            'ket_tanpa_nama' => 'Poin seorang anggota dikurangi (koreksi).',
+            'gagal' => 'Poin gagal dikurangi',
             'nama' => ['{nama}'],
             'sumber' => ['model' => \App\Models\member::class, 'param' => 'id', 'kolom' => 'id_member'],
         ],
@@ -254,7 +254,7 @@ return [
             'ket_tanpa_nama' => 'Sebuah hadiah diperbarui.',
             'gagal' => 'Hadiah gagal diubah',
             'nama' => ['{judul}'],
-            'sumber' => ['model' => \App\Models\ic_reward::class, 'param' => 'target', 'kolom' => 'target_stempel'],
+            'sumber' => ['model' => \App\Models\ic_reward::class, 'param' => 'target', 'kolom' => 'harga_poin'],
         ],
         'ic.admin.hadiah.aktif' => [
             'judul' => 'Tampilan hadiah diubah',
@@ -262,7 +262,7 @@ return [
             'ket_tanpa_nama' => 'Tampilan sebuah hadiah diubah.',
             'gagal' => 'Tampilan hadiah gagal diubah',
             'nama' => ['{judul}'],
-            'sumber' => ['model' => \App\Models\ic_reward::class, 'param' => 'target', 'kolom' => 'target_stempel'],
+            'sumber' => ['model' => \App\Models\ic_reward::class, 'param' => 'target', 'kolom' => 'harga_poin'],
         ],
 
         // ---- CMS Inner Circle: pengumuman, kenangan, email ----

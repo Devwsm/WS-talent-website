@@ -3,7 +3,7 @@
 namespace Tests\Feature\InnerCircle\Akun;
 
 use App\Models\ic_event;
-use App\Models\ic_stempel;
+use App\Models\ic_poin;
 use App\Models\member;
 use App\Services\InnerCircle\AcaraService;
 use Carbon\Carbon;
@@ -101,16 +101,16 @@ class MasukDaftarKeluarTest extends TestCase
             ->assertSessionHas('ic_toast_galat');
         $this->actingAs($m, 'member')->postJson(route('ic.kenangan.suka', 1))->assertForbidden();
 
-        $this->assertSame(0, ic_stempel::count());
+        $this->assertSame(0, ic_poin::count());
         $this->assertSame(0, \App\Models\ic_memory::count());
 
         // Setelah terverifikasi, check-in yang sama berhasil.
         $m->forceFill(['email_verified_at' => now()])->save();
         $this->checkin($m->fresh(), $e->token, $e->kode)->assertRedirect(route('ic.beranda'))->assertSessionMissing('ic_toast_galat');
-        $this->assertSame(1, ic_stempel::count());
+        $this->assertSame(1, ic_poin::count());
     }
 
-    public function test_daftar_memberi_kode_member_dan_stempel_nol(): void
+    public function test_daftar_memberi_kode_member_dan_poin_nol(): void
     {
         $this->post(route('ic.daftar.proses'), [
             'nama' => 'Rani',
@@ -122,7 +122,7 @@ class MasukDaftarKeluarTest extends TestCase
         $m = member::first();
         $this->assertSame('IC-00001', $m->kode_member);
         $this->assertSame('rani@contoh.test', $m->email);
-        $this->assertSame(0, $m->stempel_total);
+        $this->assertSame(0, $m->poin_total);
         $this->assertNotSame('Rahasia123', $m->password);
         $this->assertAuthenticatedAs($m, 'member');
         $this->get(route('ic.beranda'))->assertOk()->assertSee('IC-00001');

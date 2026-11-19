@@ -133,7 +133,7 @@
                             </dl>
 
                             <ul class="text-xs text-white/40 flex flex-col gap-1.5 list-disc pl-5">
-                                <li>Satu stempel per anggota per acara.</li>
+                                <li>Satu kehadiran per anggota per acara (poin diberikan sekali).</li>
                                 <li>Membuat QR baru mengganti token: QR lama langsung tidak berlaku.</li>
                                 <li>Jendela check-in bisa diubah per acara lewat tombol ubah di jadwal.</li>
                             </ul>

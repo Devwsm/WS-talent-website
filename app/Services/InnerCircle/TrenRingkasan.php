@@ -3,7 +3,7 @@
 namespace App\Services\InnerCircle;
 
 use App\Models\ic_event;
-use App\Models\ic_stempel;
+use App\Models\ic_poin;
 use App\Models\member;
 use Carbon\CarbonInterface;
 
@@ -66,7 +66,7 @@ class TrenRingkasan
             return [];
         }
 
-        $jumlah = ic_stempel::query()
+        $jumlah = ic_poin::query()
             ->where('sumber', 'checkin')
             ->whereIn('event_id', $daftar->pluck('id_event'))
             ->selectRaw('event_id, count(*) as total')

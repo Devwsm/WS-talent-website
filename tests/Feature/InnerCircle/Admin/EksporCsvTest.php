@@ -6,7 +6,7 @@ use App\Models\ic_event;
 use App\Models\log_aktivitas;
 use App\Models\member;
 use App\Services\InnerCircle\AcaraService;
-use App\Services\InnerCircle\StempelService;
+use App\Services\InnerCircle\PoinService;
 use App\Support\CsvEkspor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -49,8 +49,8 @@ class EksporCsvTest extends TestCase
         $a = $this->anggota('a@contoh.test', 'Ani');
         $this->anggota('b@contoh.test', 'Budi');
         $e = $this->acara();
-        app(StempelService::class)->tambah($a, 1, 'checkin', 'Check-in', 'pin', $e);
-        app(StempelService::class)->tambahManual($a, 2, 'Uji', 'admin-uji');
+        app(PoinService::class)->tambah($a, 1, 'checkin', 'Check-in', 'pin', $e);
+        app(PoinService::class)->tambahManual($a, 2, 'Uji', 'admin-uji');
 
         $r = $this->admin()->get(route('ic.admin.anggota.ekspor'));
         $r->assertOk();
@@ -62,7 +62,7 @@ class EksporCsvTest extends TestCase
         $this->assertStringStartsWith("\xEF\xBB\xBF", $isi);
 
         $baris = $this->baris($isi);
-        $this->assertSame(['Kode', 'Nama', 'Email', 'Email terverifikasi', 'Daftar via', 'Google terhubung', 'Bergabung', 'Total stempel', 'Jumlah check-in', 'Check-in terakhir', 'Status akun'], $baris[0]);
+        $this->assertSame(['Kode', 'Nama', 'Email', 'Email terverifikasi', 'Daftar via', 'Google terhubung', 'Bergabung', 'Total poin', 'Jumlah check-in', 'Check-in terakhir', 'Status akun'], $baris[0]);
         $this->assertCount(3, $baris); // judul + 2 anggota, lama ke baru
         $this->assertSame(['IC-00001', 'Ani', 'a@contoh.test', 'Ya', 'Manual (sandi)', 'Tidak'], array_slice($baris[1], 0, 6));
         $this->assertSame(['3', '1', 'Aktif'], [$baris[1][7], $baris[1][8], $baris[1][10]]);
@@ -113,7 +113,7 @@ class EksporCsvTest extends TestCase
         $b = $this->anggota('b@contoh.test', 'Budi');
         $acaraIni = $this->acara('Superhouse', '2026-11-10');
         $acaraLain = $this->acara('Hall Lain', '2026-11-11');
-        $svc = app(StempelService::class);
+        $svc = app(PoinService::class);
         $svc->tambah($a, 1, 'checkin', 'Check-in', 'pin', $acaraIni, jarakM: 35, akurasiM: 12);
         $svc->tambah($b, 1, 'checkin', 'Check-in', 'pin', $acaraLain);
         $svc->tambahManual($b, 1, 'Manual bukan check-in', 'admin-uji');
@@ -123,7 +123,7 @@ class EksporCsvTest extends TestCase
         $this->assertStringContainsString('kehadiran-' . $acaraIni->kode . '-2026-11-10.csv', $r->headers->get('Content-Disposition'));
 
         $baris = $this->baris($r->streamedContent());
-        $this->assertSame(['No', 'Kode anggota', 'Nama', 'Email', 'Waktu check-in', 'Jarak dari titik acara (m)', 'Akurasi lokasi (m)', 'Stempel'], $baris[0]);
+        $this->assertSame(['No', 'Kode anggota', 'Nama', 'Email', 'Waktu check-in', 'Jarak dari titik acara (m)', 'Akurasi lokasi (m)', 'Poin'], $baris[0]);
         $this->assertCount(2, $baris);
         $this->assertSame(['1', 'IC-00001', 'Ani', 'a@contoh.test'], array_slice($baris[1], 0, 4));
         $this->assertSame(['35', '12', '1'], array_slice($baris[1], 5, 3));

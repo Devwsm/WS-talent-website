@@ -4,7 +4,8 @@ namespace App\Http\Requests\InnerCircle;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class stempelManualRequest extends FormRequest
+/** Koreksi (kurangi) poin anggota. Batas atas sebenarnya (total poin anggota) dicek di PoinService. */
+class kurangiPoinRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -19,7 +20,7 @@ class stempelManualRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'jumlah' => ['required', 'integer', 'min:1', 'max:10'],
+            'jumlah' => ['required', 'integer', 'min:1', 'max:' . (int) config('inner_circle.poin.koreksi_maks', 100000)],
             'catatan' => ['required', 'string', 'max:160'],
         ];
     }
@@ -27,8 +28,8 @@ class stempelManualRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'jumlah' => 'Jumlah stempel',
-            'catatan' => 'Alasan',
+            'jumlah' => 'Jumlah poin',
+            'catatan' => 'Alasan koreksi',
         ];
     }
 
@@ -37,9 +38,9 @@ class stempelManualRequest extends FormRequest
         return [
             'required' => ':attribute wajib diisi.',
             'integer' => ':attribute harus berupa angka.',
-            'jumlah.min' => 'Jumlah stempel minimal :min.',
-            'jumlah.max' => 'Jumlah stempel maksimal :max per penambahan.',
-            'catatan.max' => 'Alasan terlalu panjang (maksimal :max karakter).',
+            'jumlah.min' => 'Jumlah poin minimal :min.',
+            'jumlah.max' => 'Jumlah poin maksimal :max per koreksi.',
+            'catatan.max' => ':attribute terlalu panjang (maksimal :max karakter).',
         ];
     }
 }

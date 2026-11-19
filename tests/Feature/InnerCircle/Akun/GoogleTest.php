@@ -149,7 +149,7 @@ class GoogleTest extends TestCase
         $this->assertNull($anggota->password);
         $this->assertSame('Penggemar Uji', $anggota->nama);
         $this->assertSame(sprintf('IC-%05d', $anggota->id_member), $anggota->kode_member);
-        $this->assertSame(0, $anggota->stempel_total);
+        $this->assertSame(0, $anggota->poin_total);
         $this->assertAuthenticatedAs($anggota, 'member');
 
         // Kode, rahasia klien, dan verifier PKCE dikirim ke Google; state/nonce sekali pakai sudah dibuang.

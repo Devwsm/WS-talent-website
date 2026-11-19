@@ -3,7 +3,7 @@
 namespace App\Services\InnerCircle;
 
 use App\Models\ic_event;
-use App\Models\ic_stempel;
+use App\Models\ic_poin;
 use App\Models\member;
 use Carbon\Carbon;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\DB;
  */
 class CheckinService
 {
-    public function __construct(private StempelService $stempel, private LokasiService $lokasi) {}
+    public function __construct(private PoinService $poin, private LokasiService $lokasi) {}
 
     /**
      * Ambil token WS-XXXXXXXXXXXX dari teks bebas (kode ketikan, URL hasil pindai QR, atau hasil tempel).
@@ -83,7 +83,7 @@ class CheckinService
      * @param  string|null  $kodeAcara  kode acara yang dipilih anggota di halaman (WS26-1008), opsional
      * @param  array{lat?: mixed, lng?: mixed, akurasi?: mixed}|null  $lokasi  posisi HP anggota; wajib bila acara punya titik lokasi
      */
-    public function checkin(member $anggota, string $masukanKode, ?string $kodeAcara = null, ?Carbon $sekarang = null, ?array $lokasi = null): ic_stempel
+    public function checkin(member $anggota, string $masukanKode, ?string $kodeAcara = null, ?Carbon $sekarang = null, ?array $lokasi = null): ic_poin
     {
         $sekarang ??= now();
 
@@ -102,19 +102,19 @@ class CheckinService
                 // Kunci baris anggota supaya dua permintaan bersamaan diproses bergantian.
                 $terkunci = member::query()->whereKey($anggota->getKey())->lockForUpdate()->firstOrFail();
 
-                $sudah = ic_stempel::query()
+                $sudah = ic_poin::query()
                     ->where('member_id', $terkunci->getKey())
                     ->where('event_id', $event->getKey())
                     ->exists();
                 if ($sudah) {
-                    throw new CheckinGagal('Kamu sudah check-in di acara ini. Satu acara hanya memberi satu stempel.');
+                    throw new CheckinGagal('Kamu sudah check-in di acara ini. Satu acara hanya memberi poin satu kali.');
                 }
 
                 $tipe = app(IcPilihan::class)->tipeEvent()[$event->tipe] ?? null;
 
-                return $this->stempel->tambah(
+                return $this->poin->tambah(
                     $terkunci,
-                    1,
+                    (int) config('inner_circle.poin.kehadiran', 1000),
                     'checkin',
                     'Check-in di ' . $event->venue,
                     $tipe['ikon'] ?? 'ticket',
@@ -124,7 +124,7 @@ class CheckinService
                 );
             });
         } catch (UniqueConstraintViolationException) {
-            throw new CheckinGagal('Kamu sudah check-in di acara ini. Satu acara hanya memberi satu stempel.');
+            throw new CheckinGagal('Kamu sudah check-in di acara ini. Satu acara hanya memberi poin satu kali.');
         } finally {
             // Instance anggota dari guard masih membawa angka lama.
             $anggota->refresh();

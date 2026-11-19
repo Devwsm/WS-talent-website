@@ -15,7 +15,7 @@ class ic_reward extends Model
     protected $primaryKey = 'id_reward';
 
     protected $fillable = [
-        'target_stempel',
+        'harga_poin',
         'judul',
         'deskripsi',
         'ikon',
@@ -28,7 +28,7 @@ class ic_reward extends Model
     protected function casts(): array
     {
         return [
-            'target_stempel' => 'integer',
+            'harga_poin' => 'integer',
             'opsi' => 'array',
             'aktif' => 'boolean',
         ];

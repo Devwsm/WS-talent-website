@@ -14,7 +14,7 @@
                 'aktif' => 'anggota',
                 'judul' => 'Anggota',
                 'deskripsi' =>
-                    'Cari anggota, buka profilnya untuk melihat riwayat stempel, lalu tambah atau kurangi stempel, nonaktifkan akun, atau unduh daftar anggota sebagai CSV.',
+                    'Cari anggota, buka profilnya untuk melihat riwayat poin, lalu tambah atau kurangi poin, nonaktifkan akun, atau unduh daftar anggota sebagai CSV.',
                 'pakaiCss' => false,
             ])
 
@@ -172,18 +172,18 @@
 
                                 <div class="flex items-center justify-between sm:justify-end gap-4 shrink-0">
                                     <p class="text-right">
-                                        <span class="text-2xl font-bold">{{ $m->stempel_total }}</span>
-                                        <span class="block text-[11px] text-white/40">stempel</span>
+                                        <span class="text-2xl font-bold">{{ ic_angka($m->poin_total) }}</span>
+                                        <span class="block text-[11px] text-white/40">poin</span>
                                     </p>
                                     <a href="{{ route('ic.admin.anggota.detail', $m->id_member) }}"
                                         class="h-11 px-4 inline-flex items-center gap-2 rounded-full border border-white/15 text-xs font-semibold text-white/70 hover:bg-white/10 hover:text-white transition-colors">
                                         <i class="bi bi-person-lines-fill" aria-hidden="true"></i> Detail
                                     </a>
-                                    <button type="button" data-ic-stempel data-nama="{{ $m->nama }}"
+                                    <button type="button" data-ic-poin data-nama="{{ $m->nama }}"
                                         data-kode="{{ $m->kode_member }}"
-                                        data-aksi="{{ route('ic.admin.anggota.stempel', $m->id_member) }}"
+                                        data-aksi="{{ route('ic.admin.anggota.poin', $m->id_member) }}"
                                         class="h-11 px-4 inline-flex items-center gap-2 rounded-full bg-white text-black text-xs font-semibold hover:bg-white/80 transition-colors">
-                                        <i class="bi bi-plus-circle-fill" aria-hidden="true"></i> Tambah stempel
+                                        <i class="bi bi-plus-circle-fill" aria-hidden="true"></i> Tambah poin
                                     </button>
                                 </div>
                             </li>
@@ -195,54 +195,54 @@
         </div>
     </div>
 
-    {{-- Dialog tambah stempel manual: satu dialog dipakai semua baris, nama anggota diisi lewat JS --}}
-    <dialog id="dialogStempel" aria-labelledby="dialogStempelJudul"
+    {{-- Dialog tambah poin manual: satu dialog dipakai semua baris, nama anggota diisi lewat JS --}}
+    <dialog id="dialogPoin" aria-labelledby="dialogPoinJudul"
         class="fixed inset-0 m-0 w-screen h-screen max-w-none max-h-none bg-black/70 backdrop:bg-transparent p-0 overflow-y-auto">
         <div class="min-h-screen w-full flex items-center justify-center p-4">
             <div
                 class="w-full max-w-md max-h-[calc(100vh-2rem)] flex flex-col min-w-0 rounded-3xl border border-white/10 bg-black shadow-xl overflow-hidden">
                 <div
                     class="flex items-center justify-between gap-2 px-6 py-4 border-b border-white/10 bg-white/3 shrink-0">
-                    <h3 id="dialogStempelJudul" class="font-bold uppercase tracking-wide text-sm text-white">Tambah
-                        stempel
+                    <h3 id="dialogPoinJudul" class="font-bold uppercase tracking-wide text-sm text-white">Tambah
+                        poin
                         manual</h3>
-                    <button type="button" onclick="document.getElementById('dialogStempel').close()" aria-label="Tutup"
+                    <button type="button" onclick="document.getElementById('dialogPoin').close()" aria-label="Tutup"
                         class="text-white/40 hover:text-white transition">
                         <i class="bi bi-x-lg" aria-hidden="true"></i>
                     </button>
                 </div>
 
-                <form method="POST" action="#" id="formStempel"
-                    class="flex flex-col flex-1 min-h-0 overflow-hidden">
+                <form method="POST" action="#" id="formPoin" class="flex flex-col flex-1 min-h-0 overflow-hidden">
                     @csrf
                     <div class="flex-1 min-h-0 p-6 flex flex-col gap-4 overflow-y-auto">
                         <div class="flex flex-col gap-1.5">
-                            <label for="stempel-anggota"
+                            <label for="poin-anggota"
                                 class="text-sm font-semibold uppercase tracking-widest text-white/60">Anggota</label>
-                            <input type="text" id="stempel-anggota" readonly
+                            <input type="text" id="poin-anggota" readonly
                                 class="bg-white/5 border border-white/15 text-white/80 p-3 rounded-lg" />
                         </div>
                         <div class="flex flex-col gap-1.5">
-                            <label for="stempel-jumlah"
-                                class="text-sm font-semibold uppercase tracking-widest text-white/60">Jumlah stempel <span
+                            <label for="poin-jumlah"
+                                class="text-sm font-semibold uppercase tracking-widest text-white/60">Jumlah poin <span
                                     class="text-red-400">*</span></label>
-                            <input type="number" id="stempel-jumlah" name="jumlah" min="1" max="10"
-                                value="1" required
+                            <input type="number" id="poin-jumlah" name="jumlah" min="1"
+                                max="{{ config('inner_circle.poin.manual_maks') }}" value="1" required
                                 class="bg-white/5 border border-white/15 text-white p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition" />
-                            <p class="text-xs text-white/30">Satu sampai sepuluh stempel per penambahan.</p>
+                            <p class="text-xs text-white/30">Maksimal
+                                {{ ic_angka(config('inner_circle.poin.manual_maks')) }} poin per penambahan.</p>
                         </div>
                         <div class="flex flex-col gap-1.5">
-                            <label for="stempel-catatan"
+                            <label for="poin-catatan"
                                 class="text-sm font-semibold uppercase tracking-widest text-white/60">Alasan <span
                                     class="text-red-400">*</span></label>
-                            <textarea id="stempel-catatan" name="catatan" rows="3" maxlength="160" required
+                            <textarea id="poin-catatan" name="catatan" rows="3" maxlength="160" required
                                 placeholder="Mis. kehadiran di acara privat yang diverifikasi tim WSM"
                                 class="bg-white/5 border border-white/15 text-white placeholder-white/30 p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition"></textarea>
-                            <p class="text-xs text-white/30">Tercatat di riwayat stempel anggota beserta nama admin.</p>
+                            <p class="text-xs text-white/30">Tercatat di riwayat poin anggota beserta nama admin.</p>
                         </div>
                     </div>
                     <div class="flex justify-end gap-2 px-6 py-4 border-t border-white/10 bg-white/3 shrink-0">
-                        <button type="button" onclick="document.getElementById('dialogStempel').close()"
+                        <button type="button" onclick="document.getElementById('dialogPoin').close()"
                             class="h-11 px-5 rounded-lg border border-white/15 text-sm font-semibold text-white/70 hover:bg-white/10 hover:text-white transition-colors">
                             Batal
                         </button>
@@ -258,15 +258,15 @@
 
     @push('scripts')
         <script>
-            // Buka dialog tambah stempel dan isi nama anggota dari baris yang diklik.
-            const dialogStempel = document.getElementById('dialogStempel');
+            // Buka dialog tambah poin dan isi nama anggota dari baris yang diklik.
+            const dialogPoin = document.getElementById('dialogPoin');
             document.addEventListener('click', (e) => {
-                const tombol = e.target.closest('[data-ic-stempel]');
+                const tombol = e.target.closest('[data-ic-poin]');
                 if (!tombol) return;
-                document.getElementById('stempel-anggota').value = `${tombol.dataset.nama} (${tombol.dataset.kode})`;
-                document.getElementById('formStempel').action = tombol.dataset.aksi;
-                dialogStempel.showModal();
-                document.getElementById('stempel-jumlah').focus();
+                document.getElementById('poin-anggota').value = `${tombol.dataset.nama} (${tombol.dataset.kode})`;
+                document.getElementById('formPoin').action = tombol.dataset.aksi;
+                dialogPoin.showModal();
+                document.getElementById('poin-jumlah').focus();
             });
         </script>
     @endpush

@@ -4,7 +4,7 @@ namespace Tests\Feature\InnerCircle\Admin;
 
 use App\Models\member;
 use App\Services\InnerCircle\AcaraService;
-use App\Services\InnerCircle\StempelService;
+use App\Services\InnerCircle\PoinService;
 use App\Services\InnerCircle\TrenRingkasan;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -68,7 +68,7 @@ class TrenRingkasanTest extends TestCase
         $lama = $acara->buat(['tanggal' => '2026-11-01', 'tipe' => 'club', 'venue' => 'Lama', 'kota' => 'Jakarta']);
         $baru = $acara->buat(['tanggal' => '2026-11-14', 'tipe' => 'club', 'venue' => 'Baru', 'kota' => 'Bandung']);
         $acara->buat(['tanggal' => '2026-12-25', 'tipe' => 'club', 'venue' => 'Depan', 'kota' => 'Bali']); // belum tiba
-        $svc = app(StempelService::class);
+        $svc = app(PoinService::class);
         $svc->tambah($m1, 1, 'checkin', 'Check-in', 'pin', $lama);
         $svc->tambah($m1, 1, 'checkin', 'Check-in', 'pin', $baru);
         $svc->tambah($m2, 1, 'checkin', 'Check-in', 'pin', $baru);

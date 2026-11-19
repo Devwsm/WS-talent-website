@@ -71,7 +71,7 @@ Route::get('/inner-circle/{path?}', function (\Illuminate\Http\Request $request,
 })->where('path', '.*')->name('ic.alamat-lama');
 
 // WS Inner Circle — dibungkus flag INNER_CIRCLE_AKTIF (404 bila mati, lihat middleware IcAktif).
-// Fase 4-6: akun anggota (guard `member`), check-in, stempel, hadiah, klaim, Komunitas (pengumuman, kenangan),
+// Fase 4-6: akun anggota (guard `member`), check-in, poin, hadiah, klaim, Komunitas (pengumuman, kenangan),
 // dan foto profil sudah tersambung ke database.
 Route::prefix('/innercircle')->middleware('icAktif')->name('ic.')->group(function () {
     // Halaman publik yang menjelaskan program untuk calon anggota (tamu yang membuka /innercircle dialihkan ke sini).
@@ -140,8 +140,8 @@ Route::prefix('/dashboard')->middleware(['cekLogin', 'catatAktivitas'])->group(f
         Route::get('/anggota', [adminController::class, 'anggota'])->name('anggota');
         Route::get('/anggota/ekspor', [adminController::class, 'eksporAnggota'])->name('anggota.ekspor')->middleware('throttle:admin-aksi-kecil');
         Route::get('/anggota/{id}', [adminController::class, 'detailAnggota'])->whereNumber('id')->name('anggota.detail');
-        Route::post('/anggota/{id}/stempel', [adminController::class, 'tambahStempel'])->whereNumber('id')->name('anggota.stempel')->middleware('throttle:admin-tulis');
-        Route::post('/anggota/{id}/stempel/kurangi', [adminController::class, 'kurangiStempel'])->whereNumber('id')->name('anggota.kurangi')->middleware('throttle:admin-tulis');
+        Route::post('/anggota/{id}/poin', [adminController::class, 'tambahPoin'])->whereNumber('id')->name('anggota.poin')->middleware('throttle:admin-tulis');
+        Route::post('/anggota/{id}/poin/kurangi', [adminController::class, 'kurangiPoin'])->whereNumber('id')->name('anggota.kurangi')->middleware('throttle:admin-tulis');
         Route::patch('/anggota/{id}/nonaktifkan', [adminController::class, 'nonaktifkanAnggota'])->whereNumber('id')->name('anggota.nonaktifkan')->middleware('throttle:admin-tulis');
         Route::patch('/anggota/{id}/aktifkan', [adminController::class, 'aktifkanAnggota'])->whereNumber('id')->name('anggota.aktifkan')->middleware('throttle:admin-tulis');
 

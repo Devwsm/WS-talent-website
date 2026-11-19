@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
  * Aktivitas anggota (check-in, unggah kenangan, suka) hanya untuk email yang sudah terverifikasi.
  *
  * Anggota yang belum terverifikasi tetap bisa masuk dan melihat-lihat. Pendaftaran dengan kata sandi tidak
- * membuktikan pemilik email, jadi akun yang dibuat dengan email orang lain tidak bisa mengumpulkan stempel atau
+ * membuktikan pemilik email, jadi akun yang dibuat dengan email orang lain tidak bisa mengumpulkan poin atau
  * menayangkan konten. Akun Google sudah terverifikasi sejak masuk. Klaim hadiah punya pemeriksaan sendiri di ClaimService.
  */
 class IcTerverifikasi

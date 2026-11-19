@@ -6,7 +6,7 @@ use App\Mail\InnerCircle\VerifikasiEmailMail;
 use App\Models\ic_claim;
 use App\Models\member;
 use App\Services\InnerCircle\EmailService;
-use App\Services\InnerCircle\StempelService;
+use App\Services\InnerCircle\PoinService;
 use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
@@ -28,13 +28,13 @@ class VerifikasiEmailTest extends TestCase
         return Password::broker('members');
     }
 
-    private function anggota(string $email = 'a@contoh.test', int $stempel = 0): member
+    private function anggota(string $email = 'a@contoh.test', int $poin = 0): member
     {
         $m = member::create(['nama' => 'Anggota Uji', 'email' => $email, 'password' => 'Rahasia123']);
         $m->kode_member = sprintf('IC-%05d', $m->id_member);
         $m->save();
-        if ($stempel > 0) {
-            app(StempelService::class)->tambahManual($m, $stempel, 'Uji', 'admin');
+        if ($poin > 0) {
+            app(PoinService::class)->tambahManual($m, $poin, 'Uji', 'admin');
         }
 
         return $m->fresh();
@@ -63,22 +63,22 @@ class VerifikasiEmailTest extends TestCase
 
     public function test_klaim_hadiah_ditolak_sebelum_verifikasi_dan_berhasil_sesudahnya(): void
     {
-        $m = $this->anggota('a@contoh.test', 12);
+        $m = $this->anggota('a@contoh.test', 12000);
 
-        $this->actingAs($m, 'member')->post(route('ic.hadiah.klaim', 10))
+        $this->actingAs($m, 'member')->post(route('ic.hadiah.klaim', 10000))
             ->assertRedirect(route('ic.hadiah') . '#klaim')
             ->assertSessionHas('ic_toast_galat', fn($pesan) => str_contains($pesan, 'Verifikasi email dulu'));
         $this->assertSame(0, ic_claim::count());
 
         $m->forceFill(['email_verified_at' => now()])->save();
 
-        $this->actingAs($m->fresh(), 'member')->post(route('ic.hadiah.klaim', 10))->assertSessionHas('ic_toast');
+        $this->actingAs($m->fresh(), 'member')->post(route('ic.hadiah.klaim', 10000))->assertSessionHas('ic_toast');
         $this->assertSame(1, ic_claim::count());
     }
 
     public function test_halaman_hadiah_menampilkan_ajakan_verifikasi_hanya_untuk_yang_belum(): void
     {
-        $m = $this->anggota('a@contoh.test', 12);
+        $m = $this->anggota('a@contoh.test', 12000);
 
         $this->actingAs($m, 'member')->get(route('ic.hadiah'))
             ->assertOk()->assertSee('Verifikasi emailmu dulu')->assertSee('Kirim ulang email verifikasi');

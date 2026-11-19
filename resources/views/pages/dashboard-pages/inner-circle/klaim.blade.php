@@ -102,7 +102,7 @@
                                             {{ $k->nama_member }}
                                             <span class="text-white/40 font-normal">· {{ $k->kode_member }}</span>
                                         </p>
-                                        <p class="text-sm text-white/70">{{ $k->target_stempel }} stempel ·
+                                        <p class="text-sm text-white/70">{{ ic_angka($k->harga_poin) }} poin ·
                                             {{ $k->judul }}
                                             @if ($k->opsi_dipilih)
                                                 <span class="text-white/40">· pilihan: {{ $k->opsi_dipilih }}</span>

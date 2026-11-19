@@ -5,15 +5,15 @@ namespace Tests\Feature\InnerCircle\Admin;
 use App\Models\ic_claim;
 use App\Models\ic_event;
 use App\Models\ic_reward;
-use App\Models\ic_stempel;
+use App\Models\ic_poin;
 use App\Models\log_aktivitas;
 use App\Models\member;
 use App\Services\InnerCircle\AcaraService;
-use App\Services\InnerCircle\StempelService;
+use App\Services\InnerCircle\PoinService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/** CMS Inner Circle > Anggota: detail, kurangi stempel (koreksi), nonaktifkan dan aktifkan akun. */
+/** CMS Inner Circle > Anggota: detail, kurangi poin (koreksi), nonaktifkan dan aktifkan akun. */
 class KelolaAnggotaTest extends TestCase
 {
     use RefreshDatabase;
@@ -40,7 +40,7 @@ class KelolaAnggotaTest extends TestCase
 
     private function beri(member $m, int $jumlah): void
     {
-        app(StempelService::class)->tambahManual($m, $jumlah, 'Uji', 'admin-uji');
+        app(PoinService::class)->tambahManual($m, $jumlah, 'Uji', 'admin-uji');
     }
 
 
@@ -50,25 +50,25 @@ class KelolaAnggotaTest extends TestCase
         return trim(preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags($respons->getContent()), ENT_QUOTES | ENT_HTML5)));
     }
 
-    // ---------- kurangi stempel ----------
+    // ---------- kurangi poin ----------
 
     public function test_kurangi_menulis_baris_negatif_dan_menurunkan_total_tanpa_menyentuh_baris_lama(): void
     {
         $m = $this->anggota();
         $this->beri($m, 5);
-        $lama = ic_stempel::query()->first();
+        $lama = ic_poin::query()->first();
 
         $this->admin()->post(route('ic.admin.anggota.kurangi', $m->id_member), ['jumlah' => 2, 'catatan' => 'Salah input'])
             ->assertRedirect()->assertSessionHas('success');
 
-        $this->assertSame(3, $m->fresh()->stempel_total);
-        $koreksi = ic_stempel::query()->where('sumber', 'koreksi')->firstOrFail();
+        $this->assertSame(3, $m->fresh()->poin_total);
+        $koreksi = ic_poin::query()->where('sumber', 'koreksi')->firstOrFail();
         $this->assertSame(-2, $koreksi->jumlah);
         $this->assertSame('Salah input', $koreksi->catatan);
         $this->assertSame('admin-uji', $koreksi->dicatat_oleh);
         $this->assertSame(5, $lama->fresh()->jumlah, 'Baris lama tidak boleh berubah.');
         // Total = jumlah seluruh buku besar.
-        $this->assertSame(3, (int) ic_stempel::query()->where('member_id', $m->id_member)->sum('jumlah'));
+        $this->assertSame(3, (int) ic_poin::query()->where('member_id', $m->id_member)->sum('jumlah'));
     }
 
     public function test_kurangi_tidak_boleh_melebihi_total_atau_tanpa_alasan(): void
@@ -80,15 +80,15 @@ class KelolaAnggotaTest extends TestCase
         $this->admin()->post(route('ic.admin.anggota.kurangi', $m->id_member), ['jumlah' => 0, 'catatan' => 'x'])->assertSessionHasErrors('jumlah');
         $this->admin()->post(route('ic.admin.anggota.kurangi', $m->id_member), ['jumlah' => 1, 'catatan' => ''])->assertSessionHasErrors('catatan');
 
-        $this->assertSame(2, $m->fresh()->stempel_total);
-        $this->assertSame(0, ic_stempel::query()->where('sumber', 'koreksi')->count());
+        $this->assertSame(2, $m->fresh()->poin_total);
+        $this->assertSame(0, ic_poin::query()->where('sumber', 'koreksi')->count());
     }
 
-    public function test_kurangi_mengingatkan_bila_ada_klaim_yang_butuh_stempel_lebih_banyak(): void
+    public function test_kurangi_mengingatkan_bila_ada_klaim_yang_butuh_poin_lebih_banyak(): void
     {
         $m = $this->anggota();
         $this->beri($m, 5);
-        $hadiah = ic_reward::create(['target_stempel' => 5, 'judul' => 'Kaos', 'deskripsi' => 'x', 'ikon' => 'gift', 'warna' => 'merah', 'opsi' => null, 'urutan' => 1, 'aktif' => true]);
+        $hadiah = ic_reward::create(['harga_poin' => 5, 'judul' => 'Kaos', 'deskripsi' => 'x', 'ikon' => 'gift', 'warna' => 'merah', 'opsi' => null, 'urutan' => 1, 'aktif' => true]);
         ic_claim::create(['member_id' => $m->id_member, 'reward_id' => $hadiah->id_reward, 'status' => 'diajukan']);
 
         $this->admin()->post(route('ic.admin.anggota.kurangi', $m->id_member), ['jumlah' => 1, 'catatan' => 'Koreksi'])
@@ -99,14 +99,16 @@ class KelolaAnggotaTest extends TestCase
     {
         $m = $this->anggota();
         $this->beri($m, 3);
-        app(StempelService::class)->kurangi($m, 2, 'Salah input', 'admin-uji');
+        app(PoinService::class)->kurangi($m, 2, 'Salah input', 'admin-uji');
 
         $detail = $this->admin()->get(route('ic.admin.anggota.detail', $m->id_member))->assertOk();
-        $this->assertStringContainsString('Koreksi stempel oleh tim WSM', $this->teks($detail));
+        $this->assertStringContainsString('Koreksi poin oleh tim WSM', $this->teks($detail));
         $this->assertStringContainsString('Catatan: Salah input', $this->teks($detail));
         $this->assertStringContainsString('−2', $this->teks($detail));
 
-        $this->actingAs($m->fresh(), 'member')->get(route('ic.profil'))->assertOk()->assertSee('Koreksi stempel oleh tim WSM')->assertSee('−2 ✦', false);
+        $profil = $this->actingAs($m->fresh(), 'member')->get(route('ic.profil'))->assertOk()->assertSee('Koreksi poin oleh tim WSM');
+        // Spasi dan baris baru di HTML bisa berubah bila Blade diformat ulang editor, jadi dicocokkan longgar.
+        $this->assertMatchesRegularExpression('/−2\s+✦/u', $profil->getContent());
     }
 
     // ---------- nonaktifkan / aktifkan ----------
@@ -189,7 +191,7 @@ class KelolaAnggotaTest extends TestCase
         $m->refresh();
         $this->assertFalse($m->diblokir());
         $this->assertNull($m->alasan_blokir);
-        $this->assertSame(4, $m->stempel_total);
+        $this->assertSame(4, $m->poin_total);
         $this->post(route('ic.masuk.proses'), ['email' => 'a@contoh.test', 'sandi' => 'rahasia123'])->assertRedirect();
         $this->assertAuthenticatedAs($m, 'member');
     }
@@ -210,8 +212,8 @@ class KelolaAnggotaTest extends TestCase
     {
         $m = $this->anggota();
         $e = $this->acara();
-        app(StempelService::class)->tambah($m, 1, 'checkin', 'Check-in Superhouse', 'pin', $e, jarakM: 20);
-        $hadiah = ic_reward::create(['target_stempel' => 1, 'judul' => 'Stiker Eksklusif', 'deskripsi' => 'x', 'ikon' => 'gift', 'warna' => 'merah', 'opsi' => null, 'urutan' => 1, 'aktif' => true]);
+        app(PoinService::class)->tambah($m, 1, 'checkin', 'Check-in Superhouse', 'pin', $e, jarakM: 20);
+        $hadiah = ic_reward::create(['harga_poin' => 1, 'judul' => 'Stiker Eksklusif', 'deskripsi' => 'x', 'ikon' => 'gift', 'warna' => 'merah', 'opsi' => null, 'urutan' => 1, 'aktif' => true]);
         ic_claim::create(['member_id' => $m->id_member, 'reward_id' => $hadiah->id_reward, 'status' => 'diajukan']);
 
         $this->admin()->get(route('ic.admin.anggota.detail', $m->id_member))

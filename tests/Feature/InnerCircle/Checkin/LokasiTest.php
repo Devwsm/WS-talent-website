@@ -3,7 +3,7 @@
 namespace Tests\Feature\InnerCircle\Checkin;
 
 use App\Models\ic_event;
-use App\Models\ic_stempel;
+use App\Models\ic_poin;
 use App\Models\member;
 use App\Services\InnerCircle\AcaraService;
 use App\Services\InnerCircle\LokasiService;
@@ -91,7 +91,7 @@ class LokasiTest extends TestCase
         $e = $this->acara();
 
         $this->checkin($m, $e)->assertRedirect(route('ic.beranda'));
-        $this->assertNull(ic_stempel::first()->jarak_m);
+        $this->assertNull(ic_poin::first()->jarak_m);
     }
 
     public function test_acara_bertitik_menolak_check_in_tanpa_lokasi(): void
@@ -100,7 +100,7 @@ class LokasiTest extends TestCase
         $e = $this->acara($this->titik());
 
         $this->checkin($m, $e)->assertSessionHasErrors('kode');
-        $this->assertSame(0, ic_stempel::count());
+        $this->assertSame(0, ic_poin::count());
     }
 
     public function test_di_dalam_radius_berhasil_dan_hanya_jarak_yang_dicatat(): void
@@ -112,7 +112,7 @@ class LokasiTest extends TestCase
         $this->checkin($m, $e, ['lat' => self::LAT - 0.0005, 'lng' => self::LNG, 'akurasi' => 20])
             ->assertRedirect(route('ic.beranda'));
 
-        $baris = ic_stempel::first();
+        $baris = ic_poin::first();
         $this->assertEqualsWithDelta(55, $baris->jarak_m, 3);
         $this->assertSame(20, $baris->akurasi_m);
         $this->assertArrayNotHasKey('lat', $baris->getAttributes());
@@ -128,7 +128,7 @@ class LokasiTest extends TestCase
             ->assertSessionHasErrors('kode');
 
         $this->assertStringContainsString('km', session('errors')->first('kode'));
-        $this->assertSame(0, ic_stempel::count());
+        $this->assertSame(0, ic_poin::count());
     }
 
     public function test_akurasi_gps_terlalu_kasar_atau_tidak_dilaporkan_ditolak(): void
@@ -138,7 +138,7 @@ class LokasiTest extends TestCase
 
         $this->checkin($m, $e, ['lat' => self::LAT, 'lng' => self::LNG, 'akurasi' => 900])->assertSessionHasErrors('kode');
         $this->checkin($m, $e, ['lat' => self::LAT, 'lng' => self::LNG])->assertSessionHasErrors('kode');
-        $this->assertSame(0, ic_stempel::count());
+        $this->assertSame(0, ic_poin::count());
     }
 
     public function test_keringanan_akurasi_menolong_gps_kasar_di_pinggir_radius(): void

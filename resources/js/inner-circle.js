@@ -194,7 +194,7 @@ document.addEventListener("change", (e) => {
 
 // ---------- Klaim hadiah ----------
 // Hadiah tanpa pilihan: form POST yang minta konfirmasi dulu (data-ic-konfirmasi). Tanpa JS form
-// langsung terkirim, jadi aturannya (stempel cukup, sekali per tahap) selalu dicek di server.
+// langsung terkirim, jadi aturannya (poin cukup, sekali per tahap) selalu dicek di server.
 document.addEventListener("submit", async (e) => {
     const form = e.target.closest("form[data-ic-konfirmasi]");
     if (!form || form.dataset.icSudahKonfirmasi) return;

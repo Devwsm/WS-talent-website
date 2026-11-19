@@ -12,13 +12,13 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Aturan hadiah dan klaim WS Inner Circle (semua dicek di server):
- * - klaim hanya bila stempel_total >= target tahap, sekali per anggota per tahap;
- * - tahap yang punya pilihan (mis. 50 stempel) wajib memilih salah satunya;
+ * - klaim hanya bila poin_total >= target tahap, sekali per anggota per tahap;
+ * - tahap yang punya pilihan (mis. 50.000 poin) wajib memilih salah satunya;
  * - status bergerak diajukan -> ditinjau -> disetujui -> selesai, atau ditolak (alasan wajib);
  *   selesai adalah akhir alur. Pengajuan yang ditolak bisa dibuka kembali oleh admin (kembali ke diajukan).
  *   Tiap perubahan dicatat di ic_claim_logs.
  *
- * Stempel tidak berkurang saat klaim: hadiah tidak "membeli" stempel.
+ * Poin tidak berkurang saat klaim: hadiah tidak "membeli" poin.
  */
 class ClaimService
 {
@@ -40,22 +40,22 @@ class ClaimService
 
             $reward->setAttribute(
                 'status_member',
-                $k?->status ?? ($anggota->stempel_total >= $reward->target_stempel ? 'terbuka' : 'terkunci')
+                $k?->status ?? ($anggota->poin_total >= $reward->harga_poin ? 'terbuka' : 'terkunci')
             );
             $reward->setAttribute('catatan_admin', $k?->catatan_admin);
         });
     }
 
     /** Tahapan berikutnya yang belum tercapai (setelah tahap terakhir, tetap di tahap terakhir). */
-    public function berikutnya(int $stempel): object
+    public function berikutnya(int $poin): object
     {
-        $target = $this->tahapanAktif()->pluck('target_stempel');
-        $berikutnya = $target->first(fn($n) => $n > $stempel) ?? $target->last() ?? 250;
+        $target = $this->tahapanAktif()->pluck('harga_poin');
+        $berikutnya = $target->first(fn($n) => $n > $poin) ?? $target->last() ?? 250000;
 
         return (object) [
-            'target_stempel' => $berikutnya,
-            'sisa' => max(0, $berikutnya - $stempel),
-            'persen' => min(100, (int) round($stempel / $berikutnya * 100)),
+            'harga_poin' => $berikutnya,
+            'sisa' => max(0, $berikutnya - $poin),
+            'persen' => min(100, (int) round($poin / $berikutnya * 100)),
         ];
     }
 
@@ -71,15 +71,15 @@ class ClaimService
     }
 
     /**
-     * Ajukan hadiah tahap $targetStempel. Melempar KlaimGagal (pesan siap tampil) bila ada aturan
+     * Ajukan hadiah tahap $hargaPoin. Melempar KlaimGagal (pesan siap tampil) bila ada aturan
      * yang tidak terpenuhi. Baris anggota dikunci selama transaksi supaya klik ganda diproses
      * bergantian; kunci unik (member_id, reward_id) jadi pengaman terakhir.
      */
-    public function ajukan(member $anggota, int $targetStempel, ?string $opsi = null): ic_claim
+    public function ajukan(member $anggota, int $hargaPoin, ?string $opsi = null): ic_claim
     {
         $reward = ic_reward::query()
             ->where('aktif', true)
-            ->where('target_stempel', $targetStempel)
+            ->where('harga_poin', $hargaPoin)
             ->first();
         if (! $reward) {
             throw new KlaimGagal('Tahapan hadiah ini tidak ditemukan.');
@@ -105,10 +105,10 @@ class ClaimService
                     throw new KlaimGagal('Verifikasi email dulu sebelum mengajukan hadiah. Buka email dari WS Inner Circle, atau kirim ulang dari halaman Hadiah.');
                 }
 
-                if ($terkunci->stempel_total < $reward->target_stempel) {
+                if ($terkunci->poin_total < $reward->harga_poin) {
                     throw new KlaimGagal(
-                        'Stempelmu belum cukup. Tahap ini butuh ' . $reward->target_stempel
-                            . ' stempel, kamu punya ' . $terkunci->stempel_total . '.'
+                        'Poinmu belum cukup. Tahap ini butuh ' . ic_angka($reward->harga_poin)
+                            . ' poin, kamu punya ' . ic_angka($terkunci->poin_total) . '.'
                     );
                 }
 
@@ -239,7 +239,7 @@ class ClaimService
         return ic_reward::query()
             ->where('aktif', true)
             ->orderBy('urutan')
-            ->orderBy('target_stempel')
+            ->orderBy('harga_poin')
             ->get();
     }
 

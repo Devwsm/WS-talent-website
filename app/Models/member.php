@@ -31,9 +31,9 @@ class member extends Authenticatable
         'remember_token',
     ];
 
-    /** Sama dengan default kolom: anggota yang baru dibuat langsung punya 0 stempel di memori, bukan null. */
+    /** Sama dengan default kolom: anggota yang baru dibuat langsung punya 0 poin di memori, bukan null. */
     protected $attributes = [
-        'stempel_total' => 0,
+        'poin_total' => 0,
         'sesi_versi' => 0,
     ];
 
@@ -43,7 +43,7 @@ class member extends Authenticatable
             'password' => 'hashed',
             'email_verified_at' => 'datetime',
             'sesi_versi' => 'integer',
-            'stempel_total' => 'integer',
+            'poin_total' => 'integer',
             // Terakhir membuka tab Pengumuman / Galeri di Komunitas (dasar lencana belum dibaca).
             'pengumuman_dibaca_pada' => 'datetime',
             'galeri_dibaca_pada' => 'datetime',
@@ -81,9 +81,9 @@ class member extends Authenticatable
         return Attribute::get(fn() => $this->created_at);
     }
 
-    public function stempel(): HasMany
+    public function poin(): HasMany
     {
-        return $this->hasMany(ic_stempel::class, 'member_id', 'id_member');
+        return $this->hasMany(ic_poin::class, 'member_id', 'id_member');
     }
 
     public function klaim(): HasMany

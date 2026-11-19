@@ -45,9 +45,9 @@ class DaftarButirTest extends TestCase
             ->assertSee('<title>WS Inner Circle, komunitas penggemar — Whisnu Santika</title>', false)
             ->assertSee('Komunitas penggemar resmi')
             ->assertSee('Cara kerjanya')
-            ->assertSeeInOrder(['Daftar', 'Datang ke acara', 'Kumpulkan stempel', 'Buka hadiah'])
+            ->assertSeeInOrder(['Daftar', 'Datang ke acara', 'Kumpulkan poin', 'Buka hadiah'])
             ->assertSee('Pertanyaan umum')
-            ->assertSee('Apa itu stempel?')
+            ->assertSee('Apa itu poin?')
             ->assertSee('<a class="ic-tautan" href="' . route('privasi') . '">Kebijakan Privasi</a>, dan kamu', false)
             ->assertSee('Siap bergabung?');
 
@@ -118,7 +118,7 @@ class DaftarButirTest extends TestCase
         ic_item::where('grup', 'faq')->update(['aktif' => false]);
         app(IcKonten::class)->lupakan();
 
-        $this->get(route('ic.tentang'))->assertOk()->assertDontSee('Pertanyaan umum')->assertDontSee('Apa itu stempel?');
+        $this->get(route('ic.tentang'))->assertOk()->assertDontSee('Pertanyaan umum')->assertDontSee('Apa itu poin?');
 
         ic_item::where('grup', 'teaser_poin')->update(['aktif' => false]);
         app(IcKonten::class)->lupakan();
@@ -136,7 +136,7 @@ class DaftarButirTest extends TestCase
         $this->assertSame($maks, ic_item::where('grup', 'teaser_poin')->count());
 
         $this->admin()->post($this->rute('bawaan', 'teaser_poin'))->assertSessionHas('success');
-        $this->assertSame(['Check-in QR di acara', 'Hadiah di tiap tahap stempel', 'Galeri kenangan penggemar'], $this->judul('teaser_poin'));
+        $this->assertSame(['Check-in QR di acara', 'Hadiah di tiap tahap poin', 'Galeri kenangan penggemar'], $this->judul('teaser_poin'));
     }
 
     public function test_validasi_butir_galat_per_form_dan_tanda_berbahaya_ditolak(): void
