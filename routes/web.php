@@ -4,6 +4,7 @@ use App\Http\Controllers\cspController;
 use App\Http\Controllers\dashboardController;
 use App\Http\Controllers\homeController;
 use App\Http\Controllers\InnerCircle\acaraController;
+use App\Http\Controllers\InnerCircle\acaraGlController;
 use App\Http\Controllers\InnerCircle\acaraHariHController;
 use App\Http\Controllers\InnerCircle\adminController;
 use App\Http\Controllers\InnerCircle\akunController;
@@ -153,6 +154,13 @@ Route::prefix('/dashboard')->middleware(['cekLogin', 'catatAktivitas'])->group(f
         Route::get('/acara/hari-h', [acaraHariHController::class, 'index'])->name('acara.harih');
         // Detail Hari H satu acara (Fase 4): ringkasan, yang hadir (GL gratis / beli tiket sendiri), ekspor CSV.
         Route::get('/acara/hari-h/{kode}', [acaraHariHController::class, 'detail'])->name('acara.harih.detail');
+        // Panel undian GL satu acara (Fase 6B): antrean, pemenang, undi sekarang, tunda/lanjutkan, ekspor, tanda diterima tim Show.
+        Route::get('/acara/hari-h/{kode}/gl', [acaraGlController::class, 'index'])->name('acara.gl');
+        Route::get('/acara/{kode}/gl/ekspor', [acaraGlController::class, 'ekspor'])->name('acara.gl.ekspor')->middleware('throttle:admin-aksi-kecil');
+        Route::post('/acara/{kode}/gl/undi', [acaraGlController::class, 'undi'])->name('acara.gl.undi')->middleware('throttle:admin-tulis');
+        Route::post('/acara/{kode}/gl/tunda', [acaraGlController::class, 'tunda'])->name('acara.gl.tunda')->middleware('throttle:admin-tulis');
+        Route::post('/acara/{kode}/gl/lanjutkan', [acaraGlController::class, 'lanjutkan'])->name('acara.gl.lanjutkan')->middleware('throttle:admin-tulis');
+        Route::post('/acara/{kode}/gl/diterima', [acaraGlController::class, 'diterima'])->name('acara.gl.diterima')->middleware('throttle:admin-tulis');
         Route::post('/acara', [acaraController::class, 'simpanAcara'])->name('acara.simpan')->middleware('throttle:admin-tulis');
         Route::post('/acara/impor', [acaraController::class, 'imporAcara'])->name('acara.impor')->middleware('throttle:admin-tulis');
         // Fase 9: jadwal dari Bandsintown, dan perbaikan token QR yang tidak terbaca (APP_KEY berbeda).

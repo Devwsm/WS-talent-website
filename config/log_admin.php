@@ -52,8 +52,9 @@ return [
     /* Kategori berisiko: hanya ini yang menyimpan dan menampilkan alamat IP. */
     'kategori_berisiko' => ['akses'],
 
-    /* Route yang tidak dicatat sebagai aktivitas (mengelola Log itu sendiri, dan pencarian yang tidak mengubah data). */
-    'abaikan_rute' => ['log.*', 'ic.admin.log.*', 'ic.admin.acara.lokasi.cari'],
+    /* Route yang tidak dicatat sebagai aktivitas (mengelola Log itu sendiri, dan pencarian yang tidak mengubah data).
+       Panel undian GL (`acara.gl.*`) mencatat sendiri, dengan keterangan dan alasan, lewat UndianService dan controller-nya. */
+    'abaikan_rute' => ['log.*', 'ic.admin.log.*', 'ic.admin.acara.lokasi.cari', 'ic.admin.acara.gl.*'],
 
     /* Login gagal: teks tetap. Username yang diketik TIDAK dicatat (kadang yang terketik justru kata sandinya). */
     'akses' => [

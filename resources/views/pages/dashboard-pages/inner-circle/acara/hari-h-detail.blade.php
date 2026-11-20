@@ -97,10 +97,13 @@
                         </div>
                     </dl>
                     <p class="text-xs text-white/40">Undian dijadwalkan
-                        {{ $event->undian_efektif->locale('id')->translatedFormat('D, j M Y \p\u\k\u\l H.i') }} WIB. Panel
-                        undian
-                        (antrean, pemenang, undi sekarang) menyusul di fase berikutnya. Kehadiran pemenang GL dicatat lewat
-                        pemindaian QR dan tampil di tab GL gratis.</p>
+                        {{ $event->undian_efektif->locale('id')->translatedFormat('D, j M Y \p\u\k\u\l H.i') }} WIB.
+                        Kehadiran
+                        pemenang GL dicatat lewat pemindaian QR dan tampil di tab GL gratis.</p>
+                    <div>
+                        <a href="{{ route('ic.admin.acara.gl', $event->kode) }}" class="{{ $kelasTombol }}">
+                            <i class="bi bi-shuffle" aria-hidden="true"></i> Buka panel undian</a>
+                    </div>
                 @else
                     <p class="text-sm text-white/50">Acara ini belum punya kuota GL. Atur di halaman
                         <a class="underline underline-offset-4"

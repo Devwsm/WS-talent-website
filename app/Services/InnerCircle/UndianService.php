@@ -76,11 +76,11 @@ class UndianService
 
     /**
      * Undi sekarang oleh admin. `alasan` wajib (tercatat di Log), karena ini mengundi di luar jadwal biasa atau
-     * menyusul undian yang tertunda. Boleh dari status `belum`, `ditunda`, atau `tertunda`; tidak boleh bila sudah selesai.
+     * menyusul undian yang tertunda. `$pelaku` null = admin yang sedang masuk (dibaca dari sesi). Boleh dari status `belum`, `ditunda`, atau `tertunda`; tidak boleh bila sudah selesai.
      *
      * @return array{peserta: int, pemenang: int}
      */
-    public function undi(ic_event $event, string $pelaku, string $alasan): array
+    public function undi(ic_event $event, ?string $pelaku, string $alasan): array
     {
         $alasan = trim($alasan);
         if (mb_strlen($alasan) < 5) {
@@ -94,7 +94,7 @@ class UndianService
     }
 
     /** Tunda undian (antrean tetap terbuka, undian otomatis tidak jalan) sampai admin melanjutkan atau mengundi. */
-    public function tunda(ic_event $event, string $pelaku): void
+    public function tunda(ic_event $event, ?string $pelaku): void
     {
         if ($event->status_undian === ic_event::UNDIAN_SELESAI) {
             throw new GlGagal('Undian acara ini sudah selesai dan hasilnya terkunci.');
@@ -105,7 +105,7 @@ class UndianService
     }
 
     /** Lanjutkan undian yang ditunda: kembali ke jadwal. Bila waktunya sudah lewat, undian jalan di menit berikutnya. */
-    public function lanjutkan(ic_event $event, string $pelaku): void
+    public function lanjutkan(ic_event $event, ?string $pelaku): void
     {
         if (! in_array($event->status_undian, [ic_event::UNDIAN_DITUNDA, ic_event::UNDIAN_TERTUNDA], true)) {
             throw new GlGagal('Undian acara ini tidak sedang ditunda.');
@@ -225,7 +225,7 @@ class UndianService
         return $daftar;
     }
 
-    private function catat(string $pelaku, string $aksi, ic_event $event, ?string $tambahan = null): void
+    private function catat(?string $pelaku, string $aksi, ic_event $event, ?string $tambahan = null): void
     {
         $this->aktivitas->catat(
             $aksi,
