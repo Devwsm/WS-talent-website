@@ -49,17 +49,17 @@ class LokasiService
     }
 
     /**
-     * Periksa lokasi anggota terhadap titik acara. Acara tanpa titik lolos begitu saja (mengembalikan null).
+     * Periksa lokasi anggota terhadap titik acara. Lokasi WAJIB: acara tanpa titik tidak membuka check-in.
      *
      * @param  array{lat?: mixed, lng?: mixed, akurasi?: mixed}|null  $lokasi  kiriman browser anggota
-     * @return array{jarak: int, akurasi: int}|null  jarak ke titik acara dan akurasi GPS (meter), untuk dicatat
+     * @return array{jarak: int, akurasi: int}  jarak ke titik acara dan akurasi GPS (meter), untuk dicatat
      *
      * @throws CheckinGagal
      */
-    public function periksa(ic_event $event, ?array $lokasi): ?array
+    public function periksa(ic_event $event, ?array $lokasi): array
     {
         if (! $event->lokasi_aktif) {
-            return null;
+            throw new CheckinGagal('Titik lokasi acara ini belum diatur panitia, jadi check-in belum dibuka. Hubungi panitia di venue.');
         }
 
         if (! $lokasi || ! self::koordinatValid($lokasi['lat'] ?? null, $lokasi['lng'] ?? null)) {

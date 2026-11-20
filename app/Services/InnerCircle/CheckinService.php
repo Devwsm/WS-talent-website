@@ -3,6 +3,7 @@
 namespace App\Services\InnerCircle;
 
 use App\Models\ic_event;
+use App\Models\ic_gl_antrean;
 use App\Models\ic_poin;
 use App\Models\member;
 use Carbon\Carbon;
@@ -12,8 +13,12 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Aturan check-in WS Inner Circle (semua dicek di server):
- * anggota login, acara bisa check-in (bukan privat, ada venue), di dalam jendela waktu,
- * token cocok, dan belum pernah check-in di acara itu.
+ * anggota login, acara bisa check-in (bukan privat, ada venue, ada titik lokasi), di dalam jendela waktu,
+ * berada di dalam radius, dan belum pernah check-in di acara itu.
+ *
+ * Dua cara: `checkin` (pemindaian QR / kode, token harus cocok; untuk semua anggota, termasuk pemenang GL) dan
+ * `checkinMandiri` (tombol, tanpa token; DITUTUP untuk pemenang GL supaya poin tidak dobel). Poin ditentukan status GL,
+ * bukan cara check-in: pemenang GL mendapat poin GL, yang lain poin mandiri.
  *
  * Token menentukan acaranya. Kode acara dari halaman hanya petunjuk: kalau token cocok dengan
  * acara lain yang sedang dibuka, check-in dicatat ke acara milik token itu.
@@ -94,7 +99,59 @@ class CheckinService
 
         $event = $this->tentukanEvent($token, $kodeAcara, $sekarang);
 
-        // Acara dengan titik lokasi: HP harus di dalam radius. Yang dicatat hanya jarak dan akurasi, bukan koordinat anggota.
+        return $this->catat($anggota, $event, $lokasi);
+    }
+
+    /**
+     * Check-in mandiri (tombol, tanpa QR). Ditutup untuk pemenang GL gratis di acara itu: kehadiran mereka dicatat lewat
+     * pemindaian QR (poin GL), jadi tombol ini tidak boleh memberi poin kedua kali.
+     *
+     * @param  array{lat?: mixed, lng?: mixed, akurasi?: mixed}|null  $lokasi
+     *
+     * @throws CheckinGagal
+     */
+    public function checkinMandiri(member $anggota, string $kodeAcara, ?Carbon $sekarang = null, ?array $lokasi = null): ic_poin
+    {
+        $sekarang ??= now();
+
+        $event = ic_event::query()->where('kode', $kodeAcara)->first();
+        if (! $event) {
+            throw new CheckinGagal('Acara tidak ditemukan.');
+        }
+
+        $this->pastikanBisaCheckin($event, $sekarang);
+
+        if ($this->pemenangGl($anggota, $event)) {
+            throw new CheckinGagal('Kamu terpilih GL gratis di acara ini, jadi check-in dilakukan dengan memindai QR di pintu. Tombol check-in mandiri ditutup supaya poinmu tidak dobel.');
+        }
+
+        return $this->catat($anggota, $event, $lokasi);
+    }
+
+    /** Anggota ini pemenang GL gratis di acara itu (status menang di antrean). */
+    public function pemenangGl(member $anggota, ic_event $event): bool
+    {
+        return ic_gl_antrean::query()
+            ->where('event_id', $event->getKey())
+            ->where('member_id', $anggota->getKey())
+            ->where('status', ic_gl_antrean::MENANG)
+            ->exists();
+    }
+
+    /** Poin untuk satu kehadiran: nilai milik acara bila diisi, kalau tidak bawaan dari Aturan check-in. */
+    public function poinUntuk(ic_event $event, bool $pemenangGl): int
+    {
+        $aturan = app(IcAturan::class);
+
+        return $pemenangGl
+            ? (int) ($event->poin_gl ?? $aturan->poinGl())
+            : (int) ($event->poin_mandiri ?? $aturan->poinMandiri());
+    }
+
+    /** Periksa lokasi lalu tulis satu kehadiran (satu per anggota per acara, dijaga kunci baris dan kunci unik). */
+    private function catat(member $anggota, ic_event $event, ?array $lokasi): ic_poin
+    {
+        // HP harus di dalam radius titik acara. Yang dicatat hanya jarak dan akurasi, bukan koordinat anggota.
         $ukuran = $this->lokasi->periksa($event, $lokasi);
 
         try {
@@ -114,7 +171,7 @@ class CheckinService
 
                 return $this->poin->tambah(
                     $terkunci,
-                    (int) config('inner_circle.poin.kehadiran', 1000),
+                    $this->poinUntuk($event, $this->pemenangGl($terkunci, $event)),
                     'checkin',
                     'Check-in di ' . $event->venue,
                     $tipe['ikon'] ?? 'ticket',

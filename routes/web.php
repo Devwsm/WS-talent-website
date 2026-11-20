@@ -107,6 +107,7 @@ Route::prefix('/innercircle')->middleware('icAktif')->name('ic.')->group(functio
         Route::post('/hadiah/{target}/klaim', [memberController::class, 'ajukanKlaim'])->whereNumber('target')->name('hadiah.klaim')->middleware('throttle:ic-klaim');
         Route::get('/check-in', [memberController::class, 'checkin'])->name('checkin');
         Route::post('/check-in', [memberController::class, 'prosesCheckin'])->name('checkin.proses')->middleware(['icVerif', 'throttle:ic-checkin']);
+        Route::post('/check-in/mandiri', [memberController::class, 'prosesCheckinMandiri'])->name('checkin.mandiri')->middleware(['icVerif', 'throttle:ic-checkin']);
         Route::get('/komunitas', [memberController::class, 'komunitas'])->name('komunitas');
         Route::post('/kenangan', [kenanganController::class, 'simpan'])->name('kenangan.simpan')->middleware(['icVerif', 'throttle:ic-kenangan']);
         Route::delete('/kenangan/{id}', [kenanganController::class, 'hapus'])->whereNumber('id')->name('kenangan.hapus')->middleware('throttle:ic-hapus-kenangan');

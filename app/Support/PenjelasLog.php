@@ -105,6 +105,7 @@ class PenjelasLog
         'ic.hadiah' => 'Hadiah anggota Inner Circle',
         'ic.checkin' => 'Check-in Inner Circle',
         'ic.checkin.proses' => 'Check-in Inner Circle',
+        'ic.checkin.mandiri' => 'Check-in mandiri Inner Circle',
         'ic.komunitas' => 'Komunitas Inner Circle',
         'ic.profil' => 'Profil anggota Inner Circle',
     ];

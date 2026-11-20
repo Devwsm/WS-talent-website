@@ -27,11 +27,17 @@ class IcAturan
         'jendela_tutup_hari' => 'aturan.jendela_tutup_hari',
         'radius_bawaan_m' => 'aturan.radius_bawaan_m',
         'akurasi_maks_m' => 'aturan.akurasi_maks_m',
+        'poin_gl' => 'aturan.poin_gl',
+        'poin_mandiri' => 'aturan.poin_mandiri',
     ];
+
+    /** Batas isian poin kehadiran per check-in. */
+    public const POIN_MIN = 1;
+    public const POIN_MAKS = 1000000;
 
     public function __construct(private readonly IcKonten $konten) {}
 
-    /** Nilai bawaan dari config (bukan dari CMS). @return array{jendela_buka: string, jendela_tutup: string, jendela_tutup_hari: int, radius_bawaan_m: int, akurasi_maks_m: int} */
+    /** Nilai bawaan dari config (bukan dari CMS). @return array{jendela_buka: string, jendela_tutup: string, jendela_tutup_hari: int, radius_bawaan_m: int, akurasi_maks_m: int, poin_gl: int, poin_mandiri: int} */
     public function bawaan(): array
     {
         return [
@@ -40,6 +46,8 @@ class IcAturan
             'jendela_tutup_hari' => (int) config('inner_circle.jendela.tutup_hari'),
             'radius_bawaan_m' => (int) config('inner_circle.lokasi.radius_bawaan_m'),
             'akurasi_maks_m' => (int) config('inner_circle.lokasi.akurasi_maks_m'),
+            'poin_gl' => (int) config('inner_circle.poin.gl'),
+            'poin_mandiri' => (int) config('inner_circle.poin.mandiri'),
         ];
     }
 
@@ -54,6 +62,8 @@ class IcAturan
         $hari = $this->konten->nilaiMentah(self::KUNCI['jendela_tutup_hari']);
         $radius = $this->konten->nilaiMentah(self::KUNCI['radius_bawaan_m']);
         $akurasi = $this->konten->nilaiMentah(self::KUNCI['akurasi_maks_m']);
+        $poinGl = $this->konten->nilaiMentah(self::KUNCI['poin_gl']);
+        $poinMandiri = $this->konten->nilaiMentah(self::KUNCI['poin_mandiri']);
 
         return [
             'jendela_buka' => self::jamValid($buka) ? $buka : $a['jendela_buka'],
@@ -61,6 +71,8 @@ class IcAturan
             'jendela_tutup_hari' => in_array($hari, ['0', '1'], true) ? (int) $hari : $a['jendela_tutup_hari'],
             'radius_bawaan_m' => $this->dalamBatas($radius, (int) $cfg['radius_min_m'], (int) $cfg['radius_maks_m']) ?? $a['radius_bawaan_m'],
             'akurasi_maks_m' => $this->dalamBatas($akurasi, (int) $cfg['akurasi_isian_min_m'], (int) $cfg['akurasi_isian_maks_m']) ?? $a['akurasi_maks_m'],
+            'poin_gl' => $this->dalamBatas($poinGl, self::POIN_MIN, self::POIN_MAKS) ?? $a['poin_gl'],
+            'poin_mandiri' => $this->dalamBatas($poinMandiri, self::POIN_MIN, self::POIN_MAKS) ?? $a['poin_mandiri'],
         ];
     }
 
@@ -72,6 +84,18 @@ class IcAturan
     public function akurasiMaks(): int
     {
         return (int) $this->efektif()['akurasi_maks_m'];
+    }
+
+    /** Poin bawaan untuk pemenang GL yang hadir (acara boleh punya nilai sendiri di ic_events.poin_gl). */
+    public function poinGl(): int
+    {
+        return (int) $this->efektif()['poin_gl'];
+    }
+
+    /** Poin bawaan untuk yang hadir tanpa menang GL (beli tiket sendiri). */
+    public function poinMandiri(): int
+    {
+        return (int) $this->efektif()['poin_mandiri'];
     }
 
     /** Saat check-in dibuka untuk acara bertanggal $tanggal, menurut aturan bawaan saat ini (atau $aturan bila diberikan). */
@@ -89,7 +113,7 @@ class IcAturan
         return $this->pada($tanggal->copy()->addDays((int) $aturan['jendela_tutup_hari']), (string) $aturan['jendela_tutup']);
     }
 
-    /** Kalimat siap tampil, mis. "tanggal show pukul 12.00 sampai hari berikutnya pukul 06.00 WIB". */
+    /** Kalimat siap tampil, mis. "tanggal show pukul 22.00 sampai hari berikutnya pukul 04.00 WIB". */
     public function ringkasan(): string
     {
         $a = $this->efektif();

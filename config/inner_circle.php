@@ -31,19 +31,22 @@ return [
 
     /*
     | Poin (menggantikan stempel; 1 stempel lama = 1.000 poin).
-    | - kehadiran: poin untuk satu check-in valid. Fase 5 memindahkannya ke Aturan check-in di CMS
-    |   (GL 1.000, mandiri 2.000).
+    | - gl: poin kehadiran pemenang GL gratis (dicatat lewat pemindaian QR di pintu). bawaan 1.000.
+    | - mandiri: poin kehadiran yang tidak menang GL (beli tiket sendiri). bawaan 2.000.
+    |   Keduanya hanya cadangan: nilai dari CMS (Konten > Aturan check-in) yang dipakai bila ada (IcAturan), dan acara
+    |   boleh punya poin sendiri (ic_events.poin_gl / poin_mandiri). Poin yang sudah diberikan tidak pernah berubah.
     | - manual_maks: batas sekali tambah manual oleh admin. koreksi_maks: batas sekali kurangi (koreksi).
     */
     'poin' => [
-        'kehadiran' => 1000,
+        'gl' => 1000,
+        'mandiri' => 2000,
         'manual_maks' => 10000,
         'koreksi_maks' => 100000,
     ],
 
     /*
-    | Check-in dengan lokasi. Acara yang punya titik lokasi (dashboard > Acara & QR) hanya bisa check-in bila HP
-    | anggota berada di dalam radius titik itu; acara tanpa titik tetap bisa check-in seperti sebelumnya.
+    | Check-in dengan lokasi. Lokasi WAJIB: acara hanya bisa check-in bila punya titik lokasi (CMS > Acara > Atur acara)
+    | dan HP anggota berada di dalam radius titik itu. Acara tanpa titik tidak membuka check-in.
     | - radius_bawaan_m: radius bila petugas tidak mengisi (meter), selalu dijepit antara radius_min_m dan radius_maks_m.
     | - akurasi_maks_m: tolak bila HP melaporkan akurasi GPS lebih buruk dari ini (sinyal terlalu kasar untuk dipercaya).
     | - toleransi_akurasi_m: keringanan untuk GPS kasar di dalam gedung. Jarak dikurangi akurasi HP (paling banyak sebesar
@@ -77,12 +80,13 @@ return [
     /*
     | Jendela check-in bawaan untuk acara yang tidak punya jendela sendiri: dibuka pada jam `buka` di tanggal show,
     | ditutup pada jam `tutup` setelah `tutup_hari` hari (1 = H+1, karena show klub selesai lewat tengah malam).
+    | Bawaan aturan baru: 22.00 sampai H+1 04.00 WIB.
     | Nilai ini hanya cadangan: bila admin mengubahnya di CMS (Konten > Aturan check-in), nilai dari CMS yang dipakai
     | (lihat App\Services\InnerCircle\IcAturan).
     */
     'jendela' => [
-        'buka' => '12:00',
-        'tutup' => '06:00',
+        'buka' => '22:00',
+        'tutup' => '04:00',
         'tutup_hari' => 1,
     ],
 

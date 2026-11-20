@@ -20,9 +20,9 @@ class CheckinTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // Bekukan jam di malam hari WIB supaya jendela check-in "hari ini" (12.00 s.d. H+1 06.00) selalu terbuka,
+        // Bekukan jam di malam hari WIB supaya jendela check-in "hari ini" (22.00 s.d. H+1 04.00) selalu terbuka,
         // berapa pun jam tes dijalankan.
-        Carbon::setTestNow(now()->setTime(20, 0));
+        Carbon::setTestNow(now()->setTime(23, 0));
     }
 
     protected function tearDown(): void
@@ -41,19 +41,24 @@ class CheckinTest extends TestCase
         return $m;
     }
 
+    /** Acara uji selalu punya titik lokasi: pada aturan baru check-in tanpa titik tidak dibuka. */
     private function acara(array $o = []): ic_event
     {
-        return app(AcaraService::class)->buat($o + [
+        $e = app(AcaraService::class)->buat($o + [
             'tanggal' => now()->toDateString(),
             'tipe' => 'club',
             'venue' => 'Superhouse Satrio',
             'kota' => 'Jakarta',
         ]);
+        $e->forceFill(['lokasi_lat' => -6.2088, 'lokasi_lng' => 106.8456, 'lokasi_radius' => 150])->save();
+
+        return $e;
     }
 
     private function checkin(member $m, string $kode, ?string $acara = null)
     {
-        return $this->actingAs($m, 'member')->post(route('ic.checkin.proses'), array_filter(['kode' => $kode, 'acara' => $acara]));
+        // HP uji berada tepat di titik acara.
+        return $this->actingAs($m, 'member')->post(route('ic.checkin.proses'), array_filter(['kode' => $kode, 'acara' => $acara]) + ['lat' => -6.2088, 'lng' => 106.8456, 'akurasi' => 20]);
     }
 
     public function test_halaman_check_in_mengisi_kode_dan_acara_dari_token_qr(): void
@@ -70,14 +75,14 @@ class CheckinTest extends TestCase
             ->assertOk()->assertSee('tidak cocok dengan acara');
     }
 
-    public function test_check_in_berhasil_menambah_satu_poin_dan_masuk_riwayat(): void
+    public function test_check_in_berhasil_menambah_poin_mandiri_dan_masuk_riwayat(): void
     {
         $m = $this->anggota();
         $e = $this->acara();
 
         $this->checkin($m, $e->token, $e->kode)->assertRedirect(route('ic.beranda'));
 
-        $this->assertSame(1000, $m->fresh()->poin_total);
+        $this->assertSame(2000, $m->fresh()->poin_total);
         $baris = ic_poin::first();
         $this->assertSame('checkin', $baris->sumber);
         $this->assertSame($e->id_event, $baris->event_id);
@@ -103,7 +108,7 @@ class CheckinTest extends TestCase
         $this->checkin($m, $e->token, $e->kode)->assertSessionHasErrors('kode');
 
         $this->assertSame(1, ic_poin::count());
-        $this->assertSame(1000, $m->fresh()->poin_total);
+        $this->assertSame(2000, $m->fresh()->poin_total);
     }
 
     public function test_token_lama_setelah_dibuat_ulang_ditolak(): void
@@ -137,15 +142,16 @@ class CheckinTest extends TestCase
         $m = $this->anggota();
         $e = $this->acara(['tanggal' => '2026-10-10']);
 
-        Carbon::setTestNow('2026-10-10 11:59:00');
+        // Bawaan: dibuka 22.00 di tanggal show, ditutup 04.00 di H+1.
+        Carbon::setTestNow('2026-10-10 21:59:00');
         $this->checkin($m, $e->token, $e->kode)->assertSessionHasErrors('kode');
 
-        Carbon::setTestNow('2026-10-11 06:01:00');
+        Carbon::setTestNow('2026-10-11 04:01:00');
         $this->checkin($m, $e->token, $e->kode)->assertSessionHasErrors('kode');
         $this->assertSame(0, ic_poin::count());
 
-        // Show klub selesai lewat tengah malam: H+1 pukul 05.59 masih boleh.
-        Carbon::setTestNow('2026-10-11 05:59:00');
+        // Show klub selesai lewat tengah malam: H+1 pukul 03.59 masih boleh.
+        Carbon::setTestNow('2026-10-11 03:59:00');
         $this->checkin($m, $e->token, $e->kode)->assertRedirect(route('ic.beranda'));
         $this->assertSame(1, ic_poin::count());
     }

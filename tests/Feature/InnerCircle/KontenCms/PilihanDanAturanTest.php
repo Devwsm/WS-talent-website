@@ -181,14 +181,14 @@ class PilihanDanAturanTest extends TestCase
 
     private function aturan(array $ubah = []): array
     {
-        return $ubah + ['jendela_buka' => '12:00', 'jendela_tutup' => '06:00', 'jendela_tutup_hari' => 1, 'radius_bawaan_m' => 150, 'akurasi_maks_m' => 150];
+        return $ubah + ['jendela_buka' => '22:00', 'jendela_tutup' => '04:00', 'jendela_tutup_hari' => 1, 'radius_bawaan_m' => 150, 'akurasi_maks_m' => 150, 'poin_gl' => 1000, 'poin_mandiri' => 2000];
     }
 
     public function test_tanpa_perubahan_aturan_sama_persis_dan_tidak_ada_baris(): void
     {
         $e = $this->acara('2027-03-10');
-        $this->assertSame('2027-03-10 12:00', $e->jendela_buka->format('Y-m-d H:i'));
-        $this->assertSame('2027-03-11 06:00', $e->jendela_tutup->format('Y-m-d H:i'));
+        $this->assertSame('2027-03-10 22:00', $e->jendela_buka->format('Y-m-d H:i'));
+        $this->assertSame('2027-03-11 04:00', $e->jendela_tutup->format('Y-m-d H:i'));
         $this->assertSame(150, $e->radius_efektif);
 
         $this->admin()->post(route('ic.admin.konten.aturan.simpan'), $this->aturan())->assertSessionHas('success', 'Tidak ada aturan yang berubah.');
@@ -208,8 +208,8 @@ class PilihanDanAturanTest extends TestCase
         $this->assertSame('2027-04-02 03:00', $baru->jendela_tutup->format('Y-m-d H:i'));
 
         $lama->refresh();
-        $this->assertSame('2027-03-10 12:00', $lama->jendela_buka->format('Y-m-d H:i'));
-        $this->assertSame('2027-03-11 06:00', $lama->jendela_tutup->format('Y-m-d H:i'));
+        $this->assertSame('2027-03-10 22:00', $lama->jendela_buka->format('Y-m-d H:i'));
+        $this->assertSame('2027-03-11 04:00', $lama->jendela_tutup->format('Y-m-d H:i'));
         $this->assertSame('2027-03-12 08:00', $sendiri->refresh()->jendela_buka->format('Y-m-d H:i'));
     }
 
@@ -252,6 +252,9 @@ class PilihanDanAturanTest extends TestCase
         $tolak(['radius_bawaan_m' => 5], 'radius_bawaan_m');
         $tolak(['radius_bawaan_m' => 99999], 'radius_bawaan_m');
         $tolak(['akurasi_maks_m' => 10], 'akurasi_maks_m');
+        $tolak(['poin_gl' => 0], 'poin_gl');
+        $tolak(['poin_mandiri' => 1000001], 'poin_mandiri');
+        $tolak(['poin_gl' => 'abc'], 'poin_gl');
         $this->assertSame(0, ic_pengaturan::count());
     }
 
@@ -271,7 +274,7 @@ class PilihanDanAturanTest extends TestCase
         ic_pengaturan::create(['kunci' => 'aturan.radius_bawaan_m', 'nilai' => '999999']);
         app(\App\Services\InnerCircle\IcKonten::class)->lupakan();
 
-        $this->assertSame('12:00', app(IcAturan::class)->efektif()['jendela_buka']);
+        $this->assertSame('22:00', app(IcAturan::class)->efektif()['jendela_buka']);
         $this->assertSame(150, app(IcAturan::class)->radiusBawaan());
     }
 

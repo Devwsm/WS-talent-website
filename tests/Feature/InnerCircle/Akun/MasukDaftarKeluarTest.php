@@ -20,9 +20,9 @@ class MasukDaftarKeluarTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // Bekukan jam di malam hari WIB supaya jendela check-in "hari ini" (12.00 s.d. H+1 06.00) selalu terbuka,
+        // Bekukan jam di malam hari WIB supaya jendela check-in "hari ini" (22.00 s.d. H+1 04.00) selalu terbuka,
         // berapa pun jam tes dijalankan.
-        Carbon::setTestNow(now()->setTime(20, 0));
+        Carbon::setTestNow(now()->setTime(23, 0));
     }
 
     protected function tearDown(): void
@@ -41,19 +41,24 @@ class MasukDaftarKeluarTest extends TestCase
         return $m;
     }
 
+    /** Acara uji selalu punya titik lokasi: pada aturan baru check-in tanpa titik tidak dibuka. */
     private function acara(array $o = []): ic_event
     {
-        return app(AcaraService::class)->buat($o + [
+        $e = app(AcaraService::class)->buat($o + [
             'tanggal' => now()->toDateString(),
             'tipe' => 'club',
             'venue' => 'Superhouse Satrio',
             'kota' => 'Jakarta',
         ]);
+        $e->forceFill(['lokasi_lat' => -6.2088, 'lokasi_lng' => 106.8456, 'lokasi_radius' => 150])->save();
+
+        return $e;
     }
 
     private function checkin(member $m, string $kode, ?string $acara = null)
     {
-        return $this->actingAs($m, 'member')->post(route('ic.checkin.proses'), array_filter(['kode' => $kode, 'acara' => $acara]));
+        // HP uji berada tepat di titik acara.
+        return $this->actingAs($m, 'member')->post(route('ic.checkin.proses'), array_filter(['kode' => $kode, 'acara' => $acara]) + ['lat' => -6.2088, 'lng' => 106.8456, 'akurasi' => 20]);
     }
 
     public function test_flag_mati_membuat_route_404(): void

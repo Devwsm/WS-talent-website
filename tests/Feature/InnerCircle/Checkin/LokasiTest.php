@@ -28,7 +28,7 @@ class LokasiTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        Carbon::setTestNow(now()->setTime(20, 0));
+        Carbon::setTestNow(now()->setTime(23, 0));
     }
 
     protected function tearDown(): void
@@ -85,13 +85,14 @@ class LokasiTest extends TestCase
         $this->assertSame('2,4 km', LokasiService::formatJarak(2400));
     }
 
-    public function test_acara_tanpa_titik_tetap_bisa_check_in_tanpa_lokasi(): void
+    public function test_acara_tanpa_titik_menolak_check_in_walau_lokasi_dikirim(): void
     {
         $m = $this->anggota();
         $e = $this->acara();
 
-        $this->checkin($m, $e)->assertRedirect(route('ic.beranda'));
-        $this->assertNull(ic_poin::first()->jarak_m);
+        $this->checkin($m, $e, ['lat' => self::LAT, 'lng' => self::LNG, 'akurasi' => 10])
+            ->assertSessionHasErrors(['kode' => 'Titik lokasi acara ini belum diatur panitia, jadi check-in belum dibuka. Hubungi panitia di venue.']);
+        $this->assertSame(0, ic_poin::count());
     }
 
     public function test_acara_bertitik_menolak_check_in_tanpa_lokasi(): void
@@ -231,7 +232,7 @@ class LokasiTest extends TestCase
         $this->assertEqualsWithDelta(-6.9, $e->fresh()->lokasi_lat, 0.00001);
     }
 
-    public function test_menghapus_titik_mematikan_pemeriksaan_lokasi(): void
+    public function test_menghapus_titik_menutup_check_in(): void
     {
         $m = $this->anggota();
         $e = $this->acara($this->titik());
@@ -239,7 +240,8 @@ class LokasiTest extends TestCase
         $this->admin()->delete(route('ic.admin.acara.lokasi.hapus', $e->kode))->assertRedirect();
 
         $this->assertFalse($e->fresh()->lokasi_aktif);
-        $this->checkin($m, $e->fresh())->assertRedirect(route('ic.beranda'));
+        $this->checkin($m, $e->fresh(), ['lat' => self::LAT, 'lng' => self::LNG, 'akurasi' => 10])->assertSessionHasErrors('kode');
+        $this->assertSame(0, ic_poin::count());
     }
 
     public function test_cari_alamat_mengembalikan_saran_dan_menangani_galat(): void

@@ -3,6 +3,7 @@
 namespace App\Http\Requests\InnerCircle;
 
 use App\Services\InnerCircle\IcBagian;
+use App\Services\InnerCircle\IcAturan;
 use Illuminate\Foundation\Http\FormRequest;
 
 /** Simpan aturan bawaan check-in (tab Konten, bagian Aturan check-in). Batas isian diambil dari config/inner_circle.php. */
@@ -39,6 +40,8 @@ class simpanAturanRequest extends FormRequest
             'jendela_tutup_hari' => ['required', 'in:0,1'],
             'radius_bawaan_m' => ['required', 'integer', 'between:' . $cfg['radius_min_m'] . ',' . $cfg['radius_maks_m']],
             'akurasi_maks_m' => ['required', 'integer', 'between:' . $cfg['akurasi_isian_min_m'] . ',' . $cfg['akurasi_isian_maks_m']],
+            'poin_gl' => ['required', 'integer', 'between:' . IcAturan::POIN_MIN . ',' . IcAturan::POIN_MAKS],
+            'poin_mandiri' => ['required', 'integer', 'between:' . IcAturan::POIN_MIN . ',' . IcAturan::POIN_MAKS],
         ];
     }
 
@@ -50,6 +53,8 @@ class simpanAturanRequest extends FormRequest
             'jendela_tutup_hari' => '"Hari penutupan"',
             'radius_bawaan_m' => '"Radius bawaan"',
             'akurasi_maks_m' => '"Akurasi GPS maksimal"',
+            'poin_gl' => '"Poin GL gratis"',
+            'poin_mandiri' => '"Poin check-in mandiri"',
         ];
     }
 
@@ -57,16 +62,16 @@ class simpanAturanRequest extends FormRequest
     {
         return [
             'required' => ':attribute wajib diisi.',
-            'regex' => ':attribute harus berformat jam, mis. 12:00.',
+            'regex' => ':attribute harus berformat jam, mis. 22:00.',
             'in' => ':attribute tidak dikenal.',
             'integer' => ':attribute harus berupa angka bulat.',
-            'between' => ':attribute harus antara :min dan :max meter.',
+            'between' => ':attribute harus antara :min dan :max.',
         ];
     }
 
     /** @return array<string, string> */
     public function nilai(): array
     {
-        return $this->safe()->only(['jendela_buka', 'jendela_tutup', 'jendela_tutup_hari', 'radius_bawaan_m', 'akurasi_maks_m']);
+        return $this->safe()->only(['jendela_buka', 'jendela_tutup', 'jendela_tutup_hari', 'radius_bawaan_m', 'akurasi_maks_m', 'poin_gl', 'poin_mandiri']);
     }
 }

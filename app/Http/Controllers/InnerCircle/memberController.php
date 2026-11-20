@@ -4,6 +4,7 @@ namespace App\Http\Controllers\InnerCircle;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\InnerCircle\ajukanKlaimRequest;
+use App\Http\Requests\InnerCircle\checkinMandiriRequest;
 use App\Http\Requests\InnerCircle\checkinRequest;
 use App\Models\ic_broadcast;
 use App\Models\ic_event;
@@ -151,6 +152,26 @@ class memberController extends Controller
             'kodeIsian' => $tokenQr ?? '',
             'galatKode' => $galatKode,
         ]);
+    }
+
+    /** Check-in mandiri (tombol, tanpa QR). Ditutup untuk pemenang GL gratis; lihat CheckinService::checkinMandiri. */
+    public function prosesCheckinMandiri(checkinMandiriRequest $request, CheckinService $checkin): RedirectResponse
+    {
+        $anggota = $this->anggota();
+        $kodeAcara = $request->validated('acara');
+
+        $lokasi = $request->filled('lat') && $request->filled('lng')
+            ? ['lat' => $request->validated('lat'), 'lng' => $request->validated('lng'), 'akurasi' => $request->validated('akurasi')]
+            : null;
+
+        try {
+            $poin = $checkin->checkinMandiri($anggota, $kodeAcara, null, $lokasi);
+        } catch (CheckinGagal $e) {
+            return redirect(route('ic.checkin', ['acara' => $kodeAcara]))->withErrors(['kode' => $e->getMessage()]);
+        }
+
+        return redirect()->route('ic.beranda')
+            ->with('ic_toast', 'Check-in berhasil! +' . ic_angka($poin->jumlah) . ' poin. ' . $poin->judul . '.');
     }
 
     public function prosesCheckin(checkinRequest $request, CheckinService $checkin): RedirectResponse

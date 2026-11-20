@@ -168,7 +168,7 @@ class ic_event extends Model
     }
 
     /**
-     * Bawaan: aturan jendela dari CMS (cadangan config: tanggal show pukul 12.00 WIB). Bisa diganti per acara lewat
+     * Bawaan: aturan jendela dari CMS (cadangan config: tanggal show pukul 22.00 WIB). Bisa diganti per acara lewat
      * kolom jendela_mulai. Lihat IcAturan: mengubah bawaan tidak menggeser acara yang sudah ada.
      */
     protected function jendelaBuka(): Attribute
@@ -176,7 +176,7 @@ class ic_event extends Model
         return Attribute::get(fn() => $this->jendela_mulai ?? app(IcAturan::class)->bukaUntuk($this->tanggal));
     }
 
-    /** Bawaan: aturan jendela dari CMS (cadangan config: H+1 pukul 06.00 WIB, karena show klub selesai lewat tengah malam). */
+    /** Bawaan: aturan jendela dari CMS (cadangan config: H+1 pukul 04.00 WIB, karena show klub selesai lewat tengah malam). */
     protected function jendelaTutup(): Attribute
     {
         return Attribute::get(fn() => $this->jendela_selesai ?? app(IcAturan::class)->tutupUntuk($this->tanggal));

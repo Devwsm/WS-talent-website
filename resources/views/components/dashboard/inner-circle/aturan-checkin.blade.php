@@ -14,7 +14,7 @@
         <h2 id="judul-aturan-checkin" class="font-bold uppercase tracking-wide text-sm flex items-center gap-2">
             <i class="bi bi-sliders text-white/50" aria-hidden="true"></i> Aturan check-in
         </h2>
-        <p class="text-xs text-white/40 mt-1">Aturan bawaan untuk acara baru. Acara yang punya jendela atau radius
+        <p class="text-xs text-white/40 mt-1">Aturan bawaan untuk acara baru. Acara yang punya jendela, radius, atau poin
             sendiri
             tidak terpengaruh, dan acara yang sudah ada tetap memakai aturan lamanya saat bawaan diubah.</p>
     </div>
@@ -79,12 +79,37 @@
             </div>
         </div>
 
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1.5 min-w-0">
+                <label for="f-poin-gl" class="{{ $kelasLabel }}">Poin GL gratis (scan QR)</label>
+                <input type="number" inputmode="numeric" id="f-poin-gl" name="poin_gl" required
+                    min="{{ \App\Services\InnerCircle\IcAturan::POIN_MIN }}"
+                    max="{{ \App\Services\InnerCircle\IcAturan::POIN_MAKS }}" value="{{ $v('poin_gl') }}"
+                    class="{{ $kelasInput }}">
+                <p class="{{ $kelasBantu }}">Untuk pemenang GL yang hadir. Bawaan
+                    {{ ic_angka($aturanBawaan['poin_gl']) }} poin.
+                    Pemenang GL tidak bisa check-in mandiri, kehadirannya dicatat lewat pemindaian QR.</p>
+            </div>
+            <div class="flex flex-col gap-1.5 min-w-0">
+                <label for="f-poin-mandiri" class="{{ $kelasLabel }}">Poin check-in mandiri</label>
+                <input type="number" inputmode="numeric" id="f-poin-mandiri" name="poin_mandiri" required
+                    min="{{ \App\Services\InnerCircle\IcAturan::POIN_MIN }}"
+                    max="{{ \App\Services\InnerCircle\IcAturan::POIN_MAKS }}" value="{{ $v('poin_mandiri') }}"
+                    class="{{ $kelasInput }}">
+                <p class="{{ $kelasBantu }}">Untuk yang tidak menang GL (beli tiket sendiri). Bawaan
+                    {{ ic_angka($aturanBawaan['poin_mandiri']) }} poin. Acara boleh punya poin sendiri di halaman Atur
+                    acara.
+                    Poin yang sudah diberikan tidak berubah.</p>
+            </div>
+        </div>
+
         <div class="flex flex-wrap items-center gap-4">
             <button type="submit"
                 class="h-11 px-5 inline-flex items-center gap-2 text-white font-bold uppercase tracking-widest text-xs bg-red-950 hover:bg-red-900 active:scale-95 transition rounded-lg">
                 <i class="bi bi-check2-circle" aria-hidden="true"></i> Simpan aturan check-in</button>
             <button type="submit" formaction="{{ route('ic.admin.konten.aturan.bawaan') }}" formnovalidate
-                class="min-h-11 text-xs text-white/50 underline underline-offset-4 hover:text-white">Kembalikan semua ke
+                class="min-h-11 text-xs text-white/50 underline underline-offset-4 hover:text-white">Kembalikan semua
+                ke
                 bawaan</button>
         </div>
     </form>
