@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Concerns;
 
 use App\Models\ic_claim;
+use App\Models\ic_pemeriksaan;
+use App\Models\ic_penanda;
 use Illuminate\Http\Request;
 
 /**
@@ -16,6 +18,9 @@ trait PembantuHalamanAdminIc
     {
         return view('pages.dashboard-pages.inner-circle.' . $tab, $data + [
             'jumlahKlaimMenunggu' => ic_claim::query()->whereIn('status', ic_claim::statusMenunggu())->count(),
+            // Lencana chip Acara > Pemeriksaan (Fase 5B): pengajuan menunggu + penanda yang belum ditinjau.
+            'jumlahPemeriksaanMenunggu' => ic_pemeriksaan::query()->where('status', ic_pemeriksaan::MENUNGGU)->count()
+                + ic_penanda::query()->where('status', ic_penanda::BARU)->count(),
         ]);
     }
 

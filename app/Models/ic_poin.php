@@ -28,6 +28,7 @@ class ic_poin extends Model
         'catatan',
         'jarak_m',
         'akurasi_m',
+        'sidik_perangkat',
         'dicatat_oleh',
     ];
 

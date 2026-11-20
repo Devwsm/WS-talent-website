@@ -91,5 +91,6 @@
 @endsection
 
 @push('modal')
-    <x-inner-circle.lembar-checkin :event-dipilih="$eventDipilih" :kode-isian="$kodeIsian" :galat-halaman="$galatHalaman" :boleh-mandiri="$bolehMandiri" />
+    <x-inner-circle.lembar-checkin :event-dipilih="$eventDipilih" :kode-isian="$kodeIsian" :galat-halaman="$galatHalaman" :boleh-mandiri="$bolehMandiri"
+        :ajukan="$ajukan" />
 @endpush

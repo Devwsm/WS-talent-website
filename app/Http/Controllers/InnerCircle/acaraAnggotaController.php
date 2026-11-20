@@ -9,6 +9,7 @@ use App\Models\member;
 use App\Services\InnerCircle\CheckinService;
 use App\Services\InnerCircle\GlGagal;
 use App\Services\InnerCircle\GlService;
+use App\Services\InnerCircle\PemeriksaanService;
 use App\Services\InnerCircle\UndianService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -50,6 +51,8 @@ class acaraAnggotaController extends Controller
             'waktuUndian' => $event->undian_efektif,
             'poinMandiri' => $checkin->poinUntuk($event, false),
             'poinGl' => $checkin->poinUntuk($event, true),
+            // Pemeriksaan kehadiran (Fase 5B): formulir ajukan bila GPS barusan gagal, dan status pengajuan yang sudah ada.
+            'ajukan' => app(PemeriksaanService::class)->tawaran($anggota, $event),
         ]);
     }
 

@@ -10,10 +10,10 @@
     class="ic-poster-kartu {{ $bisaDibuka ? '' : 'is-nonaktif' }}">
     <span class="ic-poster-kartu__gambar ic-warna-{{ $tipe['warna'] }}">
         @if ($event->poster_url)
-            <img src="{{ $event->poster_url }}" alt="Poster {{ $event->venue }}" width="300" height="400" loading="lazy"
-                decoding="async">
+            <img class="ic-foto-poster" src="{{ $event->poster_url }}" alt="Poster {{ $event->venue }}" width="300"
+                height="400" loading="lazy" decoding="async">
         @else
-            <x-inner-circle.ikon :nama="$tipe['ikon']" kelas="ic-ikon--event" />
+            <x-inner-circle.poster-kosong :tipe="$tipe" />
         @endif
         @if ($event->sudah_checkin)
             <span class="ic-poster-kartu__lencana"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Sudah

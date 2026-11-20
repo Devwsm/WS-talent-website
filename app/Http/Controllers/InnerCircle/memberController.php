@@ -14,6 +14,8 @@ use App\Models\ic_poin;
 use App\Models\member;
 use App\Services\InnerCircle\CheckinGagal;
 use App\Services\InnerCircle\CheckinService;
+use App\Services\InnerCircle\PemeriksaanService;
+use App\Support\SidikPerangkat;
 use App\Services\InnerCircle\ClaimService;
 use App\Services\InnerCircle\KenanganService;
 use App\Services\InnerCircle\KlaimGagal;
@@ -174,6 +176,7 @@ class memberController extends Controller
             'kodeIsian' => $tokenQr ?? '',
             'galatKode' => $galatKode,
             'bolehMandiri' => $eventDipilih !== null && ! $checkin->pemenangGl($anggota, $eventDipilih),
+            'ajukan' => app(PemeriksaanService::class)->tawaran($anggota, $eventDipilih),
         ]);
     }
 
@@ -188,8 +191,10 @@ class memberController extends Controller
             : null;
 
         try {
-            $poin = $checkin->checkinMandiri($anggota, $kodeAcara, null, $lokasi);
+            $poin = $checkin->checkinMandiri($anggota, $kodeAcara, null, $lokasi, SidikPerangkat::untuk($request));
         } catch (CheckinGagal $e) {
+            app(PemeriksaanService::class)->simpanGagalSesi($e);
+
             return redirect($this->tujuanGalat($request, $kodeAcara, ['acara' => $kodeAcara]))->withErrors(['kode' => $e->getMessage()]);
         }
 
@@ -208,8 +213,10 @@ class memberController extends Controller
             : null;
 
         try {
-            $poin = $checkin->checkin($anggota, $request->validated('kode'), $kodeAcara, null, $lokasi);
+            $poin = $checkin->checkin($anggota, $request->validated('kode'), $kodeAcara, null, $lokasi, SidikPerangkat::untuk($request));
         } catch (CheckinGagal $e) {
+            app(PemeriksaanService::class)->simpanGagalSesi($e);
+
             // Kembali ke halaman yang sama dengan acaranya terpilih: lembar check-in terbuka lagi dan menampilkan galatnya.
             return redirect($this->tujuanGalat($request, $kodeAcara, array_filter(['acara' => $kodeAcara])))
                 ->withErrors(['kode' => $e->getMessage()])

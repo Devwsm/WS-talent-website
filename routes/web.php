@@ -7,6 +7,8 @@ use App\Http\Controllers\InnerCircle\acaraController;
 use App\Http\Controllers\InnerCircle\acaraAnggotaController;
 use App\Http\Controllers\InnerCircle\acaraGlController;
 use App\Http\Controllers\InnerCircle\acaraHariHController;
+use App\Http\Controllers\InnerCircle\acaraPemeriksaanController;
+use App\Http\Controllers\InnerCircle\pemeriksaanController;
 use App\Http\Controllers\InnerCircle\adminController;
 use App\Http\Controllers\InnerCircle\akunController;
 use App\Http\Controllers\InnerCircle\emailAdminController;
@@ -110,6 +112,8 @@ Route::prefix('/innercircle')->middleware('icAktif')->name('ic.')->group(functio
         Route::get('/check-in', [memberController::class, 'checkin'])->name('checkin');
         Route::post('/check-in', [memberController::class, 'prosesCheckin'])->name('checkin.proses')->middleware(['icVerif', 'throttle:ic-checkin']);
         Route::post('/check-in/mandiri', [memberController::class, 'prosesCheckinMandiri'])->name('checkin.mandiri')->middleware(['icVerif', 'throttle:ic-checkin']);
+        // Pemeriksaan kehadiran (Fase 5B): anggota yang GPS-nya gagal mengajukan pemeriksaan ke tim WSM.
+        Route::post('/pemeriksaan', [pemeriksaanController::class, 'ajukan'])->name('pemeriksaan.ajukan')->middleware(['icVerif', 'throttle:ic-pemeriksaan']);
         // Detail acara untuk anggota (Fase 7): poster, info, kartu GL, tombol Antri GL dan Check-in.
         Route::get('/acara/{kode}', [acaraAnggotaController::class, 'detail'])->where('kode', '[A-Za-z0-9_-]+')->name('acara.detail');
         Route::post('/acara/{kode}/gl', [acaraAnggotaController::class, 'antri'])->where('kode', '[A-Za-z0-9_-]+')->name('acara.gl.antri')->middleware(['icVerif', 'throttle:ic-gl']);
@@ -157,6 +161,11 @@ Route::prefix('/dashboard')->middleware(['cekLogin', 'catatAktivitas'])->group(f
         // Menu Acara dibagi dua: Pengaturan acara (/acara) dan Hari H (/acara/hari-h). /acara?acara=KODE dialihkan ke Hari H.
         Route::get('/acara', [acaraController::class, 'index'])->name('acara');
         Route::get('/acara/hari-h', [acaraHariHController::class, 'index'])->name('acara.harih');
+        // Pemeriksaan (Fase 5B): pengajuan anggota yang GPS-nya gagal dan penanda check-in yang mencurigakan.
+        Route::get('/acara/pemeriksaan', [acaraPemeriksaanController::class, 'index'])->name('acara.pemeriksaan');
+        Route::post('/acara/pemeriksaan/{id}/setujui', [acaraPemeriksaanController::class, 'setujui'])->whereNumber('id')->name('acara.pemeriksaan.setujui')->middleware('throttle:admin-tulis');
+        Route::post('/acara/pemeriksaan/{id}/tolak', [acaraPemeriksaanController::class, 'tolak'])->whereNumber('id')->name('acara.pemeriksaan.tolak')->middleware('throttle:admin-tulis');
+        Route::patch('/acara/penanda/{id}', [acaraPemeriksaanController::class, 'ubahPenanda'])->whereNumber('id')->name('acara.penanda.ubah')->middleware('throttle:admin-tulis');
         // Detail Hari H satu acara (Fase 4): ringkasan, yang hadir (GL gratis / beli tiket sendiri), ekspor CSV.
         Route::get('/acara/hari-h/{kode}', [acaraHariHController::class, 'detail'])->name('acara.harih.detail');
         // Panel undian GL satu acara (Fase 6B): antrean, pemenang, undi sekarang, tunda/lanjutkan, ekspor, tanda diterima tim Show.

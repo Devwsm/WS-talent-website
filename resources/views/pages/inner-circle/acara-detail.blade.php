@@ -40,11 +40,10 @@
     <article class="ic-acara">
         <div class="ic-acara__poster ic-warna-{{ $tipe['warna'] }}">
             @if ($event->poster_url)
-                <img src="{{ $event->poster_url }}" alt="Poster {{ $event->venue }}" width="600" height="800"
-                    decoding="async" fetchpriority="high">
+                <img class="ic-foto-poster" src="{{ $event->poster_url }}" alt="Poster {{ $event->venue }}" width="600"
+                    height="800" decoding="async" fetchpriority="high">
             @else
-                <span class="ic-acara__seni" aria-hidden="true"><x-inner-circle.ikon :nama="$tipe['ikon']"
-                        kelas="ic-ikon--event" /></span>
+                <x-inner-circle.poster-kosong :tipe="$tipe" besar />
             @endif
             <a class="ic-acara__kembali" href="{{ route('ic.checkin') }}" aria-label="Kembali ke daftar acara">
                 <i class="bi bi-chevron-left" aria-hidden="true"></i></a>
@@ -157,6 +156,25 @@
                 </section>
             @endif
 
+            @php $pengajuan = $ajukan['pengajuan'] ?? null; @endphp
+            @if ($pengajuan)
+                <section class="ic-panel ic-pemeriksaan ic-pemeriksaan--{{ $pengajuan->status }}"
+                    aria-labelledby="judul-pemeriksaan">
+                    <h2 class="ic-panel__judul" id="judul-pemeriksaan">Pemeriksaan kehadiran</h2>
+                    <p class="ic-bantuan">
+                        @if ($pengajuan->status === 'menunggu')
+                            <b>Menunggu tim WSM.</b> Pengajuanmu ({{ $pengajuan->labelAlasan() }}) sedang diperiksa.
+                            Bila disetujui, poin check-in masuk otomatis.
+                        @elseif ($pengajuan->status === 'disetujui')
+                            <b>Disetujui.</b> Poin check-in sudah masuk ke akunmu.
+                        @else
+                            <b>Belum disetujui.</b>
+                            {{ filled($pengajuan->catatan_admin) ? 'Alasan tim WSM: ' . $pengajuan->catatan_admin : '' }}
+                        @endif
+                    </p>
+                </section>
+            @endif
+
             <section class="ic-panel" aria-labelledby="judul-info-checkin">
                 <h2 class="ic-panel__judul" id="judul-info-checkin">Check-in</h2>
                 <p class="ic-bantuan">{{ $event->pesanCheckin($statusCheckin) }}
@@ -201,6 +219,6 @@
 @endsection
 
 @push('modal')
-    <x-inner-circle.lembar-checkin :event-dipilih="$event" :galat-halaman="$galatCheckin" :boleh-mandiri="$bolehMandiri" :buka-awal="(bool) $galatCheckin"
+    <x-inner-circle.lembar-checkin :event-dipilih="$event" :galat-halaman="$galatCheckin" :boleh-mandiri="$bolehMandiri" :buka-awal="(bool) $galatCheckin" :ajukan="$ajukan"
         kembali-ke-detail />
 @endpush

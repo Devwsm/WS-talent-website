@@ -512,6 +512,24 @@ const IKON_LOKASI = {
     ditolak: "bi-slash-circle-fill",
 };
 
+// Pemeriksaan kehadiran (Fase 5B): bila GPS gagal terbaca di browser, tawarkan formulir ajukan ke tim WSM.
+const ALASAN_AJUKAN = {
+    ditolak: "izin_ditolak",
+    waktu: "sinyal_lemah",
+};
+function tampilAjukan(kodeGalat) {
+    const kotak = document.getElementById("ic-ajukan");
+    if (!kotak) return;
+    document.getElementById("ic-ajukan-alasan").value =
+        ALASAN_AJUKAN[kodeGalat] ?? "tidak_tersedia";
+    kotak.hidden = false;
+}
+function sembunyiAjukanJs() {
+    const kotak = document.getElementById("ic-ajukan");
+    // Yang dibuka server (kegagalan check-in barusan) dibiarkan; hanya yang dibuka JavaScript yang ditutup.
+    if (kotak && kotak.dataset.icServer !== "1") kotak.hidden = true;
+}
+
 function tampilLokasi(keadaan, judul, detail = "") {
     const kotak = document.getElementById("ic-lokasi");
     if (!kotak) return;
@@ -650,6 +668,7 @@ function jalankanLokasi() {
     })()
         .then((posisi) => {
             lokasiTerbaca = posisi;
+            sembunyiAjukanJs();
             isiLokasiTersembunyi();
             tampilLokasi(
                 "ok",
@@ -668,6 +687,7 @@ function jalankanLokasi() {
                 judul,
                 detail,
             );
+            tampilAjukan(galat?.kode);
             return false;
         })
         .finally(() => {
@@ -703,6 +723,8 @@ function isiCheckin(d, { awal = false } = {}) {
     document.getElementById("modal-checkin-judul").textContent =
         d.venue || "Check-in";
     document.getElementById("ic-checkin-acara").value = d.kode;
+    const ajukanAcara = document.getElementById("ic-ajukan-acara");
+    if (ajukanAcara) ajukanAcara.value = d.kode;
     document.getElementById("ic-checkin-pesan").dataset.status = d.status;
 
     const siap = d.status === "siap";
@@ -716,6 +738,12 @@ function isiCheckin(d, { awal = false } = {}) {
         document.getElementById("kode-galat-js").hidden = true;
         document.getElementById("ic-checkin-galat")?.remove();
         setelUlangLokasi();
+        // Tawaran dari server hanya berlaku untuk acara yang dibuka server.
+        const kotakAjukan = document.getElementById("ic-ajukan");
+        if (kotakAjukan) {
+            kotakAjukan.dataset.icServer = "0";
+            kotakAjukan.hidden = true;
+        }
     }
 }
 
@@ -800,6 +828,9 @@ window.addEventListener("pageshow", (e) => {
 
 // Modal yang diminta terbuka oleh server (atribut data-ic-buka-awal), mis. form unggah dengan galat validasi, atau
 // lembar check-in yang acaranya sudah terpilih lewat QR. Dijalankan paling akhir supaya semua fungsi di atas sudah siap.
+const kotakAjukanAwal = document.getElementById("ic-ajukan");
+if (kotakAjukanAwal && !kotakAjukanAwal.hidden)
+    kotakAjukanAwal.dataset.icServer = "1";
 const awalCheckin = document.getElementById("ic-checkin-awal");
 if (awalCheckin) isiCheckin(awalCheckin.dataset, { awal: true });
 document

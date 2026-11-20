@@ -5,6 +5,8 @@
     'bolehMandiri' => false,
     'bukaAwal' => null,
     'kembaliKeDetail' => false,
+    // Tawaran pemeriksaan kehadiran (PemeriksaanService::tawaran): formulir ajukan terbuka dari server bila lokasi barusan gagal.
+    'ajukan' => null,
 ])
 @php
     // Terbuka sendiri bila acaranya sudah terpilih (QR, tautan kartu) atau bila pemanggil memintanya (mis. ada galat).
@@ -96,6 +98,26 @@
         <button type="button" class="ic-tombol ic-tombol--terang ic-tombol--penuh" id="ic-checkin-tutup"
             data-ic-modal-tutup @if (!$eventDipilih || $eventDipilih->statusCheckin() === 'siap') hidden @endif>Tutup</button>
     </form>
+
+    {{-- Pemeriksaan kehadiran (Fase 5B). Di luar form check-in karena form tidak boleh bersarang. Tersembunyi sampai lokasi
+         gagal: server membukanya (kegagalan check-in barusan) atau JavaScript (GPS tidak terbaca di browser). --}}
+    <section class="ic-ajukan" id="ic-ajukan" data-ic-ajukan @if (!($ajukan['tampil'] ?? false)) hidden @endif
+        aria-labelledby="ic-ajukan-judul">
+        <p class="ic-ajukan__judul" id="ic-ajukan-judul"><i class="bi bi-life-preserver" aria-hidden="true"></i>
+            Lokasimu
+            bermasalah?</p>
+        <p class="ic-bantuan">Kalau kamu memang sedang di venue tetapi lokasi HP gagal terbaca, ajukan pemeriksaan. Tim
+            WSM memeriksanya dan memberi poinmu bila sesuai. Satu acara hanya bisa diajukan satu kali.</p>
+        <form method="POST" action="{{ route('ic.pemeriksaan.ajukan') }}" class="ic-ajukan__form" data-ic-sekali>
+            @csrf
+            <input type="hidden" name="acara" id="ic-ajukan-acara" value="{{ $eventDipilih->kode ?? '' }}">
+            <input type="hidden" name="alasan" id="ic-ajukan-alasan" value="{{ $ajukan['alasan'] ?? '' }}">
+            <label class="ic-label" for="ic-ajukan-catatan">Catatan untuk tim WSM (opsional)</label>
+            <textarea class="ic-input ic-input--area" id="ic-ajukan-catatan" name="catatan" rows="2" maxlength="300"
+                placeholder="Contoh: GPS HP-ku mati sendiri di dalam gedung"></textarea>
+            <button type="submit" class="ic-tombol ic-tombol--terang ic-tombol--penuh">Ajukan pemeriksaan</button>
+        </form>
+    </section>
 </x-inner-circle.modal>
 
 <x-inner-circle.modal id="modal-pindai" judul="Pindai QR check-in" eyebrow="Arahkan kamera" lembar>

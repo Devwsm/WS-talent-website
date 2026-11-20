@@ -66,6 +66,35 @@ return [
     ],
 
     /*
+    | Penanda mencurigakan pada check-in (Fase 5B). Check-in TIDAK ditahan: penanda hanya masuk antrean tinjauan admin
+    | (CMS > Acara > Pemeriksaan). Semua angka bisa disesuaikan tanpa mengubah kode.
+    | - akurasi_janggal_m: akurasi GPS HP biasa jarang lebih baik dari ini; angka di bawahnya khas aplikasi lokasi palsu.
+    | - titik_pas_jarak_m / titik_pas_akurasi_m: berada tepat di titik acara (jarak sekecil ini) dengan akurasi sebaik ini.
+    | - perjalanan_*: check-in lain milik anggota yang sama dalam `perjalanan_jam` jam terakhir; ditandai bila jaraknya
+    |   minimal `perjalanan_km_min` km dan kecepatan yang dibutuhkan melebihi `perjalanan_kecepatan_kmj`.
+    | - gagal_banyak: jumlah percobaan lokasi gagal (di acara yang sama) sebelum akhirnya berhasil; hitungannya disimpan
+    |   di cache `gagal_simpan_jam` jam, bukan di database.
+    | - cookie_hari: umur cookie perangkat. Isinya token acak; yang tersimpan di database hanya hash HMAC-nya.
+    */
+    'penanda' => [
+        'akurasi_janggal_m' => 3,
+        'titik_pas_jarak_m' => 3,
+        'titik_pas_akurasi_m' => 10,
+        'perjalanan_jam' => 8,
+        'perjalanan_km_min' => 20,
+        'perjalanan_kecepatan_kmj' => 200,
+        'gagal_banyak' => 6,
+        'gagal_simpan_jam' => 12,
+        'cookie_hari' => 730,
+    ],
+
+    /* Pengajuan pemeriksaan kehadiran (Fase 5B): panjang catatan anggota dan batas pengajuan per anggota per menit. */
+    'pemeriksaan' => [
+        'catatan_maks' => 300,
+        'batas_per_menit' => 5,
+    ],
+
+    /*
     | GL gratis (aturan baru Inner Circle).
     | - undian_jam / undian_hari_sebelum: waktu undian bawaan per acara = hari H pukul 18.00 WIB. Admin bisa menggantinya
     |   per acara (kolom ic_events.undian_pada). Undian jalan otomatis lewat `ic:undi-gl` (jadwal tiap menit, butuh cron),

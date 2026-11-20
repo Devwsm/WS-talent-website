@@ -65,7 +65,7 @@ return [
     ],
 
     /* Isian form yang boleh ikut dicatat (nilai pendek dan tidak sensitif). Selain ini TIDAK pernah disimpan. */
-    'input_dicatat' => ['aksi', 'aktif', 'jumlah'],
+    'input_dicatat' => ['aksi', 'aktif', 'jumlah', 'status'],
 
     /* Cara membaca nilai isian untuk kalimat. Bisa ditimpa per route lewat kunci `nilai`. */
     'nilai' => [
@@ -177,6 +177,31 @@ return [
             'gagal' => 'Akun anggota gagal diaktifkan',
             'nama' => ['{nama}'],
             'sumber' => ['model' => \App\Models\member::class, 'param' => 'id', 'kolom' => 'id_member'],
+        ],
+        'ic.admin.acara.pemeriksaan.setujui' => [
+            'judul' => 'Pengajuan pemeriksaan disetujui',
+            'ket' => 'Pengajuan pemeriksaan kehadiran {nama} disetujui dan poin check-in diberikan.',
+            'ket_tanpa_nama' => 'Sebuah pengajuan pemeriksaan kehadiran disetujui.',
+            'gagal' => 'Pengajuan pemeriksaan gagal disetujui',
+            'nama' => ['{anggota.nama} di {event.venue}', '{anggota.nama}'],
+            'sumber' => ['model' => \App\Models\ic_pemeriksaan::class, 'param' => 'id', 'kolom' => 'id_pemeriksaan', 'relasi' => ['anggota', 'event']],
+        ],
+        'ic.admin.acara.pemeriksaan.tolak' => [
+            'judul' => 'Pengajuan pemeriksaan ditolak',
+            'ket' => 'Pengajuan pemeriksaan kehadiran {nama} ditolak.',
+            'ket_tanpa_nama' => 'Sebuah pengajuan pemeriksaan kehadiran ditolak.',
+            'gagal' => 'Pengajuan pemeriksaan gagal ditolak',
+            'nama' => ['{anggota.nama} di {event.venue}', '{anggota.nama}'],
+            'sumber' => ['model' => \App\Models\ic_pemeriksaan::class, 'param' => 'id', 'kolom' => 'id_pemeriksaan', 'relasi' => ['anggota', 'event']],
+        ],
+        'ic.admin.acara.penanda.ubah' => [
+            'judul' => 'Penanda check-in ditinjau',
+            'ket' => 'Penanda check-in {nama} diperbarui menjadi {input.status}.',
+            'ket_tanpa_nama' => 'Status sebuah penanda check-in diperbarui.',
+            'gagal' => 'Penanda check-in gagal diperbarui',
+            'nama' => ['milik {anggota.nama}'],
+            'sumber' => ['model' => \App\Models\ic_penanda::class, 'param' => 'id', 'kolom' => 'id_penanda', 'relasi' => ['anggota']],
+            'nilai' => ['status' => ['baru' => 'dibuka kembali', 'aman' => 'aman', 'ditindak' => 'sudah ditindak']],
         ],
         'ic.admin.acara.simpan' => [
             'judul' => 'Acara ditambahkan',

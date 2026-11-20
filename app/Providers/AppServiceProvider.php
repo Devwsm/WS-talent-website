@@ -200,6 +200,15 @@ class AppServiceProvider extends ServiceProvider
                 ->response(fn() => back()->with('ic_toast_galat', 'Terlalu sering mengubah antrean GL. Tunggu sebentar lalu coba lagi.'));
         });
 
+        // Pengajuan pemeriksaan kehadiran (Fase 5B): per anggota, cukup longgar untuk salah ketuk.
+        RateLimiter::for('ic-pemeriksaan', function (Request $request) {
+            $id = Auth::guard('member')->id();
+
+            return Limit::perMinute((int) config('inner_circle.pemeriksaan.batas_per_menit', 5))
+                ->by($id ? 'member:' . $id : 'ip:' . $request->ip())
+                ->response(fn() => back()->with('ic_toast_galat', 'Terlalu sering mengajukan. Tunggu sebentar lalu coba lagi.'));
+        });
+
         RateLimiter::for('ic-checkin', function (Request $request) {
             $id = Auth::guard('member')->id();
 

@@ -63,7 +63,11 @@ class LokasiService
         }
 
         if (! $lokasi || ! self::koordinatValid($lokasi['lat'] ?? null, $lokasi['lng'] ?? null)) {
-            throw new CheckinGagal('Acara ini memeriksa lokasi. Izinkan akses lokasi di browser, nyalakan GPS, lalu coba lagi.');
+            throw new CheckinGagal(
+                'Acara ini memeriksa lokasi. Izinkan akses lokasi di browser, nyalakan GPS, lalu coba lagi.',
+                alasan: 'tidak_tersedia',
+                kodeAcara: $event->kode,
+            );
         }
 
         $cfg = config('inner_circle.lokasi');
@@ -72,7 +76,10 @@ class LokasiService
         if (! is_numeric($lokasi['akurasi'] ?? null) || $akurasi <= 0 || $akurasi > (float) app(IcAturan::class)->akurasiMaks()) {
             throw new CheckinGagal(
                 'Sinyal lokasi HP-mu kurang akurat' . ($akurasi > 0 ? ' (sekitar ' . self::formatJarak($akurasi) . ')' : '') .
-                    '. Pindah ke area terbuka atau nyalakan GPS presisi tinggi, lalu coba lagi.'
+                    '. Pindah ke area terbuka atau nyalakan GPS presisi tinggi, lalu coba lagi.',
+                alasan: 'akurasi_kasar',
+                akurasi: $akurasi > 0 ? (int) round($akurasi) : null,
+                kodeAcara: $event->kode,
             );
         }
 
@@ -82,7 +89,11 @@ class LokasiService
         if ($jarak - $keringanan > $event->radius_efektif) {
             throw new CheckinGagal(
                 'Kamu berjarak sekitar ' . self::formatJarak($jarak) . ' dari lokasi acara (batas ' . $event->radius_efektif .
-                    ' m). Check-in hanya bisa dilakukan di venue.'
+                    ' m). Check-in hanya bisa dilakukan di venue.',
+                alasan: 'di_luar_radius',
+                jarak: (int) round($jarak),
+                akurasi: (int) round($akurasi),
+                kodeAcara: $event->kode,
             );
         }
 

@@ -31,6 +31,10 @@
     <li><b>Lokasi saat check-in:</b> untuk acara yang memeriksa lokasi, browser-mu membaca posisi HP sekali saat
         kamu check-in (hanya bila kamu mengizinkannya). Posisi itu dipakai untuk memastikan kamu berada di venue
         dan <b>tidak disimpan</b>; yang tercatat hanya jarak ke venue dan tingkat akurasinya.</li>
+    <li><b>Pemeriksaan kehadiran:</b> saat check-in, kami menyimpan penanda perangkat berupa kode acak di cookie
+        browser-mu (hanya hash-nya yang tersimpan, bukan alamat IP). Penanda ini membantu tim WSM menandai check-in
+        yang janggal, misalnya satu perangkat dipakai banyak akun. Bila lokasimu gagal terbaca dan kamu mengajukan
+        pemeriksaan, catatan yang kamu tulis dan alasannya tersimpan agar bisa ditinjau tim WSM.</li>
 </ul>
 
 <h2 class="{{ $h2 }}">3. Masuk dengan Google</h2>

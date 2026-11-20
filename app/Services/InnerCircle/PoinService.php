@@ -26,8 +26,9 @@ class PoinService
         ?string $dicatatOleh = null,
         ?int $jarakM = null,
         ?int $akurasiM = null,
+        ?string $sidikPerangkat = null,
     ): ic_poin {
-        return DB::transaction(function () use ($anggota, $jumlah, $sumber, $judul, $ikon, $event, $catatan, $dicatatOleh, $jarakM, $akurasiM) {
+        return DB::transaction(function () use ($anggota, $jumlah, $sumber, $judul, $ikon, $event, $catatan, $dicatatOleh, $jarakM, $akurasiM, $sidikPerangkat) {
             $baris = ic_poin::create([
                 'member_id' => $anggota->getKey(),
                 'jumlah' => $jumlah,
@@ -38,6 +39,7 @@ class PoinService
                 'catatan' => $catatan,
                 'jarak_m' => $jarakM,
                 'akurasi_m' => $akurasiM,
+                'sidik_perangkat' => $sidikPerangkat,
                 'dicatat_oleh' => $dicatatOleh,
             ]);
 

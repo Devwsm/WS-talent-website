@@ -88,7 +88,7 @@ class CheckinService
      * @param  string|null  $kodeAcara  kode acara yang dipilih anggota di halaman (WS26-1008), opsional
      * @param  array{lat?: mixed, lng?: mixed, akurasi?: mixed}|null  $lokasi  posisi HP anggota; wajib bila acara punya titik lokasi
      */
-    public function checkin(member $anggota, string $masukanKode, ?string $kodeAcara = null, ?Carbon $sekarang = null, ?array $lokasi = null): ic_poin
+    public function checkin(member $anggota, string $masukanKode, ?string $kodeAcara = null, ?Carbon $sekarang = null, ?array $lokasi = null, ?string $sidik = null): ic_poin
     {
         $sekarang ??= now();
 
@@ -99,7 +99,7 @@ class CheckinService
 
         $event = $this->tentukanEvent($token, $kodeAcara, $sekarang);
 
-        return $this->catat($anggota, $event, $lokasi);
+        return $this->catat($anggota, $event, $lokasi, $sidik);
     }
 
     /**
@@ -110,7 +110,7 @@ class CheckinService
      *
      * @throws CheckinGagal
      */
-    public function checkinMandiri(member $anggota, string $kodeAcara, ?Carbon $sekarang = null, ?array $lokasi = null): ic_poin
+    public function checkinMandiri(member $anggota, string $kodeAcara, ?Carbon $sekarang = null, ?array $lokasi = null, ?string $sidik = null): ic_poin
     {
         $sekarang ??= now();
 
@@ -125,7 +125,7 @@ class CheckinService
             throw new CheckinGagal('Kamu terpilih GL gratis di acara ini, jadi check-in dilakukan dengan memindai QR di pintu. Tombol check-in mandiri ditutup supaya poinmu tidak dobel.');
         }
 
-        return $this->catat($anggota, $event, $lokasi);
+        return $this->catat($anggota, $event, $lokasi, $sidik);
     }
 
     /** Anggota ini pemenang GL gratis di acara itu (status menang di antrean). */
@@ -149,13 +149,22 @@ class CheckinService
     }
 
     /** Periksa lokasi lalu tulis satu kehadiran (satu per anggota per acara, dijaga kunci baris dan kunci unik). */
-    private function catat(member $anggota, ic_event $event, ?array $lokasi): ic_poin
+    private function catat(member $anggota, ic_event $event, ?array $lokasi, ?string $sidik = null): ic_poin
     {
         // HP harus di dalam radius titik acara. Yang dicatat hanya jarak dan akurasi, bukan koordinat anggota.
-        $ukuran = $this->lokasi->periksa($event, $lokasi);
+        try {
+            $ukuran = $this->lokasi->periksa($event, $lokasi);
+        } catch (CheckinGagal $e) {
+            // Kegagalan karena lokasi dihitung (isyarat banyak percobaan); aturan lain tidak ikut dihitung.
+            if ($e->alasan !== null) {
+                app(PenandaService::class)->catatGagal($anggota, $event);
+            }
+
+            throw $e;
+        }
 
         try {
-            return DB::transaction(function () use ($anggota, $event, $ukuran) {
+            $poin = DB::transaction(function () use ($anggota, $event, $ukuran, $sidik) {
                 // Kunci baris anggota supaya dua permintaan bersamaan diproses bergantian.
                 $terkunci = member::query()->whereKey($anggota->getKey())->lockForUpdate()->firstOrFail();
 
@@ -178,8 +187,14 @@ class CheckinService
                     $event,
                     jarakM: $ukuran['jarak'] ?? null,
                     akurasiM: $ukuran['akurasi'] ?? null,
+                    sidikPerangkat: $sidik,
                 );
             });
+
+            // Penanda dipasang sesudah poin tersimpan dan tidak pernah menggagalkan check-in (lihat PenandaService).
+            app(PenandaService::class)->periksa($anggota, $event, $poin);
+
+            return $poin;
         } catch (UniqueConstraintViolationException) {
             throw new CheckinGagal('Kamu sudah check-in di acara ini. Satu acara hanya memberi poin satu kali.');
         } finally {
