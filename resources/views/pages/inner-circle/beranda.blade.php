@@ -29,6 +29,26 @@
         </div>
     </div>
 
+    @if ($glSaya->isNotEmpty())
+        <div class="ic-bagian-kepala">
+            <h2 class="ic-judul-bagian">GL gratis saya</h2>
+            <a class="ic-tautan" href="{{ route('ic.checkin') }}">Semua acara →</a>
+        </div>
+        <div class="ic-panel ic-daftar ic-daftar--rapat">
+            @foreach ($glSaya as $gl)
+                <a class="ic-gl-saya" href="{{ route('ic.acara.detail', $gl->event->kode) }}">
+                    <span>
+                        <b>{{ $gl->event->venue }}</b>
+                        <span
+                            class="ic-bantuan">{{ $gl->event->tanggal->locale('id')->translatedFormat('D, j M Y') }}{{ $gl->event->kota ? ' · ' . $gl->event->kota : '' }}</span>
+                    </span>
+                    <span
+                        class="ic-gl-saya__status {{ $gl->status === 'menang' ? 'is-menang' : '' }}">{{ $gl->status === 'menang' ? 'Menang · lihat kartu' : 'Dalam antrean' }}</span>
+                </a>
+            @endforeach
+        </div>
+    @endif
+
     <div class="ic-bagian-kepala">
         <h2 class="ic-judul-bagian">{{ ic_teks('beranda.aktivitas.judul') }}</h2>
         <a class="ic-tautan" href="{{ route('ic.profil') }}#riwayat">Lihat semua →</a>

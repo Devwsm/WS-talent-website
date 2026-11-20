@@ -210,6 +210,23 @@ document.addEventListener("submit", async (e) => {
     form.requestSubmit();
 });
 
+// Tombol bagikan di halaman detail acara: lembar bagikan bawaan HP bila ada, kalau tidak tautannya disalin.
+document.addEventListener("click", async (e) => {
+    const tombol = e.target.closest("[data-ic-bagikan]");
+    if (!tombol) return;
+    const { judul, url } = tombol.dataset;
+    try {
+        if (navigator.share) {
+            await navigator.share({ title: judul, url });
+            return;
+        }
+        await navigator.clipboard.writeText(url);
+        toast.fire({ icon: "success", title: "Tautan acara disalin." });
+    } catch (galat) {
+        // Dibatalkan anggota atau izin ditolak: tidak perlu pesan.
+    }
+});
+
 // Pengaman kirim ganda: setelah form data-ic-sekali terkirim, tombolnya dikunci. Klik kedua tidak
 // pernah sampai ke server; bila sampai juga (dua tab), kunci unik di database yang menolaknya.
 document.addEventListener("submit", (e) => {
@@ -730,8 +747,10 @@ if (lembarCheckin) {
 }
 
 function kunciKirimCheckin() {
-    const tombol = document.getElementById("ic-checkin-kirim");
-    if (tombol) setTimeout(() => (tombol.disabled = true), 0);
+    ["ic-checkin-kirim", "ic-checkin-mandiri"].forEach((id) => {
+        const tombol = document.getElementById(id);
+        if (tombol) setTimeout(() => (tombol.disabled = true), 0);
+    });
 }
 
 // Satu pintu pengiriman: kode diperiksa dulu, lalu posisi (bila acara memeriksa lokasi), baru form dikirim.
@@ -739,7 +758,10 @@ function kunciKirimCheckin() {
 formCheckin?.addEventListener("submit", (e) => {
     const kode = document.getElementById("kode");
     const galatKode = document.getElementById("kode-galat-js");
-    if (!kode.value.trim()) {
+    // Check-in mandiri (tanpa QR): kode tidak wajib, lokasi selalu dibaca dulu bila acara memeriksanya.
+    const pengirim = e.submitter;
+    const mandiri = pengirim?.hasAttribute("data-ic-mandiri") === true;
+    if (!mandiri && !kode.value.trim()) {
         e.preventDefault();
         galatKode.textContent =
             "Masukkan kode check-in dari panitia atau pindai QR di lokasi.";
@@ -763,15 +785,17 @@ formCheckin?.addEventListener("submit", (e) => {
 
     e.preventDefault();
     jalankanLokasi().then((berhasil) => {
-        if (berhasil) formCheckin.requestSubmit();
+        if (berhasil) formCheckin.requestSubmit(pengirim ?? undefined);
     });
 });
 
 // Kembali lewat tombol "back": halaman dipulihkan dari cache dengan tombol masih terkunci.
 window.addEventListener("pageshow", (e) => {
     if (!e.persisted) return;
-    const tombol = document.getElementById("ic-checkin-kirim");
-    if (tombol) tombol.disabled = false;
+    ["ic-checkin-kirim", "ic-checkin-mandiri"].forEach((id) => {
+        const tombol = document.getElementById(id);
+        if (tombol) tombol.disabled = false;
+    });
 });
 
 // Modal yang diminta terbuka oleh server (atribut data-ic-buka-awal), mis. form unggah dengan galat validasi, atau

@@ -8,6 +8,7 @@ use App\Http\Requests\InnerCircle\checkinMandiriRequest;
 use App\Http\Requests\InnerCircle\checkinRequest;
 use App\Models\ic_broadcast;
 use App\Models\ic_event;
+use App\Models\ic_gl_antrean;
 use App\Models\ic_memory;
 use App\Models\ic_poin;
 use App\Models\member;
@@ -38,7 +39,24 @@ class memberController extends Controller
             'member' => $anggota,
             'berikutnya' => $klaim->berikutnya($anggota->poin_total),
             'aktivitas' => $this->riwayatPoin($anggota, 5),
+            'glSaya' => $this->glSaya($anggota),
         ]);
+    }
+
+    /**
+     * GL gratis anggota yang masih relevan: antrean atau kemenangan di acara hari ini dan yang akan datang
+     * (acara kemarin ikut sampai tengah hari, karena check-in club bisa lewat tengah malam).
+     */
+    private function glSaya(member $anggota)
+    {
+        return ic_gl_antrean::query()
+            ->with('event')
+            ->where('member_id', $anggota->getKey())
+            ->whereIn('status', [ic_gl_antrean::ANTRI, ic_gl_antrean::MENANG])
+            ->whereHas('event', fn($q) => $q->whereDate('tanggal', '>=', now()->subHours(12)->toDateString()))
+            ->get()
+            ->sortBy(fn($b) => $b->event->tanggal)
+            ->values();
     }
 
     public function hadiah(ClaimService $klaim)
@@ -155,6 +173,7 @@ class memberController extends Controller
             'eventDipilih' => $eventDipilih,
             'kodeIsian' => $tokenQr ?? '',
             'galatKode' => $galatKode,
+            'bolehMandiri' => $eventDipilih !== null && ! $checkin->pemenangGl($anggota, $eventDipilih),
         ]);
     }
 
@@ -171,7 +190,7 @@ class memberController extends Controller
         try {
             $poin = $checkin->checkinMandiri($anggota, $kodeAcara, null, $lokasi);
         } catch (CheckinGagal $e) {
-            return redirect(route('ic.checkin', ['acara' => $kodeAcara]))->withErrors(['kode' => $e->getMessage()]);
+            return redirect($this->tujuanGalat($request, $kodeAcara, ['acara' => $kodeAcara]))->withErrors(['kode' => $e->getMessage()]);
         }
 
         return redirect()->route('ic.beranda')
@@ -192,7 +211,7 @@ class memberController extends Controller
             $poin = $checkin->checkin($anggota, $request->validated('kode'), $kodeAcara, null, $lokasi);
         } catch (CheckinGagal $e) {
             // Kembali ke halaman yang sama dengan acaranya terpilih: lembar check-in terbuka lagi dan menampilkan galatnya.
-            return redirect(route('ic.checkin', array_filter(['acara' => $kodeAcara])))
+            return redirect($this->tujuanGalat($request, $kodeAcara, array_filter(['acara' => $kodeAcara])))
                 ->withErrors(['kode' => $e->getMessage()])
                 ->withInput(['kode' => $request->validated('kode')]);
         }
@@ -256,6 +275,19 @@ class memberController extends Controller
             'riwayat' => $this->riwayatPoin($anggota, 100),
             'klaim' => $pengajuan->all(),
         ]);
+    }
+
+    /**
+     * Tujuan setelah check-in gagal: halaman detail acara bila form dikirim dari sana (field `kembali=detail`),
+     * selain itu halaman Check-in dengan acaranya terpilih (lembar terbuka lagi dan menampilkan galatnya).
+     */
+    private function tujuanGalat(Request $request, ?string $kodeAcara, array $parameter): string
+    {
+        if ($request->input('kembali') === 'detail' && filled($kodeAcara)) {
+            return route('ic.acara.detail', $kodeAcara);
+        }
+
+        return route('ic.checkin', $parameter);
     }
 
     private function anggota(): member

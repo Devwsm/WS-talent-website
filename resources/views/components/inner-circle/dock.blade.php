@@ -3,7 +3,13 @@
     $menu = [
         ['route' => 'ic.beranda', 'label' => 'Beranda', 'ikon' => 'bi-house-door', 'aktif' => 'bi-house-door-fill'],
         ['route' => 'ic.hadiah', 'label' => 'Hadiah', 'ikon' => 'bi-gift', 'aktif' => 'bi-gift-fill'],
-        ['route' => 'ic.checkin', 'label' => 'Check-in', 'ikon' => 'bi-qr-code-scan', 'aktif' => 'bi-qr-code-scan'],
+        [
+            'route' => 'ic.checkin',
+            'label' => 'Acara',
+            'ikon' => 'bi-calendar-event',
+            'aktif' => 'bi-calendar-event-fill',
+            'juga' => 'ic.acara.*',
+        ],
         ['route' => 'ic.komunitas', 'label' => 'Komunitas', 'ikon' => 'bi-heart', 'aktif' => 'bi-heart-fill'],
     ];
     $profilAktif = request()->routeIs('ic.profil');
@@ -11,7 +17,7 @@
 {{-- Dock bawah: satu-satunya navigasi utama (desktop dan HP). Sidebar kiri di prototype tidak dibawa. --}}
 <nav class="ic-dock" aria-label="Navigasi Inner Circle">
     @foreach ($menu as $m)
-        @php $aktif = request()->routeIs($m['route']); @endphp
+        @php $aktif = request()->routeIs($m['route'], ...(array) ($m['juga'] ?? [])); @endphp
         <a href="{{ route($m['route']) }}" class="ic-dock__item {{ $aktif ? 'is-aktif' : '' }}"
             @if ($aktif) aria-current="page" @endif>
             <i class="bi {{ $aktif ? $m['aktif'] : $m['ikon'] }}" aria-hidden="true"></i>

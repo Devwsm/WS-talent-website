@@ -7,6 +7,7 @@ use App\Services\InnerCircle\IcAturan;
 use App\Services\InnerCircle\IcPilihan;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -147,6 +148,14 @@ class ic_event extends Model
     public function tokenRusak(): bool
     {
         return filled($this->attributes['token'] ?? null) && $this->token === null;
+    }
+
+    /** Alamat poster di disk publik, atau null bila belum diunggah atau berkasnya hilang. */
+    protected function posterUrl(): Attribute
+    {
+        return Attribute::get(fn() => filled($this->poster) && Storage::disk('public')->exists($this->poster)
+            ? Storage::url($this->poster)
+            : null);
     }
 
     /** Event privat dan event tanpa venue tampil di jadwal tetapi tidak bisa dipakai check-in. */

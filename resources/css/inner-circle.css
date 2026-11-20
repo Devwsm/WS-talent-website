@@ -2609,3 +2609,289 @@ a.ic-event:hover {
         padding-right: 10px;
     }
 }
+
+/* ---------- Fase 7: daftar acara (kisi poster) dan detail acara ---------- */
+.ic-poster-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px 14px;
+}
+@media (min-width: 720px) {
+    .ic-poster-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+@media (min-width: 1000px) {
+    .ic-poster-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+.ic-poster-grid__kosong {
+    grid-column: 1 / -1;
+}
+
+.ic-poster-kartu {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    color: var(--ic-tinta);
+}
+a.ic-poster-kartu:hover .ic-poster-kartu__gambar {
+    transform: translateY(-2px);
+}
+.ic-poster-kartu.is-nonaktif {
+    opacity: 0.7;
+}
+.ic-poster-kartu__gambar {
+    position: relative;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 3 / 4;
+    margin-bottom: 6px;
+    overflow: hidden;
+    border: 1px solid var(--ic-garis-kartu);
+    border-radius: 18px;
+    transition: transform 0.2s;
+}
+.ic-poster-kartu__gambar img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.ic-poster-kartu__lencana {
+    position: absolute;
+    left: 8px;
+    bottom: 8px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--ic-navy);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+}
+.ic-poster-kartu__judul {
+    font-size: 15px;
+    line-height: 1.25;
+    text-transform: uppercase;
+    overflow-wrap: anywhere;
+}
+.ic-poster-kartu__info {
+    font-size: 13px;
+    color: var(--ic-redup);
+}
+
+.ic-acara {
+    display: flex;
+    flex-direction: column;
+    max-width: 640px;
+    margin: 0 auto;
+}
+.ic-acara__poster {
+    position: relative;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 3 / 4;
+    max-height: 70vh;
+    width: 100%;
+    overflow: hidden;
+    border: 1px solid var(--ic-garis-kartu);
+    border-radius: 28px;
+}
+.ic-acara__poster img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.ic-acara__seni {
+    display: grid;
+    place-items: center;
+    transform: scale(2);
+}
+.ic-acara__kembali {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--ic-navy);
+    font-size: 20px;
+}
+.ic-acara__lencana {
+    position: absolute;
+    left: 14px;
+    bottom: 14px;
+    max-width: calc(100% - 28px);
+    padding: 7px 14px;
+    border-radius: 999px;
+    background: var(--ic-navy);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+}
+.ic-acara__isi {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px 4px 24px;
+}
+.ic-acara__judul-baris {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+.ic-acara__judul {
+    margin: 0;
+    font-family: var(--ic-font-judul);
+    font-size: clamp(24px, 6vw, 32px);
+    line-height: 1.15;
+    text-transform: uppercase;
+    color: var(--ic-judul);
+    overflow-wrap: anywhere;
+}
+.ic-acara__bagikan {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--ic-garis-kartu);
+    border-radius: 50%;
+    background: #fff;
+    color: var(--ic-navy);
+    font-size: 18px;
+    cursor: pointer;
+}
+.ic-acara__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-weight: 600;
+}
+.ic-acara__meta li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.ic-acara__meta i {
+    width: 22px;
+    text-align: center;
+    color: var(--ic-navy);
+}
+.ic-acara__deskripsi {
+    margin: 0;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+/* Dua tombol di dasar layar: menempel di atas dock saat halaman digulir. */
+.ic-acara__aksi {
+    position: sticky;
+    bottom: 104px;
+    z-index: 20;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+.ic-acara__aksi form {
+    display: contents;
+}
+.ic-acara__tombol {
+    min-height: 52px;
+    padding: 12px 14px;
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: #d9dde2;
+    color: #5b6670;
+    font: inherit;
+    font-weight: 800;
+    cursor: not-allowed;
+}
+.ic-acara__tombol--garis:not(:disabled) {
+    background: #fff;
+    border-color: var(--ic-navy);
+    color: var(--ic-navy);
+    cursor: pointer;
+}
+.ic-acara__tombol--utama:not(:disabled) {
+    background: var(--ic-navy);
+    color: #fff;
+    cursor: pointer;
+}
+.ic-acara__tombol:not(:disabled):hover {
+    filter: brightness(1.06);
+}
+
+.ic-kartu-gl {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px;
+    border: 2px solid var(--ic-navy);
+    border-radius: 24px;
+    background: #fff;
+}
+.ic-kartu-gl__judul {
+    margin: 0;
+    font-size: 22px;
+    color: var(--ic-judul);
+}
+.ic-kartu-gl__data {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+}
+.ic-kartu-gl__data > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed var(--ic-garis-kartu);
+}
+.ic-kartu-gl__data dt {
+    color: var(--ic-redup);
+}
+.ic-kartu-gl__data dd {
+    margin: 0;
+    font-weight: 700;
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+.ic-kartu-gl__sandi summary {
+    cursor: pointer;
+    color: var(--ic-navy);
+}
+
+.ic-gl-saya {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 2px;
+    color: var(--ic-tinta);
+}
+.ic-gl-saya__status {
+    flex-shrink: 0;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: var(--ic-lilac);
+    color: var(--ic-tinta);
+    font-size: 12px;
+    font-weight: 800;
+}
+.ic-gl-saya__status.is-menang {
+    background: var(--ic-navy);
+    color: #fff;
+}

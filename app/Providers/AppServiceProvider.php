@@ -191,6 +191,15 @@ class AppServiceProvider extends ServiceProvider
         });
 
         // Check-in Inner Circle dibatasi per ANGGOTA, bukan per IP: penonton satu venue sering berbagi IP.
+        // Ikut/keluar antrean GL: cukup longgar untuk salah ketuk, cukup ketat untuk menahan tombol yang dipencet berulang.
+        RateLimiter::for('ic-gl', function (Request $request) {
+            $id = Auth::guard('member')->id();
+
+            return Limit::perMinute(20)
+                ->by($id ? 'member:' . $id : 'ip:' . $request->ip())
+                ->response(fn() => back()->with('ic_toast_galat', 'Terlalu sering mengubah antrean GL. Tunggu sebentar lalu coba lagi.'));
+        });
+
         RateLimiter::for('ic-checkin', function (Request $request) {
             $id = Auth::guard('member')->id();
 

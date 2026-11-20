@@ -1,6 +1,6 @@
 @extends('template.innerCircleLayout')
 
-@section('title', 'Check-in')
+@section('title', 'Acara')
 
 @php
     $adaFilter = count($parameterFilter) > 0;
@@ -11,7 +11,7 @@
 
 @section('content')
     <p class="ic-eyebrow">{{ ic_teks('checkin.eyebrow') }}</p>
-    <h1 class="ic-judul">Check-in<span>.</span></h1>
+    <h1 class="ic-judul">Acara<span>.</span></h1>
     <p class="ic-deskripsi">{{ ic_teks('checkin.deskripsi') }}</p>
 
     <x-inner-circle.panel-verifikasi />
@@ -78,11 +78,11 @@
         @endif
     </p>
 
-    <div class="ic-daftar">
+    <div class="ic-poster-grid">
         @forelse ($events as $event)
-            <x-inner-circle.kartu-event :event="$event" :href="route('ic.checkin', $parameterFilter + ['acara' => $event->kode])" :dipilih="$eventDipilih && $eventDipilih->kode === $event->kode" />
+            <x-inner-circle.kartu-poster :event="$event" :href="route('ic.acara.detail', $event->kode)" />
         @empty
-            <div class="ic-panel ic-kosong">
+            <div class="ic-panel ic-kosong ic-poster-grid__kosong">
                 <b>Belum ada jadwal yang cocok.</b>
                 <p class="ic-bantuan">Coba ganti bulan, tipe, atau kata pencarian.</p>
             </div>
@@ -91,80 +91,5 @@
 @endsection
 
 @push('modal')
-    {{-- Lembar check-in: naik dari bawah di HP. Isinya diisi JavaScript dari kartu acara (atau dari #ic-checkin-awal). --}}
-    <x-inner-circle.modal id="modal-checkin" :judul="$eventDipilih->venue ?? 'Check-in'" eyebrow="Kode kehadiran" lembar :terbuka="$bukaLembar"
-        :data-ic-url-checkin="route('ic.checkin')">
-        @if ($eventDipilih)
-            <div hidden id="ic-checkin-awal"
-                {{ new \Illuminate\View\ComponentAttributeBag($eventDipilih->atributCheckin()) }}></div>
-        @endif
-
-        <form id="ic-checkin-form" method="POST" action="{{ route('ic.checkin.proses') }}" novalidate>
-            @csrf
-            <input type="hidden" name="acara" id="ic-checkin-acara" value="{{ $eventDipilih->kode ?? '' }}">
-            <input type="hidden" name="lat" id="ic-checkin-lat">
-            <input type="hidden" name="lng" id="ic-checkin-lng">
-            <input type="hidden" name="akurasi" id="ic-checkin-akurasi">
-
-            <ul class="ic-ringkas">
-                <li><i class="bi bi-geo-alt-fill" aria-hidden="true"></i> <span
-                        data-ic-isi="kota">{{ $eventDipilih->kota ?? '' }}</span></li>
-                <li><i class="bi bi-calendar-event" aria-hidden="true"></i> <span
-                        data-ic-isi="tanggal">{{ $eventDipilih?->tanggal->locale('id')->translatedFormat('D, j M Y') }}</span>
-                </li>
-                <li><span class="ic-pil"
-                        data-ic-isi="tipe">{{ $eventDipilih ? ic_tipe_event()[$eventDipilih->tipe]['label'] ?? '' : '' }}</span>
-                </li>
-            </ul>
-
-            <p class="ic-checkin__pesan" id="ic-checkin-pesan" data-status="{{ $eventDipilih?->statusCheckin() }}"
-                role="status" data-ic-isi="pesan">
-                {{ $eventDipilih ? $eventDipilih->pesanCheckin($eventDipilih->statusCheckin()) : '' }}</p>
-
-            @if ($galatHalaman && $eventDipilih)
-                <p class="ic-galat ic-galat--blok" id="ic-checkin-galat" role="alert">{{ $galatHalaman }}</p>
-            @endif
-
-            <div id="ic-checkin-isi" @if ($eventDipilih && $eventDipilih->statusCheckin() !== 'siap') hidden @endif>
-                <label class="ic-label" for="kode">Kode check-in acara</label>
-                <input class="ic-input" id="kode" name="kode" value="{{ old('kode', $kodeIsian) }}"
-                    placeholder="Pindai QR atau ketik kode dari panitia" autocomplete="off" autocapitalize="characters"
-                    maxlength="300" required>
-                <p class="ic-galat" id="kode-galat-js" role="alert" hidden></p>
-
-                <div class="ic-aksi-baris ic-aksi-baris--rapat">
-                    <button type="button" class="ic-tombol ic-tombol--kecil ic-tombol--terang" data-ic-pindai-buka><i
-                            class="bi bi-qr-code-scan" aria-hidden="true"></i> Pindai QR</button>
-                    <button type="button" class="ic-tombol ic-tombol--kecil ic-tombol--terang" data-ic-pindai-berkas><i
-                            class="bi bi-image" aria-hidden="true"></i> Unggah gambar</button>
-                </div>
-
-                <div class="ic-lokasi" id="ic-lokasi" data-state="diam" @if (!$eventDipilih || !$eventDipilih->lokasi_aktif) hidden @endif>
-                    <div class="ic-lokasi__status" role="status" aria-live="polite">
-                        <span class="ic-lokasi__ikon" aria-hidden="true"><i class="bi bi-geo-alt"></i></span>
-                        <span class="ic-lokasi__teks">
-                            <b id="ic-lokasi-judul">Lokasi belum dicek</b>
-                            <span class="ic-lokasi__detail" id="ic-lokasi-detail">Lokasi dicek saat kamu menekan Check-in
-                                sekarang.</span>
-                        </span>
-                    </div>
-                    <button type="button" class="ic-tombol ic-tombol--kecil ic-tombol--terang" data-ic-lokasi-ulang>
-                        <i class="bi bi-arrow-repeat" aria-hidden="true"></i> Cek lokasi lagi</button>
-                </div>
-
-                <button type="submit" class="ic-tombol ic-tombol--penuh" id="ic-checkin-kirim">Check-in sekarang <i
-                        class="bi bi-arrow-right" aria-hidden="true"></i></button>
-            </div>
-
-            <button type="button" class="ic-tombol ic-tombol--terang ic-tombol--penuh" id="ic-checkin-tutup"
-                data-ic-modal-tutup @if (!$eventDipilih || $eventDipilih->statusCheckin() === 'siap') hidden @endif>Tutup</button>
-        </form>
-    </x-inner-circle.modal>
-
-    <x-inner-circle.modal id="modal-pindai" judul="Pindai QR check-in" eyebrow="Arahkan kamera" lembar>
-        <div class="ic-pindai">
-            <video id="ic-pindai-video" class="ic-pindai__video" playsinline muted></video>
-            <p class="ic-bantuan ic-umpan" id="ic-pindai-umpan" role="status" aria-live="polite"></p>
-        </div>
-    </x-inner-circle.modal>
+    <x-inner-circle.lembar-checkin :event-dipilih="$eventDipilih" :kode-isian="$kodeIsian" :galat-halaman="$galatHalaman" :boleh-mandiri="$bolehMandiri" />
 @endpush

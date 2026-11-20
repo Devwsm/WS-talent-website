@@ -4,6 +4,7 @@ use App\Http\Controllers\cspController;
 use App\Http\Controllers\dashboardController;
 use App\Http\Controllers\homeController;
 use App\Http\Controllers\InnerCircle\acaraController;
+use App\Http\Controllers\InnerCircle\acaraAnggotaController;
 use App\Http\Controllers\InnerCircle\acaraGlController;
 use App\Http\Controllers\InnerCircle\acaraHariHController;
 use App\Http\Controllers\InnerCircle\adminController;
@@ -109,6 +110,10 @@ Route::prefix('/innercircle')->middleware('icAktif')->name('ic.')->group(functio
         Route::get('/check-in', [memberController::class, 'checkin'])->name('checkin');
         Route::post('/check-in', [memberController::class, 'prosesCheckin'])->name('checkin.proses')->middleware(['icVerif', 'throttle:ic-checkin']);
         Route::post('/check-in/mandiri', [memberController::class, 'prosesCheckinMandiri'])->name('checkin.mandiri')->middleware(['icVerif', 'throttle:ic-checkin']);
+        // Detail acara untuk anggota (Fase 7): poster, info, kartu GL, tombol Antri GL dan Check-in.
+        Route::get('/acara/{kode}', [acaraAnggotaController::class, 'detail'])->where('kode', '[A-Za-z0-9_-]+')->name('acara.detail');
+        Route::post('/acara/{kode}/gl', [acaraAnggotaController::class, 'antri'])->where('kode', '[A-Za-z0-9_-]+')->name('acara.gl.antri')->middleware(['icVerif', 'throttle:ic-gl']);
+        Route::delete('/acara/{kode}/gl', [acaraAnggotaController::class, 'keluar'])->where('kode', '[A-Za-z0-9_-]+')->name('acara.gl.keluar')->middleware('throttle:ic-gl');
         Route::get('/komunitas', [memberController::class, 'komunitas'])->name('komunitas');
         Route::post('/kenangan', [kenanganController::class, 'simpan'])->name('kenangan.simpan')->middleware(['icVerif', 'throttle:ic-kenangan']);
         Route::delete('/kenangan/{id}', [kenanganController::class, 'hapus'])->whereNumber('id')->name('kenangan.hapus')->middleware('throttle:ic-hapus-kenangan');
