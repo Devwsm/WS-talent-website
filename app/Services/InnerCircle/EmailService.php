@@ -3,12 +3,15 @@
 namespace App\Services\InnerCircle;
 
 use App\Mail\InnerCircle\AkunGoogleMail;
+use App\Mail\InnerCircle\KartuGlMail;
 use App\Mail\InnerCircle\PesanIc;
 use App\Mail\InnerCircle\ResetSandiMail;
 use App\Mail\InnerCircle\SelamatDatangMail;
 use App\Mail\InnerCircle\StatusKlaimMail;
 use App\Mail\InnerCircle\VerifikasiEmailMail;
 use App\Models\ic_claim;
+use App\Models\ic_event;
+use App\Models\ic_gl_antrean;
 use App\Models\member;
 use Closure;
 use Illuminate\Support\Facades\Log;
@@ -180,6 +183,30 @@ class EmailService
             $klaim->catatan_admin,
             route('ic.hadiah'),
         )));
+    }
+
+    /**
+     * Kabari pemenang GL bahwa kartunya siap. Hanya sekali per pemenang (kartu_dikirim_pada), jadi mengulang
+     * undian susulan atau memanggil dua kali tidak menggandakan email. Sandi acara tidak dikirim (lihat KartuGlMail).
+     */
+    public function kirimKartuGl(ic_gl_antrean $baris, ic_event $event): void
+    {
+        $baris->loadMissing('anggota');
+
+        if ($baris->kartu_dikirim_pada !== null || ! $baris->anggota) {
+            return;
+        }
+
+        $this->tunda(function () use ($baris, $event) {
+            Mail::to($baris->anggota->email)->send(new KartuGlMail(
+                $baris->anggota->nama,
+                GlService::namaAcara($event),
+                $event->tanggal->locale('id')->translatedFormat('l, j F Y'),
+                route('ic.beranda'),
+            ));
+
+            $baris->forceFill(['kartu_dikirim_pada' => now()])->save();
+        });
     }
 
     /**

@@ -16,6 +16,7 @@ use App\Services\InnerCircle\CheckinService;
 use App\Services\InnerCircle\ClaimService;
 use App\Services\InnerCircle\KenanganService;
 use App\Services\InnerCircle\KlaimGagal;
+use App\Services\InnerCircle\UndianService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -71,6 +72,9 @@ class memberController extends Controller
     public function checkin(Request $request, CheckinService $checkin)
     {
         $anggota = $this->anggota();
+
+        // Pengaman undian GL bila cron belum terpasang (paling sering sekali per menit untuk seluruh situs).
+        app(UndianService::class)->pengamanKunjungan();
 
         $bulan = $this->teks($request, 'bulan');
         $tipe = $this->teks($request, 'tipe');

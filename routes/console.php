@@ -13,3 +13,11 @@ Artisan::command('inspire', function () {
 Schedule::command('ic:sinkron-bandsintown')
     ->dailyAt('04:00')
     ->when(fn() => config('inner_circle.aktif') && \App\Services\InnerCircle\BandsintownService::tersedia());
+
+// Undian GL gratis Inner Circle: tiap menit memeriksa acara yang waktu undiannya (bawaan hari H 18.00 WIB) sudah tiba.
+// Butuh cron `schedule:run` tiap menit di server (README bagian 5.4). Tanpa cron, undian tetap dipicu kunjungan anggota
+// (UndianService::pengamanKunjungan) dan tombol "Undi sekarang" di CMS.
+Schedule::command('ic:undi-gl')
+    ->everyMinute()
+    ->withoutOverlapping()
+    ->when(fn() => config('inner_circle.aktif'));

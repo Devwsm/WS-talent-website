@@ -68,7 +68,8 @@ return [
     /*
     | GL gratis (aturan baru Inner Circle).
     | - undian_jam / undian_hari_sebelum: waktu undian bawaan per acara = hari H pukul 18.00 WIB. Admin bisa menggantinya
-    |   per acara (kolom ic_events.undian_pada). Undian TIDAK jalan otomatis: admin menekan "Undi sekarang" (tanpa cron).
+    |   per acara (kolom ic_events.undian_pada). Undian jalan otomatis lewat `ic:undi-gl` (jadwal tiap menit, butuh cron),
+    |   dengan pengaman kunjungan anggota dan tombol "Undi sekarang" di CMS (Fase 6B) bila cron belum terpasang.
     | - kuota_maks: batas isian kuota GL per acara di CMS.
     */
     'gl' => [
