@@ -8,8 +8,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * Pengajuan satu hadiah oleh satu anggota. Status: diajukan, ditinjau, disetujui, selesai, ditolak
+ * Penukaran satu hadiah oleh satu anggota. Status: diajukan, ditinjau, disetujui, selesai, ditolak, dibatalkan
  * (daftar baku di config/inner_circle.php). Perubahan status lewat ClaimService, bukan langsung.
+ *
+ * `poin_ditahan` = poin yang ditahan dari saldo anggota saat mengajukan (harga hadiah saat itu). Poin tetap ditahan selama
+ * statusnya menunggu, habis dipakai saat `selesai`, dan dikembalikan saat `ditolak` atau `dibatalkan`. Klaim lama sebelum
+ * Fase 8 bernilai 0 (tidak pernah memotong saldo).
  *
  * Properti turunan di bawah dipakai view anggota dan dashboard (nama sama dengan data contoh Fase 2-3).
  * Muat relasi `reward` dan `member` lebih dulu (with()) saat menampilkan banyak baris.
@@ -23,10 +27,18 @@ class ic_claim extends Model
         'member_id',
         'reward_id',
         'opsi_dipilih',
+        'poin_ditahan',
         'status',
         'catatan_admin',
         'diproses_oleh',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'poin_ditahan' => 'integer',
+        ];
+    }
 
     public function reward(): BelongsTo
     {
@@ -43,10 +55,22 @@ class ic_claim extends Model
         return $this->hasMany(ic_claim_log::class, 'claim_id', 'id_claim')->orderBy('id_log');
     }
 
-    /** Klaim yang masih menunggu tindakan admin. */
+    /** Klaim yang masih menunggu tindakan admin (poinnya masih ditahan bila `poin_ditahan` > 0). */
     public static function statusMenunggu(): array
     {
         return ['diajukan', 'ditinjau', 'disetujui'];
+    }
+
+    /** Status akhir yang mengembalikan poin yang ditahan (dan stok hadiah). */
+    public static function statusBatal(): array
+    {
+        return ['ditolak', 'dibatalkan'];
+    }
+
+    /** Penukaran ini memakai alur poin baru (poin ditahan saat mengajukan), bukan klaim lama tanpa pemotongan. */
+    public function memakaiPoin(): bool
+    {
+        return $this->poin_ditahan > 0;
     }
 
     protected function diajukanPada(): Attribute

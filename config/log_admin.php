@@ -274,13 +274,20 @@ return [
             'sumber' => ['model' => \App\Models\ic_claim::class, 'param' => 'id', 'kolom' => 'id_claim', 'relasi' => ['reward', 'member']],
             'nilai' => ['aksi' => ['lanjut' => 'dilanjutkan ke tahap berikutnya', 'tolak' => 'ditolak', 'catatan' => 'diberi catatan', 'buka_kembali' => 'dibuka kembali']],
         ],
+        'ic.admin.hadiah.simpan' => [
+            'judul' => 'Hadiah ditambahkan',
+            'ket' => 'Hadiah “{nama}” ditambahkan ke katalog.',
+            'ket_tanpa_nama' => 'Hadiah baru ditambahkan ke katalog.',
+            'gagal' => 'Hadiah gagal ditambahkan',
+            'nama' => ['{judul}'],
+        ],
         'ic.admin.hadiah.ubah' => [
             'judul' => 'Hadiah diubah',
             'ket' => 'Hadiah “{nama}” diperbarui.',
             'ket_tanpa_nama' => 'Sebuah hadiah diperbarui.',
             'gagal' => 'Hadiah gagal diubah',
             'nama' => ['{judul}'],
-            'sumber' => ['model' => \App\Models\ic_reward::class, 'param' => 'target', 'kolom' => 'harga_poin'],
+            'sumber' => ['model' => \App\Models\ic_reward::class, 'param' => 'id', 'kolom' => 'id_reward'],
         ],
         'ic.admin.hadiah.aktif' => [
             'judul' => 'Tampilan hadiah diubah',
@@ -288,7 +295,16 @@ return [
             'ket_tanpa_nama' => 'Tampilan sebuah hadiah diubah.',
             'gagal' => 'Tampilan hadiah gagal diubah',
             'nama' => ['{judul}'],
-            'sumber' => ['model' => \App\Models\ic_reward::class, 'param' => 'target', 'kolom' => 'harga_poin'],
+            'sumber' => ['model' => \App\Models\ic_reward::class, 'param' => 'id', 'kolom' => 'id_reward'],
+        ],
+        'ic.admin.pengaduan.proses' => [
+            'judul' => 'Pengaduan ditindaklanjuti',
+            'ket' => 'Pengaduan {nama} {input.status}.',
+            'ket_tanpa_nama' => 'Sebuah pengaduan ditindaklanjuti.',
+            'gagal' => 'Pengaduan gagal ditindaklanjuti',
+            'nama' => ['dari {member.nama}'],
+            'sumber' => ['model' => \App\Models\ic_pengaduan::class, 'param' => 'id', 'kolom' => 'id_pengaduan', 'relasi' => ['member']],
+            'nilai' => ['status' => ['baru' => 'dibuka kembali', 'diproses' => 'mulai diproses', 'selesai' => 'diselesaikan']],
         ],
 
         // ---- CMS Inner Circle: pengumuman, kenangan, email ----

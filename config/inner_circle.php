@@ -200,8 +200,9 @@ return [
     ],
 
     /*
-    | Status pengajuan hadiah (satu set baku untuk anggota dan admin):
-    | diajukan -> ditinjau -> disetujui -> selesai, atau ditolak.
+    | Status penukaran hadiah (satu set baku untuk anggota dan admin):
+    | diajukan -> ditinjau -> disetujui -> selesai, atau ditolak (oleh admin) / dibatalkan (oleh anggota).
+    | Poin ditahan sejak diajukan, habis dipakai saat selesai, dan kembali saat ditolak atau dibatalkan.
     | `warna` dipakai sebagai modifier lencana: .ic-pil--{warna}.
     */
     'status_klaim' => [
@@ -210,6 +211,33 @@ return [
         'disetujui' => ['label' => 'Disetujui', 'warna' => 'biru'],
         'selesai' => ['label' => 'Selesai', 'warna' => 'hijau'],
         'ditolak' => ['label' => 'Ditolak', 'warna' => 'merah'],
+        'dibatalkan' => ['label' => 'Dibatalkan', 'warna' => 'merah'],
+    ],
+
+    /*
+    | Pengaduan anggota (Fase 9). Dikirim dari halaman Pengaduan di area anggota, ditindaklanjuti admin di detail anggota.
+    | - isi_min / isi_maks: panjang isi pengaduan (karakter). catatan_maks: catatan admin untuk anggota.
+    | - batas_per_hari: jumlah pengaduan per anggota per hari (dihitung dari database); batas_per_menit: pembatas laju.
+    | - kategori: kunci => label. status: baru -> diproses -> selesai (`warna` = modifier .ic-pil--{warna}).
+    */
+    'pengaduan' => [
+        'isi_min' => 10,
+        'isi_maks' => 1000,
+        'catatan_maks' => 300,
+        'batas_per_hari' => 3,
+        'batas_per_menit' => 3,
+        'kategori' => [
+            'checkin' => 'Check-in dan poin',
+            'gl' => 'GL gratis dan undian',
+            'hadiah' => 'Hadiah dan penukaran',
+            'akun' => 'Akun dan data diri',
+            'lainnya' => 'Lainnya',
+        ],
+        'status' => [
+            'baru' => ['label' => 'Baru', 'warna' => 'kuning'],
+            'diproses' => ['label' => 'Diproses', 'warna' => 'biru'],
+            'selesai' => ['label' => 'Selesai', 'warna' => 'hijau'],
+        ],
     ],
 
     /*
@@ -288,7 +316,7 @@ return [
         'ringkasan' => ['label' => 'Ringkasan', 'ikon' => 'bi-speedometer2', 'route' => 'ic.admin.ringkasan', 'fase' => 4],
         'anggota' => ['label' => 'Anggota', 'ikon' => 'bi-people-fill', 'route' => 'ic.admin.anggota', 'fase' => 4],
         'acara' => ['label' => 'Acara', 'ikon' => 'bi-qr-code', 'route' => 'ic.admin.acara', 'fase' => 4],
-        'klaim' => ['label' => 'Klaim', 'ikon' => 'bi-inbox-fill', 'route' => 'ic.admin.klaim', 'fase' => 5],
+        'klaim' => ['label' => 'Penukaran', 'ikon' => 'bi-inbox-fill', 'route' => 'ic.admin.klaim', 'fase' => 5],
         'hadiah' => ['label' => 'Hadiah', 'ikon' => 'bi-gift-fill', 'route' => 'ic.admin.hadiah', 'fase' => 5],
         'pengumuman' => ['label' => 'Pengumuman', 'ikon' => 'bi-megaphone-fill', 'route' => 'ic.admin.pengumuman', 'fase' => 6],
         'kenangan' => ['label' => 'Kenangan', 'ikon' => 'bi-images', 'route' => 'ic.admin.kenangan', 'fase' => 6],

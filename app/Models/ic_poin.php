@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * Satu baris buku besar poin. Hanya ditambah, tidak pernah diubah (tidak ada updated_at).
  * Check-in = sumber `checkin` + event_id terisi; poin dari admin = sumber `manual`.
  * Koreksi admin = sumber `koreksi` dengan jumlah NEGATIF (baris baru, baris lama tidak disentuh).
+ * Penukaran hadiah = sumber `tukar` (NEGATIF, poin ditahan) dan `kembali` (positif, poin dikembalikan), keduanya dengan
+ * `claim_id`; kunci unik (claim_id, sumber) menjamin satu tahan dan satu kembali per penukaran.
  */
 class ic_poin extends Model
 {
@@ -23,6 +25,7 @@ class ic_poin extends Model
         'jumlah',
         'sumber',
         'event_id',
+        'claim_id',
         'judul',
         'ikon',
         'catatan',
@@ -46,7 +49,7 @@ class ic_poin extends Model
         return Attribute::get(fn() => $this->created_at);
     }
 
-    /** Baris pengurang (koreksi admin). */
+    /** Baris pengurang (koreksi admin atau poin yang ditahan untuk penukaran hadiah). */
     public function koreksi(): bool
     {
         return $this->jumlah < 0;

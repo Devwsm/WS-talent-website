@@ -2,6 +2,7 @@
 
 namespace App\Services\InnerCircle;
 
+use App\Models\ic_claim;
 use App\Models\ic_event;
 use App\Models\ic_poin;
 use App\Models\member;
@@ -82,6 +83,55 @@ class PoinService
 
             return $baris;
         });
+    }
+
+    /**
+     * Tahan poin untuk satu penukaran hadiah: baris NEGATIF `tukar` di buku besar dan saldo (`poin_total`) berkurang. Dipanggil
+     * ClaimService di dalam transaksi yang sudah mengunci baris anggota, jadi tidak mengunci ulang. Kunci unik
+     * (claim_id, sumber) menolak penahanan kedua untuk penukaran yang sama.
+     */
+    public function tahanUntukPenukaran(member $anggota, ic_claim $klaim, int $jumlah, string $judulHadiah, ?string $ikon = null): ic_poin
+    {
+        $baris = ic_poin::create([
+            'member_id' => $anggota->getKey(),
+            'jumlah' => -$jumlah,
+            'sumber' => 'tukar',
+            'claim_id' => $klaim->getKey(),
+            'judul' => mb_substr('Tukar hadiah: ' . $judulHadiah, 0, 120),
+            'ikon' => $ikon ?: 'gift',
+            'catatan' => 'Poin ditahan sampai penukaran selesai.',
+        ]);
+
+        $anggota->decrement('poin_total', $jumlah);
+
+        return $baris;
+    }
+
+    /**
+     * Kembalikan poin yang ditahan (penukaran ditolak atau dibatalkan): baris positif `kembali`, saldo bertambah. Paling
+     * banyak satu kali per penukaran (kunci unik claim_id + sumber); pemanggil memeriksa lebih dulu lewat sudahKembali().
+     */
+    public function kembalikanPenukaran(member $anggota, ic_claim $klaim, int $jumlah, string $judulHadiah, string $alasan, ?string $ikon = null): ic_poin
+    {
+        $baris = ic_poin::create([
+            'member_id' => $anggota->getKey(),
+            'jumlah' => $jumlah,
+            'sumber' => 'kembali',
+            'claim_id' => $klaim->getKey(),
+            'judul' => mb_substr('Poin kembali: ' . $judulHadiah, 0, 120),
+            'ikon' => $ikon ?: 'gift',
+            'catatan' => mb_substr($alasan, 0, 160),
+        ]);
+
+        $anggota->increment('poin_total', $jumlah);
+
+        return $baris;
+    }
+
+    /** Poin penukaran ini sudah pernah dikembalikan? */
+    public function sudahKembali(ic_claim $klaim): bool
+    {
+        return ic_poin::query()->where('claim_id', $klaim->getKey())->where('sumber', 'kembali')->exists();
     }
 
     /** Poin manual dari admin (mis. kehadiran di acara privat yang diverifikasi tim WSM). */

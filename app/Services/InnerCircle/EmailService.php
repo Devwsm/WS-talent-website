@@ -8,10 +8,12 @@ use App\Mail\InnerCircle\PesanIc;
 use App\Mail\InnerCircle\ResetSandiMail;
 use App\Mail\InnerCircle\SelamatDatangMail;
 use App\Mail\InnerCircle\StatusKlaimMail;
+use App\Mail\InnerCircle\StatusPengaduanMail;
 use App\Mail\InnerCircle\VerifikasiEmailMail;
 use App\Models\ic_claim;
 use App\Models\ic_event;
 use App\Models\ic_gl_antrean;
+use App\Models\ic_pengaduan;
 use App\Models\member;
 use Closure;
 use Illuminate\Support\Facades\Log;
@@ -54,7 +56,12 @@ class EmailService
         'klaim' => [
             'label' => 'Status hadiah berubah',
             'ikon' => 'bi-gift-fill',
-            'kapan' => 'Dikirim ke anggota saat admin melanjutkan atau menolak pengajuan hadiahnya di tab Klaim. Mengubah catatan saja tidak mengirim email.',
+            'kapan' => 'Dikirim ke anggota saat admin melanjutkan atau menolak penukaran hadiahnya di tab Penukaran. Saat ditolak, email menyebut poin yang dikembalikan. Mengubah catatan saja tidak mengirim email; anggota yang membatalkan sendiri juga tidak dikirimi email.',
+        ],
+        'pengaduan' => [
+            'label' => 'Status pengaduan berubah',
+            'ikon' => 'bi-chat-left-text-fill',
+            'kapan' => 'Dikirim ke anggota saat admin mengubah status pengaduannya (Diproses atau Selesai) dari detail anggota. Catatan admin ikut dikirim. Mengubah catatan saja tidak mengirim email.',
         ],
     ];
 
@@ -66,7 +73,8 @@ class EmailService
             'google' => new AkunGoogleMail('Contoh Anggota', route('ic.masuk'), GoogleOAuth::tersedia()),
             'selamat-datang' => new SelamatDatangMail('Contoh Anggota', 'IC-00001', route('ic.beranda')),
             'verifikasi' => new VerifikasiEmailMail('Contoh Anggota', url('/innercircle/verifikasi/1/contoh'), self::jamBerlakuVerifikasi()),
-            'klaim' => new StatusKlaimMail('Contoh Anggota', 'Merch Eksklusif', 'ditolak', 'Ditolak', 'Stok tahap ini sudah habis, hubungi tim WSM untuk alternatif.', route('ic.hadiah')),
+            'klaim' => new StatusKlaimMail('Contoh Anggota', 'Merch Eksklusif', 'ditolak', 'Ditolak', 'Stok tahap ini sudah habis, hubungi tim WSM untuk alternatif.', route('ic.hadiah'), 250000),
+            'pengaduan' => new StatusPengaduanMail('Contoh Anggota', 'Hadiah dan penukaran', 'selesai', 'Selesai', 'Sudah kami periksa dan poinmu sudah kembali.', route('ic.pengaduan')),
         };
     }
 
@@ -182,6 +190,26 @@ class EmailService
             (string) config('inner_circle.status_klaim.' . $klaim->status . '.label', $klaim->status),
             $klaim->catatan_admin,
             route('ic.hadiah'),
+            $klaim->status === 'ditolak' ? (int) $klaim->poin_ditahan : 0,
+        )));
+    }
+
+    /** Kabari anggota saat status pengaduannya berubah. Gagal kirim hanya dicatat di log (tunda). */
+    public function kirimStatusPengaduan(ic_pengaduan $pengaduan): void
+    {
+        $pengaduan->loadMissing('member');
+
+        if (! $pengaduan->member) {
+            return;
+        }
+
+        $this->tunda(fn() => Mail::to($pengaduan->member->email)->send(new StatusPengaduanMail(
+            $pengaduan->member->nama,
+            $pengaduan->labelKategori(),
+            $pengaduan->status,
+            $pengaduan->labelStatus(),
+            $pengaduan->catatan_admin,
+            route('ic.pengaduan'),
         )));
     }
 

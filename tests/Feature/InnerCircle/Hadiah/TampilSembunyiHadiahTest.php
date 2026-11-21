@@ -49,6 +49,12 @@ class TampilSembunyiHadiahTest extends TestCase
         return $k;
     }
 
+    /** Id hadiah menurut judulnya (katalog baru: Meet & Greet 150.000, Merchandise 250.000). */
+    private function idHadiah(string $judul): int
+    {
+        return (int) ic_reward::where('judul', $judul)->value('id_reward');
+    }
+
     private function broadcast(array $o = []): ic_broadcast
     {
         return ic_broadcast::create($o + [
@@ -64,50 +70,54 @@ class TampilSembunyiHadiahTest extends TestCase
         ]);
     }
 
-    public function test_tahap_hadiah_disembunyikan_hilang_dari_anggota_dan_tidak_bisa_diklaim(): void
+    public function test_hadiah_disembunyikan_hilang_dari_anggota_dan_tidak_bisa_ditukar(): void
     {
-        $m = $this->anggota(30000);
-        $this->actingAs($m, 'member')->get(route('ic.hadiah'))->assertSee('Hadiah Pertama');
+        $m = $this->anggota(200000);
+        $id = $this->idHadiah('Meet & Greet');
+        $this->actingAs($m, 'member')->get(route('ic.hadiah'))->assertSee('Meet & Greet');
 
-        $this->admin()->patch(route('ic.admin.hadiah.aktif', 10000), ['aktif' => 0])->assertSessionHas('success');
-        $this->assertFalse(ic_reward::where('harga_poin', 10000)->first()->aktif);
+        $this->admin()->patch(route('ic.admin.hadiah.aktif', $id), ['aktif' => 0])->assertSessionHas('success');
+        $this->assertFalse(ic_reward::find($id)->aktif);
 
-        $this->actingAs($m, 'member')->get(route('ic.hadiah'))->assertDontSee('Hadiah Pertama');
-        $this->actingAs($m, 'member')->post(route('ic.hadiah.klaim', 10000))->assertSessionHas('ic_toast_galat');
+        $this->actingAs($m, 'member')->get(route('ic.hadiah'))->assertDontSee('Meet & Greet');
+        $this->actingAs($m, 'member')->post(route('ic.hadiah.tukar', $id))->assertSessionHas('ic_toast_galat');
         $this->assertSame(0, ic_claim::count());
-        $this->get(route('ic.tentang'))->assertDontSee('Hadiah Pertama');
+        $this->assertSame(200000, $m->fresh()->poin_total);
+        $this->get(route('ic.tentang'))->assertDontSee('Meet & Greet');
 
-        // Admin tetap melihat tahap itu (dengan tanda) dan bisa mengaktifkannya lagi.
-        $this->admin()->get(route('ic.admin.hadiah'))->assertOk()->assertSee('Disembunyikan');
-        $this->admin()->patch(route('ic.admin.hadiah.aktif', 10000), ['aktif' => 1])->assertSessionHas('success');
-        $this->actingAs($m, 'member')->get(route('ic.hadiah'))->assertSee('Hadiah Pertama');
+        // Admin tetap melihat hadiah itu (dengan tanda) dan bisa mengaktifkannya lagi.
+        $this->admin()->get(route('ic.admin.hadiah', ['hadiah' => $id]))->assertOk()->assertSee('Disembunyikan');
+        $this->admin()->patch(route('ic.admin.hadiah.aktif', $id), ['aktif' => 1])->assertSessionHas('success');
+        $this->actingAs($m, 'member')->get(route('ic.hadiah'))->assertSee('Meet & Greet');
     }
 
-    public function test_klaim_yang_sudah_masuk_tetap_diproses_walau_tahapnya_disembunyikan(): void
+    public function test_klaim_yang_sudah_masuk_tetap_diproses_walau_hadiahnya_disembunyikan(): void
     {
         Mail::fake();
         $k = $this->klaim($this->anggota(12000), 'diajukan');
-        $this->admin()->patch(route('ic.admin.hadiah.aktif', 10000), ['aktif' => 0]);
+        $this->admin()->patch(route('ic.admin.hadiah.aktif', $k->reward_id), ['aktif' => 0]);
 
         $this->admin()->patch(route('ic.admin.klaim.proses', $k->id_claim), ['aksi' => 'lanjut', 'dari' => 'diajukan'])->assertSessionHas('success');
         $this->assertSame('ditinjau', $k->fresh()->status);
     }
 
-    public function test_minimal_satu_tahap_hadiah_harus_aktif(): void
+    public function test_minimal_satu_hadiah_harus_aktif(): void
     {
-        ic_reward::query()->where('harga_poin', '!=', 250000)->update(['aktif' => false]);
+        $id = $this->idHadiah('Merchandise');
+        ic_reward::query()->where('id_reward', '!=', $id)->update(['aktif' => false]);
 
-        $this->admin()->patch(route('ic.admin.hadiah.aktif', 250000), ['aktif' => 0])->assertSessionHas('error');
-        $this->assertTrue(ic_reward::where('harga_poin', 250000)->first()->aktif);
+        $this->admin()->patch(route('ic.admin.hadiah.aktif', $id), ['aktif' => 0])->assertSessionHas('error');
+        $this->assertTrue(ic_reward::find($id)->aktif);
     }
 
     public function test_aksi_tampil_sembunyikan_butuh_admin_dan_nilai_valid(): void
     {
-        $this->patch(route('ic.admin.hadiah.aktif', 10000), ['aktif' => 0])->assertRedirect(route('login'));
+        $id = $this->idHadiah('Meet & Greet');
+        $this->patch(route('ic.admin.hadiah.aktif', $id), ['aktif' => 0])->assertRedirect(route('login'));
         $this->patch(route('ic.admin.pengumuman.aktif', 1), ['aktif' => 0])->assertRedirect(route('login'));
 
-        $this->admin()->patch(route('ic.admin.hadiah.aktif', 10000), ['aktif' => 'mungkin'])->assertSessionHasErrors('aktif');
-        $this->admin()->patch(route('ic.admin.hadiah.aktif', 999), ['aktif' => 0])->assertNotFound();
+        $this->admin()->patch(route('ic.admin.hadiah.aktif', $id), ['aktif' => 'mungkin'])->assertSessionHasErrors('aktif');
+        $this->admin()->patch(route('ic.admin.hadiah.aktif', 9999), ['aktif' => 0])->assertNotFound();
         $this->admin()->patch(route('ic.admin.pengumuman.aktif', 999), ['aktif' => 0])->assertNotFound();
     }
 

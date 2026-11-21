@@ -155,6 +155,16 @@ return [
                 'petunjuk' => 'Kosongkan untuk memakai kalimat bawaan menurut status (dibuka kembali, ditolak, selesai). Bila diisi, kalimat ini dipakai untuk semua status.'
             ],
         ],
+        'pengaduan' => [
+            'placeholder' => ['nama', 'status'],
+            'subjek' => ['label' => 'Subjek', 'maks' => 120, 'bawaan' => 'Pengaduanmu: {status}'],
+            'pembuka' => [
+                'label' => 'Paragraf pembuka (semua status)',
+                'maks' => 400,
+                'bawaan' => '',
+                'petunjuk' => 'Kosongkan untuk memakai kalimat bawaan menurut status (diproses, selesai). Bila diisi, kalimat ini dipakai untuk semua status.'
+            ],
+        ],
     ],
 
     /*
@@ -428,7 +438,7 @@ return [
         'beranda.poin.selesai' => [
             'grup' => 'beranda',
             'label' => 'Kotak progres: bila semua hadiah terbuka',
-            'bawaan' => 'Semua tahapan hadiah sudah terbuka.',
+            'bawaan' => 'Poinmu sudah cukup untuk semua hadiah.',
             'maks' => 100,
         ],
         'beranda.poin.catatan' => [
@@ -498,7 +508,7 @@ return [
         'hadiah.cara.deskripsi' => [
             'grup' => 'hadiah',
             'label' => 'Isi catatan cara kerja (syarat hadiah)',
-            'bawaan' => 'Poin bersifat kumulatif dan tidak berkurang setelah klaim. Setiap tahapan hanya dapat diklaim satu kali. Benefit pengalaman bergantung pada kapasitas, jadwal artis, dan izin promotor atau venue.',
+            'bawaan' => 'Poin ditahan saat kamu mengajukan penukaran, habis dipakai bila hadiah diterima, dan kembali bila penukaran dibatalkan, ditolak, atau stok habis. Hadiah boleh ditukar lagi selama poin cukup dan stok ada. Benefit pengalaman bergantung pada kapasitas, jadwal artis, dan izin promotor atau venue.',
             'maks' => 400,
             'baris' => true,
         ],
@@ -665,7 +675,7 @@ return [
         'profil.klaim.kosong' => [
             'grup' => 'profil',
             'label' => 'Pengajuan hadiah: teks bila kosong (gunakan {hadiah} untuk tautan ke halaman Hadiah)',
-            'bawaan' => 'Belum ada pengajuan. Buka {hadiah} untuk mengajukan tahapan yang sudah terbuka.',
+            'bawaan' => 'Belum ada pengajuan. Buka {hadiah} untuk menukar poinmu dengan hadiah.',
             'maks' => 200,
             'baris' => true,
             'tautan' => ['hadiah'],
@@ -758,8 +768,8 @@ return [
             'bawaan' => [
                 ['judul' => 'Daftar', 'isi' => 'Buat akun dengan email dan kata sandi, atau langsung dengan akun Google.'],
                 ['judul' => 'Datang ke acara', 'isi' => 'Pindai QR check-in di venue saat Whisnu Santika tampil.'],
-                ['judul' => 'Kumpulkan poin', 'isi' => 'Setiap acara yang kamu hadiri memberi poin. Poin tidak berkurang saat kamu mengajukan hadiah.'],
-                ['judul' => 'Buka hadiah', 'isi' => 'Di setiap tahap poin, ajukan hadiahmu dan pantau statusnya sampai selesai.'],
+                ['judul' => 'Kumpulkan poin', 'isi' => 'Setiap acara yang kamu hadiri memberi poin. Poin yang terkumpul bisa kamu tukar dengan hadiah.'],
+                ['judul' => 'Buka hadiah', 'isi' => 'Pilih hadiah di katalog, ajukan penukarannya, lalu pantau statusnya sampai hadiah diterima.'],
             ],
         ],
         'faq' => [
@@ -772,9 +782,9 @@ return [
             'tautan' => ['privasi'],
             'maks_item' => 12,
             'bawaan' => [
-                ['judul' => 'Apa itu poin?', 'isi' => 'Poin adalah bukti kehadiranmu di sebuah acara. Setiap acara memberi poin, dan jumlahnya tidak berkurang saat kamu mengajukan hadiah.'],
+                ['judul' => 'Apa itu poin?', 'isi' => 'Poin adalah bukti kehadiranmu di sebuah acara. Poin bisa ditukar dengan hadiah: poinnya ditahan saat kamu mengajukan, lalu dikembalikan bila penukaran dibatalkan atau ditolak.'],
                 ['judul' => 'Bagaimana cara check-in di acara?', 'isi' => 'Di venue, pindai QR resmi acara dengan kamera HP, lalu masuk ke akunmu. Check-in dibuka pada hari acara dan hanya bisa dilakukan satu kali per acara.'],
-                ['judul' => 'Bagaimana cara mengajukan hadiah?', 'isi' => 'Saat poinmu mencapai target sebuah tahap, buka halaman Hadiah lalu ajukan. Tim WSM akan meninjau dan memberi kabar lewat halaman Hadiah dan email.'],
+                ['judul' => 'Bagaimana cara mengajukan hadiah?', 'isi' => 'Saat poinmu cukup untuk sebuah hadiah, buka halaman Hadiah lalu ajukan. Tim WSM akan memeriksa dan memberi kabar lewat halaman Hadiah dan email.'],
                 ['judul' => 'Bagaimana data saya digunakan?', 'isi' => 'Kami hanya menyimpan data yang dibutuhkan untuk menjalankan komunitas ini. Penjelasan lengkapnya ada di {privasi}, dan kamu bisa menghapus akunmu kapan saja dari halaman Profil.'],
             ],
         ],

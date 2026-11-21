@@ -23,6 +23,14 @@
 
             @php($adaFilter = $q !== '' || $status !== '' || $via !== '' || $akun !== '')
 
+            @if (request()->query('pengaduan') === 'terbuka')
+                <p class="rounded-2xl border border-amber-300/30 bg-amber-300/10 px-4 py-3 text-sm text-amber-100">
+                    <i class="bi bi-chat-left-text-fill" aria-hidden="true"></i>
+                    Menampilkan anggota yang punya pengaduan belum selesai. Buka profil anggota untuk menindaklanjuti.
+                    <a class="underline" href="{{ route('ic.admin.anggota') }}">Tampilkan semua anggota</a>
+                </p>
+            @endif
+
             {{-- Cari dan filter: GET, jadi bisa dibagikan dan jalan tanpa JavaScript --}}
             <form method="GET" action="{{ route('ic.admin.anggota') }}" role="search"
                 class="flex flex-col lg:flex-row gap-3 rounded-3xl border border-white/10 bg-white/3 p-4 md:p-5">

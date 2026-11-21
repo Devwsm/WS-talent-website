@@ -53,7 +53,7 @@ class HalamanPenjelasanTest extends TestCase
         $this->get(route('ic.tentang'))
             ->assertOk()
             ->assertSee('Cara kerjanya')
-            ->assertSee('Hadiah Pertama')
+            ->assertSee('Meet & Greet')
             ->assertSee('Venue Publik Uji')
             ->assertDontSee('Acara Privat Rahasia')
             ->assertDontSee('Kota Tanpa Venue')
@@ -68,7 +68,7 @@ class HalamanPenjelasanTest extends TestCase
     {
         ic_reward::query()->update(['aktif' => false]);
 
-        $this->get(route('ic.tentang'))->assertOk()->assertSee('Jadwal acara berikutnya akan diumumkan')->assertDontSee('Hadiah Pertama');
+        $this->get(route('ic.tentang'))->assertOk()->assertSee('Jadwal acara berikutnya akan diumumkan')->assertDontSee('Meet & Greet');
     }
 
     public function test_tamu_di_beranda_dialihkan_ke_penjelasan_dan_anggota_tetap_ke_beranda(): void

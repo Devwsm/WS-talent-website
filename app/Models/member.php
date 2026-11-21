@@ -86,6 +86,11 @@ class member extends Authenticatable
         return $this->hasMany(ic_poin::class, 'member_id', 'id_member');
     }
 
+    public function pengaduan(): HasMany
+    {
+        return $this->hasMany(ic_pengaduan::class, 'member_id', 'id_member');
+    }
+
     public function klaim(): HasMany
     {
         return $this->hasMany(ic_claim::class, 'member_id', 'id_member');

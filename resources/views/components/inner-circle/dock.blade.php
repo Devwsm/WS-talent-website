@@ -12,7 +12,7 @@
         ],
         ['route' => 'ic.komunitas', 'label' => 'Komunitas', 'ikon' => 'bi-heart', 'aktif' => 'bi-heart-fill'],
     ];
-    $profilAktif = request()->routeIs('ic.profil');
+    $profilAktif = request()->routeIs('ic.profil', 'ic.pengaduan*');
 @endphp
 {{-- Dock bawah: satu-satunya navigasi utama (desktop dan HP). Sidebar kiri di prototype tidak dibawa. --}}
 <nav class="ic-dock" aria-label="Navigasi Inner Circle">

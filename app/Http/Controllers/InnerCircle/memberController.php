@@ -68,20 +68,54 @@ class memberController extends Controller
         return view('pages.inner-circle.hadiah', [
             'member' => $anggota,
             'rewards' => $klaim->hadiahUntuk($anggota)->all(),
+            'dompet' => $klaim->dompet($anggota),
+            'penukaran' => $klaim->klaimAnggota($anggota)->take(20)->all(),
         ]);
     }
 
-    /** Ajukan hadiah satu tahap (target poin dari URL). Aturannya ada di ClaimService. */
-    public function ajukanKlaim(int $target, ajukanKlaimRequest $request, ClaimService $klaim): RedirectResponse
+    /** Tukar poin dengan hadiah (id hadiah dari URL). Aturannya ada di ClaimService. */
+    public function ajukanKlaim(int $id, ajukanKlaimRequest $request, ClaimService $klaim): RedirectResponse
     {
         try {
-            $pengajuan = $klaim->ajukan($this->anggota(), $target, $request->validated('opsi'));
+            $pengajuan = $klaim->ajukan($this->anggota(), $id, $request->validated('opsi'));
         } catch (KlaimGagal $e) {
             return redirect(route('ic.hadiah') . '#klaim')->with('ic_toast_galat', $e->getMessage());
         }
 
         return redirect(route('ic.hadiah') . '#klaim')
-            ->with('ic_toast', 'Pengajuan terkirim! Tim WSM akan meninjau hadiah ' . ic_angka($pengajuan->harga_poin) . ' poin.');
+            ->with('ic_toast', 'Penukaran terkirim! ' . ic_angka($pengajuan->poin_ditahan) . ' poin ditahan sampai tim WSM selesai memeriksa.');
+    }
+
+    /** Batalkan penukaran sendiri selama masih "Diajukan": poin dan stok kembali. */
+    public function batalkanKlaim(int $id, ClaimService $klaim): RedirectResponse
+    {
+        try {
+            $pengajuan = $klaim->batalkan($this->anggota(), $id);
+        } catch (KlaimGagal $e) {
+            return redirect(route('ic.hadiah') . '#klaim')->with('ic_toast_galat', $e->getMessage());
+        }
+
+        return redirect(route('ic.hadiah') . '#klaim')
+            ->with('ic_toast', 'Penukaran dibatalkan. ' . ic_angka($pengajuan->poin_ditahan) . ' poin sudah kembali ke saldomu.');
+    }
+
+    /** Masuk daftar tunggu hadiah yang stoknya habis. */
+    public function ikutTunggu(int $id, ClaimService $klaim): RedirectResponse
+    {
+        try {
+            $klaim->ikutTunggu($this->anggota(), $id);
+        } catch (KlaimGagal $e) {
+            return redirect(route('ic.hadiah') . '#katalog')->with('ic_toast_galat', $e->getMessage());
+        }
+
+        return redirect(route('ic.hadiah') . '#katalog')->with('ic_toast', 'Kamu masuk daftar tunggu. Saat stoknya tersedia lagi, hadiah ini akan bertanda di halaman Hadiah.');
+    }
+
+    public function keluarTunggu(int $id, ClaimService $klaim): RedirectResponse
+    {
+        $klaim->keluarTunggu($this->anggota(), $id);
+
+        return redirect(route('ic.hadiah') . '#katalog')->with('ic_toast', 'Kamu keluar dari daftar tunggu.');
     }
 
     /**
@@ -276,7 +310,8 @@ class memberController extends Controller
             'maksFotoMb' => config('inner_circle.foto_profil_maks_kb') / 1024,
             'metrik' => (object) [
                 'total_poin' => $anggota->poin_total,
-                'tahap_terbuka' => $rewards->filter(fn($r) => $r->status_member !== 'terkunci')->count(),
+                'tahap_terbuka' => $rewards->filter(fn($r) => $r->status_member === 'terbuka')->count(),
+                'poin_tertahan' => $klaim->dompet($anggota)->tertahan,
                 'jumlah_klaim' => $pengajuan->count(),
             ],
             'riwayat' => $this->riwayatPoin($anggota, 100),

@@ -230,6 +230,17 @@ class AppServiceProvider extends ServiceProvider
                     ->with('ic_toast_galat', 'Terlalu banyak percobaan. Tunggu sebentar lalu coba lagi.'));
         });
 
+        // Pengaduan anggota (Fase 9): per ANGGOTA per menit. Batas per hari dicek PengaduanService dari database.
+        RateLimiter::for('ic-pengaduan', function (Request $request) {
+            $id = Auth::guard('member')->id();
+
+            return Limit::perMinute((int) config('inner_circle.pengaduan.batas_per_menit', 3))
+                ->by($id ? 'member:' . $id : 'ip:' . $request->ip())
+                ->response(fn() => redirect()
+                    ->route('ic.pengaduan')
+                    ->with('ic_toast_galat', 'Terlalu banyak percobaan. Tunggu sebentar lalu coba lagi.'));
+        });
+
         // Unggah kenangan: per menit (salah klik, skrip) dan per hari (spam galeri). Per ANGGOTA, bukan per IP. Kunci keduanya HARUS berbeda: kunci sama membuat dua batas berbagi satu penghitung.
         RateLimiter::for('ic-kenangan', function (Request $request) {
             $id = Auth::guard('member')->id();

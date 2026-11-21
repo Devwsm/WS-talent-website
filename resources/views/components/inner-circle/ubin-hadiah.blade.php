@@ -1,7 +1,8 @@
 @props(['reward', 'lebar' => false, 'href' => '#klaim', 'tampilTag' => true])
 <a href="{{ $href }}" class="ic-ubin ic-warna-{{ $reward->warna }} {{ $lebar ? 'ic-ubin--lebar' : '' }}">
     @if ($tampilTag)
-        <span class="ic-ubin__tag">{{ $reward->status_member === 'terkunci' ? 'TERKUNCI' : 'TERBUKA' }}</span>
+        <span
+            class="ic-ubin__tag">{{ match ($reward->status_member) {'terkunci' => 'TERKUNCI','habis' => 'HABIS',default => 'TERBUKA'} }}</span>
     @endif
     <span class="ic-ubin__angka">{{ ic_angka($reward->harga_poin) }}<small>Poin</small></span>
     <x-inner-circle.ikon :nama="$reward->ikon" kelas="ic-ubin__ikon" />

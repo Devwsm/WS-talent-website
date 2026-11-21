@@ -37,11 +37,11 @@ class TampilanPoinTest extends TestCase
         $m = $this->anggota(12000);
 
         $this->actingAs($m, 'member')->get(route('ic.beranda'))->assertOk()
-            ->assertSee('12.000')->assertSee('25.000')->assertSee('poin lagi untuk membuka hadiah berikutnya.')
+            ->assertSee('12.000')->assertSee('150.000')->assertSee('poin lagi untuk membuka hadiah berikutnya.')
             ->assertDontSee('stempel');
         $this->actingAs($m, 'member')->get(route('ic.hadiah'))->assertOk()
-            ->assertSee('12.000 poin terkumpul')->assertSee('10.000 poin · Hadiah Pertama', false)->assertDontSee('stempel');
-        $this->actingAs($m, 'member')->get(route('ic.profil'))->assertOk()->assertSee('Total poin');
+            ->assertSee('12.000 poin terkumpul')->assertSee('150.000 poin · Meet &amp; Greet', false)->assertDontSee('stempel');
+        $this->actingAs($m, 'member')->get(route('ic.profil'))->assertOk()->assertSee('Saldo poin');
     }
 
     public function test_admin_melihat_poin_di_daftar_dan_detail_anggota(): void

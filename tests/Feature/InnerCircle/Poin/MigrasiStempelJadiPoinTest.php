@@ -46,7 +46,8 @@ class MigrasiStempelJadiPoinTest extends TestCase
         $this->assertFalse(Schema::hasTable('ic_poin'));
         $this->assertTrue(Schema::hasColumn('members', 'stempel_total'));
         $this->assertTrue(Schema::hasColumn('ic_rewards', 'target_stempel'));
-        $this->assertSame([10, 25, 50, 100, 250], DB::table('ic_rewards')->orderBy('urutan')->pluck('target_stempel')->map(fn($n) => (int) $n)->all());
+        // Lima tahap lama (urutan 11-15 sejak Fase 8); hadiah baru Fase 8 ikut dibagi 1.000 saat mundur.
+        $this->assertSame([10, 25, 50, 100, 250], DB::table('ic_rewards')->where('urutan', '>', 10)->orderBy('urutan')->pluck('target_stempel')->map(fn($n) => (int) $n)->all());
 
         $this->maju();
 
@@ -55,7 +56,8 @@ class MigrasiStempelJadiPoinTest extends TestCase
         $this->assertTrue(Schema::hasColumn('ic_poin', 'id_poin'));
         $this->assertTrue(Schema::hasColumn('members', 'poin_total'));
         $this->assertTrue(Schema::hasColumn('ic_rewards', 'harga_poin'));
-        $this->assertSame([10000, 25000, 50000, 100000, 250000], DB::table('ic_rewards')->orderBy('urutan')->pluck('harga_poin')->map(fn($n) => (int) $n)->all());
+        $this->assertSame([10000, 25000, 50000, 100000, 250000], DB::table('ic_rewards')->where('urutan', '>', 10)->orderBy('urutan')->pluck('harga_poin')->map(fn($n) => (int) $n)->all());
+        $this->assertSame([150000, 250000], DB::table('ic_rewards')->where('urutan', '<=', 10)->orderBy('urutan')->pluck('harga_poin')->map(fn($n) => (int) $n)->all());
     }
 
     public function test_saldo_buku_besar_dan_koreksi_dikali_seribu(): void
@@ -130,7 +132,7 @@ class MigrasiStempelJadiPoinTest extends TestCase
         (new \Database\Seeders\icRewardSeeder())->run();
         (new \Database\Seeders\icRewardSeeder())->run();
 
-        $this->assertSame(5, DB::table('ic_rewards')->count());
+        $this->assertSame(7, DB::table('ic_rewards')->count()); // 5 tahap lama + Meet & Greet + Merchandise (Fase 8)
         $this->assertSame(10000, (int) DB::table('ic_rewards')->min('harga_poin'));
     }
 }

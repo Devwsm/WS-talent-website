@@ -2,7 +2,7 @@
 
 namespace App\Mail\InnerCircle;
 
-/** Kabar untuk anggota saat status pengajuan hadiahnya berubah (diproses admin di tab Klaim). */
+/** Kabar untuk anggota saat status penukaran hadiahnya berubah (diproses admin di tab Penukaran). */
 class StatusKlaimMail extends PesanIc
 {
     public function __construct(
@@ -12,6 +12,7 @@ class StatusKlaimMail extends PesanIc
         private string $labelStatus,
         private ?string $catatan,
         private string $url,
+        private int $poinKembali = 0,
     ) {}
 
     protected function subjek(): string
@@ -23,7 +24,7 @@ class StatusKlaimMail extends PesanIc
     {
         $kalimat = match ($this->status) {
             'diajukan' => "Pengajuan hadiah \"{$this->hadiah}\" kami buka kembali dan akan ditinjau lagi oleh tim WSM.",
-            'ditolak' => "Pengajuan hadiah \"{$this->hadiah}\" belum bisa kami proses.",
+            'ditolak' => "Pengajuan hadiah \"{$this->hadiah}\" belum bisa kami proses." . ($this->poinKembali > 0 ? ' ' . ic_angka($this->poinKembali) . ' poin yang ditahan sudah dikembalikan ke saldomu.' : ''),
             'selesai' => "Pengajuan hadiah \"{$this->hadiah}\" sudah selesai. Terima kasih sudah jadi bagian dari Inner Circle!",
             default => "Status pengajuan hadiah \"{$this->hadiah}\" sekarang: {$this->labelStatus}.",
         };

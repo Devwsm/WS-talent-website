@@ -22,8 +22,8 @@
 <ul class="{{ $ul }}">
     <li><b>Data akun:</b> nama, alamat email, dan kata sandi bila kamu mendaftar dengan email. Kata sandi
         disimpan dalam bentuk hash, jadi tidak bisa dibaca siapa pun, termasuk kami.</li>
-    <li><b>Aktivitas komunitas:</b> riwayat check-in acara dan poin, serta pengajuan hadiah beserta
-        catatan penanganannya.</li>
+    <li><b>Aktivitas komunitas:</b> riwayat check-in acara dan poin, serta pengajuan hadiah dan pengaduan
+        yang kamu kirim beserta catatan penanganannya.</li>
     <li><b>Konten yang kamu bagikan:</b> foto profil, kenangan (teks, tempat, kategori, foto), dan tanda
         suka. Kenangan yang tayang bisa dilihat anggota lain dengan nama yang disingkat.</li>
     <li><b>Data sesi:</b> cookie sesi supaya kamu tetap masuk, serta alamat IP dan jenis peramban yang
@@ -82,6 +82,7 @@
     <li>data akun, foto profil, dan ID Google yang tertaut;</li>
     <li>riwayat check-in dan poin;</li>
     <li>pengajuan hadiah beserta lognya;</li>
+    <li>pengaduan yang kamu kirim;</li>
     <li>kenangan beserta fotonya, dan tanda suka.</li>
 </ul>
 <p class="{{ $p }}">

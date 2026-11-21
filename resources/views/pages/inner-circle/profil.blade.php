@@ -55,17 +55,25 @@
     <div class="ic-metrik-grid">
         <div class="ic-metrik">
             <strong>{{ ic_angka($metrik->total_poin) }}</strong>
-            <small>Total poin</small>
+            <small>Saldo poin</small>
         </div>
         <div class="ic-metrik">
             <strong>{{ $metrik->tahap_terbuka }}</strong>
-            <small>Tahapan hadiah terbuka</small>
+            <small>Hadiah bisa ditukar</small>
         </div>
         <div class="ic-metrik">
             <strong>{{ $metrik->jumlah_klaim }}</strong>
-            <small>Pengajuan hadiah</small>
+            <small>Penukaran hadiah</small>
         </div>
     </div>
+
+    <section class="ic-panel ic-jarak-atas" aria-labelledby="judul-pengaduan">
+        <h2 class="ic-panel__judul" id="judul-pengaduan">Ada kendala atau masukan?</h2>
+        <p class="ic-bantuan">Ceritakan kendala soal check-in, poin, GL gratis, hadiah, atau akunmu. Tim WSM akan
+            menindaklanjuti dan memberi kabar.</p>
+        <a class="ic-tombol ic-tombol--kecil" href="{{ route('ic.pengaduan') }}">Kirim pengaduan <i
+                class="bi bi-arrow-right" aria-hidden="true"></i></a>
+    </section>
 
     <h2 class="ic-judul-bagian" id="riwayat">{{ ic_teks('profil.riwayat.judul') }}</h2>
     <div class="ic-panel ic-daftar ic-daftar--rapat">
@@ -83,7 +91,7 @@
             <div class="ic-klaim-baris">
                 <div>
                     <h3>{{ ic_angka($k->harga_poin) }} poin · {{ $k->judul }}</h3>
-                    <p class="ic-bantuan">{{ $k->opsi ?? 'Hadiah tahapan' }} ·
+                    <p class="ic-bantuan">{{ $k->opsi ?? 'Penukaran hadiah' }} ·
                         {{ $k->diajukan_pada->locale('id')->translatedFormat('j M Y') }}</p>
                     @if ($k->catatan_admin)
                         <p class="ic-bantuan"><b>Catatan WSM:</b> {{ $k->catatan_admin }}</p>
@@ -123,7 +131,7 @@
                 @csrf
                 @method('DELETE')
                 <p class="ic-bantuan">Yang ikut terhapus permanen: akun dan foto profilmu, riwayat check-in dan poin,
-                    pengajuan hadiah, serta kenangan beserta fotonya dan tanda suka.</p>
+                    pengajuan hadiah, pengaduan, serta kenangan beserta fotonya dan tanda suka.</p>
 
                 @if ($punyaSandi)
                     <label class="ic-label" for="hapus-sandi">Kata sandi saat ini</label>

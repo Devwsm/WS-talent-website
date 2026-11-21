@@ -61,18 +61,20 @@ class VerifikasiEmailTest extends TestCase
         Mail::assertSent(VerifikasiEmailMail::class, fn($surat) => $surat->hasTo('rani@contoh.test'));
     }
 
-    public function test_klaim_hadiah_ditolak_sebelum_verifikasi_dan_berhasil_sesudahnya(): void
+    public function test_penukaran_hadiah_ditolak_sebelum_verifikasi_dan_berhasil_sesudahnya(): void
     {
-        $m = $this->anggota('a@contoh.test', 12000);
+        $m = $this->anggota('a@contoh.test', 160000);
+        $id = (int) \App\Models\ic_reward::where('judul', 'Meet & Greet')->value('id_reward');
 
-        $this->actingAs($m, 'member')->post(route('ic.hadiah.klaim', 10000))
+        $this->actingAs($m, 'member')->post(route('ic.hadiah.tukar', $id))
             ->assertRedirect(route('ic.hadiah') . '#klaim')
             ->assertSessionHas('ic_toast_galat', fn($pesan) => str_contains($pesan, 'Verifikasi email dulu'));
         $this->assertSame(0, ic_claim::count());
+        $this->assertSame(160000, $m->fresh()->poin_total); // poin tidak ditahan bila ditolak
 
         $m->forceFill(['email_verified_at' => now()])->save();
 
-        $this->actingAs($m->fresh(), 'member')->post(route('ic.hadiah.klaim', 10000))->assertSessionHas('ic_toast');
+        $this->actingAs($m->fresh(), 'member')->post(route('ic.hadiah.tukar', $id))->assertSessionHas('ic_toast');
         $this->assertSame(1, ic_claim::count());
     }
 

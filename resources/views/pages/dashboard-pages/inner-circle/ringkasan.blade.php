@@ -30,8 +30,14 @@
             [
                 'ikon' => 'bi-inbox-fill',
                 'angka' => $ringkasan->klaim_menunggu,
-                'label' => 'Klaim menunggu',
+                'label' => 'Penukaran menunggu',
                 'href' => route('ic.admin.klaim'),
+            ],
+            [
+                'ikon' => 'bi-chat-left-text-fill',
+                'angka' => $ringkasan->pengaduan_terbuka,
+                'label' => 'Pengaduan terbuka',
+                'href' => route('ic.admin.anggota', ['pengaduan' => 'terbuka']),
             ],
             [
                 'ikon' => 'bi-broadcast',
@@ -139,13 +145,13 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
 
                 @component('components.dashboard.card.card', [
-                    'title' => 'Klaim menunggu (' . $ringkasan->klaim_menunggu . ')',
+                    'title' => 'Penukaran menunggu (' . $ringkasan->klaim_menunggu . ')',
                     'href' => route('ic.admin.klaim'),
                     'icon' => 'bi-inbox-fill',
                 ])
                     @if (empty($klaimMenunggu))
                         @include('components/dashboard/card/empty-state', [
-                            'message' => 'Tidak ada klaim yang menunggu.',
+                            'message' => 'Tidak ada penukaran yang menunggu.',
                         ])
                     @else
                         <ul class="flex flex-col gap-3">

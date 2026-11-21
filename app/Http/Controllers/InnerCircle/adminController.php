@@ -18,6 +18,8 @@ use App\Models\ic_broadcast;
 use App\Models\ic_claim;
 use App\Models\ic_event;
 use App\Models\ic_memory;
+use App\Models\ic_pengaduan;
+use App\Models\ic_reward_tunggu;
 use App\Models\ic_reward;
 use App\Models\ic_poin;
 use App\Models\log_aktivitas;
@@ -77,6 +79,7 @@ class adminController extends Controller
                 'anggota_total' => member::query()->count(),
                 'kehadiran_terverifikasi' => ic_poin::query()->where('sumber', 'checkin')->count(),
                 'klaim_menunggu' => ic_claim::query()->whereIn('status', ic_claim::statusMenunggu())->count(),
+                'pengaduan_terbuka' => ic_pengaduan::query()->whereIn('status', ic_pengaduan::statusTerbuka())->count(),
                 'acara_aktif' => $checkin->eventTerbuka($sekarang)->count(),
                 'acara_berikutnya' => $berikutnya,
             ],
@@ -103,6 +106,8 @@ class adminController extends Controller
             'anggotaBaru' => member::query()->orderByDesc('id_member')->limit(5)->get(),
             'hadiahTahap' => ic_reward::query()
                 ->withCount(['klaim as klaim_menunggu' => fn($q) => $q->whereIn('status', ic_claim::statusMenunggu())])
+                ->orderByDesc('aktif')
+                ->orderBy('urutan')
                 ->orderBy('harga_poin')
                 ->get(),
             'pengumumanTerbaru' => ic_broadcast::query()->orderByDesc('terbit_pada')->orderByDesc('id_broadcast')->limit(3)->get(),
@@ -155,6 +160,10 @@ class adminController extends Controller
         }
         if ($akun !== '') {
             $akun === 'nonaktif' ? $query->whereNotNull('diblokir_pada') : $query->whereNull('diblokir_pada');
+        }
+        // Pintasan dari Ringkasan: hanya anggota yang punya pengaduan belum selesai (?pengaduan=terbuka).
+        if ($this->teks($request, 'pengaduan') === 'terbuka') {
+            $query->whereHas('pengaduan', fn($p) => $p->whereIn('status', ic_pengaduan::statusTerbuka()));
         }
 
         return [$query, $q, $status, $via, $akun];
@@ -227,6 +236,8 @@ class adminController extends Controller
                 ->paginate(self::PER_HALAMAN_ANGGOTA)
                 ->withQueryString(),
             'klaimAnggota' => ic_claim::query()->with('reward')->where('member_id', $anggota->getKey())->orderByDesc('id_claim')->get(),
+            'dompet' => app(ClaimService::class)->dompet($anggota),
+            'pengaduanAnggota' => ic_pengaduan::query()->with('event')->where('member_id', $anggota->getKey())->orderByDesc('id_pengaduan')->get(),
         ]);
     }
 
@@ -293,7 +304,7 @@ class adminController extends Controller
     public function klaim(Request $request)
     {
         $status = $this->teks($request, 'status');
-        $status = in_array($status, ['semua', 'selesai', 'ditolak'], true) ? $status : 'menunggu';
+        $status = in_array($status, ['semua', 'selesai', 'ditolak', 'dibatalkan'], true) ? $status : 'menunggu';
 
         $query = ic_claim::query()->with(['reward', 'member', 'logs']);
         if ($status === 'menunggu') {
@@ -318,6 +329,7 @@ class adminController extends Controller
                 'semua' => (int) $perStatus->sum(),
                 'selesai' => (int) ($perStatus['selesai'] ?? 0),
                 'ditolak' => (int) ($perStatus['ditolak'] ?? 0),
+                'dibatalkan' => (int) ($perStatus['dibatalkan'] ?? 0),
             ],
         ]);
     }
@@ -355,58 +367,81 @@ class adminController extends Controller
         return back()->with('success', $pesan);
     }
 
-    /** Pilih tahap yang dibuka di form lewat ?tahap=10|25|50|100|250. */
+    /**
+     * Katalog hadiah. Hadiah yang dibuka di form dipilih lewat ?hadiah=ID, atau ?baru=1 untuk menambah (bisa ditautkan dan
+     * tetap jalan tanpa JavaScript). Stok, penukaran yang menunggu, dan daftar tunggu ikut dihitung.
+     */
     public function hadiah(Request $request)
     {
         $rewards = ic_reward::query()
+            ->withCount([
+                'klaim as klaim_menunggu' => fn($q) => $q->whereIn('status', ic_claim::statusMenunggu()),
+                'tunggu as jumlah_tunggu',
+            ])
+            ->orderByDesc('aktif')
             ->orderBy('urutan')
             ->orderBy('harga_poin')
-            ->get()
-            ->all();
+            ->get();
 
-        $tahap = (int) $this->teks($request, 'tahap');
-        $tahapAwal = collect($rewards)->first(fn($r) => $r->harga_poin === $tahap)?->harga_poin
-            ?? ($rewards[0]->harga_poin ?? null);
+        $baru = $this->teks($request, 'baru') === '1';
+        $dipilih = $baru ? null : ($rewards->firstWhere('id_reward', (int) $this->teks($request, 'hadiah')) ?? $rewards->first());
 
         return $this->tampil('hadiah', [
-            'rewards' => $rewards,
-            'tahapAwal' => $tahapAwal,
+            'rewards' => $rewards->all(),
+            'dipilih' => $dipilih,
+            'mode' => $dipilih ? 'ubah' : 'baru',
+            'penunggu' => $dipilih
+                ? ic_reward_tunggu::query()->with('member')->where('reward_id', $dipilih->getKey())->orderBy('created_at')->limit(50)->get()
+                : collect(),
             'ikonPeta' => $this->ikonPeta(),
         ]);
     }
 
-    /** Ubah teks dan tampilan satu tahap. Target poin tidak bisa diubah (kunci di URL dan aturan klaim). */
-    public function ubahHadiah(int $target, simpanHadiahRequest $request): RedirectResponse
+    /** Tambah hadiah baru ke katalog. */
+    public function simpanHadiah(simpanHadiahRequest $request): RedirectResponse
     {
-        $reward = ic_reward::query()->where('harga_poin', $target)->firstOrFail();
+        $data = $request->validated();
+        $data['opsi'] = $data['opsi'] ?: null;
+        $data['urutan'] = (int) ic_reward::query()->max('urutan') + 1;
+        $data['aktif'] = true;
+        $reward = ic_reward::create($data);
+
+        return redirect(route('ic.admin.hadiah', ['hadiah' => $reward->getKey()]))
+            ->with('success', "Hadiah \"{$reward->judul}\" ditambahkan ke katalog.");
+    }
+
+    /** Ubah teks, tampilan, harga, dan stok satu hadiah. Penukaran yang sudah masuk menyimpan harganya sendiri. */
+    public function ubahHadiah(int $id, simpanHadiahRequest $request): RedirectResponse
+    {
+        $reward = ic_reward::query()->findOrFail($id);
 
         $data = $request->validated();
         $data['opsi'] = $data['opsi'] ?: null;
         $reward->update($data);
 
-        return redirect(route('ic.admin.hadiah', ['tahap' => $target]))
-            ->with('success', "Tahap " . ic_angka($target) . " poin diperbarui.");
+        return redirect(route('ic.admin.hadiah', ['hadiah' => $reward->getKey()]))
+            ->with('success', "Hadiah \"{$reward->judul}\" diperbarui.");
     }
 
     /**
-     * Tampilkan atau sembunyikan satu tahap hadiah dari anggota. Tahap yang disembunyikan tidak tampil di halaman
-     * Hadiah dan tidak bisa diklaim baru; pengajuan yang sudah masuk tetap diproses. Minimal satu tahap harus aktif.
+     * Tampilkan atau sembunyikan satu hadiah dari anggota. Hadiah yang disembunyikan tidak tampil di halaman
+     * Hadiah dan tidak bisa ditukar baru; penukaran yang sudah masuk tetap diproses. Minimal satu hadiah harus aktif.
      */
-    public function aktifkanHadiah(int $target, Request $request): RedirectResponse
+    public function aktifkanHadiah(int $id, Request $request): RedirectResponse
     {
         $aktif = (bool) $request->validate(['aktif' => ['required', 'boolean']])['aktif'];
-        $reward = ic_reward::query()->where('harga_poin', $target)->firstOrFail();
+        $reward = ic_reward::query()->findOrFail($id);
 
         if (! $aktif && ! ic_reward::query()->where('aktif', true)->where('id_reward', '!=', $reward->getKey())->exists()) {
-            return redirect(route('ic.admin.hadiah', ['tahap' => $target]))
-                ->with('error', 'Minimal satu tahap hadiah harus tetap aktif.');
+            return redirect(route('ic.admin.hadiah', ['hadiah' => $reward->getKey()]))
+                ->with('error', 'Minimal satu hadiah harus tetap aktif.');
         }
 
         $reward->update(['aktif' => $aktif]);
 
-        return redirect(route('ic.admin.hadiah', ['tahap' => $target]))->with('success', $aktif
-            ? "Tahap " . ic_angka($target) . " poin aktif lagi dan tampil ke anggota."
-            : "Tahap " . ic_angka($target) . " poin disembunyikan dari anggota. Pengajuan yang sudah masuk tetap diproses.");
+        return redirect(route('ic.admin.hadiah', ['hadiah' => $reward->getKey()]))->with('success', $aktif
+            ? "Hadiah \"{$reward->judul}\" aktif lagi dan tampil ke anggota."
+            : "Hadiah \"{$reward->judul}\" disembunyikan dari anggota. Penukaran yang sudah masuk tetap diproses.");
     }
 
     /**

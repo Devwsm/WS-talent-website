@@ -24,6 +24,8 @@ use App\Http\Controllers\InnerCircle\googleController;
 use App\Http\Controllers\InnerCircle\kenanganController;
 use App\Http\Controllers\InnerCircle\lupaSandiController;
 use App\Http\Controllers\InnerCircle\memberController;
+use App\Http\Controllers\InnerCircle\pengaduanAdminController;
+use App\Http\Controllers\InnerCircle\pengaduanController;
 use App\Http\Controllers\InnerCircle\tentangController;
 use App\Http\Controllers\logController;
 use App\Http\Controllers\loginController;
@@ -108,7 +110,14 @@ Route::prefix('/innercircle')->middleware('icAktif')->name('ic.')->group(functio
 
         Route::get('/', [memberController::class, 'beranda'])->name('beranda');
         Route::get('/hadiah', [memberController::class, 'hadiah'])->name('hadiah');
-        Route::post('/hadiah/{target}/klaim', [memberController::class, 'ajukanKlaim'])->whereNumber('target')->name('hadiah.klaim')->middleware('throttle:ic-klaim');
+        // Fase 8: tukar poin dengan hadiah (id hadiah), batalkan penukaran sendiri, dan daftar tunggu stok habis.
+        Route::post('/hadiah/{id}/tukar', [memberController::class, 'ajukanKlaim'])->whereNumber('id')->name('hadiah.tukar')->middleware('throttle:ic-klaim');
+        Route::delete('/penukaran/{id}', [memberController::class, 'batalkanKlaim'])->whereNumber('id')->name('penukaran.batal')->middleware('throttle:ic-klaim');
+        Route::post('/hadiah/{id}/tunggu', [memberController::class, 'ikutTunggu'])->whereNumber('id')->name('hadiah.tunggu')->middleware('throttle:ic-klaim');
+        Route::delete('/hadiah/{id}/tunggu', [memberController::class, 'keluarTunggu'])->whereNumber('id')->name('hadiah.tunggu.keluar')->middleware('throttle:ic-klaim');
+        // Fase 9: pengaduan anggota.
+        Route::get('/pengaduan', [pengaduanController::class, 'index'])->name('pengaduan');
+        Route::post('/pengaduan', [pengaduanController::class, 'kirim'])->name('pengaduan.kirim')->middleware('throttle:ic-pengaduan');
         Route::get('/check-in', [memberController::class, 'checkin'])->name('checkin');
         Route::post('/check-in', [memberController::class, 'prosesCheckin'])->name('checkin.proses')->middleware(['icVerif', 'throttle:ic-checkin']);
         Route::post('/check-in/mandiri', [memberController::class, 'prosesCheckinMandiri'])->name('checkin.mandiri')->middleware(['icVerif', 'throttle:ic-checkin']);
@@ -197,8 +206,11 @@ Route::prefix('/dashboard')->middleware(['cekLogin', 'catatAktivitas'])->group(f
         Route::get('/klaim', [adminController::class, 'klaim'])->name('klaim');
         Route::patch('/klaim/{id}', [adminController::class, 'ubahKlaim'])->whereNumber('id')->name('klaim.proses')->middleware('throttle:admin-tulis');
         Route::get('/hadiah', [adminController::class, 'hadiah'])->name('hadiah');
-        Route::put('/hadiah/{target}', [adminController::class, 'ubahHadiah'])->whereNumber('target')->name('hadiah.ubah')->middleware('throttle:admin-tulis');
-        Route::patch('/hadiah/{target}/aktif', [adminController::class, 'aktifkanHadiah'])->whereNumber('target')->name('hadiah.aktif')->middleware('throttle:admin-aksi-kecil');
+        Route::post('/hadiah', [adminController::class, 'simpanHadiah'])->name('hadiah.simpan')->middleware('throttle:admin-tulis');
+        Route::put('/hadiah/{id}', [adminController::class, 'ubahHadiah'])->whereNumber('id')->name('hadiah.ubah')->middleware('throttle:admin-tulis');
+        Route::patch('/hadiah/{id}/aktif', [adminController::class, 'aktifkanHadiah'])->whereNumber('id')->name('hadiah.aktif')->middleware('throttle:admin-aksi-kecil');
+        // Fase 9: tindak lanjut pengaduan (daftarnya tampil di detail anggota).
+        Route::patch('/pengaduan/{id}', [pengaduanAdminController::class, 'proses'])->whereNumber('id')->name('pengaduan.proses')->middleware('throttle:admin-tulis');
         Route::get('/pengumuman', [adminController::class, 'pengumuman'])->name('pengumuman');
         Route::post('/pengumuman', [adminController::class, 'simpanPengumuman'])->name('pengumuman.simpan')->middleware('throttle:admin-tulis');
         Route::put('/pengumuman/{id}', [adminController::class, 'ubahPengumuman'])->whereNumber('id')->name('pengumuman.ubah')->middleware('throttle:admin-tulis');

@@ -324,3 +324,12 @@
         padding-right: 10px;
     }
 }
+.ic-replika--halaman .ic-poster-kosong__ikon {
+    font-size: clamp(32px, 9cqw, 56px);
+}
+.ic-replika--halaman .ic-poster-kosong--besar .ic-poster-kosong__ikon {
+    font-size: clamp(48px, 14cqw, 96px);
+}
+.ic-replika--halaman .ic-acara__judul {
+    font-size: clamp(24px, 6cqw, 32px);
+}

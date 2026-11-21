@@ -17,12 +17,14 @@
             'semua' => 'Semua',
             'selesai' => 'Selesai',
             'ditolak' => 'Ditolak',
+            'dibatalkan' => 'Dibatalkan',
         ];
         $pesanKosong = [
             'menunggu' => 'Tidak ada pengajuan yang menunggu tindakan.',
             'semua' => 'Belum ada pengajuan hadiah.',
             'selesai' => 'Belum ada pengajuan yang selesai.',
             'ditolak' => 'Belum ada pengajuan yang ditolak.',
+            'dibatalkan' => 'Belum ada penukaran yang dibatalkan anggota.',
         ];
     @endphp
 
@@ -37,8 +39,8 @@
 
             @include('components.dashboard.inner-circle.kepala', [
                 'aktif' => 'klaim',
-                'judul' => 'Klaim hadiah',
-                'deskripsi' => 'Tinjau pengajuan hadiah anggota dan gerakkan statusnya sampai selesai.',
+                'judul' => 'Penukaran hadiah',
+                'deskripsi' => 'Periksa penukaran hadiah anggota dan gerakkan statusnya sampai hadiah diterima.',
             ])
 
             @include('components/errors')
@@ -71,9 +73,11 @@
             </div>
 
             <p class="text-xs text-white/40 -mt-3">
-                Alur status: Diajukan → Ditinjau → Disetujui → Selesai. Pengajuan bisa ditolak selama belum selesai
-                (alasan wajib dan tampil di profil anggota). Yang ditolak bisa <b>dibuka kembali</b> dan kembali ke
-                Diajukan. Catatan, mis. kode voucher, juga tampil di profil anggota.
+                Alur status: Diajukan → Ditinjau → Disetujui → Selesai. Poin anggota <b>ditahan</b> sejak Diajukan dan
+                habis dipakai saat Selesai. Penukaran bisa ditolak selama belum selesai (alasan wajib dan tampil di profil
+                anggota): poin dan stok hadiah otomatis <b>kembali</b>. Anggota juga bisa membatalkan sendiri selama masih
+                Diajukan. Hanya klaim lama (sebelum poin ditahan) yang bisa <b>dibuka kembali</b>. Catatan, mis. kode
+                voucher, tampil di profil anggota.
             </p>
 
             @if ($klaim->isEmpty())
@@ -102,14 +106,27 @@
                                             {{ $k->nama_member }}
                                             <span class="text-white/40 font-normal">· {{ $k->kode_member }}</span>
                                         </p>
-                                        <p class="text-sm text-white/70">{{ ic_angka($k->harga_poin) }} poin ·
+                                        <p class="text-sm text-white/70">{{ ic_angka($k->poin_ditahan ?: $k->harga_poin) }}
+                                            poin ·
                                             {{ $k->judul }}
                                             @if ($k->opsi_dipilih)
                                                 <span class="text-white/40">· pilihan: {{ $k->opsi_dipilih }}</span>
                                             @endif
                                         </p>
                                         <p class="text-xs text-white/40 mt-0.5">Diajukan
-                                            {{ $k->diajukan_pada->locale('id')->translatedFormat('j M Y') }}</p>
+                                            {{ $k->diajukan_pada->locale('id')->translatedFormat('j M Y') }}
+                                            @if ($k->memakaiPoin())
+                                                · @if (in_array($k->status, ['ditolak', 'dibatalkan'], true))
+                                                    poin sudah kembali
+                                                @elseif ($k->status === 'selesai')
+                                                    poin terpakai
+                                                @else
+                                                    poin ditahan
+                                                @endif
+                                            @else
+                                                · klaim lama (poin tidak dipotong)
+                                            @endif
+                                        </p>
                                         @if ($k->catatan_admin)
                                             <p class="text-xs text-white/60 mt-2">
                                                 <i class="bi bi-chat-left-text" aria-hidden="true"></i>
@@ -133,7 +150,7 @@
                                             Tolak
                                         </button>
                                     @endif
-                                    @if ($k->status === 'ditolak')
+                                    @if ($k->status === 'ditolak' && !$k->memakaiPoin())
                                         <button type="button" data-aksi="buka_kembali"
                                             class="h-11 px-5 rounded-full bg-white text-black text-xs font-semibold hover:bg-white/80 transition-colors">
                                             Buka kembali
@@ -156,7 +173,8 @@
                                         <li>
                                             <b class="text-white/70">{{ $statusKlaim[$log->status]['label'] }}</b>
                                             · {{ $log->created_at->locale('id')->translatedFormat('j M Y, H.i') }}
-                                            · {{ $log->oleh ?? ($log->status === 'diajukan' ? 'anggota' : 'admin') }}
+                                            ·
+                                            {{ $log->oleh ?? (in_array($log->status, ['diajukan', 'dibatalkan'], true) ? 'anggota' : 'admin') }}
                                             @if ($log->catatan)
                                                 <span class="text-white/40">— {{ $log->catatan }}</span>
                                             @endif
@@ -202,8 +220,8 @@
                         confirmButtonText: tombol.dataset.label,
                     },
                     tolak: {
-                        title: 'Tolak pengajuan ini?',
-                        inputLabel: 'Alasan (tampil di profil anggota)',
+                        title: 'Tolak penukaran ini?',
+                        inputLabel: 'Alasan (tampil di profil anggota). Poin yang ditahan dan stok otomatis kembali.',
                         inputValidator: (nilai) => (nilai.trim() ? undefined : 'Alasan wajib diisi.'),
                         confirmButtonText: 'Ya, tolak',
                     },

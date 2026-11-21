@@ -5,7 +5,15 @@
         $inputKelas =
             'bg-white/5 border border-white/15 text-white placeholder-white/30 p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition';
         $labelKelas = 'text-sm font-semibold uppercase tracking-widest text-white/60';
-        $sumberLabel = ['checkin' => 'Check-in', 'manual' => 'Poin manual', 'koreksi' => 'Koreksi admin'];
+        $sumberLabel = [
+            'checkin' => 'Check-in',
+            'manual' => 'Poin manual',
+            'koreksi' => 'Koreksi admin',
+            'tukar' => 'Poin ditahan (tukar hadiah)',
+            'kembali' => 'Poin dikembalikan',
+        ];
+        $statusPengaduan = config('inner_circle.pengaduan.status');
+        $kategoriPengaduan = config('inner_circle.pengaduan.kategori');
     @endphp
     <div class="relative w-full flex flex-col justify-center items-center overflow-hidden">
         @include('components/dashboard/navbar')
@@ -18,7 +26,7 @@
             @include('components.dashboard.inner-circle.kepala', [
                 'aktif' => 'anggota',
                 'judul' => 'Detail anggota',
-                'deskripsi' => 'Riwayat poin, klaim hadiah, dan pengaturan akun satu anggota.',
+                'deskripsi' => 'Riwayat poin, penukaran hadiah, pengaduan, dan pengaturan akun satu anggota.',
                 'pakaiCss' => false,
             ])
 
@@ -98,8 +106,10 @@
 
                 <dl class="grid grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
                     <div class="rounded-2xl border border-white/10 bg-white/2 p-4">
-                        <dt class="text-xs uppercase tracking-widest text-white/40">Total poin</dt>
+                        <dt class="text-xs uppercase tracking-widest text-white/40">Saldo poin</dt>
                         <dd class="text-2xl font-bold mt-1">{{ ic_angka($anggota->poin_total) }}</dd>
+                        <p class="text-xs text-white/40 mt-1">{{ ic_angka($dompet->tertahan) }} ditahan ·
+                            {{ ic_angka($dompet->dipakai) }} terpakai</p>
                     </div>
                     <div class="rounded-2xl border border-white/10 bg-white/2 p-4">
                         <dt class="text-xs uppercase tracking-widest text-white/40">Check-in</dt>
@@ -184,19 +194,20 @@
                 {{-- Klaim hadiah anggota --}}
                 <div class="min-w-0">
                     <h2 class="font-bold uppercase tracking-wide text-sm mb-4 flex items-center gap-2">
-                        <i class="bi bi-gift-fill text-white/50" aria-hidden="true"></i> Klaim hadiah
+                        <i class="bi bi-gift-fill text-white/50" aria-hidden="true"></i> Penukaran hadiah
                         ({{ $klaimAnggota->count() }})
                     </h2>
                     @if ($klaimAnggota->isEmpty())
                         @include('components/dashboard/card/empty-state', [
-                            'message' => 'Belum ada klaim hadiah.',
+                            'message' => 'Belum ada penukaran hadiah.',
                         ])
                     @else
                         <ul class="flex flex-col gap-3">
                             @foreach ($klaimAnggota as $k)
                                 <li class="rounded-2xl border border-white/10 bg-white/3 p-4 min-w-0">
                                     <p class="font-semibold text-sm wrap-anywhere">{{ $k->reward?->judul ?? 'Hadiah' }}</p>
-                                    <p class="text-xs text-white/50">{{ ic_angka($k->reward?->harga_poin) }} poin ·
+                                    <p class="text-xs text-white/50">
+                                        {{ ic_angka($k->poin_ditahan ?: $k->reward?->harga_poin) }} poin ·
                                         {{ $k->created_at->locale('id')->translatedFormat('j M Y') }} ·
                                         {{ $statusKlaim[$k->status]['label'] ?? $k->status }}</p>
                                 </li>
@@ -204,7 +215,66 @@
                         </ul>
                         <a href="{{ route('ic.admin.klaim') }}"
                             class="inline-block mt-3 text-xs text-white/50 hover:text-white transition-colors">Kelola di tab
-                            Klaim →</a>
+                            Penukaran →</a>
+                    @endif
+                </div>
+
+                {{-- Pengaduan anggota (Fase 9): tindak lanjut langsung dari sini --}}
+                <div class="min-w-0" id="pengaduan">
+                    <h2 class="font-bold uppercase tracking-wide text-sm mb-4 flex items-center gap-2">
+                        <i class="bi bi-chat-left-text-fill text-white/50" aria-hidden="true"></i> Pengaduan
+                        ({{ $pengaduanAnggota->count() }})
+                    </h2>
+                    @if ($pengaduanAnggota->isEmpty())
+                        @include('components/dashboard/card/empty-state', [
+                            'message' => 'Belum ada pengaduan dari anggota ini.',
+                        ])
+                    @else
+                        <ul class="flex flex-col gap-3">
+                            @foreach ($pengaduanAnggota as $p)
+                                <li class="rounded-2xl border border-white/10 bg-white/3 p-4 min-w-0">
+                                    <p class="font-semibold text-sm wrap-anywhere">
+                                        {{ $kategoriPengaduan[$p->kategori] ?? $p->kategori }}
+                                        <span class="font-normal text-white/50">·
+                                            {{ $statusPengaduan[$p->status]['label'] ?? $p->status }}</span>
+                                    </p>
+                                    <p class="text-xs text-white/50">
+                                        {{ $p->created_at->locale('id')->translatedFormat('j M Y, H.i') }}
+                                        @if ($p->event)
+                                            · {{ $p->event->venue }}, {{ $p->event->kota }}
+                                        @endif
+                                    </p>
+                                    <p class="text-sm text-white/80 mt-2 whitespace-pre-line wrap-anywhere">
+                                        {{ $p->isi }}</p>
+
+                                    <form method="POST"
+                                        action="{{ route('ic.admin.pengaduan.proses', $p->id_pengaduan) }}"
+                                        class="mt-3 flex flex-col gap-2">
+                                        @csrf
+                                        @method('PATCH')
+                                        <input type="hidden" name="dari" value="{{ $p->status }}">
+                                        <label for="p-status-{{ $p->id_pengaduan }}"
+                                            class="{{ $labelKelas }}">Status</label>
+                                        <select id="p-status-{{ $p->id_pengaduan }}" name="status"
+                                            class="{{ $inputKelas }} scheme-dark">
+                                            @foreach ($statusPengaduan as $kunci => $s)
+                                                <option class="bg-neutral-900" value="{{ $kunci }}"
+                                                    @selected($kunci === $p->status)>{{ $s['label'] }}</option>
+                                            @endforeach
+                                        </select>
+                                        <label for="p-catatan-{{ $p->id_pengaduan }}"
+                                            class="{{ $labelKelas }}">Catatan untuk
+                                            anggota</label>
+                                        <textarea id="p-catatan-{{ $p->id_pengaduan }}" name="catatan" rows="2"
+                                            maxlength="{{ config('inner_circle.pengaduan.catatan_maks') }}" class="{{ $inputKelas }}">{{ $p->catatan_admin }}</textarea>
+                                        <button type="submit"
+                                            class="h-11 px-5 rounded-full bg-white text-black text-xs font-semibold hover:bg-white/80 transition-colors w-fit">
+                                            Simpan
+                                        </button>
+                                    </form>
+                                </li>
+                            @endforeach
+                        </ul>
                     @endif
                 </div>
             </div>
@@ -213,7 +283,8 @@
 
     <x-dashboard.inner-circle.dialog-aksi id="dialogTambah" judul="Tambah poin manual" :aksi="route('ic.admin.anggota.poin', $anggota->id_member)" tombol="Tambah">
         <div class="flex flex-col gap-1.5">
-            <label for="tambah-jumlah" class="{{ $labelKelas }}">Jumlah poin <span class="text-red-400">*</span></label>
+            <label for="tambah-jumlah" class="{{ $labelKelas }}">Jumlah poin <span
+                    class="text-red-400">*</span></label>
             <input type="number" id="tambah-jumlah" name="jumlah" min="1"
                 max="{{ config('inner_circle.poin.manual_maks') }}" value="1000" required
                 class="{{ $inputKelas }}" />
