@@ -180,27 +180,17 @@ if (kartu) {
         });
 }
 
-// Tombol "Lihat sandi": sandi tidak pernah ikut halaman, diambil sesuai permintaan dan tercatat di Log.
-const tombolSandi = document.querySelector("[data-lihat-sandi]");
-if (tombolSandi) {
-    tombolSandi.addEventListener("click", async () => {
-        const keluar = document.getElementById("sandi-terlihat");
-        keluar.textContent = "Mengambil…";
-        try {
-            const r = await fetch(tombolSandi.dataset.url, {
-                method: "POST",
-                credentials: "same-origin",
-                headers: {
-                    Accept: "application/json",
-                    "X-CSRF-TOKEN": tombolSandi.dataset.csrf,
-                },
-            });
-            const data = await r.json().catch(() => ({}));
-            keluar.textContent = r.ok
-                ? data.sandi
-                : data.pesan || "Sandi tidak bisa ditampilkan.";
-        } catch {
-            keluar.textContent = "Gagal mengambil sandi.";
-        }
+// Tombol "Buat kode": mengisi kolom sandi acara dengan kode acak 8 karakter (tanpa huruf/angka yang mirip: 0 O 1 I L).
+// Memakai crypto.getRandomValues, bukan Math.random, karena kode ini dipakai sebagai sandi.
+document.querySelectorAll("[data-buat-kode]").forEach((tombol) => {
+    tombol.addEventListener("click", () => {
+        const isian = document.querySelector(tombol.dataset.buatKode);
+        if (!isian) return;
+        const huruf = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+        const acak = new Uint32Array(8);
+        crypto.getRandomValues(acak);
+        isian.value = Array.from(acak, (n) => huruf[n % huruf.length]).join("");
+        isian.dispatchEvent(new Event("input", { bubbles: true }));
+        isian.focus();
     });
-}
+});

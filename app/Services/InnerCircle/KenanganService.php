@@ -3,6 +3,7 @@
 namespace App\Services\InnerCircle;
 
 use App\Models\ic_memory;
+use App\Models\ic_memory_comment;
 use App\Models\member;
 use App\Support\GambarGagal;
 use App\Support\ImageProcessor;
@@ -22,14 +23,15 @@ class KenanganService
     /**
      * Terbitkan kenangan baru; langsung tayang (moderasi sesudah terbit: admin bisa menyembunyikan).
      *
-     * @param  array{caption: string, tempat?: ?string, kategori: string}  $data
+     * @param  array{caption: string, tempat?: ?string, kategori: string, bingkai?: ?string}  $data
      *
      * @throws GambarGagal bila foto tidak bisa diolah (tidak ada yang tersimpan)
      */
     public function terbit(member $anggota, array $data, ?UploadedFile $foto = null): ic_memory
     {
         $path = $foto
-            ? $this->gambar->simpanWebp($foto, 'inner-circle/kenangan', (int) config('inner_circle.foto_kenangan_sisi_maks'), 80)
+            ? // Semua foto kenangan 4:5 (potret ala feed): dipotong pas dari tengah, atau utuh di atas latar buram.
+            $this->gambar->simpanWebp($foto, 'inner-circle/kenangan', (int) config('inner_circle.foto_kenangan_sisi_maks'), 80, 4 / 5, ($data['bingkai'] ?? 'potong') !== 'utuh')
             : null;
 
         try {
@@ -103,13 +105,39 @@ class KenanganService
         return $kenangan;
     }
 
+    /** Satu kenangan untuk halaman detail: jumlah suka dan komentar, status suka anggota ini. */
+    public function detail(member $anggota, ic_memory $kenangan): ic_memory
+    {
+        $kenangan->loadCount(['penyuka as jumlah_like', 'komentar as jumlah_komentar'])
+            ->loadExists(['penyuka as disukai_saya' => fn($q) => $q->where('ic_memory_likes.member_id', $anggota->getKey())])
+            ->load('member');
+        $kenangan->setAttribute('milik_saya', (int) $kenangan->member_id === (int) $anggota->getKey());
+
+        return $kenangan;
+    }
+
+    /** Tulis komentar. Dipanggil sesudah Gate 'komentar' (hanya kenangan yang tayang). */
+    public function komentar(member $anggota, ic_memory $kenangan, string $isi): ic_memory_comment
+    {
+        return ic_memory_comment::query()->create([
+            'memory_id' => $kenangan->getKey(),
+            'member_id' => $anggota->getKey(),
+            'isi' => $isi,
+        ]);
+    }
+
+    public function hapusKomentar(ic_memory_comment $komentar): void
+    {
+        $komentar->delete();
+    }
+
     /** Galeri anggota: hanya yang tayang, terbaru dulu, dengan jumlah suka dan status suka anggota ini. */
     public function galeri(member $anggota, ?string $kategori): LengthAwarePaginator
     {
         $halaman = ic_memory::query()
             ->tayang()
             ->with('member')
-            ->withCount('penyuka as jumlah_like')
+            ->withCount(['penyuka as jumlah_like', 'komentar as jumlah_komentar'])
             ->withExists(['penyuka as disukai_saya' => fn($q) => $q->where('ic_memory_likes.member_id', $anggota->getKey())])
             ->when($kategori, fn($q) => $q->where('kategori', $kategori))
             ->orderByDesc('created_at')

@@ -7,18 +7,21 @@ use App\Http\Controllers\Controller;
 use App\Models\ic_event;
 use App\Models\ic_pemeriksaan;
 use App\Models\ic_penanda;
+use App\Models\ic_poin;
 use App\Services\InnerCircle\CheckinService;
 use App\Services\InnerCircle\PemeriksaanGagal;
 use App\Services\InnerCircle\PemeriksaanService;
+use App\Services\InnerCircle\PoinService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 /**
  * CMS Inner Circle, Acara > Pemeriksaan (Fase 5B). Dua daftar dalam satu halaman:
  * - Pengajuan: anggota yang GPS-nya gagal meminta kehadirannya diperiksa. Disetujui = poin check-in masuk; ditolak = alasan.
  * - Penanda: check-in yang tampak janggal (perangkat sama, lokasi terlalu sempurna, perjalanan mustahil, banyak
  *   percobaan gagal). Check-in sudah tercatat; admin menandai aman atau ditindak (koreksi poin / nonaktifkan akun
- *   dilakukan lewat detail anggota yang sudah ada).
+ *   dilakukan lewat detail anggota yang sudah ada). Admin juga bisa langsung menarik poin check-in yang janggal.
  *
  * Filter lewat query: ?tab=pengajuan|penanda, ?status=..., ?acara=KODE.
  */
@@ -126,6 +129,46 @@ class acaraPemeriksaanController extends Controller
         }
 
         return back()->with('success', 'Pengajuan ditolak. Alasannya tampil ke anggota di halaman acara.');
+    }
+
+    /**
+     * Tarik poin check-in yang ditandai mencurigakan, lalu tandai penandanya "ditindak". Hanya bisa sekali per penanda
+     * (penanda yang sudah ditindak harus dibuka kembali dulu), supaya poin tidak ditarik dua kali.
+     */
+    public function tarikPoin(int $id, Request $request, PoinService $poin): RedirectResponse
+    {
+        $data = $request->validate(['catatan' => ['nullable', 'string', 'max:200']], [
+            'catatan.max' => 'Catatan maksimal 200 karakter.',
+        ]);
+
+        $penanda = ic_penanda::query()->with(['anggota', 'event'])->findOrFail($id);
+
+        if ($penanda->status === ic_penanda::DITINDAK) {
+            return back()->withErrors(['pemeriksaan' => 'Penanda ini sudah ditindak. Buka kembali dulu bila perlu menarik poin lagi.']);
+        }
+
+        $checkin = $penanda->poin_id ? ic_poin::query()->find($penanda->poin_id) : null;
+        if (! $penanda->anggota || ! $penanda->event || ! $checkin) {
+            return back()->withErrors(['pemeriksaan' => 'Check-in untuk penanda ini sudah tidak ada, jadi poinnya tidak bisa ditarik.']);
+        }
+
+        $admin = (string) session('user');
+
+        try {
+            $ditarik = $poin->tarikCheckin($penanda->anggota, $checkin, $penanda->event->venue ?? $penanda->event->kode, $admin);
+        } catch (ValidationException $e) {
+            return back()->withErrors(['pemeriksaan' => collect($e->errors())->flatten()->first()]);
+        }
+
+        $catatan = trim((string) ($data['catatan'] ?? ''));
+        $penanda->update([
+            'status' => ic_penanda::DITINDAK,
+            'catatan_admin' => mb_substr('Poin ditarik: ' . ic_angka($ditarik) . ($catatan !== '' ? '. ' . $catatan : ''), 0, 200),
+            'ditinjau_oleh' => mb_substr($admin, 0, 60),
+            'ditinjau_pada' => now(),
+        ]);
+
+        return back()->with('success', ic_angka($ditarik) . ' poin ditarik dari ' . $penanda->anggota->nama . '. Penanda ditandai sudah ditindak.');
     }
 
     /** Ubah status penanda: aman (bukan masalah), ditindak (sudah diurus), atau baru (buka kembali). */

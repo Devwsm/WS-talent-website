@@ -510,7 +510,7 @@ class adminController extends Controller
 
         $query = ic_memory::query()
             ->with('member')
-            ->withCount('penyuka as jumlah_like')
+            ->withCount(['penyuka as jumlah_like', 'komentar as jumlah_komentar'])
             ->orderByDesc('created_at')
             ->orderByDesc('id_memory');
         if ($kategori !== 'all') {
@@ -527,6 +527,16 @@ class adminController extends Controller
             'jumlahSemua' => ic_memory::query()->count(),
             'jumlahDisembunyikan' => ic_memory::query()->where('status', ic_memory::DISEMBUNYIKAN)->count(),
         ]);
+    }
+
+    /** Hapus satu komentar yang melanggar aturan (moderasi admin). Kenangan dan anggota lain tidak terpengaruh. */
+    public function hapusKomentar(int $id, KenanganService $kenangan): RedirectResponse
+    {
+        $komentar = \App\Models\ic_memory_comment::query()->with('member')->findOrFail($id);
+        $nama = $komentar->member->nama ?? 'anggota';
+        $kenangan->hapusKomentar($komentar);
+
+        return back()->with('success', "Komentar dari {$nama} dihapus.");
     }
 
     /** Sembunyikan kenangan dari galeri anggota atau tayangkan lagi. Tidak menghapus foto maupun tanda suka. */

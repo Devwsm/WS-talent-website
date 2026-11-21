@@ -56,6 +56,10 @@ class AcaraAdminTest extends TestCase
 
     private function checkin(member $m, string $kode, ?string $acara = null)
     {
+        // Pemindaian QR khusus pemenang GL: anggota uji dijadikan pemenang di semua acara yang ada.
+        foreach (\App\Models\ic_event::all() as $acaraUji) {
+            \App\Models\ic_gl_antrean::query()->firstOrCreate(['event_id' => $acaraUji->id_event, 'member_id' => $m->id_member], ['status' => \App\Models\ic_gl_antrean::MENANG]);
+        }
         // HP uji berada tepat di titik acara.
         return $this->actingAs($m, 'member')->post(route('ic.checkin.proses'), array_filter(['kode' => $kode, 'acara' => $acara]) + ['lat' => -6.2088, 'lng' => 106.8456, 'akurasi' => 20]);
     }

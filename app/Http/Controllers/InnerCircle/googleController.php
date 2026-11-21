@@ -24,6 +24,9 @@ class googleController extends Controller
             return redirect()->route('ic.beranda');
         }
 
+        // Centang Kebijakan Privasi di halaman Daftar ikut sebagai ?setuju=1; tanpa itu akun baru tidak dibuat (lihat GoogleAkun).
+        $request->session()->put('ic_privasi_setuju', $request->boolean('setuju'));
+
         return redirect()->away($google->mulai($request));
     }
 
@@ -36,7 +39,7 @@ class googleController extends Controller
         }
 
         try {
-            [$anggota, $status] = $akun->masukkan($google->selesai($request));
+            [$anggota, $status] = $akun->masukkan($google->selesai($request), (bool) $request->session()->pull('ic_privasi_setuju', false));
         } catch (GoogleGagal $e) {
             return redirect()->route('ic.masuk')->withErrors(['google' => $e->getMessage()]);
         }

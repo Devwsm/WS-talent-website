@@ -57,6 +57,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Nama model huruf kecil (ic_memory) tidak ditemukan penemuan otomatis policy, jadi didaftarkan manual.
         Gate::policy(ic_memory::class, MemoryPolicy::class);
+        Gate::policy(\App\Models\ic_memory_comment::class, MemoryPolicy::class);
 
         // Cache halaman publik (lihat CachePublik) dibuang otomatis begitu data yang tampil di Home, Profile, footer,
         // atau tema disimpan/dihapus lewat model. Model baru yang tampil di halaman publik: tambahkan ke daftar ini.
@@ -251,6 +252,19 @@ class AppServiceProvider extends ServiceProvider
                 Limit::perMinute((int) config('inner_circle.batas_kenangan_per_menit', 4))->by('menit:' . $kunci)->response($galat),
                 Limit::perDay((int) config('inner_circle.batas_kenangan_per_hari', 20))->by('hari:' . $kunci)
                     ->response(fn() => back()->with('ic_toast_galat', 'Batas unggahan hari ini sudah tercapai. Coba lagi besok.')),
+            ];
+        });
+
+        // Komentar kenangan: per ANGGOTA, kunci menit dan hari dibedakan (satu kunci = satu penghitung).
+        RateLimiter::for('ic-komentar', function (Request $request) {
+            $id = Auth::guard('member')->id();
+            $kunci = $id ? 'member:' . $id : 'ip:' . $request->ip();
+
+            return [
+                Limit::perMinute((int) config('inner_circle.batas_komentar_per_menit', 6))->by('komentar-menit:' . $kunci)
+                    ->response(fn() => back()->withInput()->with('ic_toast_galat', 'Terlalu banyak komentar. Tunggu sebentar lalu coba lagi.')),
+                Limit::perDay((int) config('inner_circle.batas_komentar_per_hari', 60))->by('komentar-hari:' . $kunci)
+                    ->response(fn() => back()->withInput()->with('ic_toast_galat', 'Batas komentar hari ini sudah tercapai. Coba lagi besok.')),
             ];
         });
 

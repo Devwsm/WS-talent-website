@@ -4,6 +4,7 @@ namespace App\Http\Controllers\InnerCircle;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\InnerCircle\hapusAkunRequest;
+use App\Http\Requests\InnerCircle\ubahNamaRequest;
 use App\Services\InnerCircle\AkunGagal;
 use App\Services\InnerCircle\HapusAkunService;
 use Illuminate\Http\RedirectResponse;
@@ -12,6 +13,15 @@ use Illuminate\Support\Facades\Auth;
 /** Hapus akun anggota (route di bawah `auth:member`). Sesi admin CMS di browser yang sama tidak disentuh. */
 class akunController extends Controller
 {
+    /** Ganti nama tampilan (boleh berspasi). Email dan Member ID tidak berubah. */
+    public function ubahNama(ubahNamaRequest $request): RedirectResponse
+    {
+        $anggota = Auth::guard('member')->user();
+        $anggota->forceFill(['nama' => $request->validated('nama')])->save();
+
+        return redirect()->route('ic.profil')->with('ic_toast', 'Namamu sudah diganti.');
+    }
+
     public function hapus(hapusAkunRequest $request, HapusAkunService $layanan): RedirectResponse
     {
         $anggota = Auth::guard('member')->user();

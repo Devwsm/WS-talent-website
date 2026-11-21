@@ -129,11 +129,15 @@ Route::prefix('/innercircle')->middleware('icAktif')->name('ic.')->group(functio
         Route::delete('/acara/{kode}/gl', [acaraAnggotaController::class, 'keluar'])->where('kode', '[A-Za-z0-9_-]+')->name('acara.gl.keluar')->middleware('throttle:ic-gl');
         Route::get('/komunitas', [memberController::class, 'komunitas'])->name('komunitas');
         Route::post('/kenangan', [kenanganController::class, 'simpan'])->name('kenangan.simpan')->middleware(['icVerif', 'throttle:ic-kenangan']);
+        Route::get('/kenangan/{id}', [kenanganController::class, 'detail'])->whereNumber('id')->name('kenangan.detail');
+        Route::post('/kenangan/{id}/komentar', [kenanganController::class, 'komentar'])->whereNumber('id')->name('kenangan.komentar')->middleware(['icVerif', 'throttle:ic-komentar']);
+        Route::delete('/kenangan/komentar/{id}', [kenanganController::class, 'hapusKomentar'])->whereNumber('id')->name('kenangan.komentar.hapus')->middleware('throttle:ic-hapus-kenangan');
         Route::delete('/kenangan/{id}', [kenanganController::class, 'hapus'])->whereNumber('id')->name('kenangan.hapus')->middleware('throttle:ic-hapus-kenangan');
         Route::post('/kenangan/{id}/suka', [kenanganController::class, 'suka'])->whereNumber('id')->name('kenangan.suka')->middleware(['icVerif', 'throttle:ic-suka']);
         Route::get('/profil', [memberController::class, 'profil'])->name('profil');
         Route::post('/profil/foto', [fotoProfilController::class, 'simpan'])->name('profil.foto')->middleware('throttle:ic-foto');
         Route::delete('/profil/foto', [fotoProfilController::class, 'hapus'])->name('profil.foto.hapus')->middleware('throttle:ic-foto');
+        Route::patch('/profil/nama', [akunController::class, 'ubahNama'])->name('profil.nama')->middleware('throttle:ic-akun');
         Route::delete('/profil/akun', [akunController::class, 'hapus'])->name('akun.hapus')->middleware('throttle:ic-akun');
     });
 });
@@ -175,6 +179,7 @@ Route::prefix('/dashboard')->middleware(['cekLogin', 'catatAktivitas'])->group(f
         Route::post('/acara/pemeriksaan/{id}/setujui', [acaraPemeriksaanController::class, 'setujui'])->whereNumber('id')->name('acara.pemeriksaan.setujui')->middleware('throttle:admin-tulis');
         Route::post('/acara/pemeriksaan/{id}/tolak', [acaraPemeriksaanController::class, 'tolak'])->whereNumber('id')->name('acara.pemeriksaan.tolak')->middleware('throttle:admin-tulis');
         Route::patch('/acara/penanda/{id}', [acaraPemeriksaanController::class, 'ubahPenanda'])->whereNumber('id')->name('acara.penanda.ubah')->middleware('throttle:admin-tulis');
+        Route::patch('/acara/penanda/{id}/tarik', [acaraPemeriksaanController::class, 'tarikPoin'])->whereNumber('id')->name('acara.penanda.tarik')->middleware('throttle:admin-tulis');
         // Detail Hari H satu acara (Fase 4): ringkasan, yang hadir (GL gratis / beli tiket sendiri), ekspor CSV.
         Route::get('/acara/hari-h/{kode}', [acaraHariHController::class, 'detail'])->name('acara.harih.detail');
         // Panel undian GL satu acara (Fase 6B): antrean, pemenang, undi sekarang, tunda/lanjutkan, ekspor, tanda diterima tim Show.
@@ -196,7 +201,6 @@ Route::prefix('/dashboard')->middleware(['cekLogin', 'catatAktivitas'])->group(f
         // Halaman Atur acara (Fase 3): pengaturan lengkap satu acara, peta lokasi, dan sandi acara (dilihat atas permintaan).
         Route::get('/acara/{kode}/atur', [acaraController::class, 'atur'])->name('acara.atur');
         Route::put('/acara/{kode}/atur', [acaraController::class, 'simpanAtur'])->name('acara.atur.simpan')->middleware('throttle:admin-tulis');
-        Route::post('/acara/{kode}/sandi', [acaraController::class, 'lihatSandi'])->name('acara.sandi')->middleware('throttle:admin-aksi-kecil');
         Route::put('/acara/{kode}', [acaraController::class, 'ubahAcara'])->name('acara.ubah')->middleware('throttle:admin-tulis');
         Route::delete('/acara/{kode}', [acaraController::class, 'hapusAcara'])->name('acara.hapus')->middleware('throttle:admin-tulis');
         Route::post('/acara/{kode}/token', [acaraHariHController::class, 'tokenBaru'])->name('acara.token')->middleware('throttle:admin-tulis');
@@ -217,6 +221,7 @@ Route::prefix('/dashboard')->middleware(['cekLogin', 'catatAktivitas'])->group(f
         Route::patch('/pengumuman/{id}/aktif', [adminController::class, 'aktifkanPengumuman'])->whereNumber('id')->name('pengumuman.aktif')->middleware('throttle:admin-aksi-kecil');
         Route::delete('/pengumuman/{id}', [adminController::class, 'hapusPengumuman'])->whereNumber('id')->name('pengumuman.hapus')->middleware('throttle:admin-tulis');
         Route::get('/kenangan', [adminController::class, 'kenangan'])->name('kenangan');
+        Route::delete('/kenangan/komentar/{id}', [adminController::class, 'hapusKomentar'])->whereNumber('id')->name('kenangan.komentar.hapus')->middleware('throttle:admin-tulis');
         Route::patch('/kenangan/{id}', [adminController::class, 'moderasiKenangan'])->whereNumber('id')->name('kenangan.moderasi')->middleware('throttle:admin-tulis');
 
         // Tab Konten: teks halaman anggota yang bisa diubah dari CMS (daftar kunci di config/ic_konten.php).

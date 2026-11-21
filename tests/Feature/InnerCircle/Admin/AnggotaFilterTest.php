@@ -37,11 +37,11 @@ class AnggotaFilterTest extends TestCase
     {
         $this->manual('Anggota Belum', false);
         $this->manual('Anggota Manual Verif', true);
-        app(GoogleAkun::class)->masukkan(['sub' => 'g-1', 'email' => 'lewatgoogle@contoh.test', 'name' => 'Anggota Google', 'email_verified' => true]);
+        app(GoogleAkun::class)->masukkan(['sub' => 'g-1', 'email' => 'lewatgoogle@contoh.test', 'name' => 'Anggota Google', 'email_verified' => true], true);
 
         // Daftar manual dulu, Google dikaitkan belakangan: cara daftar pertamanya tetap manual.
         $this->manual('Anggota Kaitan', true);
-        app(GoogleAkun::class)->masukkan(['sub' => 'g-2', 'email' => 'anggotakaitan@contoh.test', 'name' => 'Anggota Kaitan', 'email_verified' => true]);
+        app(GoogleAkun::class)->masukkan(['sub' => 'g-2', 'email' => 'anggotakaitan@contoh.test', 'name' => 'Anggota Kaitan', 'email_verified' => true], true);
     }
 
     public function test_tanpa_filter_semua_anggota_tampil(): void

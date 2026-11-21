@@ -78,7 +78,7 @@ class LencanaBelumDibacaTest extends TestCase
         // Tab Pengumuman terbuka: lencana pengumuman hilang, galeri masih menunjuk 2 kenangan baru.
         $html = $this->actingAs($m, 'member')->get(route('ic.komunitas'))->assertOk()->getContent();
         $this->assertSame(1, substr_count($html, 'ic-tab__lencana'));
-        $this->assertStringContainsString('>2<span class="ic-sr-saja"> belum dibaca', $html);
+        $this->assertMatchesRegularExpression('/>2<span\s+class="ic-sr-saja">\s*belum dibaca/', $html);
         $this->assertNotNull($m->fresh()->pengumuman_dibaca_pada);
         $this->assertTrue($m->fresh()->pengumuman_dibaca_pada->isToday());
 
@@ -99,6 +99,7 @@ class LencanaBelumDibacaTest extends TestCase
         $this->actingAs($m, 'member')->get(route('ic.komunitas', ['tab' => 'galeri']))->assertDontSee('ic-tab__lencana');
 
         $this->travel(4)->days();
-        $this->actingAs($m->fresh(), 'member')->get(route('ic.komunitas', ['tab' => 'galeri']))->assertSee('>1<span class="ic-sr-saja">', false);
+        $html = $this->actingAs($m->fresh(), 'member')->get(route('ic.komunitas', ['tab' => 'galeri']))->getContent();
+        $this->assertMatchesRegularExpression('/>1<span\s+class="ic-sr-saja">/', $html);
     }
 }

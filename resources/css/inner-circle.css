@@ -461,6 +461,36 @@
     pointer-events: none;
 }
 
+.ic-kartu-anggota--detail {
+    margin-top: 6px;
+}
+.ic-kartu-anggota__bawah {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+.ic-kartu-anggota__data {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+.ic-kartu-anggota__ubah {
+    align-self: flex-start;
+    position: relative;
+    z-index: 1;
+}
+.ic-avatar--kartu {
+    width: 64px;
+    height: 64px;
+    flex: none;
+}
+.ic-akun__bagian {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--ic-garis-kartu);
+}
 .ic-kartu-anggota__nama {
     font-family: var(--ic-font-judul);
     font-weight: 700;
@@ -828,7 +858,8 @@ a.ic-event:hover {
     position: relative;
     display: grid;
     place-items: center;
-    height: 240px;
+    /* Semua sampul kenangan berbingkai 4:5 (foto sudah dipotong/dibingkai 4:5 saat diunggah). */
+    aspect-ratio: 4 / 5;
     overflow: hidden;
 }
 .ic-kenangan__sampul img {
@@ -911,6 +942,95 @@ a.ic-event:hover {
 
 .ic-suka.is-suka {
     background: #ffd8f3;
+}
+a.ic-komentar-pintas {
+    color: inherit;
+    text-decoration: none;
+}
+
+/* Detail kenangan dan komentar */
+.ic-kenangan--detail {
+    max-width: 520px;
+    margin: 0 auto;
+}
+.ic-komentar__baris {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--ic-garis-kartu);
+}
+.ic-komentar__baris:last-child {
+    border-bottom: 0;
+}
+.ic-komentar__isi {
+    min-width: 0;
+    flex: 1;
+    overflow-wrap: anywhere;
+}
+.ic-komentar__isi p {
+    margin: 0 0 2px;
+    font-size: 14px;
+}
+.ic-komentar__isi small {
+    margin-left: 6px;
+    font-size: 11px;
+    color: var(--ic-redup);
+}
+.ic-komentar__form {
+    margin-top: 16px;
+}
+
+/* Pratinjau foto kenangan 4:5 saat unggah */
+.ic-pratinjau {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+}
+.ic-pratinjau[hidden] {
+    display: none;
+}
+.ic-pratinjau__bingkai {
+    position: relative;
+    width: min(100%, 240px);
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    border: 1px solid var(--ic-garis-kartu);
+    border-radius: 18px;
+    background: var(--ic-krem);
+}
+.ic-pratinjau__bingkai img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+.ic-pratinjau__latar {
+    display: none;
+    object-fit: cover;
+    filter: blur(14px);
+    transform: scale(1.2);
+}
+.ic-pratinjau__foto {
+    object-fit: cover;
+}
+.ic-pratinjau__bingkai[data-ic-bingkai="utuh"] .ic-pratinjau__latar {
+    display: block;
+}
+.ic-pratinjau__bingkai[data-ic-bingkai="utuh"] .ic-pratinjau__foto {
+    object-fit: contain;
+}
+.ic-pratinjau__pilihan {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+.ic-centang--setuju {
+    align-items: flex-start;
+    margin-bottom: 8px;
+    font-size: 13px;
+    line-height: 1.45;
 }
 .ic-hapus {
     min-height: 44px;
@@ -2067,9 +2187,6 @@ a.ic-event:hover {
         height: 48px;
         border-radius: 15px;
     }
-    .ic-kenangan__sampul {
-        height: 200px;
-    }
     .ic-modal__dialog {
         padding: 22px;
     }
@@ -2677,7 +2794,7 @@ a.ic-poster-kartu:hover .ic-poster-kartu__gambar {
     position: relative;
     display: grid;
     place-items: center;
-    aspect-ratio: 3 / 4;
+    aspect-ratio: 9 / 16;
     margin-bottom: 6px;
     overflow: hidden;
     border: 1px solid var(--ic-garis-kartu);
@@ -2733,9 +2850,10 @@ a.ic-poster-kartu:hover .ic-poster-kartu__gambar {
     position: relative;
     display: grid;
     place-items: center;
-    aspect-ratio: 3 / 4;
-    max-height: 70vh;
-    width: 100%;
+    aspect-ratio: 9 / 16;
+    /* 9:16 tinggi: lebar dibatasi supaya bingkai tidak lebih tinggi dari 80% layar tanpa merusak rasionya. */
+    width: min(100%, calc(80vh * 9 / 16));
+    margin-inline: auto;
     overflow: hidden;
     border: 1px solid var(--ic-garis-kartu);
     border-radius: 28px;

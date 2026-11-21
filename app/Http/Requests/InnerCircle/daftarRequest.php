@@ -59,6 +59,8 @@ class daftarRequest extends FormRequest
             // Maks 72: bcrypt hanya membaca 72 byte pertama, sisanya diam-diam diabaikan.
             // SandiAnggota: wajib huruf besar + kecil + angka, simbol boleh, emoji tidak.
             'sandi' => ['required', 'string', 'min:8', 'max:72', new SandiAnggota(), 'confirmed'],
+            // Wajib dicentang: bukti persetujuan Kebijakan Privasi (UU PDP) disimpan di akun.
+            'setuju_privasi' => ['accepted'],
         ];
     }
 
@@ -90,6 +92,7 @@ class daftarRequest extends FormRequest
             'max' => ':attribute terlalu panjang (maksimal :max karakter).',
             'sandi.min' => 'Kata sandi minimal :min karakter.',
             'sandi.confirmed' => 'Ulangi kata sandi belum sama.',
+            'setuju_privasi.accepted' => 'Centang persetujuan Kebijakan Privasi untuk membuat akun.',
         ];
     }
 }

@@ -54,14 +54,17 @@
         <h2 class="ic-kotak__judul" id="judul-kode">✦ {{ ic_teks('checkin.lokasi.judul') }}</h2>
         <p class="ic-bantuan">{{ ic_teks('checkin.lokasi.deskripsi') }}</p>
         <ol class="ic-langkah">
-            <li>Pilih acara, lalu izinkan akses lokasi bila diminta (hanya untuk memastikan kamu ada di venue).</li>
-            <li>Pindai QR panitia atau ketik kodenya, lalu tekan Check-in sekarang.</li>
+            <li>Pilih acara, lalu tekan Check-in dan izinkan akses lokasi (hanya untuk memastikan kamu ada di venue). Tanpa
+                QR.</li>
+            <li>Pemenang GL gratis: tunjukkan Kartu GL ke staf untuk masuk, lalu pindai QR acara dari staf untuk dapat poin.
+            </li>
             <li>Check-in hanya bisa dilakukan saat acara berlangsung. Satu acara memberi poin satu kali.</li>
         </ol>
-        <p class="ic-bantuan">Acara privat tidak tersedia untuk check-in.</p>
+        <p class="ic-bantuan">Acara privat tidak tersedia untuk check-in. Check-in yang mencurigakan bisa dibatalkan dan
+            poinnya ditarik.</p>
         <div class="ic-aksi-baris ic-aksi-baris--rapat">
             <button type="button" class="ic-tombol ic-tombol--kecil" data-ic-pindai-buka><i class="bi bi-qr-code-scan"
-                    aria-hidden="true"></i> Pindai QR dengan kamera</button>
+                    aria-hidden="true"></i> Pemenang GL: pindai QR</button>
             <button type="button" class="ic-tombol ic-tombol--kecil ic-tombol--terang" data-ic-pindai-berkas><i
                     class="bi bi-image" aria-hidden="true"></i> Unggah gambar QR</button>
             <input type="file" id="ic-qr-berkas" accept="image/*" hidden>

@@ -212,14 +212,21 @@ class DetailAcaraAnggotaTest extends TestCase
         $pemenang = ic_gl_antrean::query()->where('status', 'menang')->first()->anggota;
         $kalah = $pemenang->is($a) ? $b : $a;
 
-        $this->sebagai($pemenang)->get(route('ic.acara.detail', $e->kode))
+        $respons = $this->sebagai($pemenang)->get(route('ic.acara.detail', $e->kode));
+        $respons
             ->assertOk()
             ->assertSee('Kartu GL')
             ->assertSee($pemenang->kode_member)
             ->assertSee('wsgl-rahasia')
             ->assertSee('sandi-rahasia-9')
             ->assertSee('Sebut nama di pintu VIP')
-            ->assertSee('Kamu menang GL');
+            ->assertSee('Kamu menang GL')
+            ->assertSee('data-ic-modal-buka="modal-gl"', false)
+            ->assertSee('Mau dapat +')                    // ajakan memindai QR acara untuk poin
+            ->assertSee('menunjukkan QR acara');
+
+        // Tombol Antri GL berganti sesudah undian. Spasi/baris baru di markup tidak penting, jadi dicek dengan regex.
+        $this->assertMatchesRegularExpression('/Cek\s+pemenang GL/', $respons->getContent());
 
         $this->sebagai($kalah)->get(route('ic.acara.detail', $e->kode))
             ->assertOk()
@@ -263,7 +270,7 @@ class DetailAcaraAnggotaTest extends TestCase
         $this->sebagai($this->anggota())->get(route('ic.acara.detail', $e->kode))
             ->assertOk()
             ->assertSee('data-ic-modal-buka="modal-checkin"', false)
-            ->assertSee('id="ic-checkin-mandiri"', false)
+            ->assertSee('data-ic-mandiri', false)
             ->assertSee('name="kembali" value="detail"', false);
     }
 
@@ -278,7 +285,7 @@ class DetailAcaraAnggotaTest extends TestCase
         $this->sebagai($m)->get(route('ic.acara.detail', $e->kode))
             ->assertOk()
             ->assertSee('Check-in (pindai QR)')
-            ->assertDontSee('id="ic-checkin-mandiri"', false);
+            ->assertDontSee('data-ic-mandiri', false);
     }
 
     public function test_check_in_mandiri_dari_lembar_memberi_poin_dan_detail_menandai_sudah(): void

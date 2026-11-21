@@ -86,6 +86,45 @@ class PoinService
     }
 
     /**
+     * Tarik poin dari satu check-in yang mencurigakan: baris koreksi negatif di buku besar (check-in aslinya tidak
+     * dihapus, jadi jejaknya tetap ada). Yang ditarik paling banyak sebesar poin check-in itu dan paling banyak
+     * sebesar saldo anggota sekarang (poin yang sudah ditukar hadiah tidak bisa ditarik dua kali). Baris koreksi tidak
+     * membawa event_id karena (anggota, acara) unik untuk check-in.
+     *
+     * @return int jumlah poin yang benar-benar ditarik
+     *
+     * @throws ValidationException bila tidak ada poin yang bisa ditarik
+     */
+    public function tarikCheckin(member $anggota, ic_poin $checkin, string $namaAcara, ?string $admin): int
+    {
+        return DB::transaction(function () use ($anggota, $checkin, $namaAcara, $admin) {
+            $terkini = member::query()->whereKey($anggota->getKey())->lockForUpdate()->firstOrFail();
+            $jumlah = min((int) $checkin->jumlah, (int) $terkini->poin_total);
+
+            if ($jumlah < 1) {
+                throw ValidationException::withMessages([
+                    'poin' => 'Tidak ada poin yang bisa ditarik: saldo anggota ini sudah 0 (mungkin sudah dipakai menukar hadiah).',
+                ]);
+            }
+
+            ic_poin::create([
+                'member_id' => $terkini->getKey(),
+                'jumlah' => -$jumlah,
+                'sumber' => 'koreksi',
+                'judul' => mb_substr('Poin check-in ditarik: ' . $namaAcara, 0, 120),
+                'ikon' => 'sparkles',
+                'catatan' => 'Check-in dinilai mencurigakan oleh tim WSM.',
+                'dicatat_oleh' => $admin,
+            ]);
+
+            $terkini->decrement('poin_total', $jumlah);
+            $anggota->setAttribute('poin_total', $terkini->poin_total)->syncOriginalAttribute('poin_total');
+
+            return $jumlah;
+        });
+    }
+
+    /**
      * Tahan poin untuk satu penukaran hadiah: baris NEGATIF `tukar` di buku besar dan saldo (`poin_total`) berkurang. Dipanggil
      * ClaimService di dalam transaksi yang sudah mengunci baris anggota, jadi tidak mengunci ulang. Kunci unik
      * (claim_id, sumber) menolak penahanan kedua untuk penukaran yang sama.

@@ -40,7 +40,7 @@
     <article class="ic-acara">
         <div class="ic-acara__poster ic-warna-{{ $tipe['warna'] }}">
             @if ($event->poster_url)
-                <img class="ic-foto-poster" src="{{ $event->poster_url }}" alt="Poster {{ $event->venue }}" width="600"
+                <img class="ic-foto-poster" src="{{ $event->poster_url }}" alt="Poster {{ $event->venue }}" width="450"
                     height="800" decoding="async" fetchpriority="high">
             @else
                 <x-inner-circle.poster-kosong :tipe="$tipe" besar />
@@ -81,51 +81,8 @@
                 <p class="ic-galat ic-galat--blok" role="alert">{{ $galatCheckin }}</p>
             @endif
 
-            {{-- Kartu GL: hanya untuk pemenang. Username dan sandi acara tidak pernah dikirim ke anggota lain. --}}
-            @if ($kartu)
-                <section class="ic-kartu-gl" aria-labelledby="judul-kartu-gl">
-                    <p class="ic-eyebrow">Kartu GL</p>
-                    <h2 class="ic-kartu-gl__judul" id="judul-kartu-gl">Kamu menang GL gratis 🎉</h2>
-                    <dl class="ic-kartu-gl__data">
-                        <div>
-                            <dt>Nama</dt>
-                            <dd>{{ $kartu['anggota'] }}</dd>
-                        </div>
-                        <div>
-                            <dt>Member ID</dt>
-                            <dd>{{ $kartu['kode_member'] }}</dd>
-                        </div>
-                        <div>
-                            <dt>Acara</dt>
-                            <dd>{{ $kartu['acara'] }}</dd>
-                        </div>
-                        <div>
-                            <dt>Tanggal</dt>
-                            <dd>{{ $kartu['tanggal'] }}</dd>
-                        </div>
-                        <div>
-                            <dt>Username acara</dt>
-                            <dd><code>{{ $kartu['username'] }}</code></dd>
-                        </div>
-                        <div>
-                            <dt>Sandi acara</dt>
-                            <dd>
-                                <details class="ic-kartu-gl__sandi">
-                                    <summary>Tampilkan sandi</summary>
-                                    <code>{{ $kartu['sandi'] }}</code>
-                                </details>
-                            </dd>
-                        </div>
-                    </dl>
-                    @if (filled($kartu['petunjuk']))
-                        <p class="ic-bantuan"><b>Cara masuk:</b> {{ $kartu['petunjuk'] }}</p>
-                    @endif
-                    <p class="ic-bantuan">Tunjukkan kartu ini di pintu, lalu pindai QR acara untuk mencatat
-                        kehadiranmu (+{{ ic_angka($poinGl) }} poin). Jangan bagikan username dan sandi ke orang lain.</p>
-                </section>
-            @endif
-
-            @if ($event->punya_gl && !$kartu)
+            {{-- Pemenang membuka Kartu GL lewat tombol "Cek pemenang GL" (popup); panel ini untuk yang lain. --}}
+            @if ($event->punya_gl && $statusGl !== 'menang')
                 <section class="ic-panel" aria-labelledby="judul-info-gl">
                     <h2 class="ic-panel__judul" id="judul-info-gl">GL gratis</h2>
                     <p class="ic-bantuan">
@@ -141,8 +98,8 @@
                             @break
 
                             @case('tidak_terpilih')
-                                Kali ini kamu belum terpilih GL. Kamu tetap bisa check-in mandiri saat check-in dibuka
-                                dan mendapat {{ ic_angka($poinMandiri) }} poin.
+                                Kali ini kamu belum terpilih GL. Kamu tetap bisa check-in saat check-in dibuka
+                                dan mendapat {{ ic_angka($poinMandiri) }} poin. Cukup tekan Check-in, tanpa QR.
                             @break
 
                             @case('tertunda')
@@ -180,10 +137,11 @@
                 <p class="ic-bantuan">{{ $event->pesanCheckin($statusCheckin) }}
                     @if ($statusCheckin !== 'sudah')
                         @if ($pemenangGl)
-                            Sebagai pemenang GL, pindai QR acara di pintu (+{{ ic_angka($poinGl) }} poin).
+                            Sebagai pemenang GL, tunjukkan Kartu GL ke staf untuk masuk. Mau dapat
+                            +{{ ic_angka($poinGl) }} poin? Minta staf menunjukkan QR acara, lalu pindai.
                         @else
-                            Check-in mandiri memberi +{{ ic_angka($poinMandiri) }} poin dan dinilai dari lokasi
-                            HP-mu.
+                            Check-in memberi +{{ ic_angka($poinMandiri) }} poin, tanpa QR: kehadiranmu dinilai dari
+                            lokasi HP-mu. Check-in yang mencurigakan bisa ditarik poinnya oleh tim WSM.
                         @endif
                     @endif
                 </p>
@@ -204,6 +162,10 @@
                     @method('DELETE')
                     <button type="submit" class="ic-acara__tombol ic-acara__tombol--garis">Keluar antrean</button>
                 </form>
+            @elseif (in_array($statusGl, ['menang', 'tidak_terpilih'], true))
+                {{-- Sesudah diundi, tombol Antri GL berganti jadi Cek pemenang GL: popup Kartu GL untuk ditunjukkan ke staf. --}}
+                <button type="button" class="ic-acara__tombol ic-acara__tombol--garis" data-ic-modal-buka="modal-gl">Cek
+                    pemenang GL</button>
             @else
                 <button type="button" class="ic-acara__tombol" disabled>{{ $labelGlMati }}</button>
             @endif
@@ -219,6 +181,74 @@
 @endsection
 
 @push('modal')
+    @if (in_array($statusGl, ['menang', 'tidak_terpilih'], true))
+        <x-inner-circle.modal id="modal-gl" :judul="$statusGl === 'menang' ? 'Kamu menang GL gratis 🎉' : 'Hasil undian GL'" :eyebrow="$statusGl === 'menang' ? 'Kartu GL' : 'Hasil undian'" lembar>
+            @if ($kartu)
+                {{-- Username dan sandi acara hanya dikirim ke pemenang (GlService::kartu). --}}
+                <section class="ic-kartu-gl" aria-label="Kartu GL">
+                    <dl class="ic-kartu-gl__data">
+                        <div>
+                            <dt>Nama</dt>
+                            <dd>{{ $kartu['anggota'] }}</dd>
+                        </div>
+                        <div>
+                            <dt>Member ID</dt>
+                            <dd>{{ $kartu['kode_member'] }}</dd>
+                        </div>
+                        <div>
+                            <dt>Acara</dt>
+                            <dd>{{ $kartu['acara'] }}</dd>
+                        </div>
+                        <div>
+                            <dt>Tanggal</dt>
+                            <dd>{{ $kartu['tanggal'] }}</dd>
+                        </div>
+                        <div>
+                            <dt>Username acara</dt>
+                            <dd><code>{{ $kartu['username'] }}</code></dd>
+                        </div>
+                        <div>
+                            <dt>Sandi acara</dt>
+                            <dd>
+                                <details class="ic-kartu-gl__sandi">
+                                    <summary>Tampilkan sandi</summary>
+                                    <code>{{ $kartu['sandi'] }}</code>
+                                </details>
+                            </dd>
+                        </div>
+                    </dl>
+                    @if (filled($kartu['petunjuk']))
+                        <p class="ic-bantuan"><b>Cara masuk:</b> {{ $kartu['petunjuk'] }}</p>
+                    @endif
+                    <p class="ic-bantuan"><b>Tunjukkan kartu ini ke staf</b> di pintu masuk. Jangan bagikan username dan
+                        sandi ke orang lain.</p>
+                </section>
+
+                <section class="ic-kartu-gl__poin" aria-labelledby="judul-gl-poin">
+                    <p class="ic-panel__judul" id="judul-gl-poin">Mau dapat +{{ ic_angka($poinGl) }} poin?</p>
+                    <p class="ic-bantuan">Setelah masuk, minta staf menunjukkan QR acara, lalu pindai QR itu untuk
+                        mencatat kehadiranmu.</p>
+                    @if ($statusCheckin === 'sudah')
+                        <button type="button" class="ic-tombol ic-tombol--penuh" disabled>Sudah check-in</button>
+                    @elseif ($statusCheckin === 'siap' && $terverifikasi)
+                        <button type="button" class="ic-tombol ic-tombol--penuh" data-ic-modal-buka="modal-checkin">
+                            <i class="bi bi-qr-code-scan" aria-hidden="true"></i> Pindai QR acara</button>
+                    @else
+                        <button type="button" class="ic-tombol ic-tombol--penuh" disabled>{{ $labelCheckin }}</button>
+                    @endif
+                </section>
+            @elseif ($statusGl === 'menang')
+                <p class="ic-bantuan">Kamu terpilih GL gratis. Kartu GL-mu belum bisa ditampilkan karena data akses acara
+                    belum lengkap. Tim WSM akan mengabari lewat email dan halaman ini.</p>
+            @else
+                <p class="ic-bantuan">Kali ini kamu belum terpilih GL gratis. Kamu tetap bisa check-in saat check-in dibuka
+                    dan mendapat {{ ic_angka($poinMandiri) }} poin, cukup tekan Check-in tanpa QR.</p>
+                <button type="button" class="ic-tombol ic-tombol--terang ic-tombol--penuh"
+                    data-ic-modal-tutup>Mengerti</button>
+            @endif
+        </x-inner-circle.modal>
+    @endif
+
     <x-inner-circle.lembar-checkin :event-dipilih="$event" :galat-halaman="$galatCheckin" :boleh-mandiri="$bolehMandiri" :buka-awal="(bool) $galatCheckin" :ajukan="$ajukan"
         kembali-ke-detail />
 @endpush

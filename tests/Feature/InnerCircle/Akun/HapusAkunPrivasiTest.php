@@ -94,17 +94,18 @@ class HapusAkunPrivasiTest extends TestCase
             ->assertOk()
             ->assertSee('<title>Kebijakan Privasi — Whisnu Santika</title>', false);
 
-        foreach (['Kebijakan Privasi', 'Masuk dengan Google', 'Google API Services User Data Policy', 'Hapus akunku'] as $kalimat) {
+        foreach (['Kebijakan Privasi', 'Google Sign-In', 'Google API Services User Data Policy', 'Hapus Akunku', 'UU No. 27 Tahun 2022'] as $kalimat) {
             $this->assertStringContainsString($kalimat, $this->teks($respons));
         }
     }
 
     public function test_kontak_privasi_tampil_bila_diisi_dan_ada_alternatif_bila_kosong(): void
     {
-        $this->get('/privasi')->assertOk()->assertDontSee('mailto:')->assertSee(route('profile'), false);
-
-        config(['site.kontak_privasi' => 'privasi@contoh.test']);
-        $this->get('/privasi')->assertOk()->assertSee('mailto:privasi@contoh.test', false);
+        // Kebijakan 21 Nov 2026 memuat kontak resmi PT Whisnu Santika Musik langsung di teksnya.
+        $this->get('/privasi')->assertOk()
+            ->assertSee('legal@whisnusantika.com')
+            ->assertSee('it.wsm2026@gmail.com')
+            ->assertSee('PT Whisnu Santika Musik');
     }
 
     public function test_privasi_ada_di_sitemap_footer_dan_halaman_masuk_daftar(): void

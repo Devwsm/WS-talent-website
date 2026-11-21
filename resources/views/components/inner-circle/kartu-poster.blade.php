@@ -11,7 +11,7 @@
     <span class="ic-poster-kartu__gambar ic-warna-{{ $tipe['warna'] }}">
         @if ($event->poster_url)
             <img class="ic-foto-poster" src="{{ $event->poster_url }}" alt="Poster {{ $event->venue }}" width="300"
-                height="400" loading="lazy" decoding="async">
+                height="533" loading="lazy" decoding="async">
         @else
             <x-inner-circle.poster-kosong :tipe="$tipe" />
         @endif

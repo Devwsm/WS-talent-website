@@ -18,14 +18,15 @@ class GoogleAkun
 
     /**
      * @param  array{sub:string,email:string,name:string,email_verified:bool}  $klaim  hasil GoogleOAuth::selesai()
+     * @param  bool  $setujuPrivasi  anggota mencentang Kebijakan Privasi sebelum ke Google (wajib untuk akun baru)
      * @return array{0: member, 1: string}  anggota dan salah satu konstanta status di atas
      *
      * @throws GoogleGagal
      */
-    public function masukkan(array $klaim): array
+    public function masukkan(array $klaim, bool $setujuPrivasi = false): array
     {
         try {
-            return DB::transaction(function () use ($klaim) {
+            return DB::transaction(function () use ($klaim, $setujuPrivasi) {
                 // 1) Sudah pernah masuk lewat Google: pencocokan paling andal memakai `sub`, bukan email.
                 $anggota = member::where('google_id', $klaim['sub'])->lockForUpdate()->first();
                 if ($anggota) {
@@ -38,7 +39,12 @@ class GoogleAkun
                     return [$this->kaitkan($anggota, $klaim['sub']), $this->statusKait($anggota)];
                 }
 
-                // 3) Anggota baru. Nama diambil dari Google, diperpendek sesuai kolom.
+                // 3) Anggota baru: hanya dibuat bila persetujuan Kebijakan Privasi dicentang di halaman Daftar.
+                if (! $setujuPrivasi) {
+                    throw new GoogleGagal('Untuk membuat akun baru, centang persetujuan Kebijakan Privasi di halaman Daftar, lalu pilih Daftar dengan Google.');
+                }
+
+                // Nama diambil dari Google, diperpendek sesuai kolom.
                 $nama = $klaim['name'] !== '' ? $klaim['name'] : Str::before($klaim['email'], '@');
 
                 $baru = new member();
@@ -47,6 +53,8 @@ class GoogleAkun
                 $baru->google_id = $klaim['sub'];
                 $baru->email_verified_at = now();
                 $baru->daftar_via = member::VIA_GOOGLE;
+                $baru->privasi_disetujui_pada = now();
+                $baru->privasi_versi = app(IcPrivasi::class)->diperbarui();
                 $baru->save();
 
                 $baru->kode_member = sprintf('IC-%05d', $baru->id_member);

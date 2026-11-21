@@ -657,3 +657,16 @@ Sumber: tiga tangkapan layar aplikasi lain yang dikirim 18 Nov 2026, disimpan di
 - Keadaan tombol (sesuai 6.2): antrean dibuka/ditutup, sudah antri (bisa keluar sebelum ditutup), menang (tampil **kartu GL**, Check-in tertutup), tidak terpilih, check-in belum dibuka/terbuka/sudah dilakukan.
 
 **Catatan:** pemindai QR tetap ada lewat tombol tengah menu bawah (dipakai pemenang GL, lihat keputusan 2 dan 3). Filter kota memakai kolom `kota` yang sudah ada di `ic_events`.
+
+### 6.9 Penyesuaian 21 November 2026
+
+Tambahan di atas aturan baru, sudah diterapkan:
+
+- **Sandi dan username acara (Atur acara > GL gratis).** Sandi tampil sebagai kode yang terbaca (tombol **Buat kode** mengisi kode acak 8 karakter; tombol "Lihat sandi" dihapus). Username acara boleh memakai spasi.
+- **Check-in.** Anggota biasa check-in **tanpa QR**: cukup tekan Check-in, kehadiran dinilai dari lokasi HP. **Pemindaian QR khusus pemenang GL** (server menolak QR dari non-pemenang). Pemenang menunjukkan **Kartu GL** ke staf untuk masuk, lalu memindai QR acara dari staf untuk mendapat poin GL. Setelah undian, tombol **Antri GL** berganti **Cek pemenang GL** (popup Kartu GL plus ajakan memindai QR acara).
+- **Tarik poin.** Di halaman Pemeriksaan, penanda mencurigakan punya tombol **Tarik poin**: poin check-in itu dikurangi lewat baris koreksi (check-in asli tetap tercatat), paling banyak sebesar saldo anggota, sekali per penanda.
+- **Kenangan.** Foto selalu **4:5**; saat unggah ada pratinjau dengan pilihan **potong pas** atau **foto utuh** (latar buram). Ada **halaman detail** `/innercircle/kenangan/{id}` dengan **komentar** anggota (maks 300 karakter, dibatasi per menit dan per hari, bisa dihapus penulis, pemilik kenangan, atau admin dari CMS Kenangan) dan pintasan komentar di kartu galeri. Tabel baru `ic_memory_comments`.
+- **Profil.** **Kartu member** (foto, nama, Member ID, email, saldo), **ganti nama** (boleh berspasi), dan **Pengaduan** dipindah ke bagian **Akun dan privasi**.
+- **Poster acara 9:16** (dipotong dari tengah saat unggah, sisi terpanjang 1600 px). Poster lama tidak diubah sampai diunggah ulang.
+- **Kebijakan Privasi 21 November 2026** (teks bawaan baru; bila CMS pernah menyimpan isi sendiri, tekan **Kembalikan bawaan** di Konten > Kebijakan privasi). **Daftar wajib mencentang persetujuan**, juga untuk **Daftar dengan Google** (akun baru lewat Google tidak dibuat tanpa centang). Bukti persetujuan disimpan di kolom `privasi_disetujui_pada` dan `privasi_versi` (migrasi baru).
+- **OG image dan favicon Inner Circle** diganti ke biru tema.

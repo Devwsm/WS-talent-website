@@ -57,6 +57,10 @@ class AnggotaPoinTest extends TestCase
 
     private function checkin(member $m, string $kode, ?string $acara = null)
     {
+        // Pemindaian QR khusus pemenang GL: anggota uji dijadikan pemenang di semua acara yang ada.
+        foreach (\App\Models\ic_event::all() as $acaraUji) {
+            \App\Models\ic_gl_antrean::query()->firstOrCreate(['event_id' => $acaraUji->id_event, 'member_id' => $m->id_member], ['status' => \App\Models\ic_gl_antrean::MENANG]);
+        }
         // HP uji berada tepat di titik acara.
         return $this->actingAs($m, 'member')->post(route('ic.checkin.proses'), array_filter(['kode' => $kode, 'acara' => $acara]) + ['lat' => -6.2088, 'lng' => 106.8456, 'akurasi' => 20]);
     }
@@ -77,7 +81,7 @@ class AnggotaPoinTest extends TestCase
         $admin->get(route('ic.admin.anggota', ['q' => 'IC-0000']))->assertOk()->assertSee('Anggota Uji');
 
         $admin->post(route('ic.admin.anggota.poin', $m->id_member), ['jumlah' => 3000, 'catatan' => 'Acara privat'])->assertRedirect();
-        $this->assertSame(5000, $m->fresh()->poin_total);
+        $this->assertSame(4000, $m->fresh()->poin_total); // 1.000 poin GL (QR) + 3.000 manual
         $this->assertSame('admin', ic_poin::where('sumber', 'manual')->first()->dicatat_oleh);
 
         $admin->post(route('ic.admin.anggota.poin', $m->id_member), ['jumlah' => 10001, 'catatan' => 'x'])->assertSessionHasErrors('jumlah');

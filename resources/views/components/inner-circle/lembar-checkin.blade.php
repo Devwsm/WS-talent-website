@@ -15,7 +15,7 @@
 {{--
     Lembar check-in dan lembar pemindai QR. Dipakai halaman Check-in (daftar acara) dan halaman detail acara.
     JavaScript (resources/js/inner-circle.js) membaca id dan atribut data-* di sini, jadi id jangan diganti.
-    $bolehMandiri: anggota non-pemenang GL melihat tombol check-in mandiri (tanpa QR, memakai lokasi).
+    $bolehMandiri: anggota non-pemenang GL check-in lewat lokasi saja (tanpa QR); pemenang GL memindai QR acara dari staf.
     $kembaliKeDetail: setelah check-in gagal, kembali ke halaman detail acara (bukan daftar acara).
 --}}
 {{-- Lembar check-in: naik dari bawah di HP. Isinya diisi JavaScript dari kartu acara (atau dari #ic-checkin-awal). --}}
@@ -56,18 +56,29 @@
         @endif
 
         <div id="ic-checkin-isi" @if ($eventDipilih && $eventDipilih->statusCheckin() !== 'siap') hidden @endif>
-            <label class="ic-label" for="kode">Kode check-in acara</label>
-            <input class="ic-input" id="kode" name="kode" value="{{ old('kode', $kodeIsian) }}"
-                placeholder="Pindai QR atau ketik kode dari panitia" autocomplete="off" autocapitalize="characters"
-                maxlength="300" required>
-            <p class="ic-galat" id="kode-galat-js" role="alert" hidden></p>
+            @if ($bolehMandiri)
+                {{-- Anggota biasa: tanpa QR. Kehadiran dinilai dari lokasi HP; yang mencurigakan bisa ditarik poinnya. --}}
+                <input type="hidden" id="kode" value="">
+                <p class="ic-galat" id="kode-galat-js" role="alert" hidden></p>
+                <p class="ic-bantuan">Check-in dinilai dari lokasi HP-mu, tanpa QR. Izinkan akses lokasi bila diminta.
+                    Check-in yang mencurigakan bisa dibatalkan dan poinnya ditarik tim WSM.</p>
+            @else
+                {{-- Pemenang GL gratis: tunjukkan Kartu GL ke staf untuk masuk, lalu pindai QR acara untuk poin. --}}
+                <p class="ic-bantuan"><b>Pemenang GL:</b> tunjukkan Kartu GL ke staf untuk masuk. Mau dapat poin? Minta
+                    staf menunjukkan QR acara, lalu pindai di sini.</p>
+                <label class="ic-label" for="kode">Kode check-in acara</label>
+                <input class="ic-input" id="kode" name="kode" value="{{ old('kode', $kodeIsian) }}"
+                    placeholder="Pindai QR dari staf atau ketik kodenya" autocomplete="off" autocapitalize="characters"
+                    maxlength="300" required>
+                <p class="ic-galat" id="kode-galat-js" role="alert" hidden></p>
 
-            <div class="ic-aksi-baris ic-aksi-baris--rapat">
-                <button type="button" class="ic-tombol ic-tombol--kecil ic-tombol--terang" data-ic-pindai-buka><i
-                        class="bi bi-qr-code-scan" aria-hidden="true"></i> Pindai QR</button>
-                <button type="button" class="ic-tombol ic-tombol--kecil ic-tombol--terang" data-ic-pindai-berkas><i
-                        class="bi bi-image" aria-hidden="true"></i> Unggah gambar</button>
-            </div>
+                <div class="ic-aksi-baris ic-aksi-baris--rapat">
+                    <button type="button" class="ic-tombol ic-tombol--kecil ic-tombol--terang" data-ic-pindai-buka><i
+                            class="bi bi-qr-code-scan" aria-hidden="true"></i> Pindai QR</button>
+                    <button type="button" class="ic-tombol ic-tombol--kecil ic-tombol--terang" data-ic-pindai-berkas><i
+                            class="bi bi-image" aria-hidden="true"></i> Unggah gambar</button>
+                </div>
+            @endif
 
             <div class="ic-lokasi" id="ic-lokasi" data-state="diam" @if (!$eventDipilih || !$eventDipilih->lokasi_aktif) hidden @endif>
                 <div class="ic-lokasi__status" role="status" aria-live="polite">
@@ -82,16 +93,14 @@
                     <i class="bi bi-arrow-repeat" aria-hidden="true"></i> Cek lokasi lagi</button>
             </div>
 
-            <button type="submit" class="ic-tombol ic-tombol--penuh" id="ic-checkin-kirim">Check-in sekarang <i
-                    class="bi bi-arrow-right" aria-hidden="true"></i></button>
-
             @if ($bolehMandiri)
-                {{-- Tanpa QR: kode tidak wajib, lokasi HP yang dinilai server. Hanya untuk non-pemenang GL. --}}
-                <button type="submit" class="ic-tombol ic-tombol--terang ic-tombol--penuh" id="ic-checkin-mandiri"
-                    formaction="{{ route('ic.checkin.mandiri') }}" formnovalidate data-ic-mandiri>
-                    <i class="bi bi-geo-alt" aria-hidden="true"></i> Check-in mandiri (tanpa QR)</button>
-                <p class="ic-bantuan">Tanpa QR, check-in dinilai dari lokasi HP-mu dan memberi poin mandiri.
-                    Sudah punya QR panitia? Pindai di atas.</p>
+                {{-- Satu-satunya tombol: check-in lewat lokasi (id ic-checkin-kirim dipakai JavaScript). --}}
+                <button type="submit" class="ic-tombol ic-tombol--penuh" id="ic-checkin-kirim"
+                    formaction="{{ route('ic.checkin.mandiri') }}" formnovalidate data-ic-mandiri>Check-in sekarang <i
+                        class="bi bi-arrow-right" aria-hidden="true"></i></button>
+            @else
+                <button type="submit" class="ic-tombol ic-tombol--penuh" id="ic-checkin-kirim">Check-in sekarang <i
+                        class="bi bi-arrow-right" aria-hidden="true"></i></button>
             @endif
         </div>
 

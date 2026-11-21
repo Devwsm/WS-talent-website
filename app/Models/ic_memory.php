@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Satu kenangan di galeri. Properti turunan di bawah dipakai komponen `kartu-kenangan` (anggota dan
@@ -43,6 +44,12 @@ class ic_memory extends Model
     {
         return $this->belongsToMany(member::class, 'ic_memory_likes', 'memory_id', 'member_id', 'id_memory', 'id_member')
             ->withPivot('created_at');
+    }
+
+    /** Komentar anggota pada kenangan ini, terlama di atas. */
+    public function komentar(): HasMany
+    {
+        return $this->hasMany(ic_memory_comment::class, 'memory_id', 'id_memory')->orderBy('id_komentar');
     }
 
     public function scopeTayang(Builder $query): Builder
@@ -96,6 +103,14 @@ class ic_memory extends Model
         return Attribute::get(fn($nilai, array $atribut) => array_key_exists('jumlah_like', $atribut)
             ? (int) $atribut['jumlah_like']
             : $this->penyuka()->count());
+    }
+
+    /** Diisi withCount('komentar as jumlah_komentar') di galeri; bila belum diisi dihitung langsung. */
+    protected function jumlahKomentar(): Attribute
+    {
+        return Attribute::get(fn($nilai, array $atribut) => array_key_exists('jumlah_komentar', $atribut)
+            ? (int) $atribut['jumlah_komentar']
+            : $this->komentar()->count());
     }
 
     protected function disukaiSaya(): Attribute

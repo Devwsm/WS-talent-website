@@ -49,6 +49,8 @@ class member extends Authenticatable
             'galeri_dibaca_pada' => 'datetime',
             // Akun dinonaktifkan admin (kosong = aktif).
             'diblokir_pada' => 'datetime',
+            // Persetujuan Kebijakan Privasi saat mendaftar (kosong untuk anggota yang daftar sebelum 21 Nov 2026).
+            'privasi_disetujui_pada' => 'datetime',
             // Alias hasil withMax() di tab Anggota dashboard.
             'terakhir_checkin' => 'datetime',
         ];

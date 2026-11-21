@@ -9,12 +9,10 @@ use App\Http\Requests\InnerCircle\imporEventRequest;
 use App\Http\Requests\InnerCircle\simpanEventRequest;
 use App\Models\ic_event;
 use App\Services\InnerCircle\AcaraService;
-use App\Services\AktivitasService;
 use App\Services\InnerCircle\BandsintownService;
 use App\Services\InnerCircle\SinkronGagal;
 use App\Support\GambarGagal;
 use App\Support\ImageProcessor;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -127,7 +125,7 @@ class acaraController extends Controller
             $data['undian_pada'] = $d['undian_pada'] ?? null;
         }
 
-        // Sandi tidak pernah ditampilkan kembali di form: kosong = tidak berubah.
+        // Sandi tampil apa adanya di form (kode yang bisa dibaca tim): kosong = tidak berubah, centang hapus = dikosongkan.
         if (! empty($d['hapus_sandi'])) {
             $data['sandi_acara'] = null;
         } elseif (filled($d['sandi_acara'] ?? null)) {
@@ -146,7 +144,8 @@ class acaraController extends Controller
         $posterLama = $event->poster;
         if ($request->hasFile('poster')) {
             try {
-                $posterBaru = $gambar->simpanWebp($request->file('poster'), 'inner-circle/acara', 1200);
+                // Poster acara selalu 9:16 (dipotong dari tengah); sisi terpanjang 1600 px = 900 x 1600.
+                $posterBaru = $gambar->simpanWebp($request->file('poster'), 'inner-circle/acara', 1600, 82, 9 / 16);
             } catch (GambarGagal $e) {
                 return back()->withInput()->withErrors(['poster' => $e->getMessage()]);
             }
@@ -169,22 +168,6 @@ class acaraController extends Controller
 
         return redirect(route('ic.admin.acara.atur', $event->kode))
             ->with('success', 'Pengaturan acara ' . ($event->venue ?? $event->kode) . ' disimpan.');
-    }
-
-    /** Tampilkan sandi acara atas permintaan (tidak ikut halaman); setiap pembukaan tercatat di Log. */
-    public function lihatSandi(string $kode, AktivitasService $aktivitas): JsonResponse
-    {
-        $event = ic_event::query()->where('kode', $kode)->firstOrFail();
-
-        if ($event->sandi_acara === null) {
-            return response()->json(['pesan' => $event->sandiRusak()
-                ? 'Sandi tersimpan tetapi tidak terbaca (APP_KEY berbeda). Isi ulang sandinya.'
-                : 'Sandi acara belum diisi.'], 404);
-        }
-
-        $aktivitas->catat('Sandi acara dilihat', 'Sandi acara ' . ($event->venue ?? $event->kode) . ' (' . $event->tanggal->toDateString() . ') dibuka di CMS.', 'berhasil', 'inner-circle', null, 'ic.admin.acara.sandi');
-
-        return response()->json(['sandi' => $event->sandi_acara])->header('Cache-Control', 'no-store');
     }
 
     private function urlPoster(ic_event $event): ?string

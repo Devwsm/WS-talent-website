@@ -32,9 +32,9 @@ class KebijakanPrivasiTest extends TestCase
     public function test_privasi_bawaan_tidak_berubah(): void
     {
         $this->get(route('privasi'))->assertOk()
-            ->assertSee('Saat kamu hanya melihat situs')
-            ->assertSee('Masuk dengan Google')
-            ->assertSee('Diperbarui 31 Oktober 2026');
+            ->assertSee('Jenis Data Pribadi yang Dikumpulkan')
+            ->assertSee('Google Sign-In')
+            ->assertSee('Diperbarui 21 November 2026');
         $this->assertFalse(app(IcPrivasi::class)->sudahKustom());
     }
 
@@ -49,7 +49,7 @@ class KebijakanPrivasiTest extends TestCase
             ->assertSee('<h2>Data kami</h2>', false)
             ->assertSee('Kami <strong>tidak</strong> menjual datamu.', false)
             ->assertSee('Diperbarui 3 Februari 2027')
-            ->assertDontSee('Saat kamu hanya melihat situs');
+            ->assertDontSee('Jenis Data Pribadi yang Dikumpulkan');
     }
 
     public function test_html_berbahaya_di_privasi_dibersihkan(): void
@@ -106,7 +106,7 @@ class KebijakanPrivasiTest extends TestCase
 
         $this->assertDatabaseMissing('ic_pengaturan', ['kunci' => 'privasi.isi']);
         $this->assertDatabaseMissing('ic_pengaturan', ['kunci' => 'privasi.diperbarui']);
-        $this->get(route('privasi'))->assertSee('Saat kamu hanya melihat situs')->assertSee('Diperbarui 31 Oktober 2026');
+        $this->get(route('privasi'))->assertSee('Jenis Data Pribadi yang Dikumpulkan')->assertSee('Diperbarui 21 November 2026');
     }
 
     public function test_tanggal_rusak_memakai_tanggal_config(): void
@@ -121,12 +121,12 @@ class KebijakanPrivasiTest extends TestCase
     {
         $this->admin()->get(route('ic.admin.konten.bagian', 'privasi'))->assertOk()
             ->assertSee('id="privasi"', false)->assertSee('Kebijakan privasi')
-            ->assertSee('Saat kamu hanya melihat situs')->assertSee('teks bawaan');
+            ->assertSee('Jenis Data Pribadi yang Dikumpulkan')->assertSee('teks bawaan');
 
         $this->simpanPrivasi('<p>Isi sendiri yang unik</p>');
 
         $this->admin()->get(route('ic.admin.konten.bagian', 'privasi'))->assertOk()
-            ->assertSee('Isi sendiri yang unik')->assertDontSee('Saat kamu hanya melihat situs')->assertSee('Kembalikan teks');
+            ->assertSee('Isi sendiri yang unik')->assertDontSee('Jenis Data Pribadi yang Dikumpulkan')->assertSee('Kembalikan teks');
     }
 
     public function test_hanya_admin_yang_boleh_mengubah_privasi(): void

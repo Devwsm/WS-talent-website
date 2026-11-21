@@ -29,6 +29,8 @@ class simpanKenanganRequest extends FormRequest
             'caption' => ['required', 'string', 'max:240'],
             'tempat' => ['nullable', 'string', 'max:65'],
             'kategori' => ['required', Rule::in(array_keys(ic_kategori_kenangan()))],
+            // Cara foto dimasukkan ke bingkai 4:5: potong pas (bawaan) atau foto utuh di atas latar buram.
+            'bingkai' => ['nullable', Rule::in(['potong', 'utuh'])],
             'foto' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:' . (int) config('inner_circle.foto_kenangan_maks_kb')],
         ];
     }

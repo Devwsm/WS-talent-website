@@ -108,19 +108,34 @@ class AturanCheckinBaruTest extends TestCase
 
     // ---------- poin menurut status GL ----------
 
-    public function test_scan_qr_non_pemenang_dapat_poin_mandiri_dan_pemenang_dapat_poin_gl(): void
+    public function test_non_pemenang_check_in_lewat_lokasi_dan_pemenang_memindai_qr_untuk_poin_gl(): void
     {
         $e = $this->acara();
         $tiket = $this->anggota('tiket@contoh.test');
         $gl = $this->anggota('gl@contoh.test');
         $this->menang($gl, $e);
 
-        $this->scan($tiket, $e)->assertRedirect(route('ic.beranda'));
+        $this->mandiri($tiket, $e)->assertRedirect(route('ic.beranda'));
         $this->scan($gl, $e)->assertRedirect(route('ic.beranda'));
 
         $this->assertSame(2000, $tiket->fresh()->poin_total);
         $this->assertSame(1000, $gl->fresh()->poin_total);
         $this->assertSame(2, ic_poin::count());
+    }
+
+    public function test_scan_qr_ditolak_untuk_non_pemenang_gl_dan_tidak_memberi_poin(): void
+    {
+        $e = $this->acara();
+        $m = $this->anggota();
+
+        $this->scan($m, $e)->assertSessionHasErrors(['kode' => 'Pemindaian QR hanya untuk pemenang GL gratis. Check-in biasa tidak perlu QR: tekan Check-in dan izinkan akses lokasi.']);
+        $this->assertSame(0, ic_poin::count());
+        $this->assertSame(0, $m->fresh()->poin_total);
+
+        // Pemenang GL di acara LAIN tetap bukan pemenang di acara ini.
+        $lain = $this->acara(['tanggal' => now()->addDay()->toDateString()]);
+        $this->menang($m, $lain);
+        $this->scan($m, $e)->assertSessionHasErrors('kode');
     }
 
     public function test_antri_atau_menang_di_acara_lain_tidak_dihitung_pemenang_di_sini(): void
@@ -132,7 +147,7 @@ class AturanCheckinBaruTest extends TestCase
         ic_gl_antrean::create(['event_id' => $e->id_event, 'member_id' => $m->id_member]); // masih antri
 
         $this->assertFalse(app(CheckinService::class)->pemenangGl($m, $e));
-        $this->scan($m, $e)->assertRedirect(route('ic.beranda'));
+        $this->mandiri($m, $e)->assertRedirect(route('ic.beranda'));
         $this->assertSame(2000, $m->fresh()->poin_total);
     }
 
@@ -144,7 +159,7 @@ class AturanCheckinBaruTest extends TestCase
         $gl = $this->anggota('gl@contoh.test');
         $this->menang($gl, $e);
 
-        $this->scan($tiket, $e);
+        $this->mandiri($tiket, $e);
         $this->scan($gl, $e);
 
         $this->assertSame(3000, $tiket->fresh()->poin_total);
@@ -155,14 +170,14 @@ class AturanCheckinBaruTest extends TestCase
     {
         $e1 = $this->acara();
         $m = $this->anggota();
-        $this->scan($m, $e1);
+        $this->mandiri($m, $e1);
         $this->assertSame(2000, $m->fresh()->poin_total);
 
         $this->admin()->post(route('ic.admin.konten.aturan.simpan'), $this->aturan(['poin_gl' => 1500, 'poin_mandiri' => 2500]))
             ->assertSessionHasNoErrors();
 
         $e2 = $this->acara(['tanggal' => now()->addDay()->toDateString(), 'jendela_mulai' => now()->subHour(), 'jendela_selesai' => now()->addHours(3)]);
-        $this->scan($m->fresh(), $e2);
+        $this->mandiri($m->fresh(), $e2);
 
         $this->assertSame(2000 + 2500, $m->fresh()->poin_total);
         $this->assertSame(2000, ic_poin::where('event_id', $e1->id_event)->value('jumlah'));
@@ -268,7 +283,7 @@ class AturanCheckinBaruTest extends TestCase
         $coba = function (string $waktu) use ($e) {
             Carbon::setTestNow($waktu);
 
-            return $this->scan($this->anggota('u' . md5($waktu) . '@contoh.test'), $e);
+            return $this->mandiri($this->anggota('u' . md5($waktu) . '@contoh.test'), $e);
         };
 
         $coba('2026-10-10 21:59:00')->assertSessionHasErrors('kode');

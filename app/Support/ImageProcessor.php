@@ -31,10 +31,12 @@ class ImageProcessor
      * Baca gambar di $sumber, kembalikan isi WebP-nya (belum disimpan ke mana pun).
      *
      * @param  int  $sisiMaks  sisi terpanjang hasil dalam piksel; gambar yang lebih kecil tidak diperbesar
+     * @param  float|null  $rasio  lebar : tinggi hasil (mis. 4 / 5 untuk kenangan, 9 / 16 untuk poster acara); null = ukuran asli
+     * @param  bool  $potong  true = potong tengah sampai pas ($rasio), false = foto utuh di atas latar buram ($rasio)
      *
      * @throws GambarGagal
      */
-    public function keWebp(string $sumber, int $sisiMaks, int $kualitas = 82): string
+    public function keWebp(string $sumber, int $sisiMaks, int $kualitas = 82, ?float $rasio = null, bool $potong = true): string
     {
         if (! extension_loaded('gd') || ! function_exists('imagewebp')) {
             throw new GambarGagal('Server belum bisa memproses foto (ekstensi GD dengan dukungan WebP belum aktif). Hubungi tim WSM.');
@@ -75,6 +77,13 @@ class ImageProcessor
         if (! imageistruecolor($gambar)) {
             imagepalettetotruecolor($gambar);
         }
+
+        // Bingkai (mis. 4:5 atau 9:16) dipasang sesudah orientasi EXIF diluruskan, supaya potongannya mengikuti foto yang tegak.
+        if ($rasio !== null && $rasio > 0) {
+            $gambar = $this->bingkai($gambar, $rasio, $potong);
+            $gambar = $this->perkecil($gambar, imagesx($gambar), imagesy($gambar), $sisiMaks);
+        }
+
         imagealphablending($gambar, false);
         imagesavealpha($gambar, true);
 
@@ -94,14 +103,86 @@ class ImageProcessor
      *
      * @throws GambarGagal
      */
-    public function simpanWebp(UploadedFile $berkas, string $folder, int $sisiMaks, int $kualitas = 82): string
+    public function simpanWebp(UploadedFile $berkas, string $folder, int $sisiMaks, int $kualitas = 82, ?float $rasio = null, bool $potong = true): string
     {
-        $isi = $this->keWebp((string) $berkas->getRealPath(), $sisiMaks, $kualitas);
+        $isi = $this->keWebp((string) $berkas->getRealPath(), $sisiMaks, $kualitas, $rasio, $potong);
         $path = trim($folder, '/') . '/' . Str::uuid()->toString() . '.webp';
 
         Storage::disk('public')->put($path, $isi);
 
         return $path;
+    }
+
+    /**
+     * Pas-kan gambar ke rasio lebar:tinggi.
+     * - $potong: potong bagian tengah yang berlebih (hasilnya selalu penuh, tanpa pinggiran kosong).
+     * - tanpa potong: seluruh foto tetap terlihat; sisi yang kosong diisi versi buram dari foto itu sendiri.
+     */
+    private function bingkai(\GdImage $gambar, float $rasio, bool $potong): \GdImage
+    {
+        $lebar = imagesx($gambar);
+        $tinggi = imagesy($gambar);
+
+        if (abs(($lebar / $tinggi) - $rasio) < 0.002) {
+            return $gambar;
+        }
+
+        $lebarLebihLebar = ($lebar / $tinggi) > $rasio;
+
+        if ($potong) {
+            // Area sumber yang dipotong: sisi yang kelebihan dikurangi sampai rasionya pas, diambil dari tengah.
+            $lebarSumber = $lebarLebihLebar ? max(1, (int) round($tinggi * $rasio)) : $lebar;
+            $tinggiSumber = $lebarLebihLebar ? $tinggi : max(1, (int) round($lebar / $rasio));
+            $x = (int) floor(($lebar - $lebarSumber) / 2);
+            $y = (int) floor(($tinggi - $tinggiSumber) / 2);
+
+            $hasil = imagecreatetruecolor($lebarSumber, $tinggiSumber);
+            imagecopy($hasil, $gambar, 0, 0, $x, $y, $lebarSumber, $tinggiSumber);
+
+            return $hasil;
+        }
+
+        // Kanvas seukuran foto di sisi yang sudah pas, dan diperluas di sisi lainnya.
+        $lebarKanvas = $lebarLebihLebar ? $lebar : max($lebar, (int) round($tinggi * $rasio));
+        $tinggiKanvas = $lebarLebihLebar ? max($tinggi, (int) round($lebar / $rasio)) : $tinggi;
+
+        $kanvas = imagecreatetruecolor($lebarKanvas, $tinggiKanvas);
+
+        // Latar buram: salinan kecil yang dipotong pas ke rasio, diburamkan, lalu dibentangkan memenuhi kanvas.
+        $kecilLebar = 48;
+        $kecilTinggi = max(1, (int) round($kecilLebar / $rasio));
+        $kecil = imagecreatetruecolor($kecilLebar, $kecilTinggi);
+        $lebarSumber = $lebarLebihLebar ? max(1, (int) round($tinggi * $rasio)) : $lebar;
+        $tinggiSumber = $lebarLebihLebar ? $tinggi : max(1, (int) round($lebar / $rasio));
+        imagecopyresampled(
+            $kecil,
+            $gambar,
+            0,
+            0,
+            (int) floor(($lebar - $lebarSumber) / 2),
+            (int) floor(($tinggi - $tinggiSumber) / 2),
+            $kecilLebar,
+            $kecilTinggi,
+            $lebarSumber,
+            $tinggiSumber,
+        );
+        for ($i = 0; $i < 3; $i++) {
+            imagefilter($kecil, IMG_FILTER_GAUSSIAN_BLUR);
+        }
+        imagecopyresampled($kanvas, $kecil, 0, 0, 0, 0, $lebarKanvas, $tinggiKanvas, $kecilLebar, $kecilTinggi);
+
+        imagecopy(
+            $kanvas,
+            $gambar,
+            (int) floor(($lebarKanvas - $lebar) / 2),
+            (int) floor(($tinggiKanvas - $tinggi) / 2),
+            0,
+            0,
+            $lebar,
+            $tinggi,
+        );
+
+        return $kanvas;
     }
 
     private function perkecil(\GdImage $gambar, int $lebar, int $tinggi, int $sisiMaks): \GdImage

@@ -77,6 +77,36 @@
                                 <x-inner-circle.kartu-kenangan :kenangan="$k" />
                             </div>
 
+                            @if ($k->jumlah_komentar > 0)
+                                <details class="px-4 py-3 border-t border-white/10 text-sm">
+                                    <summary class="cursor-pointer text-white/70 min-h-11 flex items-center">Komentar
+                                        ({{ $k->jumlah_komentar }})
+                                    </summary>
+                                    <ul class="mt-2 flex flex-col gap-2">
+                                        @foreach ($k->komentar()->with('member')->latest('id_komentar')->limit(30)->get() as $kom)
+                                            <li class="flex items-start gap-3 rounded-xl border border-white/10 p-3">
+                                                <div class="min-w-0 flex-1">
+                                                    <p class="text-xs text-white/50">
+                                                        {{ $kom->member->nama ?? 'Anggota dihapus' }}
+                                                        ·
+                                                        {{ $kom->created_at->locale('id')->translatedFormat('j M Y H.i') }}
+                                                    </p>
+                                                    <p class="wrap-anywhere">{{ $kom->isi }}</p>
+                                                </div>
+                                                <form method="POST"
+                                                    action="{{ route('ic.admin.kenangan.komentar.hapus', $kom->id_komentar) }}"
+                                                    onsubmit="return confirm('Hapus komentar ini? Tidak bisa dikembalikan.')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit"
+                                                        class="h-11 px-3 rounded-full border border-red-400/30 text-xs font-semibold text-red-300 hover:bg-red-400/10">Hapus</button>
+                                                </form>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </details>
+                            @endif
+
                             <div class="flex flex-wrap items-center gap-2 px-4 py-3 border-t border-white/10">
                                 <span
                                     class="rounded-full border px-3 py-1.5 text-xs font-semibold {{ $k->disembunyikan ? 'border-red-400/30 bg-red-400/10 text-red-300' : 'border-emerald-300/30 bg-emerald-300/10 text-emerald-200' }}">{{ $k->disembunyikan ? 'Disembunyikan' : 'Tayang' }}</span>

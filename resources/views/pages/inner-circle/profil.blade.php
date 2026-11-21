@@ -5,7 +5,9 @@
 @section('content')
     <p class="ic-eyebrow">{{ ic_teks('profil.eyebrow') }}</p>
     <h1 class="ic-judul">Profil Saya<span>.</span></h1>
-    <p class="ic-deskripsi">{{ $member->nama }} · {{ $member->kode_member }} · {{ $member->email }}</p>
+
+    {{-- Kartu member: nama (bisa diganti, boleh berspasi), Member ID, email, dan saldo poin. --}}
+    <x-inner-circle.kartu-anggota :member="$member" detail />
 
     <section class="ic-profil-editor" aria-labelledby="judul-foto">
         <span class="ic-profil-foto" id="ic-foto-pratinjau"
@@ -29,9 +31,9 @@
                     data-ic-maks-mb="{{ $maksFotoMb }}" hidden>
             </form>
             @if ($member->avatar)
-                <form method="POST" action="{{ route('ic.profil.foto.hapus') }}" id="ic-foto-hapus-form"
-                    data-ic-konfirmasi data-ic-sekali data-ic-konfirmasi-judul="Hapus foto profil?"
-                    data-ic-konfirmasi-tombol="Ya, hapus" data-judul="Kamu bisa mengunggah foto baru kapan saja.">
+                <form method="POST" action="{{ route('ic.profil.foto.hapus') }}" id="ic-foto-hapus-form" data-ic-konfirmasi
+                    data-ic-sekali data-ic-konfirmasi-judul="Hapus foto profil?" data-ic-konfirmasi-tombol="Ya, hapus"
+                    data-judul="Kamu bisa mengunggah foto baru kapan saja.">
                     @csrf
                     @method('DELETE')
                 </form>
@@ -66,14 +68,6 @@
             <small>Penukaran hadiah</small>
         </div>
     </div>
-
-    <section class="ic-panel ic-jarak-atas" aria-labelledby="judul-pengaduan">
-        <h2 class="ic-panel__judul" id="judul-pengaduan">Ada kendala atau masukan?</h2>
-        <p class="ic-bantuan">Ceritakan kendala soal check-in, poin, GL gratis, hadiah, atau akunmu. Tim WSM akan
-            menindaklanjuti dan memberi kabar.</p>
-        <a class="ic-tombol ic-tombol--kecil" href="{{ route('ic.pengaduan') }}">Kirim pengaduan <i
-                class="bi bi-arrow-right" aria-hidden="true"></i></a>
-    </section>
 
     <h2 class="ic-judul-bagian" id="riwayat">{{ ic_teks('profil.riwayat.judul') }}</h2>
     <div class="ic-panel ic-daftar ic-daftar--rapat">
@@ -115,9 +109,40 @@
         @error('akun')
             <p class="ic-galat ic-galat--blok" role="alert">{{ $message }}</p>
         @enderror
-        <button type="button" class="ic-tombol ic-tombol--bahaya" data-ic-modal-buka="modal-hapus-akun">Hapus
-            akunku</button>
+
+        {{-- Pengaduan ada di sini (Akun dan privasi), bukan lagi kartu terpisah di atas. --}}
+        <div class="ic-akun__bagian" id="pengaduan">
+            <h3 class="ic-panel__judul">Ada kendala atau masukan?</h3>
+            <p class="ic-bantuan">Ceritakan kendala soal check-in, poin, GL gratis, hadiah, atau akunmu. Tim WSM akan
+                menindaklanjuti dan memberi kabar.</p>
+            <a class="ic-tombol ic-tombol--kecil" href="{{ route('ic.pengaduan') }}">Kirim pengaduan <i
+                    class="bi bi-arrow-right" aria-hidden="true"></i></a>
+        </div>
+
+        <div class="ic-akun__bagian">
+            <button type="button" class="ic-tombol ic-tombol--bahaya" data-ic-modal-buka="modal-hapus-akun">Hapus
+                akunku</button>
+        </div>
     </div>
+
+    <x-inner-circle.modal id="modal-nama" judul="Ganti nama" eyebrow="Kartu member" :terbuka="$errors->has('nama')">
+        <form method="POST" action="{{ route('ic.profil.nama') }}" data-ic-sekali novalidate>
+            @csrf
+            @method('PATCH')
+            <label class="ic-label" for="ganti-nama">Nama</label>
+            <input class="ic-input" type="text" id="ganti-nama" name="nama" value="{{ old('nama', $member->nama) }}"
+                maxlength="100" autocomplete="name" required @error('nama') aria-invalid="true" @enderror>
+            <p class="ic-bantuan">Boleh memakai spasi, mis. “Ancha Maulana”. Nama tampil di kartu member dan, dalam
+                bentuk singkat, di kenangan dan komentarmu.</p>
+            @error('nama')
+                <p class="ic-galat" role="alert">{{ $message }}</p>
+            @enderror
+            <div class="ic-aksi-form">
+                <button type="button" class="ic-tombol ic-tombol--terang" data-ic-modal-tutup>Batal</button>
+                <button type="submit" class="ic-tombol">Simpan nama</button>
+            </div>
+        </form>
+    </x-inner-circle.modal>
 
     <x-inner-circle.modal id="modal-hapus-akun" judul="Hapus akunmu?" eyebrow="Tidak bisa dibatalkan" :terbuka="$errors->hasAny(['konfirmasi', 'sandi'])">
         @if ($klaimMenunggu)
@@ -135,8 +160,8 @@
 
                 @if ($punyaSandi)
                     <label class="ic-label" for="hapus-sandi">Kata sandi saat ini</label>
-                    <input class="ic-input" type="password" id="hapus-sandi" name="sandi" autocomplete="current-password"
-                        required @error('sandi') aria-invalid="true" @enderror>
+                    <input class="ic-input" type="password" id="hapus-sandi" name="sandi"
+                        autocomplete="current-password" required @error('sandi') aria-invalid="true" @enderror>
                     @error('sandi')
                         <p class="ic-galat" role="alert">{{ $message }}</p>
                     @enderror

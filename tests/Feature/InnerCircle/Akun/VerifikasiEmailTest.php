@@ -46,7 +46,7 @@ class VerifikasiEmailTest extends TestCase
             'nama' => 'Rani',
             'email' => 'rani@contoh.test',
             'sandi' => 'Rahasia123',
-            'sandi_confirmation' => 'Rahasia123',
+            'setuju_privasi' => 1, 'sandi_confirmation' => 'Rahasia123',
         ]);
     }
 
@@ -197,7 +197,7 @@ class VerifikasiEmailTest extends TestCase
 
         foreach ($ditolak as $sandi => $alasan) {
             try {
-                $this->daftar(['sandi' => $sandi, 'sandi_confirmation' => $sandi])->assertSessionHasErrors('sandi');
+                $this->daftar(['sandi' => $sandi, 'setuju_privasi' => 1, 'sandi_confirmation' => $sandi])->assertSessionHasErrors('sandi');
             } catch (\Throwable) {
                 $this->fail("Sandi {$alasan} seharusnya ditolak.");
             }
@@ -208,7 +208,7 @@ class VerifikasiEmailTest extends TestCase
 
     public function test_daftar_menerima_sandi_dengan_simbol(): void
     {
-        $this->daftar(['sandi' => 'Rah@sia-123!', 'sandi_confirmation' => 'Rah@sia-123!'])
+        $this->daftar(['sandi' => 'Rah@sia-123!', 'setuju_privasi' => 1, 'sandi_confirmation' => 'Rah@sia-123!'])
             ->assertSessionHasNoErrors()->assertRedirect(route('ic.beranda'));
 
         $this->assertSame(1, member::count());
@@ -222,7 +222,7 @@ class VerifikasiEmailTest extends TestCase
             'token' => $token,
             'email' => $m->email,
             'sandi' => $sandi,
-            'sandi_confirmation' => $sandi,
+            'setuju_privasi' => 1, 'sandi_confirmation' => $sandi,
         ]);
 
         $kirim('lemahsekali1')->assertSessionHasErrors('sandi');

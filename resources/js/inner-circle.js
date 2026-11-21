@@ -836,3 +836,55 @@ if (awalCheckin) isiCheckin(awalCheckin.dataset, { awal: true });
 document
     .querySelectorAll("[data-ic-buka-awal]")
     .forEach((modal) => bukaModal(modal.id));
+
+// Daftar dengan Google: tahan klik sampai Kebijakan Privasi dicentang, lalu kirim ?setuju=1 (server memeriksanya lagi).
+document.addEventListener("click", (e) => {
+    const tautan = e.target.closest("[data-ic-butuh-setuju]");
+    if (!tautan) return;
+    const kotak = document.querySelector(tautan.dataset.icButuhSetuju);
+    e.preventDefault();
+    if (!kotak?.checked) {
+        window.icToast(
+            "Centang persetujuan Kebijakan Privasi dulu untuk mendaftar.",
+            "error",
+        );
+        kotak?.focus();
+        return;
+    }
+    const tujuan = new URL(tautan.href, window.location.href);
+    tujuan.searchParams.set("setuju", "1");
+    window.location.assign(tujuan.toString());
+});
+
+// Pratinjau foto kenangan berbingkai 4:5: tampil begitu foto dipilih, dengan pilihan potong pas atau foto utuh.
+// Server memakai pilihan yang sama (field bingkai), jadi hasil terbit sama dengan pratinjau.
+document.addEventListener("change", (e) => {
+    const input = e.target.closest("input[type=file][data-ic-pratinjau-foto]");
+    if (input) {
+        const kotak = document.querySelector(input.dataset.icPratinjauFoto);
+        if (!kotak) return;
+        const berkas = input.files?.[0];
+        kotak.querySelectorAll("img").forEach((img) => {
+            if (img.dataset.url) URL.revokeObjectURL(img.dataset.url);
+        });
+        if (!berkas || !berkas.type.startsWith("image/")) {
+            kotak.hidden = true;
+            return;
+        }
+        const url = URL.createObjectURL(berkas);
+        kotak.querySelectorAll("img").forEach((img) => {
+            img.src = url;
+            img.dataset.url = url;
+        });
+        kotak.hidden = false;
+        return;
+    }
+
+    const pilihan = e.target.closest("input[type=radio][name=bingkai]");
+    if (pilihan) {
+        const bingkai = pilihan
+            .closest(".ic-pratinjau")
+            ?.querySelector(".ic-pratinjau__bingkai");
+        if (bingkai) bingkai.dataset.icBingkai = pilihan.value;
+    }
+});

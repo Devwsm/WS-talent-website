@@ -77,7 +77,7 @@ class AturAcaraTest extends TestCase
         $this->assertTrue($baru->glLengkap());
     }
 
-    public function test_sandi_kosong_tidak_menimpa_dan_sandi_tidak_ada_di_halaman(): void
+    public function test_sandi_kosong_tidak_menimpa_dan_sandi_tampil_sebagai_kode_terbaca(): void
     {
         $e = $this->acara();
         $e->update(['sandi_acara' => 'rahasia-acara', 'username_acara' => 'tamu-ws', 'kuota_gl' => 5]);
@@ -86,22 +86,35 @@ class AturAcaraTest extends TestCase
             ->assertSessionHasNoErrors();
         $this->assertSame('rahasia-acara', $e->fresh()->sandi_acara);
 
-        $this->admin()->get(route('ic.admin.acara.atur', $e->kode))->assertOk()->assertDontSee('rahasia-acara');
+        // Sandi tampil langsung sebagai kode di kolom teks (bukan kolom sandi bertitik-titik) dan tidak ada lagi tombol "Lihat sandi".
+        $this->admin()->get(route('ic.admin.acara.atur', $e->kode))->assertOk()
+            ->assertSee('value="rahasia-acara"', false)
+            ->assertSee('data-buat-kode', false)
+            ->assertDontSee('Lihat sandi');
     }
 
-    public function test_sandi_bisa_dihapus_dan_dilihat_atas_permintaan(): void
+    public function test_username_acara_boleh_memakai_spasi_dan_spasi_ganda_dirapikan(): void
+    {
+        $e = $this->acara();
+
+        $this->admin()->put(route('ic.admin.acara.atur.simpan', $e->kode), $this->data(['username_acara' => '  Whisnu   Santika VIP ']))
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame('Whisnu Santika VIP', $e->fresh()->username_acara);
+
+        // Karakter di luar ASCII biasa tetap ditolak.
+        $this->admin()->put(route('ic.admin.acara.atur.simpan', $e->kode), $this->data(['username_acara' => "tab\tdi sini"]))
+            ->assertSessionHasErrors('username_acara');
+    }
+
+    public function test_sandi_bisa_dihapus_lewat_centang(): void
     {
         $e = $this->acara();
         $e->update(['sandi_acara' => 'rahasia-acara']);
 
-        // Tanpa login (dicek lebih dulu, sebelum sesi admin dipasang di tes ini).
-        $this->post(route('ic.admin.acara.sandi', $e->kode))->assertRedirect(route('login'));
-
-        $this->admin()->postJson(route('ic.admin.acara.sandi', $e->kode))->assertOk()->assertJson(['sandi' => 'rahasia-acara']);
-
         $this->admin()->put(route('ic.admin.acara.atur.simpan', $e->kode), $this->data(['hapus_sandi' => 1]));
+
         $this->assertNull($e->fresh()->sandi_acara);
-        $this->admin()->postJson(route('ic.admin.acara.sandi', $e->kode))->assertNotFound();
     }
 
     public function test_validasi_gl_dan_poin(): void
@@ -112,7 +125,8 @@ class AturAcaraTest extends TestCase
         $this->admin()->put($url, $this->data(['kuota_gl' => 100000]))->assertSessionHasErrors('kuota_gl');
         $this->admin()->put($url, $this->data(['kuota_gl' => -1]))->assertSessionHasErrors('kuota_gl');
         $this->admin()->put($url, $this->data(['poin_gl' => 0]))->assertSessionHasErrors('poin_gl');
-        $this->admin()->put($url, $this->data(['username_acara' => 'ada spasi']))->assertSessionHasErrors('username_acara');
+        $this->admin()->put($url, $this->data(['username_acara' => 'ada spasi']))->assertSessionHasNoErrors();
+        $this->admin()->put($url, $this->data(['sandi_acara' => 'ada spasi']))->assertSessionHasErrors('sandi_acara');
         $this->admin()->put($url, $this->data(['sandi_acara' => 'abc']))->assertSessionHasErrors('sandi_acara');
         $this->admin()->put($url, $this->data(['undian_pada' => '2030-05-12T10:00']))->assertSessionHasErrors('undian_pada');
         $this->admin()->put($url, $this->data(['jendela_mulai' => '2030-05-10T22:00']))->assertSessionHasErrors('jendela_selesai');

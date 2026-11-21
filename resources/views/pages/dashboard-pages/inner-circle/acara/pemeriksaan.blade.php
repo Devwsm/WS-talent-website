@@ -71,8 +71,9 @@
                         alasan yang tampil ke anggota.</li>
                     <li><strong class="text-white">Penanda.</strong> Sistem menandai check-in yang tercatat tetapi janggal:
                         perangkat sama dipakai beberapa akun, lokasi terlalu sempurna, perjalanan antar acara yang tidak
-                        masuk akal, atau banyak percobaan lokasi gagal. Penanda hanya isyarat, bukan bukti. Bila perlu
-                        tindakan, kurangi poin atau nonaktifkan akun lewat detail anggota.</li>
+                        masuk akal, atau banyak percobaan lokasi gagal. Penanda hanya isyarat, bukan bukti. Bila terbukti
+                        curang, tekan Tarik poin untuk membatalkan poin check-in itu, atau nonaktifkan akun lewat detail
+                        anggota.</li>
                 </ul>
             </section>
 
@@ -280,6 +281,13 @@
                                                 class="{{ $kelasTombol }}"><i class="bi bi-arrow-counterclockwise"
                                                     aria-hidden="true"></i> Buka
                                                 kembali</button>
+                                        @endif
+                                        @if ($n->anggota && $n->poin_id && $n->status !== 'ditindak')
+                                            <button type="submit"
+                                                formaction="{{ route('ic.admin.acara.penanda.tarik', $n->id_penanda) }}"
+                                                onclick="return confirm('Tarik poin check-in ini dari anggota? Poin dikurangi lewat koreksi dan penanda ditandai sudah ditindak.')"
+                                                class="{{ $kelasTombol }}"><i class="bi bi-arrow-return-left"
+                                                    aria-hidden="true"></i> Tarik poin</button>
                                         @endif
                                         @if ($n->anggota)
                                             <a href="{{ route('ic.admin.anggota.detail', $n->anggota->id_member) }}"

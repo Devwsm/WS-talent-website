@@ -27,7 +27,7 @@ class aturAcaraRequest extends FormRequest
             'venue' => $bersih('venue'),
             'deskripsi' => $bersih('deskripsi'),
             'petunjuk_masuk' => $bersih('petunjuk_masuk'),
-            'username_acara' => $bersih('username_acara'),
+            'username_acara' => ($u = $bersih('username_acara')) === null ? null : preg_replace('/ {2,}/', ' ', $u),
             'sandi_acara' => $bersih('sandi_acara'),
             'kuota_gl' => $bersih('kuota_gl'),
             'undian_pada' => $bersih('undian_pada'),
@@ -65,7 +65,8 @@ class aturAcaraRequest extends FormRequest
                     }
                 },
             ],
-            'username_acara' => ['nullable', 'string', 'max:60', 'regex:/^[\x21-\x7E]+$/'],
+            // Username boleh memuat spasi (mis. "Whisnu Santika VIP"); ujung depan dan belakang sudah dipangkas di prepareForValidation.
+            'username_acara' => ['nullable', 'string', 'max:60', 'regex:/^[\x20-\x7E]+$/'],
             'sandi_acara' => ['nullable', 'string', 'min:4', 'max:60', 'regex:/^[\x21-\x7E]+$/'],
             'hapus_sandi' => ['boolean'],
             'poin_gl' => ['nullable', 'integer', 'min:1', 'max:1000000'],
@@ -110,6 +111,7 @@ class aturAcaraRequest extends FormRequest
             'mimes' => 'Poster harus berupa gambar JPG, PNG, atau WebP.',
             'poster.max' => 'Poster terlalu besar (maksimal 1 MB).',
             'regex' => ':attribute tidak boleh memuat spasi atau karakter di luar huruf, angka, dan simbol biasa.',
+            'username_acara.regex' => 'Username acara hanya boleh huruf, angka, spasi, dan simbol biasa.',
             'required_with' => 'Isi jendela check-in secara lengkap (dibuka dan ditutup), atau kosongkan keduanya.',
             'jendela_selesai.after' => 'Check-in ditutup harus setelah check-in dibuka.',
         ];

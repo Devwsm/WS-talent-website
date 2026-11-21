@@ -65,7 +65,7 @@ class TeksLayarAnggotaTest extends TestCase
             ->assertSee('✦ WS INNER CIRCLE ✦')->assertSee('Kabar terbaru ✳');
 
         $this->actingAs($m, 'member')->get(route('ic.komunitas', ['tab' => 'galeri']))->assertOk()
-            ->assertSee('Galeri kenangan ♡')->assertSee('<b>Simpan momen terbaikmu.</b> Bagikan', false)
+            ->assertSee('Galeri kenangan ♡')->assertSeeInOrder(['<b>Simpan momen terbaikmu.</b>', 'Bagikan'], false)
             ->assertSee('Penggemar, foto &amp; cerita', false);
 
         $this->actingAs($m, 'member')->get(route('ic.profil'))->assertOk()

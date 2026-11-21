@@ -47,7 +47,8 @@ class GoogleTest extends TestCase
 
     private function sesiGoogle(array $timpa = []): array
     {
-        return ['ic_google' => array_merge(['state' => 'STATE1', 'nonce' => 'NONCE1', 'verifier' => 'VERIF1', 'dibuat' => time()], $timpa)];
+        // ic_privasi_setuju: anggota sudah mencentang Kebijakan Privasi di halaman Daftar (wajib untuk akun baru).
+        return ['ic_privasi_setuju' => true, 'ic_google' => array_merge(['state' => 'STATE1', 'nonce' => 'NONCE1', 'verifier' => 'VERIF1', 'dibuat' => time()], $timpa)];
     }
 
     private function idToken(array $timpa = []): string
@@ -83,6 +84,24 @@ class GoogleTest extends TestCase
     {
         return $this->withSession($this->sesiGoogle($sesi))
             ->get(route('ic.google.callback', array_merge(['state' => 'STATE1', 'code' => 'kode-abc'], $query)));
+    }
+
+    public function test_akun_baru_lewat_google_butuh_persetujuan_privasi_dan_persetujuan_tersimpan(): void
+    {
+        $this->googleMenjawab(['sub' => 'g-baru', 'email' => 'baru@contoh.test', 'name' => 'Baru Google']);
+
+        // Tanpa centang di halaman Daftar (sesi tanpa ic_privasi_setuju): akun baru tidak dibuat.
+        $tanpaCentang = ['ic_google' => $this->sesiGoogle()['ic_google']];
+        $this->withSession($tanpaCentang)
+            ->get(route('ic.google.callback', ['state' => 'STATE1', 'code' => 'kode-abc']))
+            ->assertRedirect(route('ic.masuk'))->assertSessionHasErrors('google');
+        $this->assertDatabaseMissing('members', ['email' => 'baru@contoh.test']);
+
+        // Dengan centang: akun dibuat dan bukti persetujuan tersimpan.
+        $this->kembaliDariGoogle()->assertRedirect();
+        $baru = \App\Models\member::where('email', 'baru@contoh.test')->firstOrFail();
+        $this->assertNotNull($baru->privasi_disetujui_pada);
+        $this->assertSame('2026-11-21', $baru->privasi_versi);
     }
 
     public function test_flag_mati_atau_kredensial_kosong_membuat_route_404_dan_tombol_hilang(): void
@@ -351,7 +370,7 @@ class GoogleTest extends TestCase
 
     public function test_login_dan_daftar_biasa_mencatat_sesi_versi_dan_tetap_bisa_dipakai(): void
     {
-        $this->post(route('ic.daftar.proses'), ['nama' => 'Biasa', 'email' => 'biasa@contoh.test', 'sandi' => 'Sandi-12345678', 'sandi_confirmation' => 'Sandi-12345678']);
+        $this->post(route('ic.daftar.proses'), ['nama' => 'Biasa', 'email' => 'biasa@contoh.test', 'sandi' => 'Sandi-12345678', 'setuju_privasi' => 1, 'sandi_confirmation' => 'Sandi-12345678']);
         $this->assertSame(0, session('ic_sesi_versi'));
         $this->get(route('ic.beranda'))->assertOk();
 

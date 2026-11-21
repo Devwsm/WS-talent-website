@@ -3,15 +3,18 @@
     $kategori = ic_kategori_kenangan(true)[$kenangan->kategori] ?? ['label' => 'Kenangan', 'ikon' => 'sparkles'];
 @endphp
 <article class="ic-kenangan">
-    <div class="ic-kenangan__sampul ic-warna-{{ $kenangan->warna }}">
+    {{-- Sampul 4:5; mengetuknya membuka detail kenangan (foto penuh dan komentar). --}}
+    <a class="ic-kenangan__sampul ic-warna-{{ $kenangan->warna }}"
+        href="{{ route('ic.kenangan.detail', $kenangan->id_memory) }}"
+        aria-label="Buka kenangan dari {{ $kenangan->nama_member }}">
         @if ($kenangan->foto)
             <img src="{{ \Illuminate\Support\Facades\Storage::url($kenangan->foto) }}"
-                alt="Foto kenangan dari {{ $kenangan->nama_member }}" loading="lazy">
+                alt="Foto kenangan dari {{ $kenangan->nama_member }}" width="640" height="800" loading="lazy">
         @else
             <x-inner-circle.ikon :nama="$kenangan->ikon" kelas="ic-ikon--sampul" />
             <span class="ic-kenangan__bintang" aria-hidden="true">✳</span>
         @endif
-    </div>
+    </a>
     <div class="ic-kenangan__isi">
         <div class="ic-kenangan__atas">
             <x-inner-circle.avatar :member="$kenangan->member" kelas="ic-avatar--kecil" />
@@ -32,6 +35,13 @@
                     <i class="bi {{ $kenangan->disukai_saya ? 'bi-heart-fill' : 'bi-heart' }}" aria-hidden="true"></i>
                     <span>{{ $kenangan->jumlah_like }}</span>
                 </button>
+                {{-- Pintasan komentar: langsung ke kolom komentar di halaman detail. --}}
+                <a class="ic-suka ic-komentar-pintas"
+                    href="{{ route('ic.kenangan.detail', $kenangan->id_memory) }}#komentar"
+                    aria-label="Komentar ({{ $kenangan->jumlah_komentar }})">
+                    <i class="bi bi-chat" aria-hidden="true"></i>
+                    <span>{{ $kenangan->jumlah_komentar }}</span>
+                </a>
                 @if ($kenangan->milik_saya)
                     {{-- Hapus = form DELETE: jalan tanpa JS; dengan JS minta konfirmasi dulu (data-ic-konfirmasi). --}}
                     <form method="POST" action="{{ route('ic.kenangan.hapus', $kenangan->id_memory) }}"

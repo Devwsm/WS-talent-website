@@ -32,7 +32,7 @@ class AnggotaStatusTest extends TestCase
             'nama' => 'Rani',
             'email' => 'rani@contoh.test',
             'sandi' => 'Rahasia123',
-            'sandi_confirmation' => 'Rahasia123',
+            'setuju_privasi' => 1, 'sandi_confirmation' => 'Rahasia123',
         ])->assertRedirect(route('ic.beranda'));
 
         $m = member::firstOrFail()->fresh();
@@ -42,7 +42,7 @@ class AnggotaStatusTest extends TestCase
 
     public function test_akun_baru_dari_google_tercatat_sebagai_google_dan_langsung_terverifikasi(): void
     {
-        [$m] = app(GoogleAkun::class)->masukkan($this->klaim());
+        [$m] = app(GoogleAkun::class)->masukkan($this->klaim(), true);
 
         $m = $m->fresh();
         $this->assertSame(member::VIA_GOOGLE, $m->daftar_via);
@@ -55,7 +55,7 @@ class AnggotaStatusTest extends TestCase
         $manual->daftar_via = member::VIA_MANUAL;
         $manual->save();
 
-        [$m] = app(GoogleAkun::class)->masukkan($this->klaim('g@contoh.test'));
+        [$m] = app(GoogleAkun::class)->masukkan($this->klaim('g@contoh.test'), true);
 
         $m = $m->fresh();
         $this->assertSame(member::VIA_MANUAL, $m->daftar_via, 'Cara daftar pertama tidak boleh berubah saat Google dikaitkan.');
@@ -71,10 +71,10 @@ class AnggotaStatusTest extends TestCase
         $sudah->email_verified_at = now();
         $sudah->save();
 
-        app(GoogleAkun::class)->masukkan($this->klaim('google@contoh.test', 'sub-2'));
+        app(GoogleAkun::class)->masukkan($this->klaim('google@contoh.test', 'sub-2'), true);
 
         $kait = member::create(['nama' => 'Manual Lalu Google', 'email' => 'kait@contoh.test', 'password' => 'Rahasia123']);
-        app(GoogleAkun::class)->masukkan($this->klaim('kait@contoh.test', 'sub-3'));
+        app(GoogleAkun::class)->masukkan($this->klaim('kait@contoh.test', 'sub-3'), true);
 
         // Spasi/baris baru di HTML diratakan dulu supaya teks yang terpecah di beberapa baris tetap terhitung.
         // Form cari/filter dibuang: pilihan filternya memakai kata yang sama dengan lencana ("Belum verifikasi", dst).

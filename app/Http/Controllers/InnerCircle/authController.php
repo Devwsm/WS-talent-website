@@ -76,6 +76,8 @@ class authController extends Controller
                     'password' => $request->validated('sandi'),
                 ]);
                 $baru->daftar_via = member::VIA_MANUAL;
+                $baru->privasi_disetujui_pada = now();
+                $baru->privasi_versi = app(\App\Services\InnerCircle\IcPrivasi::class)->diperbarui();
                 $baru->save();
 
                 // IC-00001: nomor urut dari ID, diisi di transaksi yang sama dengan pembuatan akunnya.

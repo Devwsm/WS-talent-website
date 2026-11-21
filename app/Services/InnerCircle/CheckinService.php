@@ -16,8 +16,8 @@ use Illuminate\Support\Facades\DB;
  * anggota login, acara bisa check-in (bukan privat, ada venue, ada titik lokasi), di dalam jendela waktu,
  * berada di dalam radius, dan belum pernah check-in di acara itu.
  *
- * Dua cara: `checkin` (pemindaian QR / kode, token harus cocok; untuk semua anggota, termasuk pemenang GL) dan
- * `checkinMandiri` (tombol, tanpa token; DITUTUP untuk pemenang GL supaya poin tidak dobel). Poin ditentukan status GL,
+ * Dua cara: `checkin` (pemindaian QR / kode, token harus cocok; KHUSUS pemenang GL gratis) dan
+ * `checkinMandiri` (tombol, tanpa QR, dinilai dari lokasi; DITUTUP untuk pemenang GL supaya poin tidak dobel). Poin ditentukan status GL,
  * bukan cara check-in: pemenang GL mendapat poin GL, yang lain poin mandiri.
  *
  * Token menentukan acaranya. Kode acara dari halaman hanya petunjuk: kalau token cocok dengan
@@ -98,6 +98,12 @@ class CheckinService
         }
 
         $event = $this->tentukanEvent($token, $kodeAcara, $sekarang);
+
+        // QR hanya untuk pemenang GL gratis (Kartu GL ditunjukkan ke staf, lalu QR dipindai untuk poin). Anggota lain
+        // check-in lewat lokasi saja, jadi QR yang bocor tidak bisa dipakai untuk mengumpulkan poin.
+        if (! $this->pemenangGl($anggota, $event)) {
+            throw new CheckinGagal('Pemindaian QR hanya untuk pemenang GL gratis. Check-in biasa tidak perlu QR: tekan Check-in dan izinkan akses lokasi.');
+        }
 
         return $this->catat($anggota, $event, $lokasi, $sidik);
     }

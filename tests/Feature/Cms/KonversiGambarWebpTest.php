@@ -36,7 +36,7 @@ class KonversiGambarWebpTest extends TestCase
         return new class {
             use MengonversiGambarWebp;
 
-            public function panggil(string $path, int $kualitas = 82): string
+            public function panggil(string $path, int $kualitas = 82, ?float $rasio = null, bool $potong = true): string
             {
                 return $this->convertToWebP($path, $kualitas);
             }
@@ -116,7 +116,7 @@ class KonversiGambarWebpTest extends TestCase
     {
         // 4000 x 4000 = 16.000.000 (tidak lebih): lolos pemeriksa CMS; kegagalan, bila ada, hanya dari ImageProcessor.
         $this->app->instance(ImageProcessor::class, new class extends ImageProcessor {
-            public function keWebp(string $sumber, int $sisiMaks, int $kualitas = 82): string
+            public function keWebp(string $sumber, int $sisiMaks, int $kualitas = 82, ?float $rasio = null, bool $potong = true): string
             {
                 return 'WEBP-PALSU';
             }
@@ -128,7 +128,7 @@ class KonversiGambarWebpTest extends TestCase
     public function test_kegagalan_pengolah_menjadi_pesan_validasi_pada_kunci_gambar(): void
     {
         $this->app->instance(ImageProcessor::class, new class extends ImageProcessor {
-            public function keWebp(string $sumber, int $sisiMaks, int $kualitas = 82): string
+            public function keWebp(string $sumber, int $sisiMaks, int $kualitas = 82, ?float $rasio = null, bool $potong = true): string
             {
                 throw new GambarGagal('Server belum bisa memproses foto.');
             }

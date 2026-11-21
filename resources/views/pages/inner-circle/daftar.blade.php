@@ -6,9 +6,23 @@
     <h1 class="ic-auth__judul">{{ ic_teks('daftar.judul') }}</h1>
     <p class="ic-auth__intro">{{ ic_html('daftar.intro') }}</p>
 
-    <x-inner-circle.tombol-google teks="Daftar dengan Google" />
+    {{-- Persetujuan Kebijakan Privasi: wajib untuk daftar dengan sandi maupun dengan Google. Kotaknya ada di luar form
+         (atribut form="form-daftar") supaya satu centang berlaku untuk keduanya. --}}
+    <label class="ic-centang ic-centang--setuju">
+        <input type="checkbox" id="setuju-privasi" name="setuju_privasi" value="1" form="form-daftar"
+            @checked(old('setuju_privasi')) required
+            @error('setuju_privasi') aria-invalid="true" aria-describedby="setuju-privasi-galat" @enderror>
+        <span>Saya sudah membaca dan menyetujui <a class="ic-tautan" href="{{ route('privasi') }}" target="_blank"
+                rel="noopener">Kebijakan Privasi</a> WS Inner Circle, termasuk pengolahan data pribadiku untuk
+            keanggotaan, check-in, poin, dan hadiah.</span>
+    </label>
+    @error('setuju_privasi')
+        <p class="ic-galat" id="setuju-privasi-galat" role="alert">{{ $message }}</p>
+    @enderror
 
-    <form method="POST" action="{{ route('ic.daftar.proses') }}" novalidate>
+    <x-inner-circle.tombol-google teks="Daftar dengan Google" butuh-setuju="#setuju-privasi" />
+
+    <form method="POST" action="{{ route('ic.daftar.proses') }}" id="form-daftar" novalidate>
         @csrf
 
         <label class="ic-label" for="nama">Nama lengkap</label>
@@ -52,6 +66,4 @@
     </form>
 
     <p class="ic-auth__alih">Sudah punya akun? <a href="{{ route('ic.masuk') }}">Masuk</a></p>
-    <p class="ic-bantuan ic-auth__privasi">Dengan mendaftar, kamu menyetujui <a class="ic-tautan"
-            href="{{ route('privasi') }}" target="_blank" rel="noopener">Kebijakan Privasi</a> kami.</p>
 @endsection

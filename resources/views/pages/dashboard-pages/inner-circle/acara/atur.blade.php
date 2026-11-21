@@ -117,7 +117,7 @@
                             <div class="flex items-center gap-4">
                                 <img src="{{ $posterUrl }}" alt="Poster {{ $label }}" width="96"
                                     height="128" loading="lazy"
-                                    class="w-24 h-32 object-cover rounded-lg border border-white/10">
+                                    class="w-24 aspect-9/16 object-cover rounded-lg border border-white/10">
                                 <label class="flex items-center gap-2 text-sm text-white/70 min-h-11">
                                     <input type="checkbox" name="hapus_poster" value="1" class="w-4 h-4"> Hapus poster
                                     ini
@@ -126,7 +126,8 @@
                         @endif
                         <input type="file" id="at-poster" name="poster" accept="image/jpeg,image/png,image/webp"
                             class="{{ $kelasInput }}">
-                        <p class="text-xs text-white/40">JPG, PNG, atau WebP, maksimal 1 MB. Otomatis diubah ke WebP. Bila
+                        <p class="text-xs text-white/40">JPG, PNG, atau WebP, maksimal 1 MB. Otomatis diubah ke WebP dan
+                            dipotong ke rasio 9:16 (tegak, seperti story); pakai gambar 9:16 supaya tidak terpotong. Bila
                             kosong,
                             halaman detail memakai ikon dan warna tipe acara.</p>
                     </div>
@@ -168,25 +169,28 @@
                             <input type="text" id="at-username" name="username_acara" maxlength="60"
                                 autocomplete="off" value="{{ old('username_acara', $event->username_acara) }}"
                                 class="{{ $kelasInput }}">
+                            <p class="text-xs text-white/40">Boleh memakai spasi, mis. “Whisnu Santika VIP”.</p>
                         </div>
                         <div class="flex flex-col gap-1.5">
-                            <label for="at-sandi" class="{{ $kelasLabel }}">Sandi acara</label>
-                            <input type="password" id="at-sandi" name="sandi_acara" maxlength="60"
-                                autocomplete="new-password"
-                                placeholder="{{ $event->sandi_acara !== null ? 'Sudah diisi (kosongkan bila tidak diubah)' : ($event->sandiRusak() ? 'Tidak terbaca, isi ulang' : 'Belum diisi') }}"
-                                class="{{ $kelasInput }}">
-                            <div class="flex flex-wrap items-center gap-3 text-xs text-white/50">
-                                @if ($event->sandi_acara !== null)
-                                    <button type="button" data-lihat-sandi
-                                        data-url="{{ route('ic.admin.acara.sandi', $event->kode) }}"
-                                        data-csrf="{{ csrf_token() }}"
-                                        class="underline underline-offset-4 min-h-11">Lihat sandi
-                                        (tercatat di Log)</button>
-                                    <code id="sandi-terlihat" class="text-white/80 break-all"></code>
-                                    <label class="flex items-center gap-2 min-h-11"><input type="checkbox"
-                                            name="hapus_sandi" value="1" class="w-4 h-4"> Hapus sandi</label>
-                                @endif
+                            <label for="at-sandi" class="{{ $kelasLabel }}">Sandi acara (kode)</label>
+                            {{-- Kode terlihat langsung (bukan titik-titik) supaya tim bisa membacanya di sini dan di halaman Undian GL. --}}
+                            <div class="flex gap-2">
+                                <input type="text" id="at-sandi" name="sandi_acara" maxlength="60"
+                                    autocomplete="off" spellcheck="false" autocapitalize="off"
+                                    value="{{ old('sandi_acara', $event->sandi_acara) }}"
+                                    placeholder="{{ $event->sandiRusak() ? 'Tidak terbaca, isi ulang' : 'Belum diisi' }}"
+                                    class="{{ $kelasInput }} font-mono tracking-wider">
+                                <button type="button" data-buat-kode="#at-sandi"
+                                    class="shrink-0 min-h-11 px-4 rounded-lg border border-white/15 text-xs font-semibold uppercase tracking-widest text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+                                    Buat kode</button>
                             </div>
+                            <p class="text-xs text-white/40">Huruf, angka, dan simbol tanpa spasi (minimal 4 karakter).
+                                "Buat kode" mengisi kode acak 8 karakter.</p>
+                            @if ($event->sandi_acara !== null)
+                                <label class="flex items-center gap-2 text-xs text-white/50 min-h-11"><input
+                                        type="checkbox" name="hapus_sandi" value="1" class="w-4 h-4"> Hapus
+                                    sandi</label>
+                            @endif
                         </div>
                     </div>
                     <div class="flex flex-col gap-1.5">

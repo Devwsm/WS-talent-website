@@ -1,13 +1,16 @@
 {{-- Tombol "Lanjutkan dengan Google" untuk halaman masuk/daftar anggota. Hanya dirender bila fitur Google aktif.
-     Mengikuti pedoman merek Google: latar putih, logo "G" empat warna asli, teks resmi (lokal: Bahasa Indonesia). --}}
-@props(['teks' => 'Lanjutkan dengan Google'])
+    Mengikuti pedoman merek Google: latar putih, logo "G" empat warna asli, teks resmi (lokal: Bahasa Indonesia). --}}
+@props(['teks' => 'Lanjutkan dengan Google', 'butuhSetuju' => null])
 
 @if (\App\Services\InnerCircle\GoogleOAuth::tersedia())
     @error('google')
         <p class="ic-galat ic-galat--blok" role="alert">{{ $message }}</p>
     @enderror
 
-    <a href="{{ route('ic.google.masuk') }}" class="ic-tombol ic-tombol--google ic-tombol--penuh">
+    {{-- butuhSetuju: selektor kotak centang Kebijakan Privasi (halaman Daftar). JavaScript menahan klik sampai dicentang,
+        lalu menambahkan ?setuju=1; tanpa itu server tidak membuat akun baru. --}}
+    <a href="{{ route('ic.google.masuk') }}" class="ic-tombol ic-tombol--google ic-tombol--penuh"
+        @if ($butuhSetuju) data-ic-butuh-setuju="{{ $butuhSetuju }}" @endif>
         <svg viewBox="0 0 48 48" aria-hidden="true" focusable="false">
             <path fill="#EA4335"
                 d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />

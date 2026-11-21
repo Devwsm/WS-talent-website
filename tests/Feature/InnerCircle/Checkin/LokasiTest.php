@@ -66,8 +66,8 @@ class LokasiTest extends TestCase
 
     private function checkin(member $m, ic_event $e, array $posisi = [])
     {
-        return $this->actingAs($m, 'member')->post(route('ic.checkin.proses'), [
-            'kode' => $e->token,
+        // Check-in biasa lewat lokasi (tanpa QR); aturan jarak dan akurasinya sama untuk pemindaian QR pemenang GL.
+        return $this->actingAs($m, 'member')->post(route('ic.checkin.mandiri'), [
             'acara' => $e->kode,
         ] + $posisi);
     }

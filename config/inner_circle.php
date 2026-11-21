@@ -130,6 +130,11 @@ return [
     'batas_kenangan_per_menit' => 4,
     'batas_kenangan_per_hari' => 20,
     'batas_suka_per_menit' => 60,
+    // Komentar kenangan: panjang maksimal, batas per menit (salah klik) dan per hari (spam), dan jumlah komentar per halaman detail.
+    'komentar_maks' => 300,
+    'batas_komentar_per_menit' => 6,
+    'batas_komentar_per_hari' => 60,
+    'komentar_per_halaman' => 50,
     'batas_foto_per_menit' => 6,
 
     /*

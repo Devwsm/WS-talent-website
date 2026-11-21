@@ -3,6 +3,7 @@
 namespace Tests\Feature\InnerCircle\Checkin;
 
 use App\Models\ic_event;
+use App\Models\ic_gl_antrean;
 use App\Models\ic_poin;
 use App\Models\member;
 use App\Services\InnerCircle\AcaraService;
@@ -57,6 +58,11 @@ class CheckinTest extends TestCase
 
     private function checkin(member $m, string $kode, ?string $acara = null)
     {
+        // Pemindaian QR khusus pemenang GL: anggota uji dijadikan pemenang di semua acara yang ada.
+        foreach (ic_event::all() as $e) {
+            ic_gl_antrean::query()->firstOrCreate(['event_id' => $e->id_event, 'member_id' => $m->id_member], ['status' => ic_gl_antrean::MENANG]);
+        }
+
         // HP uji berada tepat di titik acara.
         return $this->actingAs($m, 'member')->post(route('ic.checkin.proses'), array_filter(['kode' => $kode, 'acara' => $acara]) + ['lat' => -6.2088, 'lng' => 106.8456, 'akurasi' => 20]);
     }
@@ -66,23 +72,31 @@ class CheckinTest extends TestCase
         $m = $this->anggota();
         $e = $this->acara();
 
+        // Anggota biasa: lembar check-in hanya tombol lokasi, tanpa kolom kode QR.
         $this->actingAs($m, 'member')->get(route('ic.checkin', ['kode' => $e->token]))
             ->assertOk()
-            ->assertSee('value="' . $e->token . '"', false)
+            ->assertSee('data-ic-mandiri', false)
+            ->assertDontSee('value="' . $e->token . '"', false)
             ->assertSee('Superhouse Satrio');
+
+        // Pemenang GL: kolom kode terisi dari token QR.
+        ic_gl_antrean::create(['event_id' => $e->id_event, 'member_id' => $m->id_member, 'status' => ic_gl_antrean::MENANG]);
+        $this->actingAs($m, 'member')->get(route('ic.checkin', ['kode' => $e->token]))
+            ->assertOk()
+            ->assertSee('value="' . $e->token . '"', false);
 
         $this->actingAs($m, 'member')->get(route('ic.checkin', ['kode' => 'WS-ZZZZZZZZZZZZ']))
             ->assertOk()->assertSee('tidak cocok dengan acara');
     }
 
-    public function test_check_in_berhasil_menambah_poin_mandiri_dan_masuk_riwayat(): void
+    public function test_pemenang_gl_memindai_qr_dapat_poin_gl_dan_masuk_riwayat(): void
     {
         $m = $this->anggota();
         $e = $this->acara();
 
         $this->checkin($m, $e->token, $e->kode)->assertRedirect(route('ic.beranda'));
 
-        $this->assertSame(2000, $m->fresh()->poin_total);
+        $this->assertSame(1000, $m->fresh()->poin_total); // poin GL: pemenang memindai QR
         $baris = ic_poin::first();
         $this->assertSame('checkin', $baris->sumber);
         $this->assertSame($e->id_event, $baris->event_id);
@@ -108,7 +122,7 @@ class CheckinTest extends TestCase
         $this->checkin($m, $e->token, $e->kode)->assertSessionHasErrors('kode');
 
         $this->assertSame(1, ic_poin::count());
-        $this->assertSame(2000, $m->fresh()->poin_total);
+        $this->assertSame(1000, $m->fresh()->poin_total);
     }
 
     public function test_token_lama_setelah_dibuat_ulang_ditolak(): void
@@ -124,6 +138,17 @@ class CheckinTest extends TestCase
         $this->checkin($m, $lama, $e->kode)->assertSessionHasErrors('kode');
         $this->assertSame(0, ic_poin::count());
         $this->checkin($m, $e->fresh()->token, $e->kode)->assertRedirect(route('ic.beranda'));
+    }
+
+    public function test_non_pemenang_tidak_bisa_check_in_lewat_qr(): void
+    {
+        $m = $this->anggota();
+        $e = $this->acara();
+
+        // Tanpa helper checkin() (yang menjadikan anggota pemenang): QR benar pun ditolak untuk non-pemenang.
+        $this->actingAs($m, 'member')->post(route('ic.checkin.proses'), ['kode' => $e->token, 'acara' => $e->kode, 'lat' => -6.2088, 'lng' => 106.8456, 'akurasi' => 20])
+            ->assertSessionHasErrors('kode');
+        $this->assertSame(0, ic_poin::count());
     }
 
     public function test_acara_privat_dan_tanpa_venue_ditolak(): void

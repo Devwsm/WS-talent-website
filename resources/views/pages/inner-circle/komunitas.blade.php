@@ -28,14 +28,16 @@
             @if ($tab === 'pengumuman') aria-current="page" @endif>
             <x-inner-circle.ikon nama="megaphone" kelas="ic-ikon--mini" /> Pengumuman WS
             @if ($jumlahPengumuman > 0)
-                <span class="ic-tab__lencana">{{ $jumlahPengumuman > 99 ? '99+' : $jumlahPengumuman }}<span class="ic-sr-saja"> belum dibaca</span></span>
+                <span class="ic-tab__lencana">{{ $jumlahPengumuman > 99 ? '99+' : $jumlahPengumuman }}<span
+                        class="ic-sr-saja"> belum dibaca</span></span>
             @endif
         </a>
         <a class="ic-tab {{ $tab === 'galeri' ? 'is-aktif' : '' }}" href="{{ route('ic.komunitas', ['tab' => 'galeri']) }}"
             @if ($tab === 'galeri') aria-current="page" @endif>
             <x-inner-circle.ikon nama="camera" kelas="ic-ikon--mini" /> Galeri Kenangan
             @if ($jumlahKenangan > 0)
-                <span class="ic-tab__lencana">{{ $jumlahKenangan > 99 ? '99+' : $jumlahKenangan }}<span class="ic-sr-saja"> belum dibaca</span></span>
+                <span class="ic-tab__lencana">{{ $jumlahKenangan > 99 ? '99+' : $jumlahKenangan }}<span class="ic-sr-saja">
+                        belum dibaca</span></span>
             @endif
         </a>
     </nav>
@@ -72,7 +74,8 @@
                 @disabled($member->email_verified_at === null)>{{ ic_teks('komunitas.galeri.tombol') }}</button>
         </div>
 
-        <p class="ic-intro-kenangan"><b>{{ ic_teks('komunitas.galeri.intro_tebal') }}</b> {{ ic_html('komunitas.galeri.intro') }}</p>
+        <p class="ic-intro-kenangan"><b>{{ ic_teks('komunitas.galeri.intro_tebal') }}</b>
+            {{ ic_html('komunitas.galeri.intro') }}</p>
 
         <nav class="ic-chip-daftar" aria-label="Filter kategori kenangan">
             <a class="ic-chip {{ $kategori === 'all' ? 'is-aktif' : '' }}"
@@ -155,8 +158,25 @@
 
             <label class="ic-label" for="kenangan-foto">Tambahkan foto (opsional)</label>
             <input class="ic-input" type="file" id="kenangan-foto" name="foto"
-                accept="image/jpeg,image/png,image/webp" data-ic-maks-mb="{{ $maksFotoMb }}">
-            <p class="ic-bantuan">JPG, PNG, atau WebP. Maksimal {{ $maksFotoMb }} MB.</p>
+                accept="image/jpeg,image/png,image/webp" data-ic-maks-mb="{{ $maksFotoMb }}"
+                data-ic-pratinjau-foto="#kenangan-pratinjau">
+            <p class="ic-bantuan">JPG, PNG, atau WebP. Maksimal {{ $maksFotoMb }} MB. Foto tampil dengan bingkai 4:5.
+            </p>
+
+            {{-- Pratinjau 4:5 sebelum terbit: terlihat apakah fotonya terpotong atau tampil utuh. Diisi JavaScript. --}}
+            <div class="ic-pratinjau" id="kenangan-pratinjau" hidden>
+                <div class="ic-pratinjau__bingkai" data-ic-bingkai="potong">
+                    <img alt="Pratinjau foto kenangan" class="ic-pratinjau__latar" aria-hidden="true">
+                    <img alt="Pratinjau foto kenangan" class="ic-pratinjau__foto">
+                </div>
+                <fieldset class="ic-pratinjau__pilihan">
+                    <legend class="ic-label">Cara menampilkan foto</legend>
+                    <label class="ic-centang"><input type="radio" name="bingkai" value="potong" checked> Potong pas
+                        (4:5)</label>
+                    <label class="ic-centang"><input type="radio" name="bingkai" value="utuh"> Foto utuh (tanpa
+                        potong)</label>
+                </fieldset>
+            </div>
 
             <div class="ic-aksi-form">
                 <button type="button" class="ic-tombol ic-tombol--terang" data-ic-modal-tutup>Batal</button>

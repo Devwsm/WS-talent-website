@@ -55,7 +55,7 @@ class KenanganTest extends TestCase
         $this->app->instance(ImageProcessor::class, new class($perilaku) extends ImageProcessor {
             public function __construct(private readonly ?\Closure $perilaku) {}
 
-            public function keWebp(string $sumber, int $sisiMaks, int $kualitas = 82): string
+            public function keWebp(string $sumber, int $sisiMaks, int $kualitas = 82, ?float $rasio = null, bool $potong = true): string
             {
                 return $this->perilaku ? ($this->perilaku)($sumber, $sisiMaks) : 'RIFF0000WEBPfake-' . $sisiMaks;
             }

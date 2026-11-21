@@ -29,7 +29,7 @@ class BatasEmailKembarTest extends TestCase
                 'nama' => 'Penguji',
                 'email' => $email,
                 'sandi' => $sandi,
-                'sandi_confirmation' => $sandi,
+                'setuju_privasi' => 1, 'sandi_confirmation' => $sandi,
             ]);
     }
 
