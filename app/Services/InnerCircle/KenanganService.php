@@ -9,6 +9,7 @@ use App\Support\GambarGagal;
 use App\Support\ImageProcessor;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -112,6 +113,7 @@ class KenanganService
             ->loadExists(['penyuka as disukai_saya' => fn($q) => $q->where('ic_memory_likes.member_id', $anggota->getKey())])
             ->load('member');
         $kenangan->setAttribute('milik_saya', (int) $kenangan->member_id === (int) $anggota->getKey());
+        $this->isiPenyuka([$kenangan]);
 
         return $kenangan;
     }
@@ -148,7 +150,56 @@ class KenanganService
         foreach ($halaman as $k) {
             $k->setAttribute('milik_saya', (int) $k->member_id === (int) $anggota->getKey());
         }
+        $this->isiPenyuka($halaman);
 
         return $halaman;
+    }
+
+    /** Isi `penyuka_tampil` (penyuka terbaru, maksimal $batas orang) pada tiap kenangan: bahan tumpukan foto di kartu. */
+    public function isiPenyuka(iterable $daftar, int $batas = 3): void
+    {
+        foreach ($daftar as $k) {
+            $k->setRelation('penyuka_tampil', $this->penyukaTerbaru($k, $batas));
+        }
+    }
+
+    /**
+     * Penyuka terbaru dulu. Satu query kecil per kenangan (satu halaman galeri = 12 kenangan), tanpa fungsi
+     * window supaya jalan di MySQL/MariaDB versi lama di hosting.
+     *
+     * @return Collection<int, member>
+     */
+    public function penyukaTerbaru(ic_memory $kenangan, int $batas): Collection
+    {
+        return member::query()
+            ->join('ic_memory_likes as l', 'l.member_id', '=', 'members.id_member')
+            ->where('l.memory_id', $kenangan->getKey())
+            ->orderByDesc('l.created_at')
+            ->orderByDesc('l.member_id')
+            ->limit($batas)
+            ->get(['members.*']);
+    }
+
+    /**
+     * Daftar penyuka untuk popup dan penyegaran tumpukan foto (JSON): jumlah semua suka + penyuka terbaru
+     * (maksimal `inner_circle.penyuka_daftar_maks`). Nama disingkat seperti di kenangan dan komentar.
+     *
+     * @return array{jumlah: int, penyuka: list<array{nama: string, foto: ?string, emoji: string}>}
+     */
+    public function daftarPenyuka(ic_memory $kenangan): array
+    {
+        $penyuka = $this->penyukaTerbaru($kenangan, (int) config('inner_circle.penyuka_daftar_maks', 50))
+            ->map(fn(member $m) => [
+                'nama' => $m->nama_singkat,
+                'foto' => $m->avatar ? Storage::url($m->avatar) : null,
+                'emoji' => $m->avatar_emoji,
+            ])
+            ->values()
+            ->all();
+
+        return [
+            'jumlah' => (int) DB::table('ic_memory_likes')->where('memory_id', $kenangan->getKey())->count(),
+            'penyuka' => $penyuka,
+        ];
     }
 }

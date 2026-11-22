@@ -133,6 +133,7 @@ Route::prefix('/innercircle')->middleware('icAktif')->name('ic.')->group(functio
         Route::post('/kenangan/{id}/komentar', [kenanganController::class, 'komentar'])->whereNumber('id')->name('kenangan.komentar')->middleware(['icVerif', 'throttle:ic-komentar']);
         Route::delete('/kenangan/komentar/{id}', [kenanganController::class, 'hapusKomentar'])->whereNumber('id')->name('kenangan.komentar.hapus')->middleware('throttle:ic-hapus-kenangan');
         Route::delete('/kenangan/{id}', [kenanganController::class, 'hapus'])->whereNumber('id')->name('kenangan.hapus')->middleware('throttle:ic-hapus-kenangan');
+        Route::get('/kenangan/{id}/penyuka', [kenanganController::class, 'penyuka'])->whereNumber('id')->name('kenangan.penyuka')->middleware('throttle:ic-suka');
         Route::post('/kenangan/{id}/suka', [kenanganController::class, 'suka'])->whereNumber('id')->name('kenangan.suka')->middleware(['icVerif', 'throttle:ic-suka']);
         Route::get('/profil', [memberController::class, 'profil'])->name('profil');
         Route::post('/profil/foto', [fotoProfilController::class, 'simpan'])->name('profil.foto')->middleware('throttle:ic-foto');

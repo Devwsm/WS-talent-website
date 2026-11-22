@@ -113,6 +113,17 @@ class ic_memory extends Model
             : $this->komentar()->count());
     }
 
+    /**
+     * Penyuka terbaru (sampai 3 anggota) untuk tumpukan foto ala IG. Diisi KenanganService::isiPenyuka() lewat
+     * setRelation('penyuka_tampil'); bila belum diisi (mis. preview CMS) hasilnya kosong tanpa query.
+     */
+    protected function penyukaTampil(): Attribute
+    {
+        return Attribute::get(fn() => $this->relationLoaded('penyuka_tampil')
+            ? $this->getRelation('penyuka_tampil')
+            : collect());
+    }
+
     protected function disukaiSaya(): Attribute
     {
         return Attribute::get(fn($nilai, array $atribut) => (bool) ($atribut['disukai_saya'] ?? false));

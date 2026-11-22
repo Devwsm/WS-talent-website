@@ -310,11 +310,112 @@ document.addEventListener("click", async (e) => {
             );
         const angka = tombol.querySelector("span");
         if (angka) angka.textContent = String(jumlah);
+
+        // Tumpukan foto penyuka ikut diperbarui (ala IG); gagal memuatnya tidak mengganggu suka itu sendiri.
+        const ringkas = tombol
+            .closest(".ic-kenangan")
+            ?.querySelector("[data-ic-penyuka]");
+        if (ringkas) {
+            ambilPenyuka(ringkas.dataset.icPenyukaUrl)
+                .then((data) => isiRingkasPenyuka(ringkas, data))
+                .catch(() => {});
+        }
     } catch {
         window.icToast("Suka belum tersimpan. Coba lagi.", "error");
     } finally {
         sedangSuka.delete(tombol);
         tombol.removeAttribute("aria-busy");
+    }
+});
+
+// ---------- Penyuka kenangan (ala IG) ----------
+// Server mengirim {jumlah, penyuka:[{nama, foto, emoji}]}, terbaru dulu. Ringkasan di kartu memakai 3 penyuka
+// pertama; mengetuknya membuka daftar lengkap di popup #modal-penyuka.
+async function ambilPenyuka(url) {
+    const respons = await fetch(url, {
+        credentials: "same-origin",
+        headers: {
+            Accept: "application/json",
+            "X-Requested-With": "XMLHttpRequest",
+        },
+    });
+    if (!respons.ok) throw new Error("gagal");
+    return respons.json();
+}
+
+function buatAvatarPenyuka(p, kelas) {
+    const el = document.createElement("span");
+    el.className = `ic-avatar ${kelas}`;
+    el.setAttribute("aria-hidden", "true");
+    if (p.foto) {
+        const img = document.createElement("img");
+        img.src = p.foto;
+        img.alt = "";
+        img.loading = "lazy";
+        el.append(img);
+    } else {
+        el.textContent = p.emoji || "😎";
+    }
+    return el;
+}
+
+function isiRingkasPenyuka(ringkas, data) {
+    const tumpuk = ringkas.querySelector(".ic-penyuka__tumpuk");
+    const teks = ringkas.querySelector(".ic-penyuka__teks");
+    if (!tumpuk || !teks) return;
+    const tiga = (data.penyuka ?? []).slice(0, 3);
+    tumpuk.replaceChildren(
+        ...tiga.map((p) => buatAvatarPenyuka(p, "ic-avatar--mini")),
+    );
+    teks.replaceChildren();
+    if (data.jumlah < 1) {
+        ringkas.hidden = true;
+        return;
+    }
+    ringkas.hidden = false;
+    if (tiga.length === 0) {
+        teks.textContent = `${data.jumlah} suka`;
+        return;
+    }
+    const pertama = document.createElement("b");
+    pertama.textContent = tiga[0].nama;
+    teks.append("Disukai oleh ", pertama);
+    if (data.jumlah > 1) {
+        const sisa = document.createElement("b");
+        sisa.textContent = `${data.jumlah - 1} lainnya`;
+        teks.append(" dan ", sisa);
+    }
+}
+
+document.addEventListener("click", async (e) => {
+    const ringkas = e.target.closest("[data-ic-penyuka]");
+    if (!ringkas) return;
+    const modal = document.getElementById("modal-penyuka");
+    if (!modal) return;
+    const daftar = modal.querySelector("[data-ic-penyuka-daftar]");
+    const status = modal.querySelector("[data-ic-penyuka-status]");
+    daftar.replaceChildren();
+    status.textContent = "Memuat…";
+    bukaModal("modal-penyuka", ringkas);
+    try {
+        const data = await ambilPenyuka(ringkas.dataset.icPenyukaUrl);
+        data.penyuka.forEach((p) => {
+            const baris = document.createElement("li");
+            baris.className = "ic-penyuka-daftar__baris";
+            const nama = document.createElement("b");
+            nama.textContent = p.nama;
+            baris.append(buatAvatarPenyuka(p, "ic-avatar--kecil"), nama);
+            daftar.append(baris);
+        });
+        const sisa = data.jumlah - data.penyuka.length;
+        status.textContent =
+            data.jumlah === 0
+                ? "Belum ada yang menyukai kenangan ini."
+                : sisa > 0
+                  ? `dan ${sisa} lainnya`
+                  : "";
+    } catch {
+        status.textContent = "Daftar penyuka belum bisa dimuat. Coba lagi.";
     }
 });
 

@@ -135,6 +135,8 @@ return [
     'batas_komentar_per_menit' => 6,
     'batas_komentar_per_hari' => 60,
     'komentar_per_halaman' => 50,
+    // Popup "Disukai oleh": jumlah penyuka terbaru yang ditampilkan (yang lain ditulis "dan N lainnya").
+    'penyuka_daftar_maks' => 50,
     'batas_foto_per_menit' => 6,
 
     /*

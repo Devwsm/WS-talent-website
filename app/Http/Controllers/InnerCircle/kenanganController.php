@@ -102,4 +102,16 @@ class kenanganController extends Controller
 
         return response()->json($kenangan->toggleSuka($anggota, $kenanganDipilih));
     }
+
+    /** Daftar penyuka (JSON) untuk popup "Disukai oleh" dan penyegaran tumpukan foto di kartu. */
+    public function penyuka(int $id, KenanganService $kenangan): JsonResponse
+    {
+        $anggota = Auth::guard('member')->user();
+        $kenanganDipilih = ic_memory::query()->findOrFail($id);
+
+        // Sama seperti suka dan komentar: kenangan yang disembunyikan admin seolah tidak ada.
+        abort_if(Gate::forUser($anggota)->denies('komentar', $kenanganDipilih), 404);
+
+        return response()->json($kenangan->daftarPenyuka($kenanganDipilih))->header('Cache-Control', 'no-store');
+    }
 }

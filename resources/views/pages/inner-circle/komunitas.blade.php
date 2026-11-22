@@ -127,6 +127,8 @@
 @endsection
 
 @push('modal')
+    <x-inner-circle.modal-penyuka />
+
     {{-- Galat validasi (mis. foto terlalu besar) membuka modal ini lagi dengan isian tadi; foto harus dipilih ulang. --}}
     <x-inner-circle.modal id="modal-kenangan" judul="Unggah kenangan ✦" eyebrow="Momenmu, ceritamu" :terbuka="$errors->any()">
         <form method="POST" action="{{ route('ic.kenangan.simpan') }}" enctype="multipart/form-data" data-ic-sekali>

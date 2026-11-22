@@ -461,36 +461,6 @@
     pointer-events: none;
 }
 
-.ic-kartu-anggota--detail {
-    margin-top: 6px;
-}
-.ic-kartu-anggota__bawah {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
-.ic-kartu-anggota__data {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 0;
-    overflow-wrap: anywhere;
-}
-.ic-kartu-anggota__ubah {
-    align-self: flex-start;
-    position: relative;
-    z-index: 1;
-}
-.ic-avatar--kartu {
-    width: 64px;
-    height: 64px;
-    flex: none;
-}
-.ic-akun__bagian {
-    margin-top: 14px;
-    padding-top: 14px;
-    border-top: 1px dashed var(--ic-garis-kartu);
-}
 .ic-kartu-anggota__nama {
     font-family: var(--ic-font-judul);
     font-weight: 700;
@@ -1573,8 +1543,19 @@ a.ic-komentar-pintas {
 .ic-akun {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
     gap: 12px;
+}
+/* Tiap bagian (pengaduan, hapus akun) selebar kartu supaya garis putus-putusnya sama panjang dan jaraknya rata. */
+.ic-akun__bagian {
+    padding-top: 16px;
+    border-top: 1px dashed var(--ic-garis-kartu);
+}
+.ic-akun__bagian > .ic-tombol {
+    margin-top: 12px;
+}
+.ic-akun .ic-panel__judul {
+    margin-bottom: 4px;
 }
 
 .ic-auth__privasi {
@@ -2033,28 +2014,17 @@ a.ic-komentar-pintas {
 }
 
 /* ---------- Profil ---------- */
-.ic-profil-editor {
-    display: flex;
-    align-items: center;
-    gap: 24px;
-    margin: 26px 0 15px;
-    padding: 24px;
-    background: #fff;
-    border: 1px solid var(--ic-garis-kartu);
-    border-radius: 28px;
-}
-
 .ic-profil-foto {
     display: grid;
     place-items: center;
     flex-shrink: 0;
-    width: 124px;
-    height: 124px;
+    width: 96px;
+    height: 96px;
     overflow: hidden;
-    border: 5px solid #eaf5fc;
-    border-radius: 35px;
+    border: 4px solid #eaf5fc;
+    border-radius: 28px;
     background: #a9d1ec;
-    font-size: 62px;
+    font-size: 48px;
     box-shadow: 0 10px 24px rgba(4, 38, 84, 0.14);
 }
 
@@ -2064,9 +2034,19 @@ a.ic-komentar-pintas {
     object-fit: cover;
 }
 
-.ic-profil-editor__isi {
+.ic-profil-ubah {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+.ic-profil-ubah__isi {
     min-width: 0;
     flex: 1;
+}
+.ic-profil-ubah__nama {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px dashed var(--ic-garis-kartu);
 }
 
 .ic-umpan:empty {
@@ -2202,17 +2182,11 @@ a.ic-komentar-pintas {
         grid-column: 2;
         justify-self: start;
     }
-    .ic-profil-editor {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 14px;
-        padding: 18px;
-    }
     .ic-profil-foto {
-        width: 100px;
-        height: 100px;
-        border-radius: 28px;
-        font-size: 48px;
+        width: 88px;
+        height: 88px;
+        border-radius: 26px;
+        font-size: 44px;
     }
     .ic-metrik-grid {
         gap: 10px;
@@ -3109,4 +3083,168 @@ a.ic-poster-kartu:hover .ic-poster-kartu__gambar {
 .ic-gl-saya__status.is-menang {
     background: var(--ic-navy);
     color: #fff;
+}
+
+/* ---------- Kartu member (Profil): satu kartu, satu pensil ---------- */
+.ic-kartu-anggota__kepala {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+.ic-kartu-anggota--detail {
+    min-height: 0;
+    gap: 22px;
+    margin: 18px 0 15px;
+}
+.ic-kartu-anggota__bawah {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-width: 0;
+}
+.ic-kartu-anggota__data {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+.ic-kartu-anggota__pensil {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border: 1px solid #c3dcee;
+    border-radius: 50%;
+    background: #fff;
+    color: var(--ic-navy);
+    font-size: 16px;
+    transition:
+        transform 0.2s,
+        background 0.2s;
+}
+.ic-kartu-anggota__pensil:hover {
+    background: #eaf5fc;
+    transform: scale(1.06);
+}
+.ic-kartu-anggota__foto {
+    position: relative;
+    flex-shrink: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: none;
+}
+.ic-kartu-anggota__lencana {
+    position: absolute;
+    right: -2px;
+    bottom: -2px;
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: var(--ic-navy);
+    color: #fff;
+    font-size: 11px;
+}
+.ic-avatar--kartu {
+    width: 76px;
+    height: 76px;
+    font-size: 38px;
+}
+@media (max-width: 480px) {
+    .ic-kartu-anggota--detail {
+        gap: 18px;
+        padding: 20px;
+    }
+    .ic-kartu-anggota--detail .ic-kartu-anggota__nama {
+        font-size: 24px;
+    }
+    .ic-kartu-anggota__bawah {
+        gap: 12px;
+    }
+    .ic-avatar--kartu {
+        width: 64px;
+        height: 64px;
+        font-size: 32px;
+    }
+    .ic-profil-ubah {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+    }
+}
+
+/* ---------- Penyuka kenangan (ala IG): tumpukan foto profil + "Disukai oleh ..." ---------- */
+.ic-avatar--mini {
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+    box-shadow: 0 0 0 2px #fff;
+}
+.ic-penyuka {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    min-height: 32px;
+    margin: 0 0 12px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: #456074;
+    font: inherit;
+    font-size: 12px;
+    text-align: left;
+    cursor: pointer;
+}
+.ic-penyuka[hidden] {
+    display: none;
+}
+.ic-penyuka__tumpuk {
+    display: inline-flex;
+    flex-shrink: 0;
+    padding-left: 2px;
+}
+.ic-penyuka__tumpuk:empty {
+    display: none;
+}
+.ic-penyuka__tumpuk .ic-avatar + .ic-avatar {
+    margin-left: -8px;
+}
+.ic-penyuka__teks {
+    min-width: 0;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+.ic-penyuka__teks b {
+    color: var(--ic-navy);
+}
+.ic-penyuka:hover .ic-penyuka__teks {
+    text-decoration: underline;
+}
+.ic-penyuka-daftar {
+    display: grid;
+    gap: 2px;
+    max-height: 50vh;
+    max-height: 50dvh;
+    margin: 0;
+    padding: 0;
+    overflow: auto;
+    list-style: none;
+}
+.ic-penyuka-daftar__baris {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    font-size: 14px;
 }

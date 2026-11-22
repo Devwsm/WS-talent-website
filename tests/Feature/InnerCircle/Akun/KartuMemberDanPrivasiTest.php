@@ -31,6 +31,11 @@ class KartuMemberDanPrivasiTest extends TestCase
             ->assertSee('Budi Santoso')
             ->assertSee($m->kode_member)
             ->assertSee('Ganti nama')
+            // Satu kartu: pensil membuka satu popup untuk foto dan nama; tidak ada lagi panel foto terpisah.
+            ->assertSee('data-ic-modal-buka="modal-profil"', false)
+            ->assertSee('id="modal-profil"', false)
+            ->assertSee('id="ic-foto-input"', false)
+            ->assertDontSee('ic-profil-editor', false)
             ->assertSee(route('ic.pengaduan'), false)
             ->getContent();
 

@@ -31,6 +31,7 @@
                 </div>
             </div>
             <p class="ic-kenangan__caption">{{ $kenangan->caption }}</p>
+            <x-inner-circle.penyuka :kenangan="$kenangan" />
             <div class="ic-kenangan__kaki">
                 <span class="ic-kenangan__tag"><x-inner-circle.ikon :nama="$kategori['ikon']" kelas="ic-ikon--mini" />
                     {{ $kategori['label'] }}</span>
@@ -124,3 +125,7 @@
         @endif
     </section>
 @endsection
+
+@push('modal')
+    <x-inner-circle.modal-penyuka />
+@endpush
