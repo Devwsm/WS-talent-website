@@ -52,8 +52,8 @@ class DaftarButirTest extends TestCase
             ->assertSee('Siap bergabung?');
 
         $this->get('/')->assertOk()
-            ->assertSee('Check-in QR di acara')
-            ->assertSee('bi-qr-code-scan', false)
+            ->assertSee('Check-in di acara')
+            ->assertSee('bi-geo-alt', false)
             ->assertSee('Pelajari cara kerjanya');
     }
 
@@ -122,7 +122,7 @@ class DaftarButirTest extends TestCase
 
         ic_item::where('grup', 'teaser_poin')->update(['aktif' => false]);
         app(IcKonten::class)->lupakan();
-        $this->get('/')->assertOk()->assertDontSee('Check-in QR di acara')->assertSee('WS Inner Circle');
+        $this->get('/')->assertOk()->assertDontSee('Check-in di acara')->assertSee('WS Inner Circle');
     }
 
     public function test_batas_jumlah_butir_dan_kembalikan_bawaan(): void
@@ -136,7 +136,7 @@ class DaftarButirTest extends TestCase
         $this->assertSame($maks, ic_item::where('grup', 'teaser_poin')->count());
 
         $this->admin()->post($this->rute('bawaan', 'teaser_poin'))->assertSessionHas('success');
-        $this->assertSame(['Check-in QR di acara', 'Hadiah di tiap tahap poin', 'Galeri kenangan penggemar'], $this->judul('teaser_poin'));
+        $this->assertSame(['Check-in di acara', 'Hadiah di tiap tahap poin', 'Galeri kenangan penggemar'], $this->judul('teaser_poin'));
     }
 
     public function test_validasi_butir_galat_per_form_dan_tanda_berbahaya_ditolak(): void

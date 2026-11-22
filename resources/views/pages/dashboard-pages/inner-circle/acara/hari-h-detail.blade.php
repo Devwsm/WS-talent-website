@@ -163,10 +163,16 @@
                                         <td class="px-4 py-3 text-white/50">{{ $hadir->firstItem() + $i }}</td>
                                         <td class="px-4 py-3">
                                             @if ($p->member)
-                                                <a href="{{ route('ic.admin.anggota.detail', $p->member->id_member) }}"
-                                                    class="font-semibold hover:underline">{{ $p->member->nama }}</a>
-                                                <p class="text-xs text-white/50">{{ $p->member->kode_member }} ·
-                                                    {{ $p->member->email }}</p>
+                                                <div class="flex items-center gap-3 min-w-0">
+                                                    <x-dashboard.inner-circle.foto-anggota :member="$p->member"
+                                                        ukuran="w-10 h-10 text-lg" />
+                                                    <div class="min-w-0">
+                                                        <a href="{{ route('ic.admin.anggota.detail', $p->member->id_member) }}"
+                                                            class="font-semibold hover:underline">{{ $p->member->nama }}</a>
+                                                        <p class="text-xs text-white/50">{{ $p->member->kode_member }} ·
+                                                            {{ $p->member->email }}</p>
+                                                    </div>
+                                                </div>
                                             @else
                                                 <span class="text-white/40">Anggota dihapus</span>
                                             @endif

@@ -116,7 +116,7 @@
                     <p class="ic-galat" role="alert">{{ $message }}</p>
                 @enderror
                 <p class="ic-bantuan">Maksimal {{ $maksKomentar }} karakter. Komentar tampil ke sesama anggota dengan nama
-                    yang disingkat.</p>
+                    dan foto profilmu.</p>
                 <button type="submit" class="ic-tombol">Kirim komentar <i class="bi bi-arrow-right"
                         aria-hidden="true"></i></button>
             </form>

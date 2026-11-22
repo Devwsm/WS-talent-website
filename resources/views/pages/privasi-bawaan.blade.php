@@ -6,7 +6,7 @@
     $p = 'text-white/75 leading-relaxed mb-3';
     $ul = 'list-disc pl-5 space-y-2 text-white/75 leading-relaxed mb-3 marker:text-white/40';
 @endphp
-<p class="{{ $p }}"><b>Tanggal Efektif:</b> 21 November 2026<br><b>Terakhir Diperbarui:</b> 21 November
+<p class="{{ $p }}"><b>Tanggal Efektif:</b> 21 November 2026<br><b>Terakhir Diperbarui:</b> 22 November
     2026<br><b>Website:</b> https://whisnusantika.com</p>
 
 <h2 class="{{ $h2 }}">1. Pendahuluan</h2>
@@ -112,7 +112,8 @@
     Pengguna dengan Perseroan yang berkaitan dengan penggunaan Website, akun, Poin, dan Reward.</p>
 <h3 class="{{ $h3 }}">4.6. Konten yang Dibagikan Anggota</h3>
 <p class="{{ $p }}">Anggota dapat membagikan kenangan (foto, cerita, tempat, dan kategori), tanda suka,
-    serta komentar pada galeri komunitas. Konten yang tayang dapat dilihat Anggota lain dengan nama yang disingkat.</p>
+    serta komentar pada galeri komunitas. Konten yang tayang dapat dilihat Anggota lain bersama nama dan foto profil
+    Anggota; daftar penyuka (nama dan foto profil) juga dapat dilihat Anggota lain.</p>
 <p class="{{ $p }}">Perseroan tidak bermaksud mengumpulkan Data Pribadi yang tidak relevan dengan tujuan
     penyelenggaraan Layanan.</p>
 

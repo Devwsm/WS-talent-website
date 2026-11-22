@@ -71,22 +71,6 @@ class member extends Authenticatable
         return Attribute::get(fn() => '😎');
     }
 
-    /** Nama untuk sesama anggota: kata pertama + inisial kata kedua ("Ancha Maulana" jadi "Ancha M."). */
-    protected function namaSingkat(): Attribute
-    {
-        return Attribute::get(function () {
-            $kata = preg_split('/\s+/u', trim((string) $this->nama), -1, PREG_SPLIT_NO_EMPTY);
-            if (count($kata) === 0) {
-                return 'Anggota';
-            }
-            if (count($kata) === 1) {
-                return $kata[0];
-            }
-
-            return $kata[0] . ' ' . mb_strtoupper(mb_substr($kata[1], 0, 1)) . '.';
-        });
-    }
-
     /** Akun sedang dinonaktifkan admin? Anggota ini tidak bisa masuk dan sesinya berakhir. */
     public function diblokir(): bool
     {

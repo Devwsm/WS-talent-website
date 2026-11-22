@@ -93,8 +93,7 @@ class KomentarKenanganTest extends TestCase
             ->assertOk()
             ->assertSee('Malam yang panjang')
             ->assertSee('Terima kasih sudah datang')
-            ->assertSee('Citra D.')       // nama disingkat untuk sesama anggota
-            ->assertDontSee('Citra Dewi');
+            ->assertSee('Citra Dewi');   // nama lengkap, tidak disingkat
 
         $k->update(['status' => 'disembunyikan']);
         $this->actingAs($lihat, 'member')->get(route('ic.kenangan.detail', $k->id_memory))->assertNotFound();

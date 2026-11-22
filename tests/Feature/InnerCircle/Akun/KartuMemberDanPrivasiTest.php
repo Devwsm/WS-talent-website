@@ -88,7 +88,7 @@ class KartuMemberDanPrivasiTest extends TestCase
 
         $m = member::where('email', 'baru@contoh.test')->firstOrFail();
         $this->assertNotNull($m->privasi_disetujui_pada);
-        $this->assertSame('2026-11-21', $m->privasi_versi);
+        $this->assertSame('2026-11-22', $m->privasi_versi);
     }
 
     public function test_halaman_daftar_punya_kotak_centang_privasi_yang_menjaga_tombol_google(): void

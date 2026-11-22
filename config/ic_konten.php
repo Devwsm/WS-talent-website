@@ -250,7 +250,7 @@ return [
         'tentang.meta.deskripsi' => [
             'grup' => 'tentang',
             'label' => 'Deskripsi untuk mesin pencari',
-            'bawaan' => 'Komunitas penggemar resmi DJ Whisnu Santika. Datang ke acara, kumpulkan poin lewat check-in QR, dan buka hadiah eksklusif di setiap tahap.',
+            'bawaan' => 'Komunitas penggemar resmi DJ Whisnu Santika. Datang ke acara, kumpulkan poin lewat check-in, dan tukar dengan hadiah eksklusif.',
             'maks' => 200,
             'baris' => true,
         ],
@@ -407,7 +407,7 @@ return [
         'beranda.stiker' => [
             'grup' => 'beranda',
             'label' => 'Tombol stiker (mengarah ke Check-in)',
-            'bawaan' => 'Scan dan check-in sekarang',
+            'bawaan' => 'Check-in sekarang',
             'maks' => 40,
         ],
         'beranda.aktivitas.judul' => [
@@ -482,7 +482,7 @@ return [
         'checkin.lokasi.deskripsi' => [
             'grup' => 'checkin',
             'label' => 'Penjelasan kotak "sudah di lokasi"',
-            'bawaan' => 'Pilih acara di atas, atau langsung pindai QR dari panitia. Acaranya terpilih otomatis.',
+            'bawaan' => 'Pilih acara di atas lalu tekan Check-in; lokasi HP-mu dicek, tanpa QR. Pemenang GL gratis menunjukkan Kartu GL ke staf, lalu memindai QR acara.',
             'maks' => 220,
             'baris' => true,
         ],
@@ -655,14 +655,14 @@ return [
         ],
         'profil.riwayat.judul' => [
             'grup' => 'profil',
-            'label' => 'Riwayat poin: judul bagian',
-            'bawaan' => 'Riwayat poin',
+            'label' => 'Riwayat aktivitas: judul bagian',
+            'bawaan' => 'Riwayat aktivitas',
             'maks' => 60,
         ],
         'profil.riwayat.kosong' => [
             'grup' => 'profil',
-            'label' => 'Riwayat poin: teks bila kosong',
-            'bawaan' => 'Belum ada poin. Datang ke acara dan check-in untuk mulai mengumpulkan.',
+            'label' => 'Riwayat aktivitas: teks bila kosong',
+            'bawaan' => 'Belum ada aktivitas. Antri GL atau check-in di acara untuk mulai mengumpulkan poin.',
             'maks' => 200,
             'baris' => true,
         ],
@@ -767,7 +767,7 @@ return [
             'maks_item' => 8,
             'bawaan' => [
                 ['judul' => 'Daftar', 'isi' => 'Buat akun dengan email dan kata sandi, atau langsung dengan akun Google.'],
-                ['judul' => 'Datang ke acara', 'isi' => 'Pindai QR check-in di venue saat Whisnu Santika tampil.'],
+                ['judul' => 'Datang ke acara', 'isi' => 'Antri GL gratis dari halaman acara, lalu check-in di venue. Lokasi HP-mu dicek; pemenang GL menunjukkan Kartu GL ke staf.'],
                 ['judul' => 'Kumpulkan poin', 'isi' => 'Setiap acara yang kamu hadiri memberi poin. Poin yang terkumpul bisa kamu tukar dengan hadiah.'],
                 ['judul' => 'Buka hadiah', 'isi' => 'Pilih hadiah di katalog, ajukan penukarannya, lalu pantau statusnya sampai hadiah diterima.'],
             ],
@@ -783,7 +783,7 @@ return [
             'maks_item' => 12,
             'bawaan' => [
                 ['judul' => 'Apa itu poin?', 'isi' => 'Poin adalah bukti kehadiranmu di sebuah acara. Poin bisa ditukar dengan hadiah: poinnya ditahan saat kamu mengajukan, lalu dikembalikan bila penukaran dibatalkan atau ditolak.'],
-                ['judul' => 'Bagaimana cara check-in di acara?', 'isi' => 'Di venue, pindai QR resmi acara dengan kamera HP, lalu masuk ke akunmu. Check-in dibuka pada hari acara dan hanya bisa dilakukan satu kali per acara.'],
+                ['judul' => 'Bagaimana cara check-in di acara?', 'isi' => 'Buka halaman acara lalu tekan Check-in saat check-in dibuka, dan izinkan akses lokasi. Tidak perlu QR. Pemenang GL gratis menunjukkan Kartu GL ke staf, lalu memindai QR acara dari staf untuk mendapat poin. Satu kali per acara.'],
                 ['judul' => 'Bagaimana cara mengajukan hadiah?', 'isi' => 'Saat poinmu cukup untuk sebuah hadiah, buka halaman Hadiah lalu ajukan. Tim WSM akan memeriksa dan memberi kabar lewat halaman Hadiah dan email.'],
                 ['judul' => 'Bagaimana data saya digunakan?', 'isi' => 'Kami hanya menyimpan data yang dibutuhkan untuk menjalankan komunitas ini. Penjelasan lengkapnya ada di {privasi}, dan kamu bisa menghapus akunmu kapan saja dari halaman Profil.'],
             ],
@@ -797,7 +797,7 @@ return [
             'ikon' => true,
             'maks_item' => 6,
             'bawaan' => [
-                ['judul' => 'Check-in QR di acara', 'ikon' => 'qr-code-scan'],
+                ['judul' => 'Check-in di acara', 'ikon' => 'geo-alt'],
                 ['judul' => 'Hadiah di tiap tahap poin', 'ikon' => 'gift'],
                 ['judul' => 'Galeri kenangan penggemar', 'ikon' => 'images'],
             ],

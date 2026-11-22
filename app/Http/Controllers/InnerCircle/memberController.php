@@ -40,7 +40,7 @@ class memberController extends Controller
         return view('pages.inner-circle.beranda', [
             'member' => $anggota,
             'berikutnya' => $klaim->berikutnya($anggota->poin_total),
-            'aktivitas' => $this->riwayatPoin($anggota, 5),
+            'aktivitas' => $this->riwayatAktivitas($anggota, 5),
             'glSaya' => $this->glSaya($anggota),
         ]);
     }
@@ -314,7 +314,7 @@ class memberController extends Controller
                 'poin_tertahan' => $klaim->dompet($anggota)->tertahan,
                 'jumlah_klaim' => $pengajuan->count(),
             ],
-            'riwayat' => $this->riwayatPoin($anggota, 100),
+            'riwayat' => $this->riwayatAktivitas($anggota, 100),
             'klaim' => $pengajuan->all(),
         ]);
     }
@@ -383,15 +383,53 @@ class memberController extends Controller
         return $jumlah;
     }
 
-    /** Poin terbaru anggota (check-in dan poin manual), terbaru di atas. */
-    private function riwayatPoin(member $anggota, int $batas): array
+    /**
+     * Riwayat aktivitas: poin (check-in, poin manual, penukaran, koreksi) dan GL gratis (antri, menang, tidak terpilih)
+     * dalam satu daftar, terbaru di atas. Baris GL berupa objek sederhana dengan `jenis = gl` (lihat komponen
+     * baris-aktivitas); baris poin tetap model ic_poin.
+     *
+     * @return array<int, object>
+     */
+    private function riwayatAktivitas(member $anggota, int $batas): array
     {
-        return ic_poin::query()
+        $poin = ic_poin::query()
             ->where('member_id', $anggota->getKey())
             ->orderByDesc('created_at')
             ->orderByDesc('id_poin')
             ->limit($batas)
+            ->get();
+
+        $gl = ic_gl_antrean::query()
+            ->with('event')
+            ->where('member_id', $anggota->getKey())
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id_antrean')
+            ->limit($batas)
             ->get()
+            ->filter(fn($b) => $b->event !== null)
+            ->map(function ($b) {
+                $status = match ($b->status) {
+                    ic_gl_antrean::MENANG => 'Menang GL',
+                    ic_gl_antrean::TIDAK_TERPILIH => 'Tidak terpilih',
+                    default => 'Dalam antrean',
+                };
+
+                return (object) [
+                    'jenis' => 'gl',
+                    'ikon' => 'ticket',
+                    'judul' => 'GL gratis · ' . ($b->event->venue ?? $b->event->kode),
+                    'tanggal' => $b->updated_at ?? $b->created_at,
+                    'keterangan' => $b->event->tanggal->locale('id')->translatedFormat('D, j M Y') . ' · ' . ($b->status === ic_gl_antrean::MENANG ? 'lihat kartu GL' : 'lihat acara'),
+                    'status' => $status,
+                    'menang' => $b->status === ic_gl_antrean::MENANG,
+                    'tautan' => route('ic.acara.detail', $b->event->kode),
+                ];
+            });
+
+        return $poin->concat($gl)
+            ->sortByDesc(fn($a) => $a->tanggal->getTimestamp())
+            ->take($batas)
+            ->values()
             ->all();
     }
 

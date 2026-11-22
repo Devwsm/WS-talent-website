@@ -101,7 +101,7 @@ class GoogleTest extends TestCase
         $this->kembaliDariGoogle()->assertRedirect();
         $baru = \App\Models\member::where('email', 'baru@contoh.test')->firstOrFail();
         $this->assertNotNull($baru->privasi_disetujui_pada);
-        $this->assertSame('2026-11-21', $baru->privasi_versi);
+        $this->assertSame('2026-11-22', $baru->privasi_versi);
     }
 
     public function test_flag_mati_atau_kredensial_kosong_membuat_route_404_dan_tombol_hilang(): void

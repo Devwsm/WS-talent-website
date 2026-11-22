@@ -17,7 +17,7 @@
     </span>
     <span class="ic-penyuka__teks">
         @if ($pertama)
-            Disukai oleh <b>{{ $pertama->nama_singkat }}</b>
+            Disukai oleh <b>{{ $pertama->nama }}</b>
             @if ($jumlah > 1)
                 dan <b>{{ $jumlah - 1 }} lainnya</b>
             @endif

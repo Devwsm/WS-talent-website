@@ -70,8 +70,7 @@
             {{-- Profil ringkas --}}
             <div class="rounded-3xl border border-white/10 bg-white/3 p-5 md:p-6 flex flex-col gap-5">
                 <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-                    <span aria-hidden="true"
-                        class="w-16 h-16 shrink-0 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-3xl">{{ $anggota->avatar_emoji }}</span>
+                    <x-dashboard.inner-circle.foto-anggota :member="$anggota" ukuran="w-20 h-20 text-4xl" />
                     <div class="min-w-0 flex-1">
                         <h2 class="text-xl font-bold wrap-anywhere">{{ $anggota->nama }}</h2>
                         <p class="text-sm text-white/50 wrap-anywhere">{{ $anggota->kode_member }} · {{ $anggota->email }}

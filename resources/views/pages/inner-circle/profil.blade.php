@@ -136,8 +136,8 @@
             <label class="ic-label" for="ganti-nama">Nama</label>
             <input class="ic-input" type="text" id="ganti-nama" name="nama" value="{{ old('nama', $member->nama) }}"
                 maxlength="100" autocomplete="name" required @error('nama') aria-invalid="true" @enderror>
-            <p class="ic-bantuan">Boleh memakai spasi, mis. “Ancha Maulana”. Nama tampil di kartu member dan, dalam
-                bentuk singkat, di kenangan dan komentarmu.</p>
+            <p class="ic-bantuan">Boleh memakai spasi, mis. “Ancha Maulana”. Nama tampil lengkap di kartu member,
+                kenangan, komentar, dan daftar penyuka.</p>
             @error('nama')
                 <p class="ic-galat" role="alert">{{ $message }}</p>
             @enderror

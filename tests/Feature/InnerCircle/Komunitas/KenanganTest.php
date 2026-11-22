@@ -234,15 +234,14 @@ class KenanganTest extends TestCase
         $this->get(route('ic.komunitas', ['tab' => 'galeri', 'page' => 2]))->assertOk()->assertSee('Halaman 2 dari 2');
     }
 
-    public function test_nama_di_galeri_disingkat_dan_nama_lengkap_tidak_bocor(): void
+    public function test_nama_di_galeri_tampil_lengkap_tanpa_email(): void
     {
         $this->kenangan($this->anggota('Ancha Mahendra Kusuma', 'ancha@contoh.test'));
         $this->kenangan($this->anggota('Dio', 'dio@contoh.test'));
 
         $this->actingAs($this->anggota('Penonton', 'p@contoh.test'), 'member')->get(route('ic.komunitas', ['tab' => 'galeri']))
-            ->assertSee('Ancha M.')
+            ->assertSee('Ancha Mahendra Kusuma')
             ->assertSee('Dio')
-            ->assertDontSee('Mahendra')
             ->assertDontSee('ancha@contoh.test');
     }
 

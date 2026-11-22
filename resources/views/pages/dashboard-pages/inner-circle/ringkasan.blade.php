@@ -218,8 +218,7 @@
                         <ul class="flex flex-col gap-3">
                             @foreach ($anggotaBaru as $m)
                                 <li class="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/2 p-3 min-w-0">
-                                    <span aria-hidden="true"
-                                        class="shrink-0 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-bold text-sm">{{ mb_strtoupper(mb_substr($m->nama, 0, 1)) }}</span>
+                                    <x-dashboard.inner-circle.foto-anggota :member="$m" ukuran="w-10 h-10 text-lg" />
                                     <div class="min-w-0 flex-1">
                                         <p class="font-semibold text-sm truncate">{{ $m->nama }}
                                             <span class="text-white/40 font-normal">· {{ $m->kode_member }}</span>

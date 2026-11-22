@@ -863,8 +863,12 @@ a.ic-event:hover {
     align-items: center;
     gap: 10px;
 }
+.ic-kenangan__atas > div {
+    min-width: 0;
+}
 .ic-kenangan__atas b {
     font-size: 13px;
+    overflow-wrap: anywhere;
 }
 .ic-kenangan__atas small {
     display: block;
@@ -3094,11 +3098,6 @@ a.ic-poster-kartu:hover .ic-poster-kartu__gambar {
     justify-content: space-between;
     gap: 12px;
 }
-.ic-kartu-anggota--detail {
-    min-height: 0;
-    gap: 22px;
-    margin: 18px 0 15px;
-}
 .ic-kartu-anggota__bawah {
     position: relative;
     z-index: 1;
@@ -3113,6 +3112,16 @@ a.ic-poster-kartu:hover .ic-poster-kartu__gambar {
     gap: 3px;
     min-width: 0;
     overflow-wrap: anywhere;
+}
+.ic-kartu-anggota--detail {
+    min-height: 0;
+    gap: 22px;
+    margin: 18px 0 15px;
+    padding: 28px;
+    background:
+        radial-gradient(circle at 100% 0%, #cde7f7 0, transparent 46%),
+        linear-gradient(180deg, #fff 0%, #eaf6fd 100%);
+    box-shadow: 0 14px 34px rgba(4, 38, 84, 0.1);
 }
 .ic-kartu-anggota__pensil {
     display: grid;
@@ -3133,6 +3142,14 @@ a.ic-poster-kartu:hover .ic-poster-kartu__gambar {
     background: #eaf5fc;
     transform: scale(1.06);
 }
+.ic-kartu-anggota__profil {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    min-width: 0;
+}
 .ic-kartu-anggota__foto {
     position: relative;
     flex-shrink: 0;
@@ -3141,46 +3158,111 @@ a.ic-poster-kartu:hover .ic-poster-kartu__gambar {
     border-radius: 50%;
     background: none;
 }
+.ic-avatar--kartu {
+    width: 92px;
+    height: 92px;
+    font-size: 46px;
+    box-shadow:
+        0 0 0 4px #fff,
+        0 0 0 6px #7db3d6,
+        0 12px 26px rgba(4, 38, 84, 0.18);
+}
 .ic-kartu-anggota__lencana {
     position: absolute;
-    right: -2px;
-    bottom: -2px;
+    right: 0;
+    bottom: 0;
     display: grid;
     place-items: center;
-    width: 26px;
-    height: 26px;
-    border: 2px solid #fff;
+    width: 28px;
+    height: 28px;
+    border: 3px solid #fff;
     border-radius: 50%;
     background: var(--ic-navy);
     color: #fff;
     font-size: 11px;
 }
-.ic-avatar--kartu {
-    width: 76px;
-    height: 76px;
-    font-size: 38px;
+.ic-kartu-anggota--detail .ic-kartu-anggota__nama {
+    font-size: 34px;
+    line-height: 1.05;
+}
+.ic-kartu-anggota__email {
+    font-size: 13px;
+}
+.ic-kartu-anggota__statistik {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 10px;
+    margin: 0;
+}
+.ic-kartu-anggota__statistik > div {
+    min-width: 0;
+    padding: 12px 14px;
+    border: 1px solid #c3dcee;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.82);
+}
+.ic-kartu-anggota__statistik dt {
+    margin: 0 0 4px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ic-redup);
+}
+.ic-kartu-anggota__statistik dd {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--ic-navy);
+    overflow-wrap: anywhere;
+}
+.ic-kartu-anggota__id {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
 }
 @media (max-width: 480px) {
     .ic-kartu-anggota--detail {
         gap: 18px;
         padding: 20px;
     }
-    .ic-kartu-anggota--detail .ic-kartu-anggota__nama {
-        font-size: 24px;
+    .ic-kartu-anggota__profil {
+        gap: 14px;
     }
-    .ic-kartu-anggota__bawah {
-        gap: 12px;
+    .ic-kartu-anggota--detail .ic-kartu-anggota__nama {
+        font-size: 25px;
     }
     .ic-avatar--kartu {
-        width: 64px;
-        height: 64px;
-        font-size: 32px;
+        width: 70px;
+        height: 70px;
+        font-size: 34px;
+    }
+    .ic-kartu-anggota__lencana {
+        width: 24px;
+        height: 24px;
+        border-width: 2px;
+    }
+    .ic-kartu-anggota__statistik > div {
+        padding: 10px 12px;
     }
     .ic-profil-ubah {
         flex-direction: column;
         align-items: flex-start;
         gap: 14px;
     }
+}
+
+/* ---------- Riwayat aktivitas: baris GL (tautan ke acara) ---------- */
+.ic-aktivitas--gl {
+    color: inherit;
+    text-decoration: none;
+}
+.ic-aktivitas--gl:hover {
+    background: #e7f3fb;
+}
+.ic-aktivitas__pil {
+    margin-left: auto;
 }
 
 /* ---------- Penyuka kenangan (ala IG): tumpukan foto profil + "Disukai oleh ..." ---------- */

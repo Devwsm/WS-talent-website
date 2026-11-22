@@ -85,6 +85,10 @@
                                     <ul class="mt-2 flex flex-col gap-2">
                                         @foreach ($k->komentar()->with('member')->latest('id_komentar')->limit(30)->get() as $kom)
                                             <li class="flex items-start gap-3 rounded-xl border border-white/10 p-3">
+                                                @if ($kom->member)
+                                                    <x-dashboard.inner-circle.foto-anggota :member="$kom->member"
+                                                        ukuran="w-9 h-9 text-base" />
+                                                @endif
                                                 <div class="min-w-0 flex-1">
                                                     <p class="text-xs text-white/50">
                                                         {{ $kom->member->nama ?? 'Anggota dihapus' }}
@@ -110,7 +114,7 @@
                             <div class="flex flex-wrap items-center gap-2 px-4 py-3 border-t border-white/10">
                                 <span
                                     class="rounded-full border px-3 py-1.5 text-xs font-semibold {{ $k->disembunyikan ? 'border-red-400/30 bg-red-400/10 text-red-300' : 'border-emerald-300/30 bg-emerald-300/10 text-emerald-200' }}">{{ $k->disembunyikan ? 'Disembunyikan' : 'Tayang' }}</span>
-                                {{-- Admin melihat nama lengkap; anggota lain hanya melihat singkatannya di kartu. --}}
+                                {{-- Nama lengkap anggota, beserta Member ID untuk admin. --}}
                                 <span class="min-w-0 truncate text-xs text-white/50">{{ $k->member->nama }} ·
                                     {{ $k->member->kode_member }}</span>
                                 <form method="POST" action="{{ route('ic.admin.kenangan.moderasi', $k->id_memory) }}"

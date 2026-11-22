@@ -120,8 +120,7 @@
                             <li
                                 class="flex flex-col sm:flex-row sm:items-center gap-3 rounded-2xl border border-white/10 bg-white/3 p-4 transition-colors hover:border-white/20 min-w-0">
                                 <div class="flex items-center gap-3 min-w-0 flex-1">
-                                    <span aria-hidden="true"
-                                        class="w-12 h-12 shrink-0 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-2xl">{{ $m->avatar_emoji }}</span>
+                                    <x-dashboard.inner-circle.foto-anggota :member="$m" ukuran="w-12 h-12 text-2xl" />
                                     <div class="min-w-0">
                                         <p class="font-semibold truncate">{{ $m->nama }}</p>
                                         <p class="text-xs text-white/50 truncate">{{ $m->kode_member }} ·

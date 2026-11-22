@@ -114,10 +114,16 @@
                                 <div class="flex flex-wrap items-start justify-between gap-3">
                                     <div class="min-w-0">
                                         @if ($p->anggota)
-                                            <a href="{{ route('ic.admin.anggota.detail', $p->anggota->id_member) }}"
-                                                class="font-bold hover:underline">{{ $p->anggota->nama }}</a>
-                                            <p class="text-xs text-white/50">{{ $p->anggota->kode_member }} ·
-                                                {{ $p->anggota->email }}</p>
+                                            <div class="flex items-center gap-3 min-w-0">
+                                                <x-dashboard.inner-circle.foto-anggota :member="$p->anggota"
+                                                    ukuran="w-10 h-10 text-lg" />
+                                                <div class="min-w-0">
+                                                    <a href="{{ route('ic.admin.anggota.detail', $p->anggota->id_member) }}"
+                                                        class="font-bold hover:underline">{{ $p->anggota->nama }}</a>
+                                                    <p class="text-xs text-white/50">{{ $p->anggota->kode_member }} ·
+                                                        {{ $p->anggota->email }}</p>
+                                                </div>
+                                            </div>
                                         @else
                                             <span class="text-white/40">Anggota dihapus</span>
                                         @endif

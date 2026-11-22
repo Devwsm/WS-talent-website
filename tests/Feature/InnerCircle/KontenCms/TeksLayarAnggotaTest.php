@@ -47,7 +47,7 @@ class TeksLayarAnggotaTest extends TestCase
         $this->actingAs($m, 'member')->get(route('ic.beranda'))->assertOk()
             ->assertSee('Whisnu Santika Official Fanbase')->assertDontSee('Musik seru. Teman baru.')->assertSee('Hai, Ancha!')
             ->assertSee('Terima kasih sudah menjadi bagian dari keluarga WS Inner Circle.')
-            ->assertSee('Scan dan check-in sekarang')->assertDontSee('Setiap momen berarti')->assertSee('Aktivitas terbaru ✦')
+            ->assertSee('Check-in sekarang')->assertDontSee('Setiap momen berarti')->assertSee('Aktivitas terbaru ✦')
             ->assertSee('<a class="ic-hero__stiker" href="' . route('ic.checkin') . '">', false)
             ->assertSee('aset/inner-circle/logo/wsic-wordmark-kompak.webp', false)
             ->assertSee('KARTU KEANGGOTAAN DIGITAL')->assertSee('Poin terus terkumpul dan tidak hangus');

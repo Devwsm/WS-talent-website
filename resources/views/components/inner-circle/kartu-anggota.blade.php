@@ -1,6 +1,6 @@
 @props(['member', 'detail' => false])
-{{-- Kartu member. Beranda memakai bentuk ringkas; Profil memakai `detail`: satu kartu berisi foto, nama, ID, email, saldo,
-     dan satu tombol pensil yang membuka popup "Ubah profil" (ganti foto dan nama sekaligus). --}}
+{{-- Kartu member. Beranda memakai bentuk ringkas; Profil memakai `detail`: satu kartu berisi foto, nama, email, Member ID,
+     tanggal bergabung, dan status akun, dengan satu tombol pensil yang membuka popup "Ubah profil" (foto dan nama). --}}
 <div class="ic-kartu-anggota {{ $detail ? 'ic-kartu-anggota--detail' : '' }}">
     <div class="ic-kartu-anggota__kepala">
         <div>
@@ -12,22 +12,45 @@
                 aria-label="Ubah foto dan nama"><i class="bi bi-pencil-fill" aria-hidden="true"></i></button>
         @endif
     </div>
-    <div class="ic-kartu-anggota__bawah">
-        @if ($detail)
+
+    @if ($detail)
+        <div class="ic-kartu-anggota__profil">
             <button type="button" class="ic-kartu-anggota__foto" data-ic-modal-buka="modal-profil"
                 aria-label="Ubah foto profil">
                 <x-inner-circle.avatar :member="$member" kelas="ic-avatar--kartu" />
                 <span class="ic-kartu-anggota__lencana" aria-hidden="true"><i class="bi bi-camera-fill"></i></span>
             </button>
-        @endif
-        <div class="ic-kartu-anggota__data">
-            <p class="ic-kartu-anggota__nama">{{ $member->nama }}</p>
-            <small>ID ANGGOTA: {{ $member->kode_member }}</small>
-            @if ($detail)
-                <small>{{ $member->email }}</small>
-                <small>Saldo: {{ ic_angka($member->poin_total) }} poin · Bergabung
-                    {{ $member->created_at?->locale('id')->translatedFormat('F Y') }}</small>
-            @endif
+            <div class="ic-kartu-anggota__data">
+                <p class="ic-kartu-anggota__nama">{{ $member->nama }}</p>
+                <small class="ic-kartu-anggota__email">{{ $member->email }}</small>
+            </div>
         </div>
-    </div>
+        <dl class="ic-kartu-anggota__statistik">
+            <div>
+                <dt>ID anggota</dt>
+                <dd class="ic-kartu-anggota__id">{{ $member->kode_member }}</dd>
+            </div>
+            <div>
+                <dt>Bergabung</dt>
+                <dd>{{ $member->created_at?->locale('id')->translatedFormat('M Y') }}</dd>
+            </div>
+            <div>
+                <dt>Status</dt>
+                <dd>
+                    @if ($member->email_verified_at)
+                        <i class="bi bi-patch-check-fill" aria-hidden="true"></i> Terverifikasi
+                    @else
+                        Belum verifikasi
+                    @endif
+                </dd>
+            </div>
+        </dl>
+    @else
+        <div class="ic-kartu-anggota__bawah">
+            <div class="ic-kartu-anggota__data">
+                <p class="ic-kartu-anggota__nama">{{ $member->nama }}</p>
+                <small>ID ANGGOTA: {{ $member->kode_member }}</small>
+            </div>
+        </div>
+    @endif
 </div>

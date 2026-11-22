@@ -62,22 +62,13 @@ class ic_memory extends Model
         return Attribute::get(fn() => $this->status === self::DISEMBUNYIKAN);
     }
 
-    /**
-     * Nama yang tampil ke sesama anggota: kata pertama + inisial kata kedua ("Ancha MK" jadi "Ancha M.").
-     * Nama lengkap hanya dilihat admin lewat $kenangan->member->nama.
-     */
+    /** Nama yang tampil ke sesama anggota: nama lengkap dari profil (spasi ganda dirapikan), tidak disingkat. */
     protected function namaMember(): Attribute
     {
         return Attribute::get(function () {
-            $kata = preg_split('/\s+/u', trim((string) ($this->member->nama ?? '')), -1, PREG_SPLIT_NO_EMPTY);
-            if (count($kata) === 0) {
-                return 'Anggota';
-            }
-            if (count($kata) === 1) {
-                return $kata[0];
-            }
+            $nama = trim((string) preg_replace('/\s+/u', ' ', (string) ($this->member->nama ?? '')));
 
-            return $kata[0] . ' ' . mb_strtoupper(mb_substr($kata[1], 0, 1)) . '.';
+            return $nama !== '' ? $nama : 'Anggota';
         });
     }
 

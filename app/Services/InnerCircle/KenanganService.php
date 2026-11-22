@@ -182,7 +182,7 @@ class KenanganService
 
     /**
      * Daftar penyuka untuk popup dan penyegaran tumpukan foto (JSON): jumlah semua suka + penyuka terbaru
-     * (maksimal `inner_circle.penyuka_daftar_maks`). Nama disingkat seperti di kenangan dan komentar.
+     * (maksimal `inner_circle.penyuka_daftar_maks`). Nama lengkap seperti di kenangan dan komentar.
      *
      * @return array{jumlah: int, penyuka: list<array{nama: string, foto: ?string, emoji: string}>}
      */
@@ -190,7 +190,7 @@ class KenanganService
     {
         $penyuka = $this->penyukaTerbaru($kenangan, (int) config('inner_circle.penyuka_daftar_maks', 50))
             ->map(fn(member $m) => [
-                'nama' => $m->nama_singkat,
+                'nama' => $m->nama,
                 'foto' => $m->avatar ? Storage::url($m->avatar) : null,
                 'emoji' => $m->avatar_emoji,
             ])

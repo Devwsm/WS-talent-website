@@ -34,7 +34,7 @@ class KebijakanPrivasiTest extends TestCase
         $this->get(route('privasi'))->assertOk()
             ->assertSee('Jenis Data Pribadi yang Dikumpulkan')
             ->assertSee('Google Sign-In')
-            ->assertSee('Diperbarui 21 November 2026');
+            ->assertSee('Diperbarui 22 November 2026');
         $this->assertFalse(app(IcPrivasi::class)->sudahKustom());
     }
 
@@ -106,7 +106,7 @@ class KebijakanPrivasiTest extends TestCase
 
         $this->assertDatabaseMissing('ic_pengaturan', ['kunci' => 'privasi.isi']);
         $this->assertDatabaseMissing('ic_pengaturan', ['kunci' => 'privasi.diperbarui']);
-        $this->get(route('privasi'))->assertSee('Jenis Data Pribadi yang Dikumpulkan')->assertSee('Diperbarui 21 November 2026');
+        $this->get(route('privasi'))->assertSee('Jenis Data Pribadi yang Dikumpulkan')->assertSee('Diperbarui 22 November 2026');
     }
 
     public function test_tanggal_rusak_memakai_tanggal_config(): void

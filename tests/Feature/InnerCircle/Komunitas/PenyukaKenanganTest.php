@@ -55,7 +55,7 @@ class PenyukaKenanganTest extends TestCase
             ->getContent();
 
         // Spasi dan baris baru di markup tidak penting (formatter Blade bisa memecah baris).
-        $this->assertMatchesRegularExpression('/Disukai oleh\s*<b>Sinta D\.<\/b>\s*dan\s*<b>1 lainnya<\/b>/', $html);
+        $this->assertMatchesRegularExpression('/Disukai oleh\s*<b>Sinta Dewi<\/b>\s*dan\s*<b>1 lainnya<\/b>/', $html);
     }
 
     public function test_satu_penyuka_tanpa_kata_dan_lainnya(): void
@@ -67,7 +67,7 @@ class PenyukaKenanganTest extends TestCase
 
         $html = $this->actingAs($pemilik, 'member')->get(route('ic.komunitas', ['tab' => 'galeri']))->assertOk()->getContent();
 
-        $this->assertMatchesRegularExpression('/Disukai oleh\s*<b>Rani P\.<\/b>\s*<\/span>/', $html);
+        $this->assertMatchesRegularExpression('/Disukai oleh\s*<b>Rani Putri<\/b>\s*<\/span>/', $html);
     }
 
     public function test_ringkasan_tersembunyi_selama_belum_ada_yang_suka(): void
@@ -90,7 +90,7 @@ class PenyukaKenanganTest extends TestCase
         $this->actingAs($pemilik, 'member')->get(route('ic.kenangan.detail', $k->id_memory))->assertOk()
             ->assertSee('data-ic-penyuka="' . $k->id_memory . '"', false)
             ->assertSee('id="modal-penyuka"', false)
-            ->assertSee('Rani P.');
+            ->assertSee('Rani Putri');
     }
 
     public function test_daftar_penyuka_json_terbaru_dulu_dengan_foto_atau_emoji(): void
@@ -107,9 +107,9 @@ class PenyukaKenanganTest extends TestCase
         $this->actingAs($pemilik, 'member')->getJson(route('ic.kenangan.penyuka', $k->id_memory))
             ->assertOk()
             ->assertJsonPath('jumlah', 2)
-            ->assertJsonPath('penyuka.0.nama', 'Sinta D.')
+            ->assertJsonPath('penyuka.0.nama', 'Sinta Dewi')
             ->assertJsonPath('penyuka.0.foto', Storage::url('inner-circle/avatar/sinta.webp'))
-            ->assertJsonPath('penyuka.1.nama', 'Rani P.')
+            ->assertJsonPath('penyuka.1.nama', 'Rani Putri')
             ->assertJsonPath('penyuka.1.foto', null)
             ->assertJsonPath('penyuka.1.emoji', '😎');
     }

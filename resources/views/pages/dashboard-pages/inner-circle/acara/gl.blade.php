@@ -196,10 +196,16 @@
                                             {{ $tab === 'pemenang' ? $b->urutan_undi : $daftar->firstItem() + $i }}</td>
                                         <td class="px-4 py-3">
                                             @if ($b->anggota)
-                                                <a href="{{ route('ic.admin.anggota.detail', $b->anggota->id_member) }}"
-                                                    class="font-semibold hover:underline">{{ $b->anggota->nama }}</a>
-                                                <p class="text-xs text-white/50">{{ $b->anggota->kode_member }} ·
-                                                    {{ $b->anggota->email }}</p>
+                                                <div class="flex items-center gap-3 min-w-0">
+                                                    <x-dashboard.inner-circle.foto-anggota :member="$b->anggota"
+                                                        ukuran="w-10 h-10 text-lg" />
+                                                    <div class="min-w-0">
+                                                        <a href="{{ route('ic.admin.anggota.detail', $b->anggota->id_member) }}"
+                                                            class="font-semibold hover:underline">{{ $b->anggota->nama }}</a>
+                                                        <p class="text-xs text-white/50">{{ $b->anggota->kode_member }} ·
+                                                            {{ $b->anggota->email }}</p>
+                                                    </div>
+                                                </div>
                                             @else
                                                 <span class="text-white/40">Anggota dihapus</span>
                                             @endif
