@@ -73,8 +73,10 @@ class logController extends Controller
             ];
         }
 
-        // Tanda cron hidup (tampil di kedua CMS).
-        $data['statusJadwal'] = \App\Services\InnerCircle\PenjadwalService::ringkasan();
+        // Tanda cron hidup (kedua CMS) dan penanda jadwal sinkron + undian sudah diatur (hanya CMS Inner Circle).
+        $data['statusJadwal'] = \App\Services\InnerCircle\PenjadwalService::ringkasan(
+            $area === AreaLog::INNER_CIRCLE && config('inner_circle.aktif'),
+        );
 
         $email = trim((string) config('site.peringatan_email'));
         $data['emailPeringatan'] = $email === '' ? null : $email;

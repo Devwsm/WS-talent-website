@@ -26,9 +26,9 @@ class PenjadwalTest extends TestCase
         Http::fake(['rest.bandsintown.com/*' => Http::response($isi, $status)]);
     }
 
-    private function baris(): array
+    private function baris(bool $ic = false): array
     {
-        return collect(PenjadwalService::ringkasan())->keyBy('label')->all();
+        return collect(PenjadwalService::ringkasan($ic))->keyBy('label')->all();
     }
 
     public function test_tanpa_detak_cron_ditandai_belum_terdeteksi_dan_dengan_detak_normal(): void
@@ -41,6 +41,26 @@ class PenjadwalTest extends TestCase
 
         $this->travel(5)->minutes();
         $this->assertSame('gagal', $this->baris()['Cron']['tingkat']);
+    }
+
+    public function test_penanda_jadwal_hanya_di_cms_inner_circle_dan_menandai_sudah_diatur(): void
+    {
+        config(['services.bandsintown.app_id' => 'abc', 'services.bandsintown.artist' => 'id_1']);
+
+        $this->assertCount(1, PenjadwalService::ringkasan(false));
+
+        $b = $this->baris(true);
+        $this->assertCount(3, $b);
+        $this->assertSame('terjadwal', $b['Sinkron Bandsintown']['tingkat']);
+        $this->assertSame('terjadwal', $b['Undian GL otomatis']['tingkat']);
+        $this->assertStringContainsString('18.00', $b['Undian GL otomatis']['teks']);
+    }
+
+    public function test_penanda_bandsintown_belum_diatur_bila_app_id_kosong(): void
+    {
+        config(['services.bandsintown.app_id' => null]);
+
+        $this->assertSame('peringatan', $this->baris(true)['Sinkron Bandsintown']['tingkat']);
     }
 
     public function test_sinkron_otomatis_berhasil_membuat_acara(): void

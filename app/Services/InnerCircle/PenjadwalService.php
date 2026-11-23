@@ -51,28 +51,42 @@ class PenjadwalService
     }
 
     /**
-     * Baris status cron untuk halaman Log (tampil di kedua CMS).
+     * Baris untuk kartu "Jadwal otomatis" di halaman Log. Baris cron membaca detak (hidup atau tidak); baris Bandsintown
+     * dan undian (hanya CMS Inner Circle) adalah PENANDA PENGATURAN: menunjukkan jadwalnya sudah diatur, bukan bahwa
+     * sudah pernah jalan. Hasil jalannya dicek di hari H; kegagalan tetap muncul sebagai error di Log.
      *
      * @return array<int, array{label: string, tingkat: string, teks: string}>
      */
-    public static function ringkasan(): array
+    public static function ringkasan(bool $denganInnerCircle = false): array
     {
+        $baris = [];
+
         try {
             $detak = Cache::get(self::DETAK);
 
             if (! $detak) {
-                return [['label' => 'Cron', 'tingkat' => 'peringatan', 'teks' => 'Belum terdeteksi jalan. Bila baru deploy, tunggu satu menit; bila tetap begini, cek cron schedule:run tiap menit di cPanel.']];
+                $baris[] = ['label' => 'Cron', 'tingkat' => 'peringatan', 'teks' => 'Belum terdeteksi jalan. Bila baru deploy, tunggu satu menit; bila tetap begini, cek cron schedule:run tiap menit di cPanel.'];
+            } else {
+                $lalu = now()->getTimestamp() - (int) $detak;
+                $t = Carbon::createFromTimestamp((int) $detak, config('app.timezone'))->locale('id');
+                $waktu = $t->diffForHumans() . ' (' . $t->translatedFormat('j M Y, H.i') . ' WIB)';
+
+                $baris[] = $lalu > self::BATAS_DETAK_DETIK
+                    ? ['label' => 'Cron', 'tingkat' => 'gagal', 'teks' => "Terakhir jalan {$waktu}. Seharusnya tiap menit: cek cron di cPanel."]
+                    : ['label' => 'Cron', 'tingkat' => 'ok', 'teks' => "Jalan normal (terakhir {$waktu})."];
             }
-
-            $lalu = now()->getTimestamp() - (int) $detak;
-            $t = Carbon::createFromTimestamp((int) $detak, config('app.timezone'))->locale('id');
-            $waktu = $t->diffForHumans() . ' (' . $t->translatedFormat('j M Y, H.i') . ' WIB)';
-
-            return $lalu > self::BATAS_DETAK_DETIK
-                ? [['label' => 'Cron', 'tingkat' => 'gagal', 'teks' => "Terakhir jalan {$waktu}. Seharusnya tiap menit: cek cron di cPanel."]]
-                : [['label' => 'Cron', 'tingkat' => 'ok', 'teks' => "Jalan normal (terakhir {$waktu})."]];
         } catch (Throwable) {
-            return []; // Halaman Log tetap terbuka walau cache bermasalah.
+            // Halaman Log tetap terbuka walau cache bermasalah.
         }
+
+        if ($denganInnerCircle) {
+            $baris[] = BandsintownService::tersedia()
+                ? ['label' => 'Sinkron Bandsintown', 'tingkat' => 'terjadwal', 'teks' => 'Sudah diatur: ditarik otomatis tiap hari pukul 04.00 WIB.']
+                : ['label' => 'Sinkron Bandsintown', 'tingkat' => 'peringatan', 'teks' => 'Belum diatur: isi BANDSINTOWN_APP_ID di .env server agar jadwal ditarik otomatis tiap hari pukul 04.00 WIB.'];
+
+            $baris[] = ['label' => 'Undian GL otomatis', 'tingkat' => 'terjadwal', 'teks' => 'Sudah diatur: diundi otomatis di hari H pukul ' . str_replace(':', '.', (string) config('inner_circle.gl.undian_jam')) . ' WIB (kuota, username, dan sandi acara harus sudah terisi).'];
+        }
+
+        return $baris;
     }
 }
