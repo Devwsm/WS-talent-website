@@ -40,3 +40,11 @@ Schedule::call(fn() => app(PenjadwalService::class)->undiGl())
     ->everyMinute()
     ->withoutOverlapping(10)
     ->when(fn() => config('inner_circle.aktif'));
+
+// Sisa Kartu GL dikirim bertahap (sekian per menit, lihat inner_circle.gl.kartu_per_menit) supaya undian besar tidak
+// menghabiskan jatah email sehari. Juga mengirim ulang kartu yang gagal atau ditahan anggaran email harian.
+Schedule::call(fn() => app(PenjadwalService::class)->kirimSisaKartuGl())
+    ->name('ic:kartu-gl-sisa')
+    ->everyMinute()
+    ->withoutOverlapping(10)
+    ->when(fn() => config('inner_circle.aktif'));

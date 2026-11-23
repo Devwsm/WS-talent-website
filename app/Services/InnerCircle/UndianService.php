@@ -201,7 +201,9 @@ class UndianService
         // Email setelah transaksi selesai: gagal kirim tidak membatalkan hasil undian.
         if ($ringkas !== null) {
             $event->refresh();
+            // Hanya batch pertama yang dikirim sekarang; sisanya dikirim bertahap oleh jadwal ic:kartu-gl-sisa.
             ic_gl_antrean::query()->with('anggota')->whereIn('id_antrean', $pemenangId)->get()
+                ->take((int) config('inner_circle.gl.kartu_per_menit', 30))
                 ->each(fn(ic_gl_antrean $b) => $this->email->kirimKartuGl($b, $event));
         }
 

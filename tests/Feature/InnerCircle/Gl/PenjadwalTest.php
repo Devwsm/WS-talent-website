@@ -109,6 +109,10 @@ class PenjadwalTest extends TestCase
         // Kunci anti-tumpang-tindih bawaan 24 jam: proses yang mati saat 18.00 akan menahan undian seharian.
         $this->assertLessThanOrEqual(30, $jadwal['ic:sinkron-bandsintown']->expiresAt);
         $this->assertLessThanOrEqual(10, $jadwal['ic:undi-gl']->expiresAt);
+
+        // Sisa Kartu GL dikirim bertahap tiap menit.
+        $this->assertSame('* * * * *', $jadwal['ic:kartu-gl-sisa']->expression);
+        $this->assertLessThanOrEqual(10, $jadwal['ic:kartu-gl-sisa']->expiresAt);
     }
 
     public function test_halaman_log_menampilkan_status_jadwal(): void

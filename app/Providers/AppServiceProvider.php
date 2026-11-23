@@ -59,6 +59,12 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(ic_memory::class, MemoryPolicy::class);
         Gate::policy(\App\Models\ic_memory_comment::class, MemoryPolicy::class);
 
+        // Setiap email yang terkirim dihitung ke anggaran harian bersama (lihat AnggaranEmail).
+        \Illuminate\Support\Facades\Event::listen(
+            \Illuminate\Mail\Events\MessageSent::class,
+            fn(\Illuminate\Mail\Events\MessageSent $e) => \App\Services\AnggaranEmail::dariEvent($e),
+        );
+
         // Cache halaman publik (lihat CachePublik) dibuang otomatis begitu data yang tampil di Home, Profile, footer,
         // atau tema disimpan/dihapus lewat model. Model baru yang tampil di halaman publik: tambahkan ke daftar ini.
         foreach (

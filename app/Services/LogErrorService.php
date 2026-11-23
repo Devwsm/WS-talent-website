@@ -101,18 +101,28 @@ class LogErrorService
             return;
         }
 
-        // Error yang masih terbuka dan sudah dilaporkan lewat email tidak diulang dalam satu jam.
-        $menit = (int) config('log_admin.email_per_error_menit', 60);
-        if (! Cache::add('log-error-email:' . $log->fingerprint, 1, now()->addMinutes($menit))) {
+        // Berprioritas rendah: berhenti dulu bila anggaran email harian sudah banyak terpakai (lihat AnggaranEmail).
+        if (! AnggaranEmail::izinkan(AnggaranEmail::RENDAH, 'peringatan-error')) {
             return;
         }
 
-        // Batas keseluruhan, supaya badai error berbeda tidak menghabiskan kuota kirim Gmail.
-        $maks = (int) config('log_admin.email_maks_per_jam', 10);
-        if (RateLimiter::tooManyAttempts('log-error-email-global', $maks)) {
+        // Error baru atau dibuka lagi selalu dikabari; error terbuka yang berulang hanya sekali per periode.
+        $menit = (int) config('log_admin.email_per_error_menit', 360);
+        $kunciError = 'log-error-email:' . $log->fingerprint;
+        if ($baru) {
+            Cache::put($kunciError, 1, now()->addMinutes($menit));
+        } elseif (! Cache::add($kunciError, 1, now()->addMinutes($menit))) {
+            return;
+        }
+
+        // Batas keseluruhan per jam dan per hari, supaya badai error berbeda tidak menghabiskan kuota kirim Gmail.
+        $maksJam = (int) config('log_admin.email_maks_per_jam', 3);
+        $maksHari = (int) config('log_admin.email_maks_per_hari', 20);
+        if (RateLimiter::tooManyAttempts('log-error-email-global', $maksJam) || RateLimiter::tooManyAttempts('log-error-email-harian', $maksHari)) {
             return;
         }
         RateLimiter::hit('log-error-email-global', 3600);
+        RateLimiter::hit('log-error-email-harian', 86400);
 
         $penjelasan = PenjelasLog::untuk($log->kelas, (string) $log->pesan, $log->lokasi, $log->url, $log->metode);
         $inner = $log->area === AreaLog::INNER_CIRCLE && config('inner_circle.aktif');

@@ -105,6 +105,12 @@ return [
         'undian_jam' => '18:00',
         'undian_hari_sebelum' => 0,
         'kuota_maks' => 500,
+        // Kartu GL dikirim bertahap supaya satu undian besar tidak menghabiskan jatah email sehari: sekian email
+        // saat undian, sisanya dikirim sekian per menit oleh jadwal ic:kartu-gl-sisa. Yang gagal dicoba lagi
+        // sampai kartu_coba_maks kali; hanya pemenang dari undian dalam kartu_jendela_hari hari terakhir.
+        'kartu_per_menit' => 30,
+        'kartu_coba_maks' => 5,
+        'kartu_jendela_hari' => 3,
     ],
 
     /*
@@ -146,7 +152,7 @@ return [
     */
     'verifikasi_jam' => 24,
     'batas_verifikasi_per_menit' => 2,
-    'batas_verifikasi_per_hari' => 10,
+    'batas_verifikasi_per_hari' => 3,
     'batas_verifikasi_global_per_hari' => 200,
 
     /* Jumlah kenangan per halaman di galeri anggota dan tab Kenangan dashboard; maksimum daftar pengumuman anggota. */

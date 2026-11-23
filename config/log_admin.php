@@ -20,9 +20,13 @@ return [
 
     'per_halaman' => 20,
 
-    /* Email peringatan error: satu email per jenis error per periode ini, dan paling banyak sekian per jam (semua jenis). */
-    'email_per_error_menit' => 60,
-    'email_maks_per_jam' => 10,
+    /*
+    | Email peringatan error: error BARU (atau dibuka lagi) langsung dikabari; yang berulang hanya sekali per periode
+    | ini (menit). Semua jenis digabung dibatasi per jam dan per hari. Rinciannya selalu ada di halaman Log.
+    */
+    'email_per_error_menit' => 360,
+    'email_maks_per_jam' => 3,
+    'email_maks_per_hari' => 20,
 
     /* Login gagal yang sama dari IP yang sama digabung jadi satu baris ("5x") selama jendela ini (menit). */
     'gabung_login_gagal_menit' => 60,

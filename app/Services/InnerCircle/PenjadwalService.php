@@ -50,6 +50,12 @@ class PenjadwalService
         app(UndianService::class)->jalankanJatuhTempo();
     }
 
+    /** Kirim sisa Kartu GL (pemenang di luar batch pertama, yang ditahan anggaran, atau yang gagal) secara bertahap. */
+    public function kirimSisaKartuGl(): void
+    {
+        app(EmailService::class)->kirimSisaKartuGl();
+    }
+
     /**
      * Baris untuk kartu "Jadwal otomatis" di halaman Log. Baris cron membaca detak (hidup atau tidak); baris Bandsintown
      * dan undian (hanya CMS Inner Circle) adalah PENANDA PENGATURAN: menunjukkan jadwalnya sudah diatur, bukan bahwa

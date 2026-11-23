@@ -2,11 +2,13 @@
 
 namespace Tests\Feature\InnerCircle\Akun;
 
+use App\Mail\InnerCircle\SelamatDatangMail;
 use App\Models\member;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request as HttpRequest;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 /**
@@ -178,6 +180,20 @@ class GoogleTest extends TestCase
             && $r['code_verifier'] === 'VERIF1'
             && $r['client_secret'] === 'rahasia-uji');
         $this->assertNull(session('ic_google'));
+    }
+
+    public function test_email_selamat_datang_hanya_sekali_saat_daftar_bukan_tiap_masuk(): void
+    {
+        Mail::fake();
+        $this->googleMenjawab();
+        $this->kembaliDariGoogle()->assertRedirect(route('ic.beranda'))->assertSessionHas('ic_toast', 'Selamat datang di WS Inner Circle!');
+        Mail::assertSent(SelamatDatangMail::class, 1);
+
+        // Masuk lagi lewat Google (browser baru): tidak ada email sambutan kedua.
+        $this->browserBaru();
+        $this->googleMenjawab();
+        $this->kembaliDariGoogle()->assertSessionHas('ic_toast', 'Selamat datang kembali!');
+        Mail::assertSent(SelamatDatangMail::class, 1);
     }
 
     public function test_nama_kosong_memakai_bagian_depan_email_dan_nama_panjang_dipotong(): void

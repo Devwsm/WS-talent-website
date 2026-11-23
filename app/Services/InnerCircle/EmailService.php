@@ -15,7 +15,9 @@ use App\Models\ic_event;
 use App\Models\ic_gl_antrean;
 use App\Models\ic_pengaduan;
 use App\Models\member;
+use App\Services\AnggaranEmail;
 use Closure;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
@@ -125,8 +127,13 @@ class EmailService
         ));
     }
 
+    /** Sambutan hanya saat akun Google dibuat (satu kali per anggota). Berprioritas rendah: ditahan bila anggaran email menipis. */
     public function kirimSelamatDatang(member $anggota): void
     {
+        if (! AnggaranEmail::izinkan(AnggaranEmail::RENDAH, 'selamat-datang')) {
+            return;
+        }
+
         $this->tunda(fn() => Mail::to($anggota->email)->send(new SelamatDatangMail(
             $anggota->nama,
             (string) $anggota->kode_member,
@@ -183,6 +190,10 @@ class EmailService
             return;
         }
 
+        if (! AnggaranEmail::izinkan(AnggaranEmail::BIASA, 'status-klaim')) {
+            return;
+        }
+
         $this->tunda(fn() => Mail::to($klaim->member->email)->send(new StatusKlaimMail(
             $klaim->member->nama,
             $klaim->reward->judul,
@@ -200,6 +211,10 @@ class EmailService
         $pengaduan->loadMissing('member');
 
         if (! $pengaduan->member) {
+            return;
+        }
+
+        if (! AnggaranEmail::izinkan(AnggaranEmail::BIASA, 'status-pengaduan')) {
             return;
         }
 
@@ -225,6 +240,11 @@ class EmailService
             return;
         }
 
+        // Ditahan saat anggaran email menipis; kirimSisaKartuGl() mengirimnya otomatis setelah anggaran longgar lagi.
+        if (! AnggaranEmail::izinkan(AnggaranEmail::BIASA, 'kartu-gl')) {
+            return;
+        }
+
         $this->tunda(function () use ($baris, $event) {
             Mail::to($baris->anggota->email)->send(new KartuGlMail(
                 $baris->anggota->nama,
@@ -235,6 +255,64 @@ class EmailService
 
             $baris->forceFill(['kartu_dikirim_pada' => now()])->save();
         });
+    }
+
+    /**
+     * Kirim Kartu GL yang belum terkirim, paling banyak $maks per panggilan (bawaan kartu_per_menit): sisa pemenang di
+     * luar batch pertama, kartu yang ditahan anggaran email, dan yang gagal kirim. Dipanggil jadwal ic:kartu-gl-sisa tiap
+     * menit, jadi undian besar mengalir bertahap dan tidak menghabiskan jatah email sehari sekaligus.
+     *
+     * Hanya pemenang dari undian dalam kartu_jendela_hari terakhir. Satu kartu dicoba paling banyak kartu_coba_maks
+     * kali; setelah itu dilaporkan ke halaman Log (sekali) dan dilepas, supaya alamat yang rusak tidak diulang selamanya.
+     *
+     * @return int jumlah kartu yang dicoba kirim pada panggilan ini
+     */
+    public function kirimSisaKartuGl(?int $maks = null): int
+    {
+        $maks ??= (int) config('inner_circle.gl.kartu_per_menit', 30);
+        $cobaMaks = (int) config('inner_circle.gl.kartu_coba_maks', 5);
+        $sejak = now()->subDays((int) config('inner_circle.gl.kartu_jendela_hari', 3));
+
+        $daftar = ic_gl_antrean::query()
+            ->with(['anggota', 'event'])
+            ->where('status', ic_gl_antrean::MENANG)
+            ->whereNull('kartu_dikirim_pada')
+            ->whereHas('event', fn($q) => $q->where('undian_selesai_pada', '>=', $sejak))
+            ->orderBy('id_antrean')
+            ->limit(200)
+            ->get();
+
+        $dicoba = 0;
+
+        foreach ($daftar as $baris) {
+            if ($dicoba >= $maks) {
+                break;
+            }
+            if (! $baris->event || ! $baris->anggota) {
+                continue;
+            }
+
+            $kunci = 'kartu-gl-coba:' . $baris->getKey();
+            $sudah = (int) Cache::get($kunci, 0);
+
+            if ($sudah >= $cobaMaks) {
+                if (Cache::add('kartu-gl-lapor:' . $baris->getKey(), 1, now()->addDays(3))) {
+                    report(new JadwalGagal("Kartu GL gagal terkirim setelah {$cobaMaks} percobaan (antrean #{$baris->getKey()}, acara {$baris->event->kode}). Cek alamat email anggota di CMS."));
+                }
+
+                continue;
+            }
+
+            if (! AnggaranEmail::izinkan(AnggaranEmail::BIASA, 'kartu-gl')) {
+                break;
+            }
+
+            Cache::put($kunci, $sudah + 1, now()->addDays(3));
+            $this->kirimKartuGl($baris, $baris->event);
+            $dicoba++;
+        }
+
+        return $dicoba;
     }
 
     /**
