@@ -370,10 +370,24 @@ class UndianGlTest extends TestCase
         $this->artisan('ic:undi-gl')->expectsOutputToContain($e->kode . ': selesai')->assertSuccessful();
         $this->artisan('ic:undi-gl')->expectsOutputToContain('Tidak ada undian yang jatuh tempo.')->assertSuccessful();
 
-        $terjadwal = collect(app(\Illuminate\Console\Scheduling\Schedule::class)->events())
-            ->first(fn($ev) => str_contains((string) $ev->command, 'ic:undi-gl'));
+        $jadwal = collect(app(\Illuminate\Console\Scheduling\Schedule::class)->events());
+        $terjadwal = $jadwal->first(fn($ev) => $ev->description === 'ic:undi-gl');
         $this->assertNotNull($terjadwal);
         $this->assertSame('* * * * *', $terjadwal->expression);
+    }
+
+    /**
+     * Hosting bersama menonaktifkan proc_open, sedangkan Schedule::command() memakainya. Semua jadwal harus berupa
+     * Schedule::call() (berjalan di dalam proses cron) supaya `schedule:run` tidak gagal di server.
+     */
+    public function test_semua_jadwal_berupa_closure_tanpa_proses_baru(): void
+    {
+        $jadwal = collect(app(\Illuminate\Console\Scheduling\Schedule::class)->events());
+
+        $this->assertGreaterThanOrEqual(2, $jadwal->count());
+        foreach ($jadwal as $ev) {
+            $this->assertInstanceOf(\Illuminate\Console\Scheduling\CallbackEvent::class, $ev, 'jadwal memakai proses baru (proc_open): ' . ($ev->command ?? ''));
+        }
     }
 
     public function test_pengaman_kunjungan_mengundi_tanpa_cron_dan_dibatasi_sekali_per_menit(): void
