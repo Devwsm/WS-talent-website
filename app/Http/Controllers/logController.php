@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\log_aktivitas;
 use App\Models\log_error;
 use App\Support\AreaLog;
-use Illuminate\Contracts\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
