@@ -13,8 +13,7 @@ use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 /**
- * Jadwal otomatis (cron): detak cron, jejak hasil sinkron Bandsintown dan undian, kegagalan yang dilaporkan ke
- * halaman Log, dan kunci anti-tumpang-tindih yang tidak menahan undian 18.00 sampai 24 jam.
+ * Jadwal otomatis (cron): detak cron, kegagalan sinkron yang dilaporkan ke halaman Log, dan kunci anti-tumpang-tindih yang tidak menahan undian 18.00 sampai 24 jam.
  */
 class PenjadwalTest extends TestCase
 {
@@ -27,42 +26,24 @@ class PenjadwalTest extends TestCase
         Http::fake(['rest.bandsintown.com/*' => Http::response($isi, $status)]);
     }
 
-    private function baris(bool $ic = true): array
+    private function baris(): array
     {
-        return collect(PenjadwalService::ringkasan($ic))->keyBy('label')->all();
+        return collect(PenjadwalService::ringkasan())->keyBy('label')->all();
     }
 
     public function test_tanpa_detak_cron_ditandai_belum_terdeteksi_dan_dengan_detak_normal(): void
     {
         Cache::flush();
-        $this->assertSame('peringatan', $this->baris(false)['Cron']['tingkat']);
+        $this->assertSame('peringatan', $this->baris()['Cron']['tingkat']);
 
         PenjadwalService::detak();
-        $this->assertSame('ok', $this->baris(false)['Cron']['tingkat']);
+        $this->assertSame('ok', $this->baris()['Cron']['tingkat']);
 
         $this->travel(5)->minutes();
-        $this->assertSame('gagal', $this->baris(false)['Cron']['tingkat']);
+        $this->assertSame('gagal', $this->baris()['Cron']['tingkat']);
     }
 
-    public function test_baris_bandsintown_dan_undian_hanya_untuk_inner_circle(): void
-    {
-        $this->assertCount(1, PenjadwalService::ringkasan(false));
-        $this->assertCount(3, PenjadwalService::ringkasan(true));
-    }
-
-    public function test_sinkron_otomatis_dilewati_dan_tercatat_bila_app_id_kosong(): void
-    {
-        config(['services.bandsintown.app_id' => null]);
-
-        app(PenjadwalService::class)->sinkronBandsintown();
-
-        $b = $this->baris()['Sinkron Bandsintown (04.00)'];
-        $this->assertSame('dilewati', $b['tingkat']);
-        $this->assertStringContainsString('BANDSINTOWN_APP_ID', $b['teks']);
-        $this->assertSame(0, log_error::count());
-    }
-
-    public function test_sinkron_otomatis_berhasil_membuat_acara_dan_mencatat_hasil(): void
+    public function test_sinkron_otomatis_berhasil_membuat_acara(): void
     {
         $this->fakeBit([[
             'id' => '501',
@@ -75,9 +56,6 @@ class PenjadwalTest extends TestCase
         app(PenjadwalService::class)->sinkronBandsintown();
 
         $this->assertSame(1, ic_event::where('bit_id', '501')->count());
-        $b = $this->baris()['Sinkron Bandsintown (04.00)'];
-        $this->assertSame('ok', $b['tingkat']);
-        $this->assertStringContainsString('1 baru', $b['teks']);
     }
 
     public function test_sinkron_otomatis_gagal_dilaporkan_ke_halaman_log(): void
@@ -86,16 +64,18 @@ class PenjadwalTest extends TestCase
 
         app(PenjadwalService::class)->sinkronBandsintown();
 
-        $this->assertSame('gagal', $this->baris()['Sinkron Bandsintown (04.00)']['tingkat']);
         $this->assertSame(1, log_error::where('kelas', JadwalGagal::class)->count());
         $this->assertSame('inner-circle', log_error::first()->area);
     }
 
-    public function test_undian_otomatis_tanpa_acara_jatuh_tempo_tidak_menimpa_status(): void
+    public function test_sinkron_otomatis_tanpa_app_id_dilewati_tanpa_error(): void
     {
-        app(PenjadwalService::class)->undiGl();
+        config(['services.bandsintown.app_id' => null]);
 
-        $this->assertSame('netral', $this->baris()['Undian GL otomatis (18.00)']['tingkat']);
+        app(PenjadwalService::class)->sinkronBandsintown();
+
+        $this->assertSame(0, ic_event::count());
+        $this->assertSame(0, log_error::count());
     }
 
     public function test_jadwal_terdaftar_dengan_detak_dan_kunci_tumpang_tindih_singkat(): void

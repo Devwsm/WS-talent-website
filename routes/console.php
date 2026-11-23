@@ -16,15 +16,15 @@ Artisan::command('inspire', function () {
 //
 // Semua jadwal butuh satu cron di server (cPanel > Cron Jobs, tiap menit, lihat README bagian 5.4):
 //   * * * * * /usr/local/bin/ea-php84 /home/USERNAME/laravel/artisan schedule:run >> /dev/null 2>&1
-// Hasil dan kegagalannya terlihat di halaman Log (dashboard), bukan di email cron.
+// Cron hidup terlihat di halaman Log (dashboard); kegagalan jadwal muncul sebagai error di Log, bukan di email cron.
 
-// Detak tiap menit: bukti cron hidup. Dibaca halaman Log ("Cron: jalan normal / terakhir jalan ...").
+// Detak tiap menit: bukti cron hidup. Dibaca halaman Log ("Cron: Normal").
 Schedule::call(fn() => PenjadwalService::detak())
     ->name('cron:detak')
     ->everyMinute();
 
 // Jadwal Inner Circle ikut Bandsintown tiap pagi. Hanya jalan bila Inner Circle aktif; bila BANDSINTOWN_APP_ID kosong,
-// dicatat "dilewati" di halaman Log. Kegagalan (App ID ditolak, Bandsintown tidak terjangkau) dilaporkan ke halaman Log.
+// dilewati tanpa pesan. Kegagalan (App ID ditolak, Bandsintown tidak terjangkau) dilaporkan ke halaman Log.
 // Kunci anti-tumpang-tindih kedaluwarsa dalam 30 menit supaya proses yang mati di tengah jalan tidak memblokir 24 jam.
 Schedule::call(fn() => app(PenjadwalService::class)->sinkronBandsintown())
     ->name('ic:sinkron-bandsintown')
