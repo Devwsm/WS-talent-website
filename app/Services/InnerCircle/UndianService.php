@@ -52,6 +52,7 @@ class UndianService
                 $hasil[$event->kode] = $this->undiOtomatis($event, $sekarang);
             } catch (Throwable $e) {
                 Log::error('Undian GL otomatis gagal', ['acara' => $event->kode, 'pesan' => $e->getMessage()]);
+                report($e); // supaya muncul di halaman Log + email peringatan, bukan hanya storage/logs
                 $hasil[$event->kode] = 'gagal';
             }
         }

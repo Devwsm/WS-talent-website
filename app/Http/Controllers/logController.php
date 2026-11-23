@@ -73,6 +73,11 @@ class logController extends Controller
             ];
         }
 
+        // Status cron dan jadwal otomatis (cron tampil di kedua CMS; Bandsintown dan undian hanya di CMS Inner Circle).
+        $data['statusJadwal'] = \App\Services\InnerCircle\PenjadwalService::ringkasan(
+            $area === AreaLog::INNER_CIRCLE && config('inner_circle.aktif'),
+        );
+
         $email = trim((string) config('site.peringatan_email'));
         $data['emailPeringatan'] = $email === '' ? null : $email;
 

@@ -78,6 +78,42 @@
                     </div>
                 @endif
 
+                {{-- Status cron dan jadwal otomatis (detak cron, sinkron Bandsintown, undian GL) --}}
+                @if (!empty($statusJadwal))
+                    @php
+                        $kelasTingkat = [
+                            'ok' => 'border-emerald-300/30 bg-emerald-300/10 text-emerald-200',
+                            'peringatan' => 'border-amber-300/30 bg-amber-300/10 text-amber-200',
+                            'gagal' => 'border-red-400/30 bg-red-400/10 text-red-300',
+                            'dilewati' => 'border-amber-300/30 bg-amber-300/10 text-amber-200',
+                            'netral' => 'border-white/15 bg-white/5 text-white/60',
+                        ];
+                        $labelTingkat = [
+                            'ok' => 'Normal',
+                            'peringatan' => 'Perlu dicek',
+                            'gagal' => 'Bermasalah',
+                            'dilewati' => 'Dilewati',
+                            'netral' => 'Belum ada',
+                        ];
+                    @endphp
+                    <section aria-label="Status jadwal otomatis"
+                        class="rounded-3xl border border-white/10 bg-white/2 p-4 md:p-5">
+                        <p class="text-xs font-semibold uppercase tracking-widest text-white/40 mb-3">Jadwal otomatis</p>
+                        <ul class="flex flex-col gap-3">
+                            @foreach ($statusJadwal as $b)
+                                <li class="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
+                                    <div class="flex items-center gap-2 sm:w-64 shrink-0">
+                                        <span
+                                            class="rounded-full border px-2 py-0.5 text-[11px] font-semibold {{ $kelasTingkat[$b['tingkat']] ?? $kelasTingkat['netral'] }}">{{ $labelTingkat[$b['tingkat']] ?? 'Belum ada' }}</span>
+                                        <p class="text-sm font-semibold">{{ $b['label'] }}</p>
+                                    </div>
+                                    <p class="text-sm text-white/60 min-w-0 wrap-break-word">{{ $b['teks'] }}</p>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </section>
+                @endif
+
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <nav aria-label="Saring error">
                         <ul class="flex flex-wrap gap-2">

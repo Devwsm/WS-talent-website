@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\InnerCircle\PenjadwalService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
@@ -12,20 +13,30 @@ Artisan::command('inspire', function () {
 // bersama (Rumahweb) menonaktifkannya sehingga cron gagal dengan "The Process class relies on proc_open".
 // Karena itu semua jadwal ditulis sebagai Schedule::call() yang berjalan di dalam proses cron itu sendiri.
 // Jangan diganti kembali ke Schedule::command() (dijaga tes UndianGlTest).
+//
+// Semua jadwal butuh satu cron di server (cPanel > Cron Jobs, tiap menit, lihat README bagian 5.4):
+//   * * * * * /usr/local/bin/ea-php84 /home/USERNAME/laravel/artisan schedule:run >> /dev/null 2>&1
+// Hasil dan kegagalannya terlihat di halaman Log (dashboard), bukan di email cron.
 
-// Jadwal Inner Circle ikut Bandsintown tiap pagi. Hanya jalan bila Inner Circle aktif dan BANDSINTOWN_APP_ID terisi,
-// dan butuh cron `schedule:run` di server (lihat README, bagian 5.4). Tanpa cron, pakai tombol sinkron di dashboard.
-Schedule::call(fn() => Artisan::call('ic:sinkron-bandsintown'))
+// Detak tiap menit: bukti cron hidup. Dibaca halaman Log ("Cron: jalan normal / terakhir jalan ...").
+Schedule::call(fn() => PenjadwalService::detak())
+    ->name('cron:detak')
+    ->everyMinute();
+
+// Jadwal Inner Circle ikut Bandsintown tiap pagi. Hanya jalan bila Inner Circle aktif; bila BANDSINTOWN_APP_ID kosong,
+// dicatat "dilewati" di halaman Log. Kegagalan (App ID ditolak, Bandsintown tidak terjangkau) dilaporkan ke halaman Log.
+// Kunci anti-tumpang-tindih kedaluwarsa dalam 30 menit supaya proses yang mati di tengah jalan tidak memblokir 24 jam.
+Schedule::call(fn() => app(PenjadwalService::class)->sinkronBandsintown())
     ->name('ic:sinkron-bandsintown')
     ->dailyAt('04:00')
-    ->withoutOverlapping()
-    ->when(fn() => config('inner_circle.aktif') && \App\Services\InnerCircle\BandsintownService::tersedia());
+    ->withoutOverlapping(30)
+    ->when(fn() => config('inner_circle.aktif'));
 
-// Undian GL gratis Inner Circle: tiap menit memeriksa acara yang waktu undiannya (bawaan hari H 18.00 WIB) sudah tiba.
-// Butuh cron `schedule:run` tiap menit di server (README bagian 5.4). Tanpa cron, undian tetap dipicu kunjungan anggota
-// (UndianService::pengamanKunjungan) dan tombol "Undi sekarang" di CMS.
-Schedule::call(fn() => Artisan::call('ic:undi-gl'))
+// Undian GL gratis Inner Circle: tiap menit memeriksa acara yang waktunya undiannya (bawaan hari H 18.00 WIB) sudah tiba.
+// Tanpa cron, undian tetap dipicu kunjungan anggota (UndianService::pengamanKunjungan) dan tombol "Undi sekarang" di CMS.
+// Kunci anti-tumpang-tindih hanya 10 menit: bila satu proses mati saat 18.00, menit-menit berikutnya tetap bisa mengundi.
+Schedule::call(fn() => app(PenjadwalService::class)->undiGl())
     ->name('ic:undi-gl')
     ->everyMinute()
-    ->withoutOverlapping()
+    ->withoutOverlapping(10)
     ->when(fn() => config('inner_circle.aktif'));
