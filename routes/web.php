@@ -186,6 +186,7 @@ Route::prefix('/dashboard')->middleware(['cekLogin', 'catatAktivitas'])->group(f
         // Panel undian GL satu acara (Fase 6B): antrean, pemenang, undi sekarang, tunda/lanjutkan, ekspor, tanda diterima tim Show.
         Route::get('/acara/hari-h/{kode}/gl', [acaraGlController::class, 'index'])->name('acara.gl');
         Route::get('/acara/{kode}/gl/ekspor', [acaraGlController::class, 'ekspor'])->name('acara.gl.ekspor')->middleware('throttle:admin-aksi-kecil');
+        Route::get('/acara/hari-h/{kode}/gl/vendor', [acaraGlController::class, 'vendor'])->name('acara.gl.vendor')->middleware('throttle:admin-aksi-kecil');
         Route::post('/acara/{kode}/gl/undi', [acaraGlController::class, 'undi'])->name('acara.gl.undi')->middleware('throttle:admin-tulis');
         Route::post('/acara/{kode}/gl/tunda', [acaraGlController::class, 'tunda'])->name('acara.gl.tunda')->middleware('throttle:admin-tulis');
         Route::post('/acara/{kode}/gl/lanjutkan', [acaraGlController::class, 'lanjutkan'])->name('acara.gl.lanjutkan')->middleware('throttle:admin-tulis');

@@ -136,9 +136,6 @@
         height: 48px;
         border-radius: 15px;
     }
-    .ic-replika--halaman .ic-kenangan__sampul {
-        height: 200px;
-    }
     .ic-replika--halaman .ic-modal__dialog {
         padding: 22px;
     }
@@ -155,10 +152,10 @@
         justify-self: start;
     }
     .ic-replika--halaman .ic-profil-foto {
-        width: 100px;
-        height: 100px;
-        border-radius: 28px;
-        font-size: 48px;
+        width: 88px;
+        height: 88px;
+        border-radius: 26px;
+        font-size: 44px;
     }
     .ic-replika--halaman .ic-metrik-grid {
         gap: 10px;
@@ -299,20 +296,20 @@
 @container ic-panel (max-width: 780px) {
     .ic-replika--halaman .ic-hero {
         background:
-            radial-gradient(
-                120% 70% at 0% 100%,
-                rgba(255, 255, 255, 0.9) 0%,
-                rgba(255, 255, 255, 0) 55%
-            ),
-            linear-gradient(150deg, #def6ff 0%, #c9eefc 62%, #7fb4d8 100%);
+                radial-gradient(
+                    120% 70% at 0% 100%,
+                    rgba(255, 255, 255, 0.9) 0%,
+                    rgba(255, 255, 255, 0) 55%
+                ),
+                linear-gradient(150deg, #def6ff 0%, #c9eefc 62%, #7fb4d8 100%);
     }
     .ic-replika--halaman .ic-event {
         background: linear-gradient(
-            90deg,
-            #f1fbff 0%,
-            #d6f4ff calc(100% - 84px),
-            #17629a 100%
-        );
+                90deg,
+                #f1fbff 0%,
+                #d6f4ff calc(100% - 84px),
+                #17629a 100%
+            );
     }
     .ic-replika--halaman .ic-event__isi {
         padding-right: 10px;
@@ -326,4 +323,34 @@
 }
 .ic-replika--halaman .ic-acara__judul {
     font-size: clamp(24px, 6cqw, 32px);
+}
+@container ic-panel (max-width: 480px) {
+    .ic-replika--halaman .ic-kartu-anggota--detail {
+        gap: 18px;
+        padding: 20px;
+    }
+    .ic-replika--halaman .ic-kartu-anggota__profil {
+        gap: 14px;
+    }
+    .ic-replika--halaman .ic-kartu-anggota--detail .ic-kartu-anggota__nama {
+        font-size: 25px;
+    }
+    .ic-replika--halaman .ic-avatar--kartu {
+        width: 70px;
+        height: 70px;
+        font-size: 34px;
+    }
+    .ic-replika--halaman .ic-kartu-anggota__lencana {
+        width: 24px;
+        height: 24px;
+        border-width: 2px;
+    }
+    .ic-replika--halaman .ic-kartu-anggota__statistik > div {
+        padding: 10px 12px;
+    }
+    .ic-replika--halaman .ic-profil-ubah {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+    }
 }

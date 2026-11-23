@@ -232,6 +232,24 @@
                 @endif
             </section>
 
+            {{-- ============ KARTU GL UNTUK VENDOR (PDF) ============ --}}
+            @if ($selesai)
+                <section id="vendor" aria-labelledby="judul-vendor" class="{{ $kelasKartu }} scroll-mt-8">
+                    <h2 id="judul-vendor" class="font-bold uppercase tracking-wide text-sm flex items-center gap-2">
+                        <i class="bi bi-file-earmark-pdf text-white/50" aria-hidden="true"></i> Kartu GL untuk vendor
+                    </h2>
+                    <p class="text-xs text-white/50">Satu PDF berisi kartu acara (tempat, nama acara, tanggal, username dan
+                        sandi acara, QR acara untuk poin) dan daftar pemenang GL, untuk dibagikan ke vendor club atau
+                        festival. Ada pratinjau dan tombol bagikan. PDF ini memuat sandi acara, jadi bagikan hanya ke
+                        vendor acara ini.</p>
+                    <div>
+                        <a href="{{ route('ic.admin.acara.gl.vendor', $event->kode) }}"
+                            class="{{ $kelasTombolUtama }}"><i class="bi bi-eye" aria-hidden="true"></i> Pratinjau dan
+                            bagikan PDF</a>
+                    </div>
+                </section>
+            @endif
+
             {{-- ============ UNTUK TIM SHOW ============ --}}
             @if ($selesai)
                 <section id="tim-show" aria-labelledby="judul-show" class="{{ $kelasKartu }} scroll-mt-8">

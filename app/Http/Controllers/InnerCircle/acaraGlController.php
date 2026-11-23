@@ -8,7 +8,9 @@ use App\Models\ic_event;
 use App\Models\ic_gl_antrean;
 use App\Services\AktivitasService;
 use App\Services\InnerCircle\GlGagal;
+use App\Services\InnerCircle\CheckinService;
 use App\Services\InnerCircle\GlService;
+use App\Services\InnerCircle\QrService;
 use App\Services\InnerCircle\UndianService;
 use App\Support\CsvEkspor;
 use Illuminate\Http\RedirectResponse;
@@ -186,6 +188,59 @@ class acaraGlController extends Controller
             ['No', 'Kode anggota', 'Nama', 'Email', 'Status', 'Urutan undi', 'Daftar pada', 'Kartu GL dikirim', 'Diterima tim Show'],
             $baris,
         );
+    }
+
+    /**
+     * Kartu GL untuk vendor club/festival: pratinjau + PDF (dibuat di browser, lihat resources/js/kartu-gl-pdf.js) yang
+     * berisi kartu acara (tempat, nama acara, tanggal, username dan sandi acara, QR acara) dan daftar pemenang GL.
+     *
+     * Berbeda dari CSV dan daftar WhatsApp, halaman ini SENGAJA memuat username dan sandi acara karena vendor
+     * memakainya untuk memeriksa pemenang. Karena itu hanya terbuka setelah undian selesai dan setiap pembukaannya
+     * dicatat di Log. Daftar pemenang hanya berisi nama dan Member ID (tanpa email).
+     */
+    public function vendor(string $kode, QrService $qr, CheckinService $checkin, AktivitasService $aktivitas)
+    {
+        $event = $this->acara($kode);
+
+        if ($event->status_undian !== ic_event::UNDIAN_SELESAI) {
+            return $this->kembali($event)->withErrors(['gl' => 'Kartu GL untuk vendor baru bisa dibuat setelah undian selesai.']);
+        }
+
+        $pemenang = ic_gl_antrean::query()
+            ->with('anggota')
+            ->where('event_id', $event->getKey())
+            ->where('status', ic_gl_antrean::MENANG)
+            ->orderBy('urutan_undi')
+            ->get();
+
+        $namaAcara = GlService::namaAcara($event);
+        $poin = $checkin->poinUntuk($event, true);
+
+        $aktivitas->catat('Kartu GL vendor dibuka', "Pratinjau kartu GL untuk vendor (memuat username dan sandi acara) {$namaAcara} ({$event->kode}): {$pemenang->count()} pemenang.", 'berhasil', 'inner-circle', null, 'ic.admin.acara.gl.vendor');
+
+        $data = [
+            'berkas' => 'kartu-gl-' . $event->kode . '-' . $event->tanggal->toDateString() . '.pdf',
+            'acara' => $namaAcara,
+            'tanggal' => $event->tanggal->locale('id')->translatedFormat('l, j F Y'),
+            'username' => (string) $event->username_acara,
+            'sandi' => (string) $event->sandi_acara,
+            'petunjuk' => (string) $event->petunjuk_masuk,
+            'kuota' => (int) $event->kuota_gl,
+            'poin' => $poin,
+            'dibuat' => now()->locale('id')->translatedFormat('j F Y, H.i') . ' WIB',
+            'qr' => $qr->matriks($event),
+            'pemenang' => $pemenang->values()->map(fn(ic_gl_antrean $b, int $i) => [
+                'no' => $i + 1,
+                'nama' => $b->anggota?->nama ?? 'Anggota dihapus',
+                'kode' => (string) ($b->anggota?->kode_member ?? ''),
+            ])->all(),
+        ];
+
+        return $this->tampil('acara.gl-vendor', [
+            'event' => $event,
+            'data' => $data,
+            'qrSvg' => $qr->svgInline($event, 300),
+        ]);
     }
 
     /** Teks siap tempel ke WhatsApp. Hanya nama dan Member ID: tanpa username/sandi acara dan tanpa email. */

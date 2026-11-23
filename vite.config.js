@@ -13,6 +13,7 @@ export default defineConfig({
                 "resources/css/inner-circle.css",
                 "resources/js/inner-circle.js",
                 "resources/js/peta-acara.js",
+                "resources/js/kartu-gl-pdf.js",
             ],
             refresh: true,
         }),
