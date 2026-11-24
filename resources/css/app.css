@@ -679,6 +679,17 @@ body.cms-ic .file\:bg-red-950::file-selector-button {
     color: var(--cms-aksen-teks);
 }
 
+/* Isian tanggal/waktu bawaan browser (terutama iOS Safari) punya lebar minimum sendiri dan bisa mendorong kartu keluar
+   layar di HP sempit. Boleh menyusut mengikuti kolomnya; berlaku untuk semua form CMS. */
+input[type="date"],
+input[type="datetime-local"],
+input[type="time"],
+input[type="month"],
+select {
+    min-width: 0;
+    max-width: 100%;
+}
+
 /* ---- Chip filter/tab CMS (Fase A) ----
     Semua baris tab/filter di CMS tersusun mengalir seperti navigasi bagian di tab Konten: chip selebar isinya,
     berderet, lalu turun baris bila tidak muat. Tidak ada geser ke samping dan tidak ada sel kosong. Teks tidak

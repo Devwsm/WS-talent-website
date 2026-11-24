@@ -1,5 +1,6 @@
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { pastikanIzin } from "./izin-perangkat.js";
 
 /**
  * Peta titik dan radius check-in di halaman Atur acara (CMS Inner Circle).
@@ -100,26 +101,40 @@ if (kartu) {
     gambar(false);
     setTimeout(() => peta.invalidateSize(), 200);
 
-    kartu.querySelector("[data-lokasi-hp]")?.addEventListener("click", () => {
-        if (!navigator.geolocation)
-            return pesan("Browser ini tidak mendukung lokasi.");
-        pesan("Mengambil lokasi HP…");
-        navigator.geolocation.getCurrentPosition(
-            (p) => {
-                isi(p.coords.latitude, p.coords.longitude, "petugas");
-                pesan(
-                    "Titik diisi dari GPS HP (akurasi sekitar " +
-                        Math.round(p.coords.accuracy) +
-                        " m). Pastikan kamu sedang di venue.",
+    kartu
+        .querySelector("[data-lokasi-hp]")
+        ?.addEventListener("click", async () => {
+            if (!navigator.geolocation)
+                return pesan("Browser ini tidak mendukung lokasi.");
+            // Jelaskan dulu kenapa lokasi dibutuhkan (atau cara membuka izin yang diblokir) sebelum browser meminta izin.
+            const lanjut = await pastikanIzin(
+                "lokasi",
+                (o) => window.Swal?.fire(o),
+                {
+                    isi: "Titik venue akan diisi dari GPS HP ini, jadi pastikan kamu sedang berada di venue. Setelah menekan Lanjut, browser akan meminta izin lokasi: pilih Izinkan dan nyalakan GPS HP. Koordinat hanya dipakai untuk mengisi titik.",
+                },
+            );
+            if (!lanjut)
+                return pesan(
+                    "Izin lokasi belum diberikan. Kamu tetap bisa klik peta atau mengisi koordinat manual.",
                 );
-            },
-            () =>
-                pesan(
-                    "Lokasi tidak bisa diambil. Izinkan akses lokasi di browser, atau klik peta.",
-                ),
-            { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
-        );
-    });
+            pesan("Mengambil lokasi HP…");
+            navigator.geolocation.getCurrentPosition(
+                (p) => {
+                    isi(p.coords.latitude, p.coords.longitude, "petugas");
+                    pesan(
+                        "Titik diisi dari GPS HP (akurasi sekitar " +
+                            Math.round(p.coords.accuracy) +
+                            " m). Pastikan kamu sedang di venue.",
+                    );
+                },
+                () =>
+                    pesan(
+                        "Lokasi tidak bisa diambil. Izinkan akses lokasi di browser, atau klik peta.",
+                    ),
+                { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
+            );
+        });
 
     kartu
         .querySelector("[data-lokasi-cari]")

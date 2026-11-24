@@ -4,12 +4,12 @@
     <i class="bi bi-pencil-fill"></i>
 </button>
 <dialog id="updateMediaSosialDialog{{ $item->id_media_sosial }}"
-    class="fixed inset-0 m-0 w-screen h-screen max-w-none max-h-none bg-black/70 backdrop:bg-transparent p-0 overflow-y-auto">
+    class="fixed inset-0 m-0 w-screen h-dvh max-w-none max-h-none bg-black/70 backdrop:bg-transparent p-0 overflow-y-auto">
     <!-- Centering -->
-    <div class="min-h-screen w-full flex items-center justify-center p-4">
+    <div class="min-h-dvh w-full flex items-center justify-center p-4">
         <!-- Panel -->
         <div
-            class="w-full max-w-lg max-h-[calc(100vh-2rem)] flex flex-col min-w-0 rounded-3xl border border-white/10 bg-black shadow-xl overflow-hidden">
+            class="w-full max-w-lg max-h-[calc(100dvh-2rem)] flex flex-col min-w-0 rounded-3xl border border-white/10 bg-black shadow-xl overflow-hidden">
             <!-- Header -->
             <div class="flex items-center justify-between gap-2 px-6 py-4 border-b border-white/10 bg-white/3 shrink-0">
                 <h3 class="font-bold uppercase tracking-wide text-sm text-white">Update Media Sosial</h3>

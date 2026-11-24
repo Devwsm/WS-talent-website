@@ -12,6 +12,7 @@
  */
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
+import { pastikanIzin } from "./izin-perangkat.js";
 
 // SweetAlert2 bertema lavender (wrapper di resources/js/sweetalert.js bertema gelap, jadi tidak dipakai di sini).
 const ic = Swal.mixin({
@@ -500,6 +501,14 @@ async function mulaiPemindai() {
     const video = document.getElementById("ic-pindai-video");
     const umpan = document.getElementById("ic-pindai-umpan");
     if (!video || !umpan) return;
+    const modalPindai = document.getElementById("modal-pindai");
+    // Jelaskan dulu kenapa kamera dibutuhkan (atau cara membuka izin yang diblokir) sebelum browser meminta izin.
+    if (!(await pastikanIzin("kamera", (o) => ic.fire(o)))) {
+        umpan.textContent =
+            "Kamera belum diizinkan. Ketik kodenya atau unggah gambar QR.";
+        return;
+    }
+    if (modalPindai?.hidden) return; // ditutup saat penjelasan tampil
     umpan.textContent = "Menyalakan kamera…";
     try {
         const QrScanner = await muatQrScanner();
@@ -660,6 +669,11 @@ function pesanGalatLokasi(kode) {
                 "Izin lokasi ditolak",
                 "Ketuk ikon gembok di kolom alamat, pilih Izin lalu Lokasi, izinkan, kemudian tekan Cek lokasi lagi.",
             ];
+        case "dilewati":
+            return [
+                "Lokasi belum diizinkan",
+                "Check-in butuh lokasi HP untuk memastikan kamu ada di venue. Tekan Cek lokasi lagi, lalu pilih Lanjut.",
+            ];
         case "waktu":
             return [
                 "Lokasi belum terbaca",
@@ -751,13 +765,22 @@ async function izinLokasiDitolak() {
 
 function jalankanLokasi() {
     if (lokasiJanji) return lokasiJanji;
-    tampilLokasi(
-        "cari",
-        "Mencari lokasimu…",
-        "Setujui bila browser meminta izin lokasi. Pastikan GPS menyala.",
-    );
-
     lokasiJanji = (async () => {
+        // Jelaskan dulu kenapa lokasi dibutuhkan (atau cara membuka izin yang diblokir); browser baru diminta izin
+        // sesudah anggota menekan Lanjut. Bila izin sudah diberikan, tidak ada pop-up.
+        if (window.isSecureContext && navigator.geolocation) {
+            const lanjut = await pastikanIzin("lokasi", (o) => ic.fire(o), {
+                isi: "Check-in memeriksa apakah kamu berada di venue lewat lokasi HP. Setelah menekan Lanjut, browser akan meminta izin: pilih Izinkan, dan pastikan GPS HP menyala. Lokasimu hanya dipakai untuk memeriksa jarak ke venue dan tidak disimpan.",
+            });
+            if (!lanjut) throw { kode: "dilewati" };
+            // Lembar check-in ditutup saat penjelasan tampil: jangan lanjut membaca lokasi.
+            if (lembarCheckin?.hidden) throw { kode: "batal" };
+        }
+        tampilLokasi(
+            "cari",
+            "Mencari lokasimu…",
+            "Setujui bila browser meminta izin lokasi. Pastikan GPS menyala.",
+        );
         if (await izinLokasiDitolak()) throw { kode: "ditolak" };
         return bacaPosisi((p) =>
             tampilLokasi(

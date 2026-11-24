@@ -7,7 +7,7 @@
         $kelasLabel = 'text-sm font-semibold uppercase tracking-widest text-white/60';
         $kelasTombol =
             'h-11 px-5 inline-flex items-center justify-center gap-2 rounded-lg border border-white/15 text-xs font-semibold uppercase tracking-widest text-white/70 hover:bg-white/10 hover:text-white transition-colors';
-        $kelasKartu = 'rounded-3xl border border-white/10 bg-white/3 p-6 md:p-8 flex flex-col gap-5';
+        $kelasKartu = 'min-w-0 rounded-3xl border border-white/10 bg-white/3 p-4 sm:p-6 md:p-8 flex flex-col gap-5';
         $kelasSimpan =
             'h-12 px-6 inline-flex items-center justify-center gap-2 bg-white text-black font-bold uppercase tracking-widest text-xs rounded-lg hover:bg-white/80 active:scale-95 transition';
         $dt = fn($v) => $v?->format('Y-m-d\TH:i');

@@ -204,10 +204,10 @@
 
     {{-- Dialog tambah poin manual: satu dialog dipakai semua baris, nama anggota diisi lewat JS --}}
     <dialog id="dialogPoin" aria-labelledby="dialogPoinJudul"
-        class="fixed inset-0 m-0 w-screen h-screen max-w-none max-h-none bg-black/70 backdrop:bg-transparent p-0 overflow-y-auto">
-        <div class="min-h-screen w-full flex items-center justify-center p-4">
+        class="fixed inset-0 m-0 w-screen h-dvh max-w-none max-h-none bg-black/70 backdrop:bg-transparent p-0 overflow-y-auto">
+        <div class="min-h-dvh w-full flex items-center justify-center p-4">
             <div
-                class="w-full max-w-md max-h-[calc(100vh-2rem)] flex flex-col min-w-0 rounded-3xl border border-white/10 bg-black shadow-xl overflow-hidden">
+                class="w-full max-w-md max-h-[calc(100dvh-2rem)] flex flex-col min-w-0 rounded-3xl border border-white/10 bg-black shadow-xl overflow-hidden">
                 <div
                     class="flex items-center justify-between gap-2 px-6 py-4 border-b border-white/10 bg-white/3 shrink-0">
                     <h3 id="dialogPoinJudul" class="font-bold uppercase tracking-wide text-sm text-white">Tambah
