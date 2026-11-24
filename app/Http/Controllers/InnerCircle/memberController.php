@@ -134,7 +134,8 @@ class memberController extends Controller
         $tipe = $this->teks($request, 'tipe');
 
         // Pilihan bulan dari tanggal acara yang ada (format 2026-10). Nilai lain, termasuk ?bulan=10 dari tautan lama, dianggap "semua".
-        $bulanPilihan = ic_event::pilihanBulan();
+        // Acara yang disembunyikan (manual, atau otomatis karena bulannya sudah lewat) tidak ikut jadi pilihan.
+        $bulanPilihan = ic_event::pilihanBulan(true);
 
         $filter = [
             'bulan' => $bulanPilihan->has($bulan) ? $bulan : 'all',
@@ -149,7 +150,7 @@ class memberController extends Controller
             'q' => $filter['q'] !== '' ? $filter['q'] : null,
         ]);
 
-        $query = ic_event::query()->orderBy('tanggal')->orderBy('id_event');
+        $query = ic_event::query()->tampilDiAnggota()->orderBy('tanggal')->orderBy('id_event');
         if ($filter['bulan'] !== 'all') {
             $query->diBulan($filter['bulan']);
         }
@@ -202,7 +203,7 @@ class memberController extends Controller
         return view('pages.inner-circle.checkin', [
             'member' => $anggota,
             'events' => $events,
-            'totalEvents' => ic_event::query()->count(),
+            'totalEvents' => ic_event::query()->tampilDiAnggota()->count(),
             'filter' => $filter,
             'bulanPilihan' => $bulanPilihan,
             'parameterFilter' => $parameterFilter,
@@ -422,7 +423,10 @@ class memberController extends Controller
                     'keterangan' => $b->event->tanggal->locale('id')->translatedFormat('D, j M Y') . ' · ' . ($b->status === ic_gl_antrean::MENANG ? 'lihat kartu GL' : 'lihat acara'),
                     'status' => $status,
                     'menang' => $b->status === ic_gl_antrean::MENANG,
-                    'tautan' => route('ic.acara.detail', $b->event->kode),
+                    // Pemenang langsung dibawa ke Kartu GL (popup terbuka otomatis di halaman acara).
+                    'tautan' => $b->status === ic_gl_antrean::MENANG
+                        ? route('ic.acara.detail', ['kode' => $b->event->kode, 'kartu' => 1])
+                        : route('ic.acara.detail', $b->event->kode),
                 ];
             });
 

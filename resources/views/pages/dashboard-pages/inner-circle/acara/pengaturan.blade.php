@@ -4,18 +4,6 @@
         $tipeEvent = ic_tipe_event();
         $titikTipe = ['festival' => 'bg-orange-300', 'club' => 'bg-amber-300', 'private' => 'bg-fuchsia-300'];
         $labelWaktu = ['lewat' => 'Sudah lewat', 'hari_ini' => 'Hari ini', 'akan_datang' => 'Akan datang'];
-
-        // Contoh awal untuk preview form (tanggal bawaan: seminggu dari hari ini, venue dan kota masih kosong).
-        $contohAcara = (object) [
-            'kode' => 'PRATINJAU',
-            'tanggal' => \Carbon\Carbon::today()->addDays(7),
-            'kota' => null,
-            'venue' => null,
-            'tipe' => 'club',
-            'status_waktu' => 'akan_datang',
-            'bisa_checkin' => false,
-            'sudah_checkin' => false,
-        ];
     @endphp
 
     <div class="relative w-full flex flex-col justify-center items-center overflow-hidden">
@@ -30,7 +18,8 @@
             @include('components.dashboard.inner-circle.kepala', [
                 'aktif' => 'acara',
                 'judul' => 'Acara: Pengaturan',
-                'deskripsi' => 'Tambah dan ubah jadwal pertunjukan, impor CSV, dan sinkron dari Bandsintown.',
+                'deskripsi' =>
+                    'Tambah dan ubah jadwal pertunjukan, sembunyikan acara lama, dan sinkron dari Bandsintown.',
             ])
 
             @include('components.dashboard.inner-circle.tab-acara', ['aktifTab' => 'pengaturan'])
@@ -38,154 +27,47 @@
             @include('components/errors')
             @include('components/success')
 
-            {{-- ============ 2. FORM ACARA + PREVIEW ============ --}}
-            <section aria-labelledby="judul-form-acara" class="flex flex-col gap-4">
-                <h2 id="judul-form-acara" class="font-bold uppercase tracking-wide text-sm flex items-center gap-2">
-                    <i class="bi bi-plus-circle text-white/50" aria-hidden="true"></i> Tambah acara
-                </h2>
+            {{-- ============ 2. AKSI: TAMBAH ACARA (popup) + SINKRON BANDSINTOWN (terpisah) ============ --}}
+            <section aria-label="Tambah acara dan sinkron jadwal" class="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
+                <div class="rounded-3xl border border-white/10 bg-white/3 p-5 md:p-6 flex flex-col gap-3">
+                    <h2 class="font-bold uppercase tracking-wide text-sm flex items-center gap-2">
+                        <i class="bi bi-plus-circle text-white/50" aria-hidden="true"></i> Tambah acara
+                    </h2>
+                    <p class="text-xs text-white/40">Tambah satu acara, atau impor banyak acara sekaligus dari berkas
+                        CSV.</p>
+                    <button type="button" data-ic-acara-tambah
+                        class="self-start h-11 px-5 inline-flex items-center gap-2 text-white font-bold uppercase tracking-widest text-xs bg-red-950 hover:bg-red-900 active:scale-95 transition rounded-lg">
+                        <i class="bi bi-plus-lg" aria-hidden="true"></i> Tambah acara
+                    </button>
+                </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-                    {{-- FORM --}}
-                    <div class="min-w-0 rounded-3xl border border-white/10 bg-white/3 p-4 sm:p-6 md:p-8">
-                        <form id="form-acara" method="POST" action="{{ route('ic.admin.acara.simpan') }}"
-                            class="flex flex-col gap-4">
-                            @csrf
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div class="flex flex-col gap-1.5 min-w-0">
-                                    <label for="acara-tanggal"
-                                        class="text-sm font-semibold uppercase tracking-widest text-white/60">Tanggal show
-                                        <span class="text-red-400">*</span></label>
-                                    <input type="date" id="acara-tanggal" name="tanggal" required
-                                        value="{{ old('tanggal', $contohAcara->tanggal->format('Y-m-d')) }}"
-                                        class="w-full min-w-0 bg-white/5 border border-white/15 text-white p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition scheme-dark" />
-                                </div>
-                                <div class="flex flex-col gap-1.5 min-w-0">
-                                    <label for="acara-tipe"
-                                        class="text-sm font-semibold uppercase tracking-widest text-white/60">Tipe <span
-                                            class="text-red-400">*</span></label>
-                                    <select id="acara-tipe" name="tipe"
-                                        class="w-full min-w-0 bg-white/5 border border-white/15 text-white p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition scheme-dark">
-                                        @foreach ($tipeEvent as $kunci => $t)
-                                            <option class="bg-neutral-900" value="{{ $kunci }}"
-                                                @selected($kunci === old('tipe', $contohAcara->tipe))>{{ $t['label'] }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div class="flex flex-col gap-1.5 min-w-0">
-                                    <label for="acara-venue"
-                                        class="text-sm font-semibold uppercase tracking-widest text-white/60">Venue</label>
-                                    <input type="text" id="acara-venue" name="venue" maxlength="80"
-                                        value="{{ old('venue') }}" placeholder="Contoh: Superhouse Satrio"
-                                        class="w-full min-w-0 bg-white/5 border border-white/15 text-white placeholder-white/30 p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition" />
-                                </div>
-                                <div class="flex flex-col gap-1.5 min-w-0">
-                                    <label for="acara-kota"
-                                        class="text-sm font-semibold uppercase tracking-widest text-white/60">Kota</label>
-                                    <input type="text" id="acara-kota" name="kota" maxlength="60"
-                                        value="{{ old('kota') }}" placeholder="Contoh: Jakarta"
-                                        class="w-full min-w-0 bg-white/5 border border-white/15 text-white placeholder-white/30 p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition" />
-                                </div>
-                            </div>
-                            <p class="text-xs text-white/30">Acara privat dan acara tanpa venue tampil di jadwal anggota,
-                                tetapi tidak bisa dipakai check-in.</p>
-
-                            <details class="rounded-2xl border border-white/10 bg-white/2 p-4"
-                                @if (old('jendela_mulai') || old('jendela_selesai')) open @endif>
-                                <summary class="cursor-pointer text-sm font-semibold text-white/70">Atur jendela check-in
-                                    (opsional)</summary>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                                    <div class="flex flex-col gap-1.5 min-w-0">
-                                        <label for="acara-mulai"
-                                            class="text-sm font-semibold uppercase tracking-widest text-white/60">Dibuka</label>
-                                        <input type="datetime-local" id="acara-mulai" name="jendela_mulai"
-                                            value="{{ old('jendela_mulai') }}"
-                                            class="w-full min-w-0 bg-white/5 border border-white/15 text-white p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition scheme-dark" />
-                                    </div>
-                                    <div class="flex flex-col gap-1.5 min-w-0">
-                                        <label for="acara-selesai"
-                                            class="text-sm font-semibold uppercase tracking-widest text-white/60">Ditutup</label>
-                                        <input type="datetime-local" id="acara-selesai" name="jendela_selesai"
-                                            value="{{ old('jendela_selesai') }}"
-                                            class="w-full min-w-0 bg-white/5 border border-white/15 text-white p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition scheme-dark" />
-                                    </div>
-                                </div>
-                                <p class="text-xs text-white/30 mt-3">Kosongkan keduanya untuk memakai bawaan:
-                                    {{ app(\App\Services\InnerCircle\IcAturan::class)->ringkasan() }}.</p>
-                            </details>
-
-                            <button type="submit"
-                                class="w-full text-white font-bold uppercase tracking-widest p-3 mt-2 bg-red-950 hover:bg-red-900 active:scale-95 transition rounded-lg">
-                                Simpan acara
-                            </button>
-                        </form>
-
-                        {{-- Bandsintown --}}
-                        <div class="mt-6 pt-6 border-t border-white/10 flex flex-col gap-2">
-                            <p class="text-sm font-semibold uppercase tracking-widest text-white/60">Jadwal dari
-                                Bandsintown
-                            </p>
-                            @if ($bitTersedia)
-                                <p class="text-xs text-white/30">Menarik jadwal tour yang sama dengan widget Tour di situs
-                                    publik. Acara baru dibuat dengan QR sendiri, acara yang sudah ada tidak ditimpa dan
-                                    tidak dihapus. Tipe acara tebakan (festival atau club), ubah bila perlu.
-                                    @if ($bitTerakhir)
-                                        Terakhir sinkron:
-                                        {{ $bitTerakhir->locale('id')->translatedFormat('j M Y H.i') }} WIB.
-                                    @endif
-                                </p>
-                                <form method="POST" action="{{ route('ic.admin.acara.bandsintown') }}">
-                                    @csrf
-                                    <button type="submit"
-                                        class="h-11 px-5 inline-flex items-center gap-2 rounded-lg border border-white/15 text-xs font-semibold uppercase tracking-widest text-white/70 hover:bg-white/10 hover:text-white transition-colors">
-                                        <i class="bi bi-arrow-repeat" aria-hidden="true"></i> Sinkron sekarang
-                                    </button>
-                                </form>
-                            @else
-                                <p class="text-xs text-white/40">Belum aktif. Isi <code
-                                        class="text-white/60">BANDSINTOWN_APP_ID</code> di <code
-                                        class="text-white/60">.env</code> server untuk menarik jadwal otomatis (lihat
-                                    README, bagian Bandsintown).</p>
+                {{-- Bandsintown: dipisah dari form tambah acara --}}
+                <div class="rounded-3xl border border-white/10 bg-white/3 p-5 md:p-6 flex flex-col gap-3">
+                    <h2 class="font-bold uppercase tracking-wide text-sm flex items-center gap-2">
+                        <i class="bi bi-arrow-repeat text-white/50" aria-hidden="true"></i> Jadwal dari Bandsintown
+                    </h2>
+                    @if ($bitTersedia)
+                        <p class="text-xs text-white/40">Menarik jadwal tour yang sama dengan widget Tour di situs
+                            publik. Acara baru dibuat dengan QR sendiri, acara yang sudah ada tidak ditimpa dan
+                            tidak dihapus. Tipe acara tebakan (festival atau club), ubah bila perlu.
+                            @if ($bitTerakhir)
+                                Terakhir sinkron:
+                                {{ $bitTerakhir->locale('id')->translatedFormat('j M Y H.i') }} WIB.
                             @endif
-                        </div>
-
-                        {{-- Impor CSV --}}
-                        <form method="POST" action="{{ route('ic.admin.acara.impor') }}" enctype="multipart/form-data"
-                            class="mt-6 pt-6 border-t border-white/10 flex flex-col gap-2">
+                        </p>
+                        <form method="POST" action="{{ route('ic.admin.acara.bandsintown') }}">
                             @csrf
-                            <label for="acara-csv"
-                                class="text-sm font-semibold uppercase tracking-widest text-white/60">Impor jadwal dari
-                                CSV</label>
-                            <input type="file" id="acara-csv" name="csv" accept=".csv,text/csv" required
-                                class="w-full bg-white/5 border border-white/15 border-dashed text-white/50 p-3 rounded-lg cursor-pointer
-                                file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0
-                                file:text-sm file:font-semibold file:bg-red-950 file:text-white
-                                hover:file:bg-red-900 transition" />
-                            <p class="text-xs text-white/30">Kolom: <code class="text-white/50">kode, tanggal, kota,
-                                    venue,
-                                    tipe</code>. Tanggal berformat YYYY-MM-DD. Tipe: festival, club, atau private. Kode yang
-                                sudah ada diperbarui (QR-nya tetap), kode kosong dibuat otomatis. Satu baris salah
-                                membatalkan seluruh impor.</p>
                             <button type="submit"
-                                class="self-start h-11 px-5 rounded-lg border border-white/15 text-xs font-semibold uppercase tracking-widest text-white/70 hover:bg-white/10 hover:text-white transition-colors">
-                                Impor
+                                class="h-11 px-5 inline-flex items-center gap-2 rounded-lg border border-white/15 text-xs font-semibold uppercase tracking-widest text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+                                <i class="bi bi-arrow-repeat" aria-hidden="true"></i> Sinkron sekarang
                             </button>
                         </form>
-                    </div>
-
-                    {{-- PREVIEW: kartu yang sama dengan yang dilihat anggota di Check-in --}}
-                    <div class="lg:sticky lg:top-8 rounded-3xl border border-white/10 overflow-hidden">
-                        <div class="flex items-center gap-2 px-5 py-3 border-b border-white/10 bg-white/3">
-                            <i class="bi bi-eye text-white/40" aria-hidden="true"></i>
-                            <span class="text-xs uppercase tracking-widest text-white/40">Tampilan di halaman
-                                Check-in</span>
-                        </div>
-                        <div class="ic-app ic-ponsel p-2 sm:p-5" inert id="preview-acara">
-                            <x-inner-circle.kartu-event :event="$contohAcara" href="#" />
-                        </div>
-                    </div>
+                    @else
+                        <p class="text-xs text-white/40">Belum aktif. Isi <code
+                                class="text-white/60">BANDSINTOWN_APP_ID</code> di <code class="text-white/60">.env</code>
+                            server untuk menarik jadwal otomatis (lihat
+                            README, bagian Bandsintown).</p>
+                    @endif
                 </div>
             </section>
 
@@ -276,6 +158,7 @@
                                                 · belum ada lokasi
                                             @endif
                                         </p>
+                                        <x-dashboard.inner-circle.tanda-acara :acara="$e" tampil />
                                     </div>
                                 </div>
                                 <div
@@ -292,6 +175,19 @@
                                         aria-label="Atur acara {{ $e->venue ?? $e->kode }}">
                                         <i class="bi bi-gear-fill" aria-hidden="true"></i> Atur
                                     </a>
+                                    @php $tampilSekarang = $e->tampil_di_anggota; @endphp
+                                    <form method="POST" action="{{ route('ic.admin.acara.tampil', $e->kode) }}"
+                                        class="inline-flex">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit"
+                                            title="{{ $tampilSekarang ? 'Sembunyikan dari daftar anggota' : 'Tampilkan di daftar anggota' }}"
+                                            aria-label="{{ $tampilSekarang ? 'Sembunyikan' : 'Tampilkan' }} acara {{ $e->venue ?? $e->kode }} {{ $tampilSekarang ? 'dari' : 'di' }} daftar anggota"
+                                            class="w-11 h-11 inline-flex items-center justify-center text-white/40 hover:text-white transition">
+                                            <i class="bi {{ $tampilSekarang ? 'bi-eye-fill' : 'bi-eye-slash-fill' }}"
+                                                aria-hidden="true"></i>
+                                        </button>
+                                    </form>
                                     <button type="button" data-ic-acara-ubah
                                         data-aksi="{{ route('ic.admin.acara.ubah', $e->kode) }}"
                                         data-tanggal="{{ $e->tanggal->format('Y-m-d') }}"
@@ -322,6 +218,130 @@
             </section>
         </div>
     </div>
+
+    {{-- Dialog tambah acara: form satuan dan impor CSV. Terbuka otomatis bila form ini gagal divalidasi. --}}
+    <dialog id="dialogTambah" aria-labelledby="dialogTambahJudul"
+        class="fixed inset-0 m-0 w-screen h-dvh max-w-none max-h-none bg-black/70 backdrop:bg-transparent p-0 overflow-y-auto">
+        <div class="min-h-dvh w-full flex items-center justify-center p-4">
+            <div
+                class="w-full max-w-lg max-h-[calc(100dvh-2rem)] flex flex-col min-w-0 rounded-3xl border border-white/10 bg-black shadow-xl overflow-hidden">
+                <div
+                    class="flex items-center justify-between gap-2 px-4 sm:px-6 py-4 border-b border-white/10 bg-white/3 shrink-0">
+                    <h3 id="dialogTambahJudul" class="font-bold uppercase tracking-wide text-sm text-white">Tambah acara
+                    </h3>
+                    <button type="button" data-ic-dialog-tutup aria-label="Tutup"
+                        class="text-white/40 hover:text-white transition">
+                        <i class="bi bi-x-lg" aria-hidden="true"></i>
+                    </button>
+                </div>
+
+                <div class="flex-1 min-h-0 p-4 sm:p-6 flex flex-col gap-5 overflow-y-auto">
+                    <form id="form-acara" method="POST" action="{{ route('ic.admin.acara.simpan') }}"
+                        class="flex flex-col gap-4">
+                        @csrf
+                        <input type="hidden" name="_form" value="tambah">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="flex flex-col gap-1.5 min-w-0">
+                                <label for="acara-tanggal"
+                                    class="text-sm font-semibold uppercase tracking-widest text-white/60">Tanggal show
+                                    <span class="text-red-400">*</span></label>
+                                <input type="date" id="acara-tanggal" name="tanggal" required
+                                    value="{{ old('tanggal', \Carbon\Carbon::today()->addDays(7)->format('Y-m-d')) }}"
+                                    class="w-full min-w-0 bg-white/5 border border-white/15 text-white p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition scheme-dark" />
+                            </div>
+                            <div class="flex flex-col gap-1.5 min-w-0">
+                                <label for="acara-tipe"
+                                    class="text-sm font-semibold uppercase tracking-widest text-white/60">Tipe <span
+                                        class="text-red-400">*</span></label>
+                                <select id="acara-tipe" name="tipe"
+                                    class="w-full min-w-0 bg-white/5 border border-white/15 text-white p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition scheme-dark">
+                                    @foreach ($tipeEvent as $kunci => $t)
+                                        <option class="bg-neutral-900" value="{{ $kunci }}"
+                                            @selected($kunci === old('tipe', 'club'))>{{ $t['label'] }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="flex flex-col gap-1.5 min-w-0">
+                                <label for="acara-venue"
+                                    class="text-sm font-semibold uppercase tracking-widest text-white/60">Venue</label>
+                                <input type="text" id="acara-venue" name="venue" maxlength="80"
+                                    value="{{ old('venue') }}" placeholder="Contoh: Superhouse Satrio"
+                                    class="w-full min-w-0 bg-white/5 border border-white/15 text-white placeholder-white/30 p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition" />
+                            </div>
+                            <div class="flex flex-col gap-1.5 min-w-0">
+                                <label for="acara-kota"
+                                    class="text-sm font-semibold uppercase tracking-widest text-white/60">Kota</label>
+                                <input type="text" id="acara-kota" name="kota" maxlength="60"
+                                    value="{{ old('kota') }}" placeholder="Contoh: Jakarta"
+                                    class="w-full min-w-0 bg-white/5 border border-white/15 text-white placeholder-white/30 p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition" />
+                            </div>
+                        </div>
+                        <p class="text-xs text-white/30">Acara privat dan acara tanpa venue tampil di jadwal anggota,
+                            tetapi tidak bisa dipakai check-in.</p>
+
+                        <details class="rounded-2xl border border-white/10 bg-white/2 p-4"
+                            @if (old('jendela_mulai') || old('jendela_selesai')) open @endif>
+                            <summary class="cursor-pointer text-sm font-semibold text-white/70">Atur jendela check-in
+                                (opsional)</summary>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                                <div class="flex flex-col gap-1.5 min-w-0">
+                                    <label for="acara-mulai"
+                                        class="text-sm font-semibold uppercase tracking-widest text-white/60">Dibuka</label>
+                                    <input type="datetime-local" id="acara-mulai" name="jendela_mulai"
+                                        value="{{ old('jendela_mulai') }}"
+                                        class="w-full min-w-0 bg-white/5 border border-white/15 text-white p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition scheme-dark" />
+                                </div>
+                                <div class="flex flex-col gap-1.5 min-w-0">
+                                    <label for="acara-selesai"
+                                        class="text-sm font-semibold uppercase tracking-widest text-white/60">Ditutup</label>
+                                    <input type="datetime-local" id="acara-selesai" name="jendela_selesai"
+                                        value="{{ old('jendela_selesai') }}"
+                                        class="w-full min-w-0 bg-white/5 border border-white/15 text-white p-3 rounded-lg focus:outline-none focus:border-red-900 focus:ring-1 focus:ring-red-900 transition scheme-dark" />
+                                </div>
+                            </div>
+                            <p class="text-xs text-white/30 mt-3">Kosongkan keduanya untuk memakai bawaan:
+                                {{ app(\App\Services\InnerCircle\IcAturan::class)->ringkasan() }}.</p>
+                        </details>
+
+                        <button type="submit"
+                            class="w-full text-white font-bold uppercase tracking-widest p-3 bg-red-950 hover:bg-red-900 active:scale-95 transition rounded-lg">
+                            Simpan acara
+                        </button>
+                    </form>
+
+                    {{-- Impor CSV: bagian dari menambah acara, dilipat supaya popup tetap ringkas --}}
+                    <details class="rounded-2xl border border-white/10 bg-white/2 p-4"
+                        @if ($errors->has('csv')) open @endif>
+                        <summary class="cursor-pointer text-sm font-semibold text-white/70">Impor jadwal dari CSV
+                        </summary>
+                        <form method="POST" action="{{ route('ic.admin.acara.impor') }}" enctype="multipart/form-data"
+                            class="mt-4 flex flex-col gap-2">
+                            @csrf
+                            <label for="acara-csv"
+                                class="text-sm font-semibold uppercase tracking-widest text-white/60">Berkas
+                                CSV</label>
+                            <input type="file" id="acara-csv" name="csv" accept=".csv,text/csv" required
+                                class="w-full bg-white/5 border border-white/15 border-dashed text-white/50 p-3 rounded-lg cursor-pointer
+                                file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0
+                                file:text-sm file:font-semibold file:bg-red-950 file:text-white
+                                hover:file:bg-red-900 transition" />
+                            <p class="text-xs text-white/30">Kolom: <code class="text-white/50">kode, tanggal, kota,
+                                    venue, tipe</code>. Tanggal berformat YYYY-MM-DD. Tipe: festival, club, atau
+                                private. Kode yang sudah ada diperbarui (QR-nya tetap), kode kosong dibuat otomatis.
+                                Satu baris salah membatalkan seluruh impor.</p>
+                            <button type="submit"
+                                class="self-start h-11 px-5 rounded-lg border border-white/15 text-xs font-semibold uppercase tracking-widest text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+                                Impor
+                            </button>
+                        </form>
+                    </details>
+                </div>
+            </div>
+        </div>
+    </dialog>
 
     {{-- Dialog ubah acara: satu dialog dipakai semua baris, isinya diisi lewat JS dari tombol yang diklik --}}
     <dialog id="dialogAcara" aria-labelledby="dialogAcaraJudul"
@@ -417,7 +437,6 @@
         <script>
             window.icIkonPeta = @json($ikonPeta);
 
-            const TIPE = @json($tipeEvent);
             const $ = (id) => document.getElementById(id);
 
             // ---------- 1. Dialog ubah acara ----------
@@ -437,47 +456,21 @@
                 $('ubah-venue').focus();
             });
 
-            // ---------- 2. Preview form acara ----------
-            const kartu = $('preview-acara')?.querySelector('.ic-event');
-            const hariIni = new Date().toISOString().slice(0, 10);
-
-            function perbaruiKartu() {
-                if (!kartu) return;
-                const tanggal = $('acara-tanggal').value;
-                const venue = $('acara-venue').value.trim();
-                const kota = $('acara-kota').value.trim();
-                const tipe = $('acara-tipe').value;
-                const t = TIPE[tipe];
-                const bisa = tipe !== 'private' && venue !== '';
-
-                kartu.querySelector('.ic-event__tanggal').textContent = tanggal ?
-                    new Date(tanggal + 'T00:00:00').toLocaleDateString('id-ID', {
-                        weekday: 'short',
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric'
-                    }) : '—';
-                kartu.querySelector('.ic-event__venue').textContent = venue || 'Venue belum diumumkan';
-
-                const elKota = kartu.querySelector('.ic-event__kota');
-                elKota.replaceChildren(elKota.querySelector('i'), document.createTextNode(' ' + (kota ||
-                    'Kota belum diumumkan')));
-
-                const waktu = !tanggal ? '' : tanggal === hariIni ? 'Hari ini' : tanggal < hariIni ? 'Sudah lewat' :
-                    'Akan datang';
-                const catatan = tipe === 'private' ? 'Tidak untuk umum' : (!venue ? 'Venue belum diumumkan' : waktu);
-                kartu.querySelector('.ic-event__lencana').textContent = `${t.label} · ${catatan}`;
-
-                kartu.className = kartu.className.replace(/ic-warna-\S+/g, '').trim() + ` ic-warna-${t.warna}`;
-                kartu.classList.toggle('is-nonaktif', !bisa);
-                kartu.querySelector('.ic-event__panah i').className = 'bi ' + (bisa ? 'bi-chevron-right' : 'bi-dash');
-                kartu.querySelector('.ic-event__seni').replaceChildren(window.icBuatIkon(t.ikon, 'ic-ikon--event'));
-            }
-
-            ['acara-tanggal', 'acara-venue', 'acara-kota', 'acara-tipe'].forEach((id) => {
-                $(id)?.addEventListener('input', perbaruiKartu);
+            // ---------- 2. Dialog tambah acara ----------
+            const dialogTambah = $('dialogTambah');
+            document.addEventListener('click', (e) => {
+                if (dialogTambah && e.target.closest('[data-ic-acara-tambah]')) {
+                    dialogTambah.showModal();
+                    $('acara-venue').focus();
+                }
+                if (e.target.closest('[data-ic-dialog-tutup]')) {
+                    e.target.closest('dialog')?.close();
+                }
             });
-            perbaruiKartu();
+            // Form tambah acara gagal divalidasi: buka lagi dengan isiannya supaya galatnya terlihat.
+            @if (old('_form') === 'tambah' && $errors->any())
+                dialogTambah?.showModal();
+            @endif
         </script>
     @endpush
 @endsection

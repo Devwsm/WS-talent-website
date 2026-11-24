@@ -203,6 +203,7 @@ Route::prefix('/dashboard')->middleware(['cekLogin', 'catatAktivitas'])->group(f
         // Halaman Atur acara (Fase 3): pengaturan lengkap satu acara, peta lokasi, dan sandi acara (dilihat atas permintaan).
         Route::get('/acara/{kode}/atur', [acaraController::class, 'atur'])->name('acara.atur');
         Route::put('/acara/{kode}/atur', [acaraController::class, 'simpanAtur'])->name('acara.atur.simpan')->middleware('throttle:admin-tulis');
+        Route::patch('/acara/{kode}/tampil', [acaraController::class, 'ubahTampil'])->name('acara.tampil')->middleware('throttle:admin-tulis');
         Route::put('/acara/{kode}', [acaraController::class, 'ubahAcara'])->name('acara.ubah')->middleware('throttle:admin-tulis');
         Route::delete('/acara/{kode}', [acaraController::class, 'hapusAcara'])->name('acara.hapus')->middleware('throttle:admin-tulis');
         Route::post('/acara/{kode}/token', [acaraHariHController::class, 'tokenBaru'])->name('acara.token')->middleware('throttle:admin-tulis');

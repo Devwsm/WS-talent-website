@@ -5,6 +5,7 @@ namespace Tests\Feature\InnerCircle\Acara;
 use App\Models\ic_event;
 use App\Models\member;
 use App\Services\InnerCircle\AcaraService;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -14,6 +15,20 @@ use Tests\TestCase;
 class FilterBulanTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // Tanggal acara di tes ini tetap (Des 2026, Jan 2027). Jam dibekukan supaya acara itu tidak ikut
+        // tersembunyi otomatis (acara bulan sebelum bulan berjalan tidak tampil di daftar anggota).
+        Carbon::setTestNow('2026-11-24 12:00:00');
+    }
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
+    }
 
     private function acara(string $tanggal, string $venue): ic_event
     {

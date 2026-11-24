@@ -90,6 +90,7 @@
                                             · GL {{ $e->kuota_gl }}
                                         @endif
                                     </p>
+                                    <x-dashboard.inner-circle.tanda-acara :acara="$e" />
                                 </div>
                                 <div class="flex flex-wrap items-center gap-2 shrink-0">
                                     <a href="{{ route('ic.admin.acara.harih.detail', $e->kode) }}"
@@ -522,8 +523,8 @@
                     // Jelaskan dulu kenapa lokasi dibutuhkan (atau cara membuka izin yang diblokir) sebelum browser meminta izin.
                     if (window.pastikanIzin && !(await window.pastikanIzin('lokasi', (o) => window.Swal?.fire(
                             o), {
-                                isi: 'Titik venue akan diisi dari GPS HP ini, jadi pastikan kamu sedang berada di venue. Setelah menekan Lanjut, browser akan meminta izin lokasi: pilih Izinkan dan nyalakan GPS HP.'
-                            }))) {
+                            isi: 'Titik venue akan diisi dari GPS HP ini, jadi pastikan kamu sedang berada di venue. Setelah menekan Lanjut, browser akan meminta izin lokasi: pilih Izinkan dan nyalakan GPS HP.'
+                        }))) {
                         teks('Izin lokasi belum diberikan. Kamu tetap bisa mengisi koordinat manual.');
                         return;
                     }

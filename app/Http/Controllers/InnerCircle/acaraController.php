@@ -208,6 +208,19 @@ class acaraController extends Controller
         return back()->with('success', 'Acara dihapus.');
     }
 
+    /** Sembunyikan atau tampilkan acara di daftar anggota (bukan menghapus; QR dan check-in tidak berubah). */
+    public function ubahTampil(string $kode): RedirectResponse
+    {
+        $event = ic_event::query()->where('kode', $kode)->firstOrFail();
+        $event->balikTampilAnggota();
+
+        $nama = $event->venue ?? $event->kode;
+
+        return back()->with('success', $event->tampil_di_anggota
+            ? "Acara {$nama} tampil lagi di daftar anggota."
+            : "Acara {$nama} disembunyikan dari daftar anggota.");
+    }
+
     /** Tarik jadwal tour dari Bandsintown. Hasilnya dirangkum dalam satu pesan. */
     public function sinkronBandsintown(BandsintownService $bit): RedirectResponse
     {

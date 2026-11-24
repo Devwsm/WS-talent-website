@@ -56,6 +56,7 @@ class ic_event extends Model
         'poster',
         'deskripsi',
         'petunjuk_masuk',
+        'tampil_anggota',
     ];
 
     /** Status undian GL: belum dijalankan | ditunda admin | tertunda (data belum lengkap) | selesai (hasil terkunci). */
@@ -86,6 +87,7 @@ class ic_event extends Model
             'undian_selesai_pada' => 'datetime',
             'poin_gl' => 'integer',
             'poin_mandiri' => 'integer',
+            'tampil_anggota' => 'boolean',
         ];
     }
 
@@ -95,9 +97,11 @@ class ic_event extends Model
      *
      * @return \Illuminate\Support\Collection<string, string>
      */
-    public static function pilihanBulan(): \Illuminate\Support\Collection
+    public static function pilihanBulan(bool $hanyaTampilDiAnggota = false): \Illuminate\Support\Collection
     {
-        return static::query()->pluck('tanggal')
+        return static::query()
+            ->when($hanyaTampilDiAnggota, fn($q) => $q->tampilDiAnggota())
+            ->pluck('tanggal')
             ->map(fn($t) => Carbon::parse($t)->format('Y-m'))
             ->unique()
             ->sort()
@@ -113,6 +117,51 @@ class ic_event extends Model
     }
 
     /** Acara ini punya titik lokasi, jadi check-in hanya sah dari dalam radiusnya. */
+    /**
+     * Acara yang tampil di daftar anggota: yang dipaksa tampil admin, ditambah yang belum diatur (otomatis) dan
+     * tanggalnya bulan ini atau sesudahnya. Acara bulan sebelumnya tersembunyi sendiri.
+     */
+    public function scopeTampilDiAnggota($query)
+    {
+        return $query->where(function ($w) {
+            $w->where('tampil_anggota', true)
+                ->orWhere(fn($x) => $x->whereNull('tampil_anggota')
+                    ->whereDate('tanggal', '>=', now()->startOfMonth()->toDateString()));
+        });
+    }
+
+    protected function tampilDiAnggota(): Attribute
+    {
+        return Attribute::get(fn() => $this->tampil_anggota ?? ! $this->tanggal->lt(now()->startOfMonth()));
+    }
+
+    /** 'tampil', 'sembunyi_manual' (admin), atau 'sembunyi_otomatis' (bulan sudah lewat). */
+    protected function statusTampil(): Attribute
+    {
+        return Attribute::get(function () {
+            if ($this->tampil_di_anggota) {
+                return 'tampil';
+            }
+
+            return $this->tampil_anggota === false ? 'sembunyi_manual' : 'sembunyi_otomatis';
+        });
+    }
+
+    /** Balik tampil/sembunyi. Bila hasilnya sama dengan aturan otomatis, kembali ke otomatis (null). */
+    public function balikTampilAnggota(): void
+    {
+        $otomatis = ! $this->tanggal->lt(now()->startOfMonth());
+        $tujuan = ! $this->tampil_di_anggota;
+
+        $this->forceFill(['tampil_anggota' => $tujuan === $otomatis ? null : $tujuan])->save();
+    }
+
+    /** Check-in sedang terbuka sekarang (acaranya bisa check-in dan jendelanya berjalan). */
+    protected function checkinDibuka(): Attribute
+    {
+        return Attribute::get(fn() => $this->bisa_checkin && $this->dalamJendela());
+    }
+
     protected function lokasiAktif(): Attribute
     {
         return Attribute::get(fn() => $this->lokasi_lat !== null && $this->lokasi_lng !== null);

@@ -182,7 +182,7 @@
 
 @push('modal')
     @if (in_array($statusGl, ['menang', 'tidak_terpilih'], true))
-        <x-inner-circle.modal id="modal-gl" :judul="$statusGl === 'menang' ? 'Kamu menang GL gratis 🎉' : 'Hasil undian GL'" :eyebrow="$statusGl === 'menang' ? 'Kartu GL' : 'Hasil undian'" lembar>
+        <x-inner-circle.modal id="modal-gl" :judul="$statusGl === 'menang' ? 'Kamu menang GL gratis 🎉' : 'Hasil undian GL'" :eyebrow="$statusGl === 'menang' ? 'Kartu GL' : 'Hasil undian'" lembar :terbuka="$statusGl === 'menang' && request()->boolean('kartu')">
             @if ($kartu)
                 {{-- Username dan sandi acara hanya dikirim ke pemenang (GlService::kartu). Tampilannya meniru kartu member. --}}
                 <section class="ic-kartu-gl" aria-label="Kartu GL">

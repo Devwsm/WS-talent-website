@@ -24,6 +24,7 @@ class tentangController extends Controller
 
         // Acara mendatang yang bisa dihadiri (bukan privat, venue sudah diumumkan), paling dekat dulu.
         $acara = ic_event::query()
+            ->tampilDiAnggota()
             ->where('tanggal', '>=', today()->toDateString())
             ->where('tipe', '!=', 'private')
             ->orderBy('tanggal')

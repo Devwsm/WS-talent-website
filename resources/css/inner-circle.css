@@ -2797,6 +2797,34 @@ a.ic-poster-kartu:hover .ic-poster-kartu__gambar {
     font-size: 11px;
     font-weight: 700;
 }
+.ic-poster-kartu__tanda {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.ic-tanda {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.2;
+}
+.ic-tanda--buka {
+    background: #0b6b3f;
+    color: #fff;
+}
+.ic-tanda--gl {
+    border: 1px solid #c3dcee;
+    background: #fff;
+    color: var(--ic-navy);
+}
 .ic-poster-kartu__judul {
     display: -webkit-box;
     -webkit-box-orient: vertical;

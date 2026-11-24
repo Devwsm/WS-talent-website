@@ -21,6 +21,23 @@
         @elseif ($event->status_waktu === 'hari_ini')
             <span class="ic-poster-kartu__lencana">Hari ini</span>
         @endif
+        {{-- Tanda info di pojok kiri atas: check-in yang sedang dibuka dan acara yang punya undian GL gratis. --}}
+        @php
+            $tandaCheckin = $event->checkin_dibuka && !$event->sudah_checkin;
+            $tandaGl = $event->punya_gl;
+        @endphp
+        @if ($tandaCheckin || $tandaGl)
+            <span class="ic-poster-kartu__tanda">
+                @if ($tandaCheckin)
+                    <span class="ic-tanda ic-tanda--buka"><i class="bi bi-broadcast" aria-hidden="true"></i>
+                        {{ 'Check-in dibuka' }}</span>
+                @endif
+                @if ($tandaGl)
+                    <span class="ic-tanda ic-tanda--gl"><i class="bi bi-ticket-perforated-fill" aria-hidden="true"></i>
+                        GL gratis</span>
+                @endif
+            </span>
+        @endif
     </span>
     <b class="ic-poster-kartu__judul">{{ $event->venue ?? 'Venue belum diumumkan' }}</b>
     <span class="ic-poster-kartu__info">{{ $event->kota ?? 'Kota belum diumumkan' }}</span>
