@@ -59,12 +59,12 @@ class LokasiService
     public function periksa(ic_event $event, ?array $lokasi): array
     {
         if (! $event->lokasi_aktif) {
-            throw new CheckinGagal('Titik lokasi acara ini belum diatur panitia, jadi check-in belum dibuka. Hubungi panitia di venue.');
+            throw new CheckinGagal('Check-in acara ini belum bisa dibuka karena titik lokasi venue belum disiapkan tim WSM. Coba lagi nanti atau tanyakan ke panitia di venue.');
         }
 
         if (! $lokasi || ! self::koordinatValid($lokasi['lat'] ?? null, $lokasi['lng'] ?? null)) {
             throw new CheckinGagal(
-                'Acara ini memeriksa lokasi. Izinkan akses lokasi di browser, nyalakan GPS, lalu coba lagi.',
+                'Lokasimu belum terbaca. Izinkan akses lokasi di browser dan nyalakan GPS, lalu coba lagi. Kalau tetap tidak bisa, ajukan pemeriksaan ke tim WSM.',
                 alasan: 'tidak_tersedia',
                 kodeAcara: $event->kode,
             );

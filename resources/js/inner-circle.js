@@ -254,6 +254,11 @@ window.addEventListener("pageshow", (e) => {
     document
         .querySelectorAll("form[data-ic-konfirmasi]")
         .forEach((f) => delete f.dataset.icSudahKonfirmasi);
+    // Foto profil yang sedang dikirim saat halaman ditinggal: buka kunci tombol foto dan kosongkan pesannya.
+    const pilihFoto = document.getElementById("ic-foto-pilih");
+    if (pilihFoto) pilihFoto.disabled = false;
+    const umpanFoto = document.getElementById("ic-foto-umpan");
+    if (umpanFoto) umpanFoto.textContent = "";
 });
 
 // ---------- Suka kenangan ----------
@@ -420,12 +425,13 @@ document.addEventListener("click", async (e) => {
     }
 });
 
-// ---------- Foto profil: pilih dan pratinjau ----------
+// ---------- Foto profil: ketuk foto, pilih, langsung tersimpan ----------
+// Tidak ada tombol "Simpan foto": begitu foto dipilih, pratinjau tampil dan formulirnya terkirim sendiri.
+// Hapus foto tetap lewat tautan "Hapus foto" yang meminta konfirmasi.
 const inputFoto = document.getElementById("ic-foto-input");
 if (inputFoto) {
     const pratinjau = document.getElementById("ic-foto-pratinjau");
     const tombolPilih = document.getElementById("ic-foto-pilih");
-    const tombolSimpan = document.getElementById("ic-foto-simpan");
     const umpan = document.getElementById("ic-foto-umpan");
     let urlSementara = null;
 
@@ -433,9 +439,10 @@ if (inputFoto) {
 
     inputFoto.addEventListener("change", () => {
         const berkas = inputFoto.files?.[0];
-        // Berkas yang terlalu besar sudah dikosongkan oleh validasi ukuran di atas.
-        if (!berkas) {
-            tombolSimpan.disabled = true;
+        if (!berkas) return;
+        // Pendengar ini jalan lebih dulu daripada validasi ukuran umum di atas, jadi ukurannya dicek lagi di sini:
+        // foto yang terlalu besar tidak boleh terkirim otomatis (validasi umum yang menampilkan pesannya).
+        if (berkas.size > Number(inputFoto.dataset.icMaksMb) * 1024 * 1024) {
             return;
         }
         if (urlSementara) URL.revokeObjectURL(urlSementara);
@@ -446,8 +453,9 @@ if (inputFoto) {
         gambar.alt = "Pratinjau foto profil baru";
         pratinjau.replaceChildren(gambar);
 
-        tombolSimpan.disabled = false;
-        umpan.textContent = "Foto dipilih. Tekan Simpan foto untuk memakainya.";
+        tombolPilih.disabled = true;
+        umpan.textContent = "Menyimpan fotomu…";
+        inputFoto.form?.requestSubmit();
     });
 }
 
@@ -666,13 +674,13 @@ function pesanGalatLokasi(kode) {
             ];
         case "ditolak":
             return [
-                "Izin lokasi ditolak",
-                "Ketuk ikon gembok di kolom alamat, pilih Izin lalu Lokasi, izinkan, kemudian tekan Cek lokasi lagi.",
+                "Lokasi belum diizinkan",
+                "Izinkan lokasi untuk situs ini lewat ikon gembok di kolom alamat, lalu tekan Cek lokasi lagi. Kalau tetap tidak bisa, ajukan pemeriksaan ke tim WSM di bawah.",
             ];
         case "dilewati":
             return [
                 "Lokasi belum diizinkan",
-                "Check-in butuh lokasi HP untuk memastikan kamu ada di venue. Tekan Cek lokasi lagi, lalu pilih Lanjut.",
+                "Check-in butuh lokasi HP untuk memastikan kamu ada di venue. Tekan Cek lokasi lagi, lalu pilih Lanjut. Butuh bantuan? Ajukan pemeriksaan di bawah.",
             ];
         case "waktu":
             return [
@@ -771,6 +779,9 @@ function jalankanLokasi() {
         if (window.isSecureContext && navigator.geolocation) {
             const lanjut = await pastikanIzin("lokasi", (o) => ic.fire(o), {
                 isi: "Check-in memeriksa apakah kamu berada di venue lewat lokasi HP. Setelah menekan Lanjut, browser akan meminta izin: pilih Izinkan, dan pastikan GPS HP menyala. Lokasimu hanya dipakai untuk memeriksa jarak ke venue dan tidak disimpan.",
+                bantuLain:
+                    "Tidak berhasil? Pilih tombol di bawah, lalu ajukan pemeriksaan ke tim WSM.",
+                tombolTutup: "Tidak bisa, ajukan ke tim",
             });
             if (!lanjut) throw { kode: "dilewati" };
             // Lembar check-in ditutup saat penjelasan tampil: jangan lanjut membaca lokasi.
@@ -988,6 +999,22 @@ document.addEventListener("change", (e) => {
         const kotak = document.querySelector(input.dataset.icPratinjauFoto);
         if (!kotak) return;
         const berkas = input.files?.[0];
+        // Kotak ajakan unggah: judulnya jadi nama berkas setelah foto dipilih, kembali ke ajakan bila dikosongkan.
+        const unggah = input.closest(".ic-unggah");
+        if (unggah) {
+            const judul = unggah.querySelector("[data-ic-unggah-judul]");
+            const sub = unggah.querySelector("[data-ic-unggah-sub]");
+            const terisi = Boolean(berkas);
+            unggah.classList.toggle("ic-unggah--terisi", terisi);
+            if (judul) {
+                judul.textContent = terisi ? berkas.name : judul.dataset.icAwal;
+            }
+            if (sub) {
+                sub.textContent = terisi
+                    ? "Foto siap diterbitkan. Ketuk untuk menggantinya."
+                    : sub.dataset.icAwal;
+            }
+        }
         kotak.querySelectorAll("img").forEach((img) => {
             if (img.dataset.url) URL.revokeObjectURL(img.dataset.url);
         });

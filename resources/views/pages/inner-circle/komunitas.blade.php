@@ -139,13 +139,13 @@
 
             <label class="ic-label" for="kenangan-caption">Apa ceritamu?</label>
             <textarea class="ic-input ic-input--area" id="kenangan-caption" name="caption" maxlength="240" rows="3"
-                placeholder="Cerita singkat tentang momen paling berkesan…" required>{{ old('caption') }}</textarea>
+                placeholder="Ceritakan momen yang paling berkesan buatmu…" required>{{ old('caption') }}</textarea>
 
             <div class="ic-baris-2">
                 <div>
                     <label class="ic-label" for="kenangan-tempat">Acara / tempat</label>
                     <input class="ic-input" id="kenangan-tempat" name="tempat" maxlength="65" value="{{ old('tempat') }}"
-                        placeholder="Contoh: WS Showcase">
+                        placeholder="Di mana momen ini terjadi? Contoh: WS Showcase">
                 </div>
                 <div>
                     <label class="ic-label" for="kenangan-kategori">Kategori</label>
@@ -158,12 +158,21 @@
                 </div>
             </div>
 
-            <label class="ic-label" for="kenangan-foto">Tambahkan foto (opsional)</label>
-            <input class="ic-input" type="file" id="kenangan-foto" name="foto"
-                accept="image/jpeg,image/png,image/webp" data-ic-maks-mb="{{ $maksFotoMb }}"
-                data-ic-pratinjau-foto="#kenangan-pratinjau">
-            <p class="ic-bantuan">JPG, PNG, atau WebP. Maksimal {{ $maksFotoMb }} MB. Foto tampil dengan bingkai 4:5.
-            </p>
+            <span class="ic-label" id="kenangan-foto-label">Foto momenmu (opsional)</span>
+            {{-- Kotak ajakan unggah menggantikan tombol bawaan browser. Inputnya tetap ada (tersembunyi tapi bisa difokus
+                 lewat keyboard); JavaScript mengganti teks kotak setelah foto dipilih (data-ic-unggah-*). --}}
+            <label class="ic-unggah" for="kenangan-foto">
+                <span class="ic-unggah__ikon" aria-hidden="true"><i class="bi bi-images"></i></span>
+                <span class="ic-unggah__teks">
+                    <b data-ic-unggah-judul data-ic-awal="Bagikan momen serumu">Bagikan momen serumu</b>
+                    <small data-ic-unggah-sub
+                        data-ic-awal="Ketuk untuk pilih foto. JPG, PNG, atau WebP, maksimal {{ $maksFotoMb }} MB.">Ketuk
+                        untuk pilih foto. JPG, PNG, atau WebP, maksimal {{ $maksFotoMb }} MB.</small>
+                </span>
+                <input class="ic-unggah__input" type="file" id="kenangan-foto" name="foto"
+                    accept="image/jpeg,image/png,image/webp" data-ic-maks-mb="{{ $maksFotoMb }}"
+                    data-ic-pratinjau-foto="#kenangan-pratinjau" aria-labelledby="kenangan-foto-label">
+            </label>
 
             {{-- Pratinjau 4:5 sebelum terbit: terlihat apakah fotonya terpotong atau tampil utuh. Diisi JavaScript. --}}
             <div class="ic-pratinjau" id="kenangan-pratinjau" hidden>

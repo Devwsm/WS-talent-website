@@ -80,30 +80,38 @@
         </div>
     </div>
 
-    {{-- Ubah profil: foto dan nama dalam satu popup, dibuka dari pensil di kartu member. Id di bagian foto
+    {{-- Ubah profil: foto dan nama dalam satu popup, dibuka dari pensil di kartu member. Foto langsung tersimpan begitu
+         dipilih (tanpa tombol Simpan foto); di popup ini hanya ada dua tombol: Batal dan Simpan. Id di bagian foto
          (ic-foto-*) dipakai JavaScript, jadi jangan diganti. --}}
     <x-inner-circle.modal id="modal-profil" judul="Ubah profil" eyebrow="Kartu member" lembar :terbuka="$errors->hasAny(['nama', 'foto'])">
         <section class="ic-profil-ubah" aria-labelledby="judul-foto">
-            <span class="ic-profil-foto" id="ic-foto-pratinjau"
-                data-ic-foto-awal="{{ $member->avatar ? \Illuminate\Support\Facades\Storage::url($member->avatar) : '' }}"
-                data-ic-emoji="{{ $member->avatar_emoji }}">
-                @if ($member->avatar)
-                    <img src="{{ \Illuminate\Support\Facades\Storage::url($member->avatar) }}"
-                        alt="Foto profilmu saat ini">
-                @else
-                    <span aria-hidden="true">{{ $member->avatar_emoji }}</span>
-                @endif
-            </span>
+            <button type="button" class="ic-profil-ubah__foto" id="ic-foto-pilih" aria-label="Ganti foto profil">
+                <span class="ic-profil-foto" id="ic-foto-pratinjau"
+                    data-ic-foto-awal="{{ $member->avatar ? \Illuminate\Support\Facades\Storage::url($member->avatar) : '' }}"
+                    data-ic-emoji="{{ $member->avatar_emoji }}">
+                    @if ($member->avatar)
+                        <img src="{{ \Illuminate\Support\Facades\Storage::url($member->avatar) }}"
+                            alt="Foto profilmu saat ini">
+                    @else
+                        <span aria-hidden="true">{{ $member->avatar_emoji }}</span>
+                    @endif
+                </span>
+                <span class="ic-kartu-anggota__lencana" aria-hidden="true"><i class="bi bi-camera-fill"></i></span>
+            </button>
             <div class="ic-profil-ubah__isi">
-                <h3 class="ic-panel__judul" id="judul-foto">{{ ic_teks('profil.foto.judul') }}</h3>
+                <h3 class="ic-profil-ubah__judul" id="judul-foto">{{ ic_teks('profil.foto.judul') }}</h3>
                 <p class="ic-bantuan">{{ ic_html('profil.foto.deskripsi', ['maks' => $maksFotoMb]) }}</p>
 
-                {{-- Dua form tanpa isi tampak; tombolnya di bawah memakai atribut form="..." supaya tetap satu baris. --}}
+                {{-- Form tanpa isi tampak: foto terkirim otomatis oleh JavaScript begitu dipilih. Tanpa JavaScript,
+                     tombol cadangan di bawah muncul lewat <noscript>. --}}
                 <form method="POST" action="{{ route('ic.profil.foto') }}" enctype="multipart/form-data" id="ic-foto-form"
                     data-ic-sekali>
                     @csrf
                     <input type="file" id="ic-foto-input" name="foto" accept="image/jpeg,image/png,image/webp"
                         data-ic-maks-mb="{{ $maksFotoMb }}" hidden>
+                    <noscript>
+                        <button type="submit" class="ic-tombol ic-tombol--kecil">Simpan foto</button>
+                    </noscript>
                 </form>
                 @if ($member->avatar)
                     <form method="POST" action="{{ route('ic.profil.foto.hapus') }}" id="ic-foto-hapus-form"
@@ -111,17 +119,10 @@
                         data-ic-konfirmasi-tombol="Ya, hapus" data-judul="Kamu bisa mengunggah foto baru kapan saja.">
                         @csrf
                         @method('DELETE')
+                        <button type="submit" class="ic-tautan-bahaya">Hapus foto</button>
                     </form>
                 @endif
 
-                <div class="ic-aksi-baris ic-aksi-baris--rapat">
-                    <button type="button" class="ic-tombol ic-tombol--kecil" id="ic-foto-pilih"><i
-                            class="bi bi-camera-fill" aria-hidden="true"></i> Pilih foto</button>
-                    <button type="submit" form="ic-foto-form" class="ic-tombol ic-tombol--kecil" id="ic-foto-simpan"
-                        disabled>Simpan foto</button>
-                    <button type="submit" form="ic-foto-hapus-form" class="ic-tombol ic-tombol--kecil ic-tombol--terang"
-                        @disabled(!$member->avatar)>Hapus</button>
-                </div>
                 <p class="ic-bantuan ic-umpan" id="ic-foto-umpan" role="status" aria-live="polite"></p>
                 @error('foto')
                     <p class="ic-galat" role="alert">{{ $message }}</p>
@@ -132,18 +133,16 @@
         <form method="POST" action="{{ route('ic.profil.nama') }}" class="ic-profil-ubah__nama" data-ic-sekali novalidate>
             @csrf
             @method('PATCH')
-            <h3 class="ic-panel__judul">Ganti nama</h3>
-            <label class="ic-label" for="ganti-nama">Nama</label>
+            <label class="ic-label" for="ganti-nama">Ganti nama</label>
             <input class="ic-input" type="text" id="ganti-nama" name="nama" value="{{ old('nama', $member->nama) }}"
                 maxlength="100" autocomplete="name" required @error('nama') aria-invalid="true" @enderror>
-            <p class="ic-bantuan">Boleh memakai spasi, mis. “Ancha Maulana”. Nama tampil lengkap di kartu member,
-                kenangan, komentar, dan daftar penyuka.</p>
+            <p class="ic-bantuan">Boleh pakai spasi. Namamu tampil di kartu member, kenangan, dan komentar.</p>
             @error('nama')
                 <p class="ic-galat" role="alert">{{ $message }}</p>
             @enderror
             <div class="ic-aksi-form">
                 <button type="button" class="ic-tombol ic-tombol--terang" data-ic-modal-tutup>Batal</button>
-                <button type="submit" class="ic-tombol">Simpan nama</button>
+                <button type="submit" class="ic-tombol">Simpan</button>
             </div>
         </form>
     </x-inner-circle.modal>

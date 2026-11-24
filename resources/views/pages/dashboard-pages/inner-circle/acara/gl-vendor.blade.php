@@ -51,10 +51,10 @@
                 <span id="status-pdf" role="status" aria-live="polite" class="text-xs text-white/60"></span>
             </div>
 
-            {{-- Pratinjau: tampilannya mencerminkan isi PDF. PDF-nya sendiri digambar dari data JSON di bawah. --}}
-            <article aria-label="Pratinjau kartu GL"
-                class="w-full max-w-3xl mx-auto overflow-hidden rounded-3xl bg-white text-slate-900 shadow-2xl">
-                <header class="px-6 py-5 text-white" style="background:#17629a">
+            {{-- Pratinjau: tampilannya mencerminkan isi PDF. Warna ditulis eksplisit (inline) karena tema CMS Inner Circle mendefinisikan ulang warna "white" menjadi biru tua. PDF-nya sendiri digambar dari data JSON di bawah. --}}
+            <article aria-label="Pratinjau kartu GL" style="background:#fff;color:#0b2a47"
+                class="w-full max-w-3xl mx-auto overflow-hidden rounded-3xl shadow-2xl">
+                <header class="px-6 py-5" style="background:#17629a;color:#fff">
                     <p class="text-xs font-bold tracking-[0.2em]">WS INNER CIRCLE</p>
                     <h2 class="text-2xl font-extrabold mt-1">Daftar GL Gratis</h2>
                 </header>
@@ -77,8 +77,8 @@
                                     acara</dt>
                                 <dd class="font-mono font-bold text-lg wrap-anywhere">{{ $data['sandi'] ?: '-' }}</dd>
                             </div>
-                            <p class="text-xs text-slate-500">Pemenang GL menunjukkan Kartu GL di pintu. Scan QR acara
-                                untuk mendapat +{{ ic_angka($data['poin']) }} poin.</p>
+                            <p class="text-xs text-slate-500">Scan QR di kanan untuk +{{ ic_angka($data['poin']) }} poin.
+                            </p>
                         </dl>
                         <figure class="shrink-0 self-center text-center">
                             <div class="w-40 h-40 [&>svg]:w-full [&>svg]:h-full">{!! $qrSvg !!}</div>
@@ -92,36 +92,34 @@
                     @endif
 
                     <div>
-                        <h3 class="font-bold">Daftar GL gratis ({{ count($data['pemenang']) }} pemenang dari kuota
+                        <h3 class="font-bold">Pemenang GL gratis ({{ count($data['pemenang']) }} dari kuota
                             {{ $data['kuota'] }})</h3>
                         @if (count($data['pemenang']) === 0)
                             <p class="text-sm text-slate-500 mt-2">Belum ada pemenang.</p>
                         @else
-                            <div class="overflow-x-auto mt-2">
-                                <table class="w-full text-sm">
-                                    <thead>
-                                        <tr class="bg-sky-50 text-left text-xs uppercase tracking-wide text-slate-500">
-                                            <th class="px-3 py-2 w-12">No</th>
-                                            <th class="px-3 py-2">Nama</th>
-                                            <th class="px-3 py-2 whitespace-nowrap">Member ID</th>
-                                            <th class="px-3 py-2 w-16 text-center">Hadir</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y divide-slate-200">
-                                        @foreach ($data['pemenang'] as $p)
-                                            <tr>
-                                                <td class="px-3 py-2 text-slate-500">{{ $p['no'] }}</td>
-                                                <td class="px-3 py-2 font-semibold wrap-anywhere">{{ $p['nama'] }}</td>
-                                                <td class="px-3 py-2 font-mono text-xs whitespace-nowrap">
-                                                    {{ $p['kode'] }}</td>
-                                                <td class="px-3 py-2 text-center"><span aria-hidden="true"
-                                                        class="inline-block w-4 h-4 rounded border border-slate-400"></span>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
+                            <p class="text-xs text-slate-500 mt-1">Centang kotak Hadir saat pemenang menunjukkan Kartu GL
+                                di pintu.</p>
+                            {{-- Satu kartu per pemenang, dua kolom; sama dengan isi PDF. --}}
+                            <ul class="grid sm:grid-cols-2 gap-3 mt-3">
+                                @foreach ($data['pemenang'] as $p)
+                                    <li
+                                        class="flex items-center gap-3 rounded-2xl border border-sky-200 bg-sky-50/60 px-4 py-3">
+                                        <span aria-hidden="true"
+                                            class="grid place-items-center shrink-0 w-8 h-8 rounded-full text-xs font-bold"
+                                            style="background:#17629a;color:#fff">{{ $p['no'] }}</span>
+                                        <div class="min-w-0 flex-1">
+                                            <p class="font-bold wrap-anywhere">{{ $p['nama'] }}</p>
+                                            <p class="font-mono text-xs text-slate-500">{{ $p['kode'] }}</p>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-1 shrink-0">
+                                            <span aria-hidden="true"
+                                                class="inline-block w-5 h-5 rounded border-2 border-slate-400"></span>
+                                            <span
+                                                class="text-[9px] font-bold uppercase tracking-wider text-slate-500">Hadir</span>
+                                        </div>
+                                    </li>
+                                @endforeach
+                            </ul>
                         @endif
                     </div>
 

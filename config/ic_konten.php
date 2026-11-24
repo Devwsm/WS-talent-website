@@ -648,7 +648,7 @@ return [
         'profil.foto.deskripsi' => [
             'grup' => 'profil',
             'label' => 'Foto profil: penjelasan (gunakan {maks} untuk batas ukuran dalam MB)',
-            'bawaan' => 'Sesuaikan akun Inner Circle-mu. Pilih foto JPG, PNG, atau WebP (maksimal {maks} MB).',
+            'bawaan' => 'Ketuk foto untuk menggantinya. JPG, PNG, atau WebP (maksimal {maks} MB).',
             'maks' => 200,
             'baris' => true,
             'placeholder' => ['maks'],

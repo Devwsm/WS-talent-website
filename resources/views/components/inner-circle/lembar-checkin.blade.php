@@ -60,8 +60,8 @@
                 {{-- Anggota biasa: tanpa QR. Kehadiran dinilai dari lokasi HP; yang mencurigakan bisa ditarik poinnya. --}}
                 <input type="hidden" id="kode" value="">
                 <p class="ic-galat" id="kode-galat-js" role="alert" hidden></p>
-                <p class="ic-bantuan">Check-in dinilai dari lokasi HP-mu, tanpa QR. Izinkan akses lokasi bila diminta.
-                    Check-in yang mencurigakan bisa dibatalkan dan poinnya ditarik tim WSM.</p>
+                <p class="ic-bantuan">Check-in dicek lewat lokasi HP-mu, tanpa QR. Izinkan akses lokasi bila diminta.
+                    Pastikan kamu benar-benar ada di venue, ya.</p>
             @else
                 {{-- Pemenang GL gratis: tunjukkan Kartu GL ke staf untuk masuk, lalu pindai QR acara untuk poin. --}}
                 <p class="ic-bantuan"><b>Pemenang GL:</b> tunjukkan Kartu GL ke staf untuk masuk. Mau dapat poin? Minta
@@ -115,8 +115,8 @@
         <p class="ic-ajukan__judul" id="ic-ajukan-judul"><i class="bi bi-life-preserver" aria-hidden="true"></i>
             Lokasimu
             bermasalah?</p>
-        <p class="ic-bantuan">Kalau kamu memang sedang di venue tetapi lokasi HP gagal terbaca, ajukan pemeriksaan. Tim
-            WSM memeriksanya dan memberi poinmu bila sesuai. Satu acara hanya bisa diajukan satu kali.</p>
+        <p class="ic-bantuan">Kalau kamu sudah di venue tapi lokasi HP tetap tidak terbaca, ajukan pemeriksaan. Tim
+            WSM akan mengeceknya dan poinmu masuk bila sesuai. Pengajuan hanya bisa dikirim satu kali per acara.</p>
         <form method="POST" action="{{ route('ic.pemeriksaan.ajukan') }}" class="ic-ajukan__form" data-ic-sekali>
             @csrf
             <input type="hidden" name="acara" id="ic-ajukan-acara" value="{{ $eventDipilih->kode ?? '' }}">

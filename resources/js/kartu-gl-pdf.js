@@ -71,17 +71,55 @@ function kepalaHalaman(doc, d, pertama) {
     }
 }
 
-function kepalaTabel(doc, y) {
-    doc.setFillColor(234, 245, 252);
-    doc.rect(L, y, W, 8, "F");
+const KARTU_GAP = 5; // jarak antar kartu (mm)
+const KARTU_LEBAR = (W - KARTU_GAP) / 2;
+const KARTU_TINGGI_MIN = 22;
+
+/** Satu kartu pemenang: nomor, nama, Member ID, dan kotak centang Hadir. Nama panjang turun ke baris berikutnya. */
+function barisNamaKartu(doc, p) {
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
+    doc.setFontSize(10.5);
+    return doc.splitTextToSize(bersih(p.nama), KARTU_LEBAR - 34);
+}
+
+function tinggiKartu(baris) {
+    return Math.max(KARTU_TINGGI_MIN, 8 + (baris.length - 1) * 4.8 + 5.5 + 7);
+}
+
+function gambarKartu(doc, p, baris, x, y, h) {
+    doc.setFillColor(247, 251, 254);
+    doc.setDrawColor(...GARIS);
+    doc.setLineWidth(0.4);
+    doc.roundedRect(x, y, KARTU_LEBAR, h, 2.5, 2.5, "FD");
+
+    // nomor urut dalam lingkaran biru
+    doc.setFillColor(...BIRU);
+    doc.circle(x + 8, y + h / 2, 4.2, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text(String(p.no), x + 8, y + h / 2 + 1.3, { align: "center" });
+
+    // nama dan Member ID
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10.5);
+    doc.setTextColor(...TINTA);
+    doc.text(baris, x + 16, y + 8.2, { lineHeightFactor: 1.15 });
+    doc.setFont("courier", "normal");
+    doc.setFontSize(9);
     doc.setTextColor(...ABU);
-    doc.text("NO", L + 3, y + 5.4);
-    doc.text("NAMA", L + 16, y + 5.4);
-    doc.text("MEMBER ID", L + 118, y + 5.4);
-    doc.text("HADIR", R - 3, y + 5.4, { align: "right" });
-    return y + 8;
+    doc.text(bersih(p.kode), x + 16, y + 8.2 + (baris.length - 1) * 4.8 + 5.4);
+
+    // kotak centang Hadir
+    doc.setDrawColor(100, 120, 140);
+    doc.setLineWidth(0.4);
+    doc.rect(x + KARTU_LEBAR - 12, y + h / 2 - 5, 6, 6, "S");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(6.5);
+    doc.setTextColor(...ABU);
+    doc.text("HADIR", x + KARTU_LEBAR - 9, y + h / 2 + 5.2, {
+        align: "center",
+    });
 }
 
 /** Bangun dokumen PDF dari data kartu GL. `JsPDF` = kelas jsPDF (dikirim dari luar supaya mudah diuji). */
@@ -103,11 +141,12 @@ export function bangunPdf(JsPDF, d) {
     doc.text(bersih(d.tanggal), L, y);
     y += 8;
 
-    // ---- kartu acara: username, sandi, QR ----
-    const tinggiKartu = 60;
+    // ---- akses acara: username, sandi, QR (satu kali, dipakai semua pemenang) ----
+    const tinggiAkses = 50;
+    doc.setFillColor(234, 245, 252);
     doc.setDrawColor(...GARIS);
     doc.setLineWidth(0.4);
-    doc.roundedRect(L, y, W, tinggiKartu, 3, 3, "S");
+    doc.roundedRect(L, y, W, tinggiAkses, 3, 3, "FD");
 
     const lebarTeks = W - 58;
     const label = (teks, ly) => {
@@ -136,24 +175,17 @@ export function bangunPdf(JsPDF, d) {
     doc.setTextColor(...ABU);
     doc.text(
         doc.splitTextToSize(
-            `Pemenang GL menunjukkan Kartu GL di pintu. Scan QR di kanan untuk mendapat +${angka(d.poin)} poin.`,
+            `Scan QR di kanan untuk +${angka(d.poin)} poin.`,
             lebarTeks,
         ),
         L + 6,
-        y + 47,
+        y + 44,
     );
 
-    const ukuranQr = 38;
+    const ukuranQr = 36;
     const qx = R - ukuranQr - 6;
-    gambarQr(doc, d.qr, qx, y + 6, ukuranQr);
-    doc.setFontSize(8);
-    doc.text(
-        `Scan: +${angka(d.poin)} poin`,
-        qx + ukuranQr / 2,
-        y + 6 + ukuranQr + 5,
-        { align: "center" },
-    );
-    y += tinggiKartu + 8;
+    gambarQr(doc, d.qr, qx, y + 7, ukuranQr);
+    y += tinggiAkses + 8;
 
     if (d.petunjuk) {
         doc.setFont("helvetica", "bold");
@@ -161,57 +193,60 @@ export function bangunPdf(JsPDF, d) {
         doc.setTextColor(...TINTA);
         const p = doc.splitTextToSize("Cara masuk: " + bersih(d.petunjuk), W);
         doc.text(p, L, y);
-        y += p.length * 4.5 + 4;
+        y += p.length * 4.5 + 5;
     }
 
-    // ---- daftar pemenang ----
+    // ---- daftar pemenang: satu kartu per pemenang, dua kolom ----
     doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
     doc.setTextColor(...TINTA);
     doc.text(
-        `Daftar GL gratis (${d.pemenang.length} pemenang dari kuota ${d.kuota})`,
+        `Pemenang GL gratis (${d.pemenang.length} dari kuota ${d.kuota})`,
+        L,
+        y,
+    );
+    y += 4.5;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.setTextColor(...ABU);
+    doc.text(
+        "Centang kotak Hadir saat pemenang menunjukkan Kartu GL di pintu.",
         L,
         y,
     );
     y += 5;
 
     if (d.pemenang.length === 0) {
-        doc.setFont("helvetica", "normal");
         doc.setFontSize(10);
-        doc.setTextColor(...ABU);
         doc.text("Belum ada pemenang.", L, y + 6);
     } else {
-        y = kepalaTabel(doc, y);
-        for (const p of d.pemenang) {
-            // Nama panjang turun ke baris berikutnya (tidak dipotong); barisnya dibuat lebih tinggi.
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(10);
-            const barisNama = doc.splitTextToSize(bersih(p.nama), 98);
-            const tinggiBaris =
-                barisNama.length > 1 ? 4.4 * barisNama.length + 3.6 : 8;
+        for (let i = 0; i < d.pemenang.length; i += 2) {
+            const kiri = d.pemenang[i];
+            const kanan = d.pemenang[i + 1];
+            const barisKiri = barisNamaKartu(doc, kiri);
+            const barisKanan = kanan ? barisNamaKartu(doc, kanan) : null;
+            const h = Math.max(
+                tinggiKartu(barisKiri),
+                barisKanan ? tinggiKartu(barisKanan) : 0,
+            );
 
-            if (y + tinggiBaris > TINGGI - DASAR) {
+            if (y + h > TINGGI - DASAR) {
                 doc.addPage();
                 kepalaHalaman(doc, d, false);
-                y = kepalaTabel(doc, 24);
+                y = 24;
             }
-            doc.setDrawColor(...GARIS);
-            doc.setLineWidth(0.2);
-            doc.line(L, y + tinggiBaris, R, y + tinggiBaris);
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(10);
-            doc.setTextColor(...ABU);
-            doc.text(String(p.no), L + 3, y + 5.4);
-            doc.setFont("helvetica", "bold");
-            doc.setTextColor(...TINTA);
-            doc.text(barisNama, L + 16, y + 5.4, { lineHeightFactor: 1.15 });
-            doc.setFont("courier", "normal");
-            doc.setFontSize(9);
-            doc.text(bersih(p.kode), L + 118, y + 5.4);
-            doc.setDrawColor(130, 145, 160);
-            doc.setLineWidth(0.3);
-            doc.rect(R - 9, y + tinggiBaris / 2 - 2.25, 4.5, 4.5, "S");
-            y += tinggiBaris;
+            gambarKartu(doc, kiri, barisKiri, L, y, h);
+            if (kanan) {
+                gambarKartu(
+                    doc,
+                    kanan,
+                    barisKanan,
+                    L + KARTU_LEBAR + KARTU_GAP,
+                    y,
+                    h,
+                );
+            }
+            y += h + KARTU_GAP;
         }
     }
 

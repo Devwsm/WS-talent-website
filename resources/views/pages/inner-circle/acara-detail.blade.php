@@ -184,25 +184,29 @@
     @if (in_array($statusGl, ['menang', 'tidak_terpilih'], true))
         <x-inner-circle.modal id="modal-gl" :judul="$statusGl === 'menang' ? 'Kamu menang GL gratis 🎉' : 'Hasil undian GL'" :eyebrow="$statusGl === 'menang' ? 'Kartu GL' : 'Hasil undian'" lembar>
             @if ($kartu)
-                {{-- Username dan sandi acara hanya dikirim ke pemenang (GlService::kartu). --}}
+                {{-- Username dan sandi acara hanya dikirim ke pemenang (GlService::kartu). Tampilannya meniru kartu member. --}}
                 <section class="ic-kartu-gl" aria-label="Kartu GL">
-                    <dl class="ic-kartu-gl__data">
+                    <div class="ic-kartu-gl__kepala">
                         <div>
-                            <dt>Nama</dt>
-                            <dd>{{ $kartu['anggota'] }}</dd>
+                            <x-inner-circle.logo ukuran="lg" />
+                            <p class="ic-sub">Kartu GL gratis</p>
                         </div>
-                        <div>
-                            <dt>Member ID</dt>
-                            <dd>{{ $kartu['kode_member'] }}</dd>
-                        </div>
-                        <div>
-                            <dt>Acara</dt>
-                            <dd>{{ $kartu['acara'] }}</dd>
-                        </div>
-                        <div>
-                            <dt>Tanggal</dt>
-                            <dd>{{ $kartu['tanggal'] }}</dd>
-                        </div>
+                        <span class="ic-kartu-gl__lencana"><i class="bi bi-ticket-perforated-fill" aria-hidden="true"></i>
+                            GL gratis</span>
+                    </div>
+
+                    <div class="ic-kartu-gl__anggota">
+                        <p class="ic-kartu-gl__nama">{{ $kartu['anggota'] }}</p>
+                        <small class="ic-kartu-gl__id">Member ID {{ $kartu['kode_member'] }}</small>
+                    </div>
+
+                    <div class="ic-kartu-gl__acara">
+                        <p class="ic-kartu-gl__acara-nama">{{ $kartu['acara'] }}</p>
+                        <p class="ic-kartu-gl__tanggal"><i class="bi bi-calendar-event" aria-hidden="true"></i>
+                            {{ $kartu['tanggal'] }}</p>
+                    </div>
+
+                    <dl class="ic-kartu-gl__akses">
                         <div>
                             <dt>Username acara</dt>
                             <dd><code>{{ $kartu['username'] }}</code></dd>
@@ -217,11 +221,12 @@
                             </dd>
                         </div>
                     </dl>
+
                     @if (filled($kartu['petunjuk']))
-                        <p class="ic-bantuan"><b>Cara masuk:</b> {{ $kartu['petunjuk'] }}</p>
+                        <p class="ic-kartu-gl__catatan"><b>Cara masuk:</b> {{ $kartu['petunjuk'] }}</p>
                     @endif
-                    <p class="ic-bantuan"><b>Tunjukkan kartu ini ke staf</b> di pintu masuk. Jangan bagikan username dan
-                        sandi ke orang lain.</p>
+                    <p class="ic-kartu-gl__catatan"><b>Tunjukkan kartu ini ke staf</b> di pintu masuk. Username dan sandi
+                        ini khusus untukmu, jadi jangan dibagikan ke orang lain.</p>
                 </section>
 
                 <section class="ic-kartu-gl__poin" aria-labelledby="judul-gl-poin">

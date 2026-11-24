@@ -18,7 +18,7 @@ const JENIS = {
         objek: "lokasi",
         judul: "Izinkan akses lokasi?",
         isi: "Lokasi HP dipakai untuk memeriksa apakah kamu berada di venue. Setelah menekan Lanjut, browser akan meminta izin: pilih Izinkan, dan pastikan GPS HP menyala. Lokasimu tidak disimpan.",
-        blokirJudul: "Akses lokasi sedang diblokir",
+        blokirJudul: "Lokasi belum diizinkan",
     },
     kamera: {
         izin: "camera",
@@ -74,7 +74,8 @@ function langkahBuka(objek) {
 /**
  * @param {'lokasi'|'kamera'} jenis
  * @param {Function} fire fungsi SweetAlert2 (opsi) => Promise<{isConfirmed, isDenied}>
- * @param {{isi?: string}} opsi teks penjelasan khusus halaman
+ * @param {{isi?: string, bantuLain?: string, tombolTutup?: string}} opsi teks khusus halaman: `isi` (penjelasan sebelum izin
+ *        diminta), `bantuLain` (kalimat bantuan di bawah langkah membuka izin yang diblokir) dan `tombolTutup` (label tombol batal)
  * @returns {Promise<boolean>} true bila boleh lanjut meminta izin sungguhan
  */
 export async function pastikanIzin(jenis, fire, opsi = {}) {
@@ -94,13 +95,16 @@ export async function pastikanIzin(jenis, fire, opsi = {}) {
                 html:
                     (putaran > 0
                         ? `<p style="margin:0 0 .25rem"><b>Masih diblokir.</b> Kalau sudah diubah, muat ulang halaman ini.</p>`
-                        : `<p style="margin:0">Izin ${t.objek} untuk situs ini ditolak sebelumnya. Buka lagi lewat pengaturan browser:</p>`) +
-                    langkahBuka(t.objek),
+                        : `<p style="margin:0">Browser-mu masih memblokir ${t.objek} untuk situs ini. Izinkan lagi lewat langkah berikut:</p>`) +
+                    langkahBuka(t.objek) +
+                    (opsi.bantuLain
+                        ? `<p style="margin:.75rem 0 0;font-size:.85rem;opacity:.8">${opsi.bantuLain}</p>`
+                        : ""),
                 showCancelButton: true,
                 showDenyButton: putaran > 0,
                 confirmButtonText: "Sudah, coba lagi",
                 denyButtonText: "Muat ulang",
-                cancelButtonText: "Tutup",
+                cancelButtonText: opsi.tombolTutup ?? "Tutup",
                 allowOutsideClick: false,
             });
             if (!h) return true;

@@ -42,7 +42,7 @@ class PemeriksaanService
         }
 
         if (! $event->lokasi_aktif) {
-            throw new PemeriksaanGagal('Titik lokasi acara ini belum diatur panitia, jadi check-in belum dibuka. Hubungi panitia di venue.');
+            throw new PemeriksaanGagal('Check-in acara ini belum bisa dibuka karena titik lokasi venue belum disiapkan tim WSM. Coba lagi nanti atau tanyakan ke panitia di venue.');
         }
 
         $sekarang = now();

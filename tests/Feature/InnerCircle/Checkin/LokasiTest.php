@@ -91,7 +91,7 @@ class LokasiTest extends TestCase
         $e = $this->acara();
 
         $this->checkin($m, $e, ['lat' => self::LAT, 'lng' => self::LNG, 'akurasi' => 10])
-            ->assertSessionHasErrors(['kode' => 'Titik lokasi acara ini belum diatur panitia, jadi check-in belum dibuka. Hubungi panitia di venue.']);
+            ->assertSessionHasErrors(['kode' => 'Check-in acara ini belum bisa dibuka karena titik lokasi venue belum disiapkan tim WSM. Coba lagi nanti atau tanyakan ke panitia di venue.']);
         $this->assertSame(0, ic_poin::count());
     }
 

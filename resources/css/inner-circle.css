@@ -3028,43 +3028,135 @@ a.ic-poster-kartu:hover .ic-poster-kartu__gambar {
 }
 
 .ic-kartu-gl {
+    position: relative;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding: 20px;
-    border: 2px solid var(--ic-navy);
-    border-radius: 24px;
-    background: #fff;
-}
-.ic-kartu-gl__judul {
-    margin: 0;
-    font-size: 22px;
-    color: var(--ic-judul);
-}
-.ic-kartu-gl__data {
-    display: grid;
-    gap: 10px;
-    margin: 0;
-}
-.ic-kartu-gl__data > div {
-    display: flex;
-    justify-content: space-between;
     gap: 16px;
-    padding-bottom: 8px;
-    border-bottom: 1px dashed var(--ic-garis-kartu);
+    padding: 22px;
+    border: 1px solid #c3dcee;
+    border-radius: 24px;
+    background:
+        radial-gradient(circle at 100% 0%, #cde7f7 0, transparent 46%),
+        linear-gradient(180deg, #fff 0%, #eaf6fd 100%);
+    box-shadow: 0 14px 34px rgba(4, 38, 84, 0.1);
 }
-.ic-kartu-gl__data dt {
+.ic-kartu-gl::after {
+    content: "✦";
+    position: absolute;
+    right: 10px;
+    bottom: -54px;
+    font-size: 140px;
+    color: #d6ebf9;
+    pointer-events: none;
+}
+.ic-kartu-gl > * {
+    position: relative;
+    z-index: 1;
+}
+.ic-kartu-gl__kepala {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+.ic-kartu-gl__lencana {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--ic-navy);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 800;
+}
+.ic-kartu-gl__anggota {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+.ic-kartu-gl__nama {
+    margin: 0;
+    font-family: var(--ic-font-judul);
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: var(--ic-judul);
+    overflow-wrap: anywhere;
+}
+.ic-kartu-gl__id {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--ic-navy);
+}
+.ic-kartu-gl__acara {
+    padding: 14px 16px;
+    border: 1px solid #c3dcee;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.82);
+}
+.ic-kartu-gl__acara-nama {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--ic-judul);
+    overflow-wrap: anywhere;
+}
+.ic-kartu-gl__tanggal {
+    margin: 4px 0 0;
+    font-size: 14px;
     color: var(--ic-redup);
 }
-.ic-kartu-gl__data dd {
+.ic-kartu-gl__akses {
+    display: grid;
+    gap: 8px;
     margin: 0;
-    font-weight: 700;
+}
+.ic-kartu-gl__akses > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 14px;
+    border: 1px solid #c3dcee;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.82);
+}
+.ic-kartu-gl__akses dt {
+    flex-shrink: 0;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ic-redup);
+}
+.ic-kartu-gl__akses dd {
+    margin: 0;
+    min-width: 0;
+    font-weight: 800;
     text-align: right;
+    color: var(--ic-navy);
     overflow-wrap: anywhere;
 }
 .ic-kartu-gl__sandi summary {
     cursor: pointer;
     color: var(--ic-navy);
+}
+.ic-kartu-gl__sandi[open] summary {
+    margin-bottom: 4px;
+    color: var(--ic-redup);
+    font-size: 12px;
+}
+.ic-kartu-gl__catatan {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--ic-redup);
 }
 
 .ic-gl-saya {
@@ -3251,6 +3343,108 @@ a.ic-poster-kartu:hover .ic-poster-kartu__gambar {
         align-items: flex-start;
         gap: 14px;
     }
+}
+
+/* ---------- Popup Ubah profil: foto bisa diketuk, hanya dua tombol ---------- */
+.ic-profil-ubah__foto {
+    position: relative;
+    flex-shrink: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 28px;
+    background: none;
+    cursor: pointer;
+}
+.ic-profil-ubah__foto .ic-kartu-anggota__lencana {
+    right: -4px;
+    bottom: -4px;
+}
+.ic-profil-ubah__judul {
+    margin: 0 0 4px;
+    font-weight: 800;
+    color: var(--ic-judul);
+}
+.ic-tautan-bahaya {
+    margin-top: 6px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: #b42318;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: underline;
+    cursor: pointer;
+}
+.ic-tautan-bahaya:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+/* ---------- Unggah foto kenangan: kotak ajakan, bukan tombol bawaan browser ---------- */
+.ic-unggah {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px;
+    border: 2px dashed #9cc7e4;
+    border-radius: 18px;
+    background: #f3faff;
+    cursor: pointer;
+    transition:
+        border-color 0.2s,
+        background 0.2s;
+}
+.ic-unggah:hover,
+.ic-unggah:focus-within {
+    border-color: var(--ic-navy);
+    background: #eaf6fd;
+}
+.ic-unggah:focus-within {
+    outline: 3px solid rgba(23, 98, 154, 0.3);
+    outline-offset: 2px;
+}
+.ic-unggah--terisi {
+    border-style: solid;
+}
+.ic-unggah__input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    border: 0;
+    opacity: 0;
+}
+.ic-unggah__ikon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    background: #fff;
+    color: var(--ic-navy);
+    font-size: 22px;
+    box-shadow: 0 6px 16px rgba(4, 38, 84, 0.1);
+}
+.ic-unggah__teks {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+.ic-unggah__teks b {
+    color: var(--ic-judul);
+    overflow-wrap: anywhere;
+}
+.ic-unggah__teks small {
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--ic-redup);
 }
 
 /* ---------- Riwayat aktivitas: baris GL (tautan ke acara) ---------- */
