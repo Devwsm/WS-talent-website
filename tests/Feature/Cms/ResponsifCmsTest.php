@@ -48,7 +48,7 @@ class ResponsifCmsTest extends TestCase
 
         $this->assertStringContainsString('pastikanIzin("lokasi"', $js('inner-circle.js'));
         $this->assertStringContainsString('pastikanIzin("kamera"', $js('inner-circle.js'));
-        $this->assertStringContainsString('pastikanIzin(', $js('peta-acara.js'));
+        $this->assertStringContainsString('pastikanIzin(', $js('atur-acara.js'));
         $this->assertStringContainsString("window.pastikanIzin('lokasi'", (string) file_get_contents(resource_path('views/pages/dashboard-pages/inner-circle/acara/hari-h.blade.php')));
         $this->assertStringContainsString('resources/js/izin-perangkat.js', (string) file_get_contents(base_path('vite.config.js')));
     }
@@ -56,7 +56,7 @@ class ResponsifCmsTest extends TestCase
     public function test_tidak_ada_pemanggilan_gps_atau_kamera_tanpa_penjelasan(): void
     {
         // Setiap berkas yang memanggil geolocation/QrScanner harus memuat pastikanIzin (modul izin-perangkat sendiri dikecualikan).
-        foreach (['inner-circle.js', 'peta-acara.js'] as $f) {
+        foreach (['inner-circle.js', 'atur-acara.js'] as $f) {
             $isi = (string) file_get_contents(resource_path("js/{$f}"));
             if (str_contains($isi, 'navigator.geolocation') || str_contains($isi, 'QrScanner')) {
                 $this->assertStringContainsString('pastikanIzin', $isi, "{$f} memanggil GPS/kamera tanpa penjelasan izin.");

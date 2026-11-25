@@ -18,11 +18,24 @@ class CspLaporanService
 {
     private const DIABAIKAN = ['chrome-extension', 'moz-extension', 'safari-extension', 'safari-web-extension', 'ms-browser-extension', 'about', 'resource', 'chrome', 'webviewprogressproxy', 'android-webview-video-poster'];
 
+    /**
+     * Sumber yang disuntikkan browser pengunjung saat fitur terjemahan otomatis (Google Translate di Chrome dan
+     * sejenisnya) menerjemahkan halaman: skrip inline browser menambahkan stylesheet dari www.gstatic.com atau
+     * translate.googleapis.com. Situs ini tidak pernah memuatnya sendiri, dan pengunjung tidak bisa berbuat apa-apa,
+     * jadi laporannya hanya menjadi derau di halaman Log. Hanya jalur terjemahan yang diabaikan; gstatic.com untuk
+     * keperluan lain tetap dilaporkan.
+     */
+    private const HOST_TERJEMAHAN = ['translate.googleapis.com', 'translate.google.com', 'translate-pa.googleapis.com'];
+
     /** @param array<string, mixed> $laporan bidang CSP (document-uri, effective-directive, blocked-uri, ...) */
     public function catat(array $laporan, ?string $ip = null): void
     {
         try {
             $direktif = $this->direktif($laporan);
+            if ($this->dariTerjemahanBrowser((string) ($laporan['blocked-uri'] ?? ''))) {
+                return;
+            }
+
             $diblokir = $this->diblokir((string) ($laporan['blocked-uri'] ?? ''));
             if ($diblokir === null) {
                 return;
@@ -89,6 +102,22 @@ class CspLaporanService
         $nama = strtolower($nama);
 
         return preg_match('/^[a-z-]{3,40}$/', $nama) ? $nama : 'tidak-diketahui';
+    }
+
+    /** Benar bila sumber yang dilaporkan adalah aset fitur terjemahan browser (lihat HOST_TERJEMAHAN). */
+    private function dariTerjemahanBrowser(string $uri): bool
+    {
+        $bagian = parse_url(trim($uri));
+        if ($bagian === false || ! in_array(strtolower((string) ($bagian['scheme'] ?? '')), ['http', 'https'], true)) {
+            return false;
+        }
+
+        $host = strtolower((string) ($bagian['host'] ?? ''));
+        if (in_array($host, self::HOST_TERJEMAHAN, true)) {
+            return true;
+        }
+
+        return $host === 'www.gstatic.com' && str_starts_with((string) ($bagian['path'] ?? ''), '/_/translate_http/');
     }
 
     /** Host (untuk URL http/https) atau kata kunci (inline, eval, data, blob). Null bila harus diabaikan. */

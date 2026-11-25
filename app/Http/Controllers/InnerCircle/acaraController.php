@@ -13,6 +13,7 @@ use App\Services\InnerCircle\BandsintownService;
 use App\Services\InnerCircle\SinkronGagal;
 use App\Support\GambarGagal;
 use App\Support\ImageProcessor;
+use App\Support\RincianPerubahan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -69,7 +70,18 @@ class acaraController extends Controller
             });
         }
 
+        // Popup Atur acara terbuka otomatis dari ?atur=KODE (tautan dari halaman lain, atau setelah menambah acara),
+        // atau dari kiriman form Atur acara yang gagal divalidasi (old('_atur')): isinya dirender langsung supaya
+        // isian dan pesan galatnya ikut tampil. Selain itu isinya dimuat saat tombol Atur ditekan.
+        $kodeAtur = (string) ($request->old('_atur') ?: $this->teks($request, 'atur'));
+        $eventAtur = $kodeAtur !== '' ? ic_event::query()->where('kode', $kodeAtur)->first() : null;
+        $aturInline = $eventAtur !== null && (string) $request->old('_atur') === $eventAtur->kode;
+
         return $this->tampil('acara.pengaturan', [
+            'aturKode' => $eventAtur?->kode,
+            'aturInline' => $aturInline,
+            'aturEvent' => $aturInline ? $eventAtur : null,
+            'aturPosterUrl' => $aturInline ? $this->urlPoster($eventAtur) : null,
             'jadwal' => $jadwal->paginate(self::PER_HALAMAN_ACARA)->withQueryString()->fragment('jadwal'),
             'totalAcara' => ic_event::query()->count(),
             'filter' => $filter,
@@ -84,25 +96,86 @@ class acaraController extends Controller
     {
         $event = $acara->buat($request->validated());
 
-        // Lanjut ke halaman Atur acara supaya GL, poster, jendela, dan lokasi bisa langsung diisi.
-        return redirect(route('ic.admin.acara.atur', $event->kode))
-            ->with('success', 'Acara ' . ($event->venue ?? $event->kode) . ' ditambahkan. Lengkapi pengaturannya di bawah.');
+        // Lanjut ke popup Atur acara (terbuka otomatis) supaya GL, poster, jendela, dan lokasi bisa langsung diisi.
+        return redirect(route('ic.admin.acara', ['atur' => $event->kode]))
+            ->with('success', 'Acara ' . ($event->venue ?? $event->kode) . ' ditambahkan. Lengkapi pengaturannya di popup Atur acara.');
     }
 
-    /** Halaman Atur acara: semua pengaturan satu acara (dasar, GL, check-in, poster) dan titik lokasi di peta. */
-    public function atur(string $kode)
+    /**
+     * Atur acara sekarang berupa popup di halaman Pengaturan. Permintaan dari popup (fetch, atau ?fragmen=1) mendapat
+     * isi popup saja; kunjungan biasa ke alamat ini (tautan lama dari halaman Hari H dan Undian GL, bookmark) dialihkan
+     * ke daftar jadwal dengan popup terbuka. Sandi acara hanya dirender untuk satu acara yang sedang dibuka.
+     */
+    public function atur(string $kode, Request $request)
     {
         $event = ic_event::query()->where('kode', $kode)->firstOrFail();
 
-        return $this->tampil('acara.atur', [
-            'event' => $event,
-            'posterUrl' => $this->urlPoster($event),
-        ]);
+        if (! $request->ajax() && ! $request->boolean('fragmen')) {
+            return redirect(route('ic.admin.acara', ['atur' => $event->kode]));
+        }
+
+        return response()
+            ->view('pages.dashboard-pages.inner-circle.acara.atur-isi', [
+                'event' => $event,
+                'posterUrl' => $this->urlPoster($event),
+            ])
+            ->header('Cache-Control', 'no-store, private');
+    }
+
+    /** Kolom acara yang dibandingkan untuk rincian di Log > Aktivitas admin (urutan = urutan tampil). */
+    private const LABEL_LOG = [
+        'tanggal' => 'Tanggal show',
+        'tipe' => 'Tipe acara',
+        'venue' => 'Venue',
+        'kota' => 'Kota',
+        'deskripsi' => 'Deskripsi singkat',
+        'poster' => 'Poster',
+        'kuota_gl' => 'Kuota GL',
+        'undian_pada' => 'Waktu undian',
+        'username_acara' => 'Username acara',
+        'sandi_acara' => 'Sandi acara',
+        'petunjuk_masuk' => 'Petunjuk masuk pemenang',
+        'jendela_mulai' => 'Check-in dibuka',
+        'jendela_selesai' => 'Check-in ditutup',
+        'poin_gl' => 'Poin GL',
+        'poin_mandiri' => 'Poin check-in mandiri',
+    ];
+
+    private const FORMAT_LOG = [
+        'tanggal' => 'date',
+        'undian_pada' => 'datetime',
+        'jendela_mulai' => 'datetime',
+        'jendela_selesai' => 'datetime',
+        'kuota_gl' => 'angka',
+        'poin_gl' => 'angka',
+        'poin_mandiri' => 'angka',
+    ];
+
+    /** Catat rincian perubahan acara (sebelum → sesudah) untuk Log. Sandi hanya "diganti", tulisan panjang hanya "diubah". */
+    private function catatRincian(Request $request, array $sebelum, ic_event $event, string $ringkasan): void
+    {
+        $baris = RincianPerubahan::bandingkan(
+            $sebelum,
+            $event->only(array_keys(self::LABEL_LOG)),
+            self::LABEL_LOG,
+            self::FORMAT_LOG,
+            rahasia: ['sandi_acara'],
+            teks: ['deskripsi', 'petunjuk_masuk', 'poster'],
+        );
+
+        // Request global, bukan $request: FormRequest adalah salinan, sedangkan middleware CatatAktivitas membaca yang asli.
+        $asli = request();
+        $nama = $event->venue ?? $event->kode;
+        $asli->attributes->set('log_ket', $baris === []
+            ? "{$ringkasan} {$nama}: tidak ada yang berubah."
+            : "{$ringkasan} {$nama}: " . RincianPerubahan::ringkas($baris) . ' diubah.');
+        $asli->attributes->set('log_rincian', $baris);
     }
 
     public function simpanAtur(string $kode, aturAcaraRequest $request, ImageProcessor $gambar): RedirectResponse
     {
         $event = ic_event::query()->where('kode', $kode)->firstOrFail();
+        $sebelum = $event->only(array_keys(self::LABEL_LOG));
         $d = $request->validated();
 
         $data = [
@@ -166,7 +239,9 @@ class acaraController extends Controller
             Storage::disk('public')->delete($posterLama);
         }
 
-        return redirect(route('ic.admin.acara.atur', $event->kode))
+        $this->catatRincian($request, $sebelum, $event->refresh(), 'Pengaturan acara');
+
+        return redirect($this->urlDaftarAcara($request))
             ->with('success', 'Pengaturan acara ' . ($event->venue ?? $event->kode) . ' disimpan.');
     }
 
@@ -178,6 +253,7 @@ class acaraController extends Controller
     public function ubahAcara(string $kode, simpanEventRequest $request): RedirectResponse
     {
         $event = ic_event::query()->where('kode', $kode)->firstOrFail();
+        $sebelum = $event->only(array_keys(self::LABEL_LOG));
 
         // Token dan kode tidak ikut berubah: QR yang sudah dicetak tetap berlaku.
         $data = $request->validated();
@@ -191,6 +267,7 @@ class acaraController extends Controller
         }
 
         $event->update($data);
+        $this->catatRincian($request, $sebelum, $event->refresh(), 'Data acara');
 
         return back()->with('success', 'Acara ' . ($event->venue ?? $event->kode) . ' diperbarui.');
     }
@@ -209,12 +286,15 @@ class acaraController extends Controller
     }
 
     /** Sembunyikan atau tampilkan acara di daftar anggota (bukan menghapus; QR dan check-in tidak berubah). */
-    public function ubahTampil(string $kode): RedirectResponse
+    public function ubahTampil(string $kode, Request $request): RedirectResponse
     {
         $event = ic_event::query()->where('kode', $kode)->firstOrFail();
         $event->balikTampilAnggota();
 
         $nama = $event->venue ?? $event->kode;
+        $request->attributes->set('log_ket', $event->tampil_di_anggota
+            ? "Acara {$nama} ditampilkan lagi di daftar anggota."
+            : "Acara {$nama} disembunyikan dari daftar anggota.");
 
         return back()->with('success', $event->tampil_di_anggota
             ? "Acara {$nama} tampil lagi di daftar anggota."

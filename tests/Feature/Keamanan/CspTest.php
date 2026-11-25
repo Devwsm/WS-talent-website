@@ -89,6 +89,29 @@ class CspTest extends TestCase
         $this->assertNull($baris->jejak);
     }
 
+    public function test_laporan_dari_terjemahan_browser_diabaikan_tapi_gstatic_lain_tetap_dicatat(): void
+    {
+        config(['keamanan.csp.mode' => 'report']);
+
+        // Stylesheet yang disuntikkan Google Translate (seperti di Log produksi: style-src-elem dari www.gstatic.com).
+        foreach (
+            [
+                'https://www.gstatic.com/_/translate_http/_/ss/k=translate_http.tr.26tY-h6gH9w.L.W.O/am=AAAA/d=0/rs=AN8SPfpA/m=el_main_css',
+                'https://translate.googleapis.com/translate_static/css/translateelement.css',
+            ] as $uri
+        ) {
+            $this->postJson(route('csp.laporan'), $this->laporanLama(['effective-directive' => 'style-src-elem', 'blocked-uri' => $uri]))
+                ->assertNoContent();
+        }
+        $this->assertSame(0, log_error::query()->count(), 'laporan dari fitur terjemahan browser tidak dicatat');
+
+        // gstatic.com untuk keperluan lain tetap dilaporkan: yang diabaikan hanya jalur terjemahan.
+        $this->postJson(route('csp.laporan'), $this->laporanLama(['effective-directive' => 'style-src-elem', 'blocked-uri' => 'https://www.gstatic.com/lain/gaya.css']))
+            ->assertNoContent();
+        $this->assertSame(1, log_error::query()->count());
+        $this->assertSame('www.gstatic.com', explode(' ', log_error::firstOrFail()->lokasi)[0]);
+    }
+
     public function test_bentuk_reporting_api_juga_diterima(): void
     {
         config(['keamanan.csp.mode' => 'report']);

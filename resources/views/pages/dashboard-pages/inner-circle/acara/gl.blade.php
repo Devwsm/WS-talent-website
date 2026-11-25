@@ -104,14 +104,22 @@
 
                     <div class="flex flex-wrap gap-3">
                         @if ($bisaTunda)
-                            <form method="POST" action="{{ route('ic.admin.acara.gl.tunda', $event->kode) }}">
+                            <form method="POST" action="{{ route('ic.admin.acara.gl.tunda', $event->kode) }}"
+                                data-swal-confirm data-confirm-icon="question" data-confirm-loading="Menunda..."
+                                data-confirm-title="Tunda undian GL?"
+                                data-confirm-message="Undian otomatis tidak akan jalan sampai kamu melanjutkannya lagi."
+                                data-confirm-button="Ya, tunda">
                                 @csrf
                                 <button type="submit" class="{{ $kelasTombol }}"><i class="bi bi-pause-circle"
                                         aria-hidden="true"></i> Tunda undian</button>
                             </form>
                         @endif
                         @if ($bisaLanjutkan)
-                            <form method="POST" action="{{ route('ic.admin.acara.gl.lanjutkan', $event->kode) }}">
+                            <form method="POST" action="{{ route('ic.admin.acara.gl.lanjutkan', $event->kode) }}"
+                                data-swal-confirm data-confirm-icon="question" data-confirm-loading="Menyimpan..."
+                                data-confirm-title="Lanjutkan undian sesuai jadwal?"
+                                data-confirm-message="Undian akan berjalan otomatis pada waktu yang sudah diatur."
+                                data-confirm-button="Ya, lanjutkan">
                                 @csrf
                                 <button type="submit" class="{{ $kelasTombol }}"><i class="bi bi-play-circle"
                                         aria-hidden="true"></i> Lanjutkan sesuai jadwal</button>
@@ -121,7 +129,11 @@
 
                     @if ($bisaUndi)
                         <form method="POST" action="{{ route('ic.admin.acara.gl.undi', $event->kode) }}"
-                            class="flex flex-col gap-3 rounded-2xl border border-white/10 p-5">
+                            class="flex flex-col gap-3 rounded-2xl border border-white/10 p-5" data-swal-confirm
+                            data-confirm-tone="bahaya" data-confirm-loading="Mengundi..."
+                            data-confirm-title="Undi sekarang?"
+                            data-confirm-message="Hasil undian langsung terkunci dan email kartu GL dikirim ke para pemenang. Tidak bisa diulang."
+                            data-confirm-button="Ya, undi sekarang">
                             @csrf
                             <label for="alasan-undi" class="text-sm font-semibold">Undi sekarang</label>
                             <p class="text-xs text-white/50">Mengundi di luar jadwal biasa atau menyusul undian yang
@@ -263,7 +275,11 @@
                     <div class="flex flex-wrap items-center gap-3">
                         <button type="button" id="salin-whatsapp" class="{{ $kelasTombolUtama }}"><i
                                 class="bi bi-clipboard" aria-hidden="true"></i> <span>Salin untuk WhatsApp</span></button>
-                        <form method="POST" action="{{ route('ic.admin.acara.gl.diterima', $event->kode) }}">
+                        <form method="POST" action="{{ route('ic.admin.acara.gl.diterima', $event->kode) }}"
+                            data-swal-confirm data-confirm-icon="question" data-confirm-loading="Menyimpan..."
+                            data-confirm-title="Tandai sudah diterima tim Show?"
+                            data-confirm-message="Semua pemenang pada daftar ini ditandai sudah diterima tim Show."
+                            data-confirm-button="Ya, tandai">
                             @csrf
                             <button type="submit" class="{{ $kelasTombol }}"><i class="bi bi-check2-circle"
                                     aria-hidden="true"></i> Tandai sudah diterima tim Show</button>

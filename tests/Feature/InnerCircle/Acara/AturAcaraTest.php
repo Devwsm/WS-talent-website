@@ -31,22 +31,66 @@ class AturAcaraTest extends TestCase
         return $tambah + ['tanggal' => '2030-05-10', 'tipe' => 'club', 'venue' => 'Club Satu', 'kota' => 'Jakarta'];
     }
 
-    public function test_halaman_atur_terbuka_dan_butuh_login(): void
+    public function test_popup_atur_butuh_login_dan_dimuat_sebagai_fragmen(): void
     {
         $e = $this->acara();
 
-        $this->get(route('ic.admin.acara.atur', $e->kode))->assertRedirect(route('login'));
-        $this->admin()->get(route('ic.admin.acara.atur', $e->kode))->assertOk()
-            ->assertSee('Atur acara')->assertSee('GL gratis')->assertSee('Lokasi check-in')->assertSee('belum punya titik lokasi');
-        $this->admin()->get(route('ic.admin.acara.atur', 'KODE-TIDAK-ADA'))->assertNotFound();
+        $this->get(route('ic.admin.acara.atur', ['kode' => $e->kode, 'fragmen' => 1]))->assertRedirect(route('login'));
+
+        // Isi popup (dimuat saat tombol Atur ditekan): empat bagian, tidak boleh di-cache.
+        $this->admin()->get(route('ic.admin.acara.atur', ['kode' => $e->kode, 'fragmen' => 1]))->assertOk()
+            ->assertHeader('Cache-Control')
+            ->assertSee('Atur acara')->assertSee('Data acara')->assertSee('GL gratis')->assertSee('Check-in dan poin')
+            ->assertSee('Lokasi check-in')->assertSee('belum punya titik lokasi')
+            ->assertSee('data-atur-akar', false)->assertDontSee('<html', false);
+        $this->admin()->get(route('ic.admin.acara.atur', $e->kode), ['X-Requested-With' => 'XMLHttpRequest'])->assertOk()->assertSee('data-atur-akar', false);
+        $this->admin()->get(route('ic.admin.acara.atur', ['kode' => 'KODE-TIDAK-ADA', 'fragmen' => 1]))->assertNotFound();
     }
 
-    public function test_tambah_acara_lanjut_ke_halaman_atur(): void
+    public function test_alamat_atur_lama_dialihkan_ke_daftar_dengan_popup_terbuka(): void
+    {
+        $e = $this->acara();
+
+        // Tautan lama (halaman Hari H, Undian GL, bookmark) tetap berfungsi: daftar jadwal dengan popup terbuka.
+        $this->admin()->get(route('ic.admin.acara.atur', $e->kode))->assertRedirect(route('ic.admin.acara', ['atur' => $e->kode]));
+        $this->admin()->get(route('ic.admin.acara.atur', 'KODE-TIDAK-ADA'))->assertNotFound();
+
+        $this->admin()->get(route('ic.admin.acara', ['atur' => $e->kode]))->assertOk()
+            ->assertSee('id="dialogAtur"', false)
+            ->assertSee('data-buka-url="' . route('ic.admin.acara.atur', ['kode' => $e->kode, 'fragmen' => 1]) . '"', false)
+            ->assertDontSee('data-inline', false);
+    }
+
+    public function test_daftar_jadwal_tidak_memuat_sandi_acara(): void
+    {
+        $e = $this->acara();
+        $e->update(['sandi_acara' => 'rahasia-acara', 'username_acara' => 'tamu-ws', 'kuota_gl' => 5]);
+
+        // Sandi hanya dirender untuk satu acara yang sedang dibuka di popup, bukan untuk semua baris daftar.
+        $this->admin()->get(route('ic.admin.acara'))->assertOk()->assertDontSee('rahasia-acara');
+        $this->admin()->get(route('ic.admin.acara.atur', ['kode' => $e->kode, 'fragmen' => 1]))->assertOk()->assertSee('rahasia-acara');
+    }
+
+    public function test_form_atur_gagal_validasi_membuka_popup_lagi_dengan_galatnya(): void
+    {
+        $e = $this->acara();
+
+        $this->admin()->from(route('ic.admin.acara'))
+            ->put(route('ic.admin.acara.atur.simpan', $e->kode), $this->data(['_atur' => $e->kode, 'kuota_gl' => -5, 'deskripsi' => 'Isian saya']))
+            ->assertRedirect(route('ic.admin.acara'));
+
+        // Sesi (dan flash galat) berlanjut dari kiriman form tadi, seperti browser sungguhan: tanpa withSession baru.
+        $this->get(route('ic.admin.acara'))->assertOk()
+            ->assertSee('data-inline="1"', false)->assertSee('Isian saya')->assertSee('Belum bisa disimpan')
+            ->assertSee('data-atur-galat', false)->assertSee('Kuota GL');
+    }
+
+    public function test_tambah_acara_lanjut_ke_popup_atur(): void
     {
         $r = $this->admin()->post(route('ic.admin.acara.simpan'), $this->data(['venue' => 'Klub Baru']));
 
         $e = ic_event::query()->where('venue', 'Klub Baru')->firstOrFail();
-        $r->assertRedirect(route('ic.admin.acara.atur', $e->kode));
+        $r->assertRedirect(route('ic.admin.acara', ['atur' => $e->kode]));
     }
 
     public function test_simpan_pengaturan_gl_dan_check_in(): void
@@ -64,7 +108,7 @@ class AturAcaraTest extends TestCase
             'poin_mandiri' => 2000,
             'jendela_mulai' => '2030-05-10T22:00',
             'jendela_selesai' => '2030-05-11T04:00',
-        ]))->assertRedirect(route('ic.admin.acara.atur', $e->kode))->assertSessionHasNoErrors();
+        ]))->assertRedirect(route('ic.admin.acara') . '#jadwal')->assertSessionHasNoErrors();
 
         $baru = $e->fresh();
         $this->assertSame(25, $baru->kuota_gl);
@@ -87,7 +131,7 @@ class AturAcaraTest extends TestCase
         $this->assertSame('rahasia-acara', $e->fresh()->sandi_acara);
 
         // Sandi tampil langsung sebagai kode di kolom teks (bukan kolom sandi bertitik-titik) dan tidak ada lagi tombol "Lihat sandi".
-        $this->admin()->get(route('ic.admin.acara.atur', $e->kode))->assertOk()
+        $this->admin()->get(route('ic.admin.acara.atur', ['kode' => $e->kode, 'fragmen' => 1]))->assertOk()
             ->assertSee('value="rahasia-acara"', false)
             ->assertSee('data-buat-kode', false)
             ->assertDontSee('Lihat sandi');
@@ -198,7 +242,7 @@ class AturAcaraTest extends TestCase
         $this->assertSame('manual', $e->fresh()->sumber);
     }
 
-    public function test_simpan_lokasi_dari_halaman_atur_kembali_ke_halaman_atur(): void
+    public function test_simpan_lokasi_dari_popup_atur_kembali_ke_daftar_jadwal(): void
     {
         $e = $this->acara();
 
@@ -208,12 +252,12 @@ class AturAcaraTest extends TestCase
             'radius' => 150,
             'sumber' => 'manual',
             'kembali' => 'atur',
-        ])->assertRedirect(route('ic.admin.acara.atur', $e->kode) . '#lokasi');
+        ])->assertRedirect(route('ic.admin.acara') . '#jadwal');
 
         $this->assertTrue($e->fresh()->lokasi_aktif);
 
         $this->admin()->delete(route('ic.admin.acara.lokasi.hapus', $e->kode), ['kembali' => 'atur'])
-            ->assertRedirect(route('ic.admin.acara.atur', $e->kode) . '#lokasi');
+            ->assertRedirect(route('ic.admin.acara') . '#jadwal');
         $this->assertFalse($e->fresh()->lokasi_aktif);
     }
 

@@ -236,6 +236,10 @@ class acaraHariHController extends Controller
             }
         }
 
+        $sebelumLokasi = $event->lokasi_aktif
+            ? ['lat' => $event->lokasi_lat, 'lng' => $event->lokasi_lng, 'radius' => $event->lokasi_radius]
+            : ['lat' => null, 'lng' => null, 'radius' => null];
+
         $event->update([
             'lokasi_lat' => $lat,
             'lokasi_lng' => $lng,
@@ -244,6 +248,21 @@ class acaraHariHController extends Controller
             'lokasi_diatur_oleh' => $d['petugas'] ?? null,
             'lokasi_diatur_pada' => now(),
         ]);
+
+        $baris = [];
+        if ($sebelumLokasi['lat'] === null) {
+            $baris[] = "Titik lokasi: baru diatur ({$lat}, {$lng})";
+        } else {
+            $geser = LokasiService::jarakMeter((float) $sebelumLokasi['lat'], (float) $sebelumLokasi['lng'], $lat, $lng);
+            if ($geser >= 1) {
+                $baris[] = 'Titik lokasi: dipindah ' . LokasiService::formatJarak($geser) . " ke ({$lat}, {$lng})";
+            }
+        }
+        if ((int) $sebelumLokasi['radius'] !== (int) $d['radius']) {
+            $baris[] = 'Radius: ' . ($sebelumLokasi['radius'] === null ? 'kosong' : (int) $sebelumLokasi['radius'] . ' m') . ' → ' . (int) $d['radius'] . ' m';
+        }
+        $baris[] = 'Sumber titik: ' . (['manual' => 'klik peta atau ketik koordinat', 'alamat' => 'pencarian alamat', 'petugas' => 'GPS HP petugas'][$d['sumber']] ?? $d['sumber']);
+        request()->attributes->set('log_rincian', $baris); // request asli (FormRequest adalah salinan), dibaca CatatAktivitas
 
         return redirect($this->kembaliLokasi($request, $event))
             ->with('success', 'Titik lokasi check-in ' . ($event->venue ?? $event->kode) . ' disimpan (radius ' . $event->radius_efektif . ' m).');
@@ -285,6 +304,31 @@ class acaraHariHController extends Controller
         return response()->json(['kueri' => $kueri, 'hasil' => $hasil]);
     }
 
+    /**
+     * Saran alamat saat petugas mengetik (autocomplete) di popup Atur acara. JSON: {hasil: [{judul, detail, nama, lat, lng}]}.
+     * Condong ke titik acara bila sudah ada. Hanya saran: petugas yang memilih dan memeriksa posisinya di peta.
+     */
+    public function saranLokasi(string $kode, Request $request, GeocodeService $geo): JsonResponse
+    {
+        $event = ic_event::query()->where('kode', $kode)->firstOrFail();
+        abort_unless($event->bisa_checkin, 404);
+
+        $q = mb_substr(trim((string) $request->query('q')), 0, 150);
+
+        try {
+            $hasil = $geo->saran(
+                $q,
+                6,
+                $event->lokasi_aktif ? (float) $event->lokasi_lat : null,
+                $event->lokasi_aktif ? (float) $event->lokasi_lng : null,
+            );
+        } catch (SinkronGagal $e) {
+            return response()->json(['pesan' => $e->getMessage(), 'hasil' => []], 502);
+        }
+
+        return response()->json(['kueri' => $q, 'hasil' => $hasil])->header('Cache-Control', 'no-store, private');
+    }
+
     public function unduhQr(string $kode, QrService $qr): Response
     {
         $event = $this->eventDenganQr($kode);
@@ -320,11 +364,11 @@ class acaraHariHController extends Controller
         return $event;
     }
 
-    /** Titik lokasi bisa disimpan dari halaman Hari H atau dari peta di halaman Atur acara (field tersembunyi `kembali`). */
+    /** Titik lokasi bisa disimpan dari halaman Hari H atau dari popup Atur acara (field tersembunyi `kembali`). */
     private function kembaliLokasi(Request $request, ic_event $event): string
     {
         return $request->input('kembali') === 'atur'
-            ? route('ic.admin.acara.atur', $event->kode) . '#lokasi'
+            ? $this->urlDaftarAcara($request)
             : route('ic.admin.acara.harih', ['acara' => $event->kode]) . '#lokasi';
     }
 }

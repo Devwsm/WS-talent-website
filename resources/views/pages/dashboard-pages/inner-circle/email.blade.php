@@ -84,7 +84,11 @@
                         <p class="text-sm text-white/60">{{ $daftar[$jenis]['kapan'] }}</p>
 
                         <form method="POST" action="{{ route('ic.admin.email.tes') }}"
-                            class="flex flex-col gap-2 pt-5 border-t border-white/10">
+                            class="flex flex-col gap-2 pt-5 border-t border-white/10" data-swal-confirm
+                            data-confirm-icon="question" data-confirm-loading="Mengirim email..."
+                            data-confirm-title="Kirim email tes?"
+                            data-confirm-message="Email contoh dikirim ke alamat yang kamu isi dan ikut memakai jatah email harian."
+                            data-confirm-button="Ya, kirim">
                             @csrf
                             <input type="hidden" name="jenis" value="{{ $jenis }}">
                             <label for="email-tujuan"

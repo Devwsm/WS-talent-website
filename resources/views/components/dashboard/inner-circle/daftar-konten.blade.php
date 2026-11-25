@@ -82,7 +82,11 @@
                                     aria-label="Turunkan: {{ $b->judul }}" title="Turunkan"><i
                                         class="bi bi-arrow-down" aria-hidden="true"></i></button>
                             </form>
-                            <form method="POST" action="{{ $rute('aktif') }}">
+                            <form method="POST" action="{{ $rute('aktif') }}" data-swal-confirm
+                                data-confirm-icon="question" data-confirm-loading="Menyimpan..."
+                                data-confirm-title="{{ $b->aktif ? 'Sembunyikan butir ini?' : 'Tampilkan butir ini?' }}"
+                                data-confirm-message="{{ $b->aktif ? '“' . $b->judul . '” tidak akan tampil ke anggota.' : '“' . $b->judul . '” akan tampil ke anggota.' }}"
+                                data-confirm-button="{{ $b->aktif ? 'Ya, sembunyikan' : 'Ya, tampilkan' }}">
                                 @csrf @method('PATCH')
                                 <input type="hidden" name="aktif" value="{{ $b->aktif ? 0 : 1 }}">
                                 <button type="submit" class="{{ $kelasTombol }}">

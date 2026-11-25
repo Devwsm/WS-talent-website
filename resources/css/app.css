@@ -607,6 +607,39 @@ body.cms-ic {
     --color-emerald-200: #0a6847;
     --color-sky-200: #0b5b8c;
 }
+/* Keterbacaan (tema terang): "putih" dibalik jadi biru tua, jadi text-white/30..70 menghasilkan biru pucat di atas
+   putih (kontras rendah). Opasitasnya dinaikkan di sini untuk seluruh CMS Inner Circle. :not(:hover) menjaga
+   hover:text-white tetap bekerja. Warna badge (pink, ungu, dst.) yang dirancang untuk latar gelap ikut digelapkan. */
+body.cms-ic {
+    --color-pink-200: #9d174d;
+    --color-pink-300: #be185d;
+    --color-violet-200: #5b21b6;
+    --color-violet-300: #6d28d9;
+    --color-emerald-300: #047857;
+    --color-sky-300: #0369a1;
+    --color-amber-300: #b45309;
+}
+@layer utilities {
+    /* :where() = kekhususan 0: hanya mengalahkan utilitas dasar (text-white/40), sedangkan varian state
+       (hover:, aria-selected:, disabled:, dst.) tetap menang. */
+    :where(body.cms-ic) .text-white\/30,
+    :where(body.cms-ic) .text-white\/40 {
+        color: color-mix(in oklab, var(--color-white) 74%, transparent);
+    }
+    :where(body.cms-ic) .text-white\/50 {
+        color: color-mix(in oklab, var(--color-white) 80%, transparent);
+    }
+    :where(body.cms-ic) .text-white\/60 {
+        color: color-mix(in oklab, var(--color-white) 86%, transparent);
+    }
+    :where(body.cms-ic) .text-white\/70 {
+        color: color-mix(in oklab, var(--color-white) 92%, transparent);
+    }
+    :where(body.cms-ic) input::placeholder,
+    :where(body.cms-ic) textarea::placeholder {
+        color: color-mix(in oklab, var(--color-white) 58%, transparent);
+    }
+}
 /* Permukaan: di tema gelap "putih tipis" (bg-white/3) berarti kartu sedikit lebih terang dari latar. Di tema terang
    itu dibaca sebagai kartu putih (#FFFFFF) di atas latar #F3F8FC; baris di dalam kartu (bg-white/2, /4) memakai warna
    latar, dan isian/ubin (bg-white/5) memakai warna sekunder #E1F2FC. Aturan tanpa @layer menang atas utilitas Tailwind. */

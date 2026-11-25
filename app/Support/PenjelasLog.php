@@ -192,6 +192,12 @@ class PenjelasLog
         ];
     }
 
+    /** Nama halaman CMS dari nama route (mis. "ic.admin.acara.tampil" → "CMS Inner Circle › Acara"). Null bila tidak dikenal. */
+    public static function halamanDariRoute(string $nama): ?string
+    {
+        return self::namaHalaman($nama);
+    }
+
     private static function namaHalaman(string $nama): ?string
     {
         if (isset(self::HALAMAN[$nama])) {

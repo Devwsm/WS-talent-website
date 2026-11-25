@@ -4,7 +4,9 @@ namespace App\Services;
 
 use App\Models\log_aktivitas;
 use App\Services\InnerCircle\EmailService;
+use App\Support\PenjelasLog;
 use App\Support\PerangkatPengguna;
+use App\Support\RincianPerubahan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
@@ -71,7 +73,18 @@ class AktivitasService
 
         $d = $this->deskriptor($nama);
         if ($d === null) {
-            $this->catat('Perubahan di CMS', null, $status, $this->kategoriRute($nama), null, $nama);
+            // Route belum punya teks sendiri di config/log_admin.php: tetap sebut halamannya dan nama aksinya,
+            // supaya catatan tidak sekadar "Perubahan di CMS". (Tes memastikan semua route tulis admin punya teks.)
+            $halaman = PenjelasLog::halamanDariRoute($nama);
+            $this->catat(
+                $this->potong('Perubahan di ' . ($halaman ?? 'CMS'), 80) ?? 'Perubahan di CMS',
+                'Aksi ' . $request->method() . ' ' . $nama . '.',
+                $status,
+                $this->kategoriRute($nama),
+                null,
+                $nama,
+                $this->rincianDariRequest($request),
+            );
 
             return;
         }
@@ -83,7 +96,21 @@ class AktivitasService
             ? $this->teksGagal($d, $pesanGagal)
             : $this->teksBerhasil($request, $d, $namaButir);
 
-        $this->catat($judul, $keterangan, $status, $this->kategoriRute($nama), null, $nama);
+        // Controller boleh mengisi hasil nyata aksinya (mis. "disembunyikan" atau "ditampilkan") lewat atribut request.
+        $ket = $request->attributes->get('log_ket');
+        if ($status === 'berhasil' && is_string($ket) && trim($ket) !== '') {
+            $keterangan = $ket;
+        }
+
+        $this->catat($judul, $keterangan, $status, $this->kategoriRute($nama), null, $nama, $status === 'berhasil' ? $this->rincianDariRequest($request) : null);
+    }
+
+    /** Rincian perubahan yang disiapkan controller (daftar kalimat) lewat atribut request `log_rincian`. */
+    private function rincianDariRequest(Request $request): ?string
+    {
+        $baris = $request->attributes->get('log_rincian');
+
+        return is_array($baris) ? RincianPerubahan::gabung(array_map('strval', $baris)) : null;
     }
 
     // ---------- inti pencatatan ----------
@@ -95,6 +122,7 @@ class AktivitasService
         string $kategori = 'konten',
         ?string $pelaku = null,
         ?string $rute = null,
+        ?string $rincian = null,
     ): void {
         try {
             $request = request();
@@ -105,7 +133,7 @@ class AktivitasService
             $berisiko = in_array($kategori, (array) config('log_admin.kategori_berisiko', []), true);
             $ip = $berisiko ? $request?->ip() : null; // IP hanya disimpan untuk kondisi berisiko
 
-            if ($berisiko ? $this->gabungkanLoginGagal($kategori, $aksi, $ip, $pelaku) : $this->kembar($pelaku, $rute, $aksi, $keterangan, $status)) {
+            if ($berisiko ? $this->gabungkanLoginGagal($kategori, $aksi, $ip, $pelaku) : $this->kembar($pelaku, $rute, $aksi, $keterangan, $status, $rincian)) {
                 return;
             }
 
@@ -114,6 +142,7 @@ class AktivitasService
                 'kategori' => $kategori,
                 'aksi' => $aksi,
                 'keterangan' => $keterangan,
+                'rincian' => $this->potong($rincian, 2000),
                 'rute' => $this->potong($rute, 120),
                 'perangkat' => PerangkatPengguna::ringkas($request?->userAgent()),
                 'ip' => $ip,
@@ -156,7 +185,7 @@ class AktivitasService
     }
 
     /** Klik ganda: aksi yang persis sama dari admin yang sama dalam beberapa detik dicatat sekali. */
-    private function kembar(?string $pelaku, ?string $rute, string $aksi, ?string $keterangan, string $status): bool
+    private function kembar(?string $pelaku, ?string $rute, string $aksi, ?string $keterangan, string $status, ?string $rincian = null): bool
     {
         $detik = (int) config('log_admin.redam_ganda_detik', 5);
         if ($detik <= 0) {
@@ -164,7 +193,7 @@ class AktivitasService
         }
 
         try {
-            return ! Cache::add('log-aktivitas:' . sha1(implode('|', [$pelaku, $rute, $aksi, $keterangan, $status])), 1, now()->addSeconds($detik));
+            return ! Cache::add('log-aktivitas:' . sha1(implode('|', [$pelaku, $rute, $aksi, $keterangan, $status, $rincian])), 1, now()->addSeconds($detik));
         } catch (Throwable) {
             return false; // cache bermasalah: lebih baik tercatat dua kali daripada tidak tercatat
         }

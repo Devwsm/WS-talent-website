@@ -99,7 +99,9 @@
                                                 </div>
                                                 <form method="POST"
                                                     action="{{ route('ic.admin.kenangan.komentar.hapus', $kom->id_komentar) }}"
-                                                    onsubmit="return confirm('Hapus komentar ini? Tidak bisa dikembalikan.')">
+                                                    data-swal-confirm data-confirm-tone="bahaya"
+                                                    data-confirm-title="Hapus komentar ini?"
+                                                    data-confirm-message="Komentar dari {{ $kom->nama_member }} dihapus permanen dan tidak bisa dikembalikan.">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit"
@@ -118,9 +120,11 @@
                                 <span class="min-w-0 truncate text-xs text-white/50">{{ $k->member->nama }} ·
                                     {{ $k->member->kode_member }}</span>
                                 <form method="POST" action="{{ route('ic.admin.kenangan.moderasi', $k->id_memory) }}"
-                                    class="ml-auto"
-                                    @if (!$k->disembunyikan) data-konfirmasi-sembunyi
-                                        data-ringkas="{{ $k->member->nama }} · {{ $k->tempat ?: 'tanpa tempat' }}" @endif>
+                                    class="ml-auto" data-swal-confirm data-confirm-icon="question"
+                                    data-confirm-loading="Menyimpan..."
+                                    data-confirm-title="{{ $k->disembunyikan ? 'Tayangkan kenangan ini lagi?' : 'Sembunyikan kenangan ini?' }}"
+                                    data-confirm-message="{{ $k->member->nama }} · {{ $k->tempat ?: 'tanpa tempat' }}. {{ $k->disembunyikan ? 'Kenangan akan tampil lagi di galeri anggota.' : 'Kenangan tidak akan tampil di galeri anggota.' }}"
+                                    data-confirm-button="{{ $k->disembunyikan ? 'Ya, tayangkan' : 'Ya, sembunyikan' }}">
                                     @csrf
                                     @method('PATCH')
                                     <input type="hidden" name="aksi"
@@ -139,30 +143,4 @@
             @endif
         </div>
     </div>
-
-    @push('scripts')
-        <script>
-            // Menyembunyikan butuh konfirmasi; menayangkan lagi langsung terkirim. Tanpa JS form tetap terkirim.
-            document.addEventListener('submit', async (e) => {
-                const form = e.target.closest('form[data-konfirmasi-sembunyi]');
-                if (!form || form.dataset.sudahKonfirmasi === '1') return;
-                e.preventDefault();
-
-                const hasil = await window.Swal.fire({
-                    title: 'Sembunyikan kenangan ini?',
-                    text: `${form.dataset.ringkas}. Kenangan tidak akan tampil di galeri anggota.`,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Ya, sembunyikan',
-                    cancelButtonText: 'Batal',
-                    reverseButtons: true,
-                    focusCancel: true,
-                });
-                if (!hasil.isConfirmed) return;
-
-                form.dataset.sudahKonfirmasi = '1';
-                form.requestSubmit();
-            });
-        </script>
-    @endpush
 @endsection

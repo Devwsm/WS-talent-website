@@ -1,4 +1,7 @@
 @extends('template/icDashboardLayout')
+@push('head')
+    @vite('resources/js/atur-acara.js')
+@endpush
 @section('content')
     @php
         $tipeEvent = ic_tipe_event();
@@ -24,7 +27,16 @@
 
             @include('components.dashboard.inner-circle.tab-acara', ['aktifTab' => 'pengaturan'])
 
-            @include('components/errors')
+            @if ($aturInline)
+                {{-- Galat validasi form Atur acara tampil di dalam popup-nya sendiri; di sini hanya pesan sistem. --}}
+                @if (session('error'))
+                    <script>
+                        window.__swalError = @json(session('error'));
+                    </script>
+                @endif
+            @else
+                @include('components/errors')
+            @endif
             @include('components/success')
 
             {{-- ============ 2. AKSI: TAMBAH ACARA (popup) + SINKRON BANDSINTOWN (terpisah) ============ --}}
@@ -55,7 +67,11 @@
                                 {{ $bitTerakhir->locale('id')->translatedFormat('j M Y H.i') }} WIB.
                             @endif
                         </p>
-                        <form method="POST" action="{{ route('ic.admin.acara.bandsintown') }}">
+                        <form method="POST" action="{{ route('ic.admin.acara.bandsintown') }}" data-swal-confirm
+                            data-confirm-title="Sinkron jadwal sekarang?"
+                            data-confirm-message="Jadwal tour terbaru ditarik dari Bandsintown. Acara baru ditambahkan, acara yang sudah ada tidak ditimpa dan tidak dihapus."
+                            data-confirm-button="Ya, sinkron" data-confirm-loading="Menyinkronkan..."
+                            data-confirm-icon="question">
                             @csrf
                             <button type="submit"
                                 class="h-11 px-5 inline-flex items-center gap-2 rounded-lg border border-white/15 text-xs font-semibold uppercase tracking-widest text-white/70 hover:bg-white/10 hover:text-white transition-colors">
@@ -170,14 +186,20 @@
                                             <i class="bi bi-qr-code" aria-hidden="true"></i> QR
                                         </a>
                                     @endif
-                                    <a href="{{ route('ic.admin.acara.atur', $e->kode) }}"
+                                    <button type="button" data-atur-buka
+                                        data-url="{{ route('ic.admin.acara.atur', ['kode' => $e->kode, 'fragmen' => 1]) }}"
+                                        aria-haspopup="dialog"
                                         class="h-11 px-3 inline-flex items-center gap-1.5 rounded-full border border-white/20 text-white text-xs font-semibold hover:bg-white/10 transition-colors"
                                         aria-label="Atur acara {{ $e->venue ?? $e->kode }}">
                                         <i class="bi bi-gear-fill" aria-hidden="true"></i> Atur
-                                    </a>
+                                    </button>
                                     @php $tampilSekarang = $e->tampil_di_anggota; @endphp
                                     <form method="POST" action="{{ route('ic.admin.acara.tampil', $e->kode) }}"
-                                        class="inline-flex">
+                                        class="inline-flex" data-swal-confirm data-confirm-icon="question"
+                                        data-confirm-loading="Menyimpan..."
+                                        data-confirm-title="{{ $tampilSekarang ? 'Sembunyikan acara ini?' : 'Tampilkan acara ini?' }}"
+                                        data-confirm-message="{{ $tampilSekarang ? ($e->venue ?? $e->kode) . ' tidak akan tampil di daftar acara anggota. QR, check-in, dan kartu GL tetap berjalan.' : ($e->venue ?? $e->kode) . ' akan tampil lagi di daftar acara anggota.' }}"
+                                        data-confirm-button="{{ $tampilSekarang ? 'Ya, sembunyikan' : 'Ya, tampilkan' }}">
                                         @csrf
                                         @method('PATCH')
                                         <button type="submit"
@@ -218,6 +240,26 @@
             </section>
         </div>
     </div>
+
+    {{-- Dialog Atur acara: data acara, GL gratis, check-in dan poin, lokasi check-in. Isinya dimuat saat tombol Atur
+         ditekan (atau dirender langsung bila form gagal divalidasi); perilakunya ada di resources/js/atur-acara.js.
+         Sengaja tidak tertutup saat latar disentuh, supaya isian tidak hilang karena tersentuh di HP. --}}
+    <dialog id="dialogAtur" aria-labelledby="dialogAturJudul"
+        @if ($aturKode) data-buka-url="{{ route('ic.admin.acara.atur', ['kode' => $aturKode, 'fragmen' => 1]) }}" @endif
+        @if ($aturInline) data-inline="1" @endif
+        class="fixed inset-0 m-0 w-screen h-dvh max-w-none max-h-none bg-black/70 backdrop:bg-transparent p-0 overflow-hidden">
+        <div class="h-dvh w-full flex items-center justify-center p-2 sm:p-4">
+            <div id="atur-isi"
+                class="w-full max-w-3xl max-h-full flex flex-col min-w-0 rounded-3xl border border-white/10 bg-black shadow-xl overflow-hidden">
+                @if ($aturInline)
+                    @include('pages.dashboard-pages.inner-circle.acara.atur-isi', [
+                        'event' => $aturEvent,
+                        'posterUrl' => $aturPosterUrl,
+                    ])
+                @endif
+            </div>
+        </div>
+    </dialog>
 
     {{-- Dialog tambah acara: form satuan dan impor CSV. Terbuka otomatis bila form ini gagal divalidasi. --}}
     <dialog id="dialogTambah" aria-labelledby="dialogTambahJudul"

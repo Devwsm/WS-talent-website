@@ -43,6 +43,26 @@ trait PembantuHalamanAdminIc
         return $peta;
     }
 
+    /**
+     * Alamat daftar jadwal acara tempat popup Atur acara dibuka (filter dan halaman yang sama, tanpa ?atur=),
+     * dipakai sebagai tujuan setelah menyimpan. Hanya alamat di situs ini yang dipercaya; selain itu daftar polos.
+     */
+    protected function urlDaftarAcara(Request $request): string
+    {
+        $dasar = route('ic.admin.acara');
+        $asal = parse_url((string) url()->previous($dasar));
+        $dasarBagian = parse_url($dasar);
+
+        if (($asal['host'] ?? null) !== ($dasarBagian['host'] ?? null) || ($asal['path'] ?? '') !== ($dasarBagian['path'] ?? '')) {
+            return $dasar . '#jadwal';
+        }
+
+        parse_str((string) ($asal['query'] ?? ''), $query);
+        unset($query['atur']);
+
+        return $dasar . ($query ? '?' . http_build_query($query) : '') . '#jadwal';
+    }
+
     /** Ambil parameter query sebagai teks; array atau nilai aneh dianggap kosong. */
     protected function teks(Request $request, string $kunci): string
     {

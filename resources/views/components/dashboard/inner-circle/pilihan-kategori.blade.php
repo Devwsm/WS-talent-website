@@ -56,7 +56,11 @@
                                         aria-hidden="true"></i></button>
                             </form>
                         @endforeach
-                        <form method="POST" action="{{ $rute('aktif') }}">
+                        <form method="POST" action="{{ $rute('aktif') }}" data-swal-confirm
+                            data-confirm-icon="question" data-confirm-loading="Menyimpan..."
+                            data-confirm-title="{{ $b->aktif ? 'Sembunyikan kategori ini?' : 'Tampilkan kategori ini?' }}"
+                            data-confirm-message="{{ $b->aktif ? 'Kategori ini tidak bisa dipilih anggota lagi.' : 'Kategori ini bisa dipilih anggota lagi.' }}"
+                            data-confirm-button="{{ $b->aktif ? 'Ya, sembunyikan' : 'Ya, tampilkan' }}">
                             @csrf @method('PATCH')
                             <input type="hidden" name="aktif" value="{{ $b->aktif ? 0 : 1 }}">
                             <button type="submit" class="{{ $kelasIkonTombol }}">
@@ -92,7 +96,11 @@
                             'labelTombol' => 'Simpan',
                         ])
                         @if (config('inner_circle.kategori_kenangan.' . $b->kunci))
-                            <form method="POST" action="{{ $rute('bawaan') }}">
+                            <form method="POST" action="{{ $rute('bawaan') }}" data-swal-confirm
+                                data-confirm-icon="question" data-confirm-loading="Mengembalikan..."
+                                data-confirm-title="Kembalikan ke bawaan?"
+                                data-confirm-message="Nama dan pengaturan kategori ini kembali ke isian awal."
+                                data-confirm-button="Ya, kembalikan">
                                 @csrf
                                 <button type="submit"
                                     class="min-h-11 text-xs text-white/50 underline underline-offset-4 hover:text-white">Kembalikan

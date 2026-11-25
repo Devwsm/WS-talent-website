@@ -43,7 +43,11 @@
                             'denganSampul' => false,
                             'labelTombol' => 'Simpan',
                         ])
-                        <form method="POST" action="{{ route('ic.admin.konten.pilihan.tipe.bawaan', $b->kunci) }}">
+                        <form method="POST" action="{{ route('ic.admin.konten.pilihan.tipe.bawaan', $b->kunci) }}"
+                            data-swal-confirm data-confirm-icon="question" data-confirm-loading="Mengembalikan..."
+                            data-confirm-title="Kembalikan ke bawaan?"
+                            data-confirm-message="Nama, ikon, dan warna tipe acara ini kembali ke isian awal."
+                            data-confirm-button="Ya, kembalikan">
                             @csrf
                             <button type="submit"
                                 class="min-h-11 text-xs text-white/50 underline underline-offset-4 hover:text-white">Kembalikan

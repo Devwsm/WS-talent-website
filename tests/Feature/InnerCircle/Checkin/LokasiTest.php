@@ -265,6 +265,62 @@ class LokasiTest extends TestCase
         $this->admin()->postJson(route('ic.admin.acara.lokasi.cari', $e->kode))->assertStatus(502);
     }
 
+    public function test_saran_alamat_saat_mengetik_dirapikan_di_cache_dan_menangani_galat(): void
+    {
+        $e = $this->acara();
+        \Illuminate\Support\Facades\Cache::flush();
+
+        Http::fake(['photon.komoot.io/*' => Http::sequence()
+            ->push(['features' => [
+                ['geometry' => ['coordinates' => [108.5571, -6.7063]], 'properties' => [
+                    'name' => 'Southbank Gastrobar',
+                    'street' => 'Jalan Tuparev',
+                    'housenumber' => '12',
+                    'city' => 'Cirebon',
+                    'state' => 'Jawa Barat',
+                    'country' => 'Indonesia',
+                ]],
+                // Koordinat di luar rentang dibuang; nama kembar digabung.
+                ['geometry' => ['coordinates' => [999, 999]], 'properties' => ['name' => 'Rusak']],
+                ['geometry' => ['coordinates' => [108.5571, -6.7063]], 'properties' => [
+                    'name' => 'Southbank Gastrobar',
+                    'street' => 'Jalan Tuparev',
+                    'housenumber' => '12',
+                    'city' => 'Cirebon',
+                    'state' => 'Jawa Barat',
+                    'country' => 'Indonesia',
+                ]],
+            ]])
+            ->push('', 500)]);
+
+        $r = $this->admin()->getJson(route('ic.admin.acara.lokasi.saran', ['kode' => $e->kode, 'q' => 'Southbank Cirebon']))
+            ->assertOk()
+            ->assertJsonCount(1, 'hasil')
+            ->assertJsonPath('hasil.0.judul', 'Southbank Gastrobar')
+            ->assertJsonPath('hasil.0.lat', -6.7063)
+            ->assertJsonPath('hasil.0.lng', 108.5571);
+        $this->assertStringContainsString('Jalan Tuparev 12', $r->json('hasil.0.detail'));
+        $this->assertStringContainsString('Cirebon', $r->json('hasil.0.nama'));
+
+        // Pencarian yang sama dilayani dari cache: layanan luar hanya dipanggil sekali.
+        $this->admin()->getJson(route('ic.admin.acara.lokasi.saran', ['kode' => $e->kode, 'q' => 'southbank  cirebon']))->assertOk()->assertJsonCount(1, 'hasil');
+        Http::assertSentCount(1);
+
+        // Terlalu pendek: tidak memanggil layanan. Layanan error: 502 dengan pesan, bukan halaman galat.
+        $this->admin()->getJson(route('ic.admin.acara.lokasi.saran', ['kode' => $e->kode, 'q' => 'ab']))->assertOk()->assertJsonCount(0, 'hasil');
+        Http::assertSentCount(1);
+        $this->admin()->getJson(route('ic.admin.acara.lokasi.saran', ['kode' => $e->kode, 'q' => 'Cirebon kota']))
+            ->assertStatus(502)->assertJsonStructure(['pesan', 'hasil']);
+    }
+
+    public function test_saran_alamat_hanya_untuk_admin_dan_acara_yang_ada(): void
+    {
+        $e = $this->acara();
+
+        $this->get(route('ic.admin.acara.lokasi.saran', ['kode' => $e->kode, 'q' => 'abc']))->assertRedirect(route('login'));
+        $this->admin()->getJson(route('ic.admin.acara.lokasi.saran', ['kode' => 'TIDAK-ADA', 'q' => 'abc']))->assertNotFound();
+    }
+
     public function test_rute_lokasi_hanya_untuk_admin(): void
     {
         $e = $this->acara();

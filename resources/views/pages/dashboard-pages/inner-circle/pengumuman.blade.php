@@ -237,7 +237,11 @@
                                 <div class="flex items-center shrink-0">
                                     <form method="POST"
                                         action="{{ route('ic.admin.pengumuman.aktif', $p->id_broadcast) }}"
-                                        class="inline-flex">
+                                        class="inline-flex" data-swal-confirm data-confirm-icon="question"
+                                        data-confirm-loading="Menyimpan..."
+                                        data-confirm-title="{{ $p->aktif ? 'Sembunyikan pengumuman ini?' : 'Tampilkan pengumuman ini?' }}"
+                                        data-confirm-message="{{ $p->aktif ? '“' . $p->judul . '” tidak akan terlihat oleh anggota.' : '“' . $p->judul . '” akan langsung terlihat oleh anggota.' }}"
+                                        data-confirm-button="{{ $p->aktif ? 'Ya, sembunyikan' : 'Ya, tampilkan' }}">
                                         @csrf
                                         @method('PATCH')
                                         <input type="hidden" name="aktif" value="{{ $p->aktif ? 0 : 1 }}">

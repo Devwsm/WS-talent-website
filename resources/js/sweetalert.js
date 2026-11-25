@@ -6,23 +6,59 @@ const temaIc = document.body.classList.contains("cms-ic");
 const latarPopup = temaIc ? "#ffffff" : "#151515";
 const warnaTeks = temaIc ? "#0b4778" : "#f5f5f5";
 
+// Kelas popup dipakai bersama; tombol aksi berbahaya (hapus, undi, keluar) merah supaya tidak tertukar dengan Batal.
+// Tombol: tinggi minimal 44 px supaya mudah ditekan di HP.
+const kelasPopup = {
+    popup: "rounded-3xl border border-white/10 max-w-[92vw]",
+    title: "text-white",
+    htmlContainer: "text-white/80",
+
+    confirmButton:
+        "min-h-11 px-5 py-2 rounded-lg bg-(--cms-aksen) hover:bg-(--cms-aksen)/80 text-(--cms-aksen-teks) font-semibold transition",
+
+    cancelButton:
+        "min-h-11 px-5 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/85 font-semibold transition ml-2",
+};
+const kelasBahaya = {
+    ...kelasPopup,
+    confirmButton:
+        "min-h-11 px-5 py-2 rounded-lg bg-red-700 hover:bg-red-600 text-[#ffffff] font-semibold transition",
+};
+
 const swal = Swal.mixin({
     background: latarPopup,
     color: warnaTeks,
     buttonsStyling: false,
 
-    customClass: {
-        popup: "rounded-3xl border border-white/10",
-        title: "text-white",
-        htmlContainer: "text-white/60",
-
-        confirmButton:
-            "px-4 py-2 rounded-lg bg-(--cms-aksen) hover:bg-(--cms-aksen)/80 text-(--cms-aksen-teks) font-semibold transition",
-
-        cancelButton:
-            "px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 font-semibold transition ml-2",
-    },
+    customClass: kelasPopup,
 });
+
+/**
+ * Popup yang dipanggil dari dalam <dialog> modal (mis. popup Atur acara) harus ikut berada di dalam dialog itu:
+ * dialog modal tampil di "top layer" browser, di atas apa pun yang ada di <body>, sehingga popup di <body> akan
+ * tertutup dan tidak bisa ditekan. Di luar dialog tidak ada yang berubah.
+ */
+function dialogTerbuka() {
+    const daftar = document.querySelectorAll("dialog[open]");
+
+    return daftar.length ? daftar[daftar.length - 1] : null;
+}
+const tampilkanAsli = swal.fire.bind(swal);
+swal.fire = (...args) => {
+    const opsi = args[0];
+    const dialog = dialogTerbuka();
+    if (
+        dialog &&
+        opsi &&
+        typeof opsi === "object" &&
+        !opsi.toast &&
+        !opsi.target
+    ) {
+        return tampilkanAsli({ ...opsi, target: dialog });
+    }
+
+    return tampilkanAsli(...args);
+};
 
 const Toast = Swal.mixin({
     toast: true,
@@ -58,6 +94,7 @@ function escapeHtml(value) {
  * Show delete confirmation dialog.
  */
 window.confirmDelete = async function (form) {
+    // `form` boleh juga tombol kirim yang membawa atribut data-confirm-* (lihat initDeleteConfirmation).
     const result = await swal.fire({
         // Judul dan tombol bisa diganti per form (data-confirm-title / -button / -loading) untuk aksi yang bukan hapus.
         title: form.dataset.confirmTitle || "Hapus data?",
@@ -66,14 +103,19 @@ window.confirmDelete = async function (form) {
             form.dataset.confirmMessage ||
             "Data yang dihapus tidak dapat dikembalikan.",
 
-        icon: "warning",
+        icon: form.dataset.confirmIcon || "warning",
 
         showCancelButton: true,
 
         confirmButtonText: form.dataset.confirmButton || "Ya, hapus",
-        cancelButtonText: "Batal",
+        cancelButtonText: form.dataset.confirmBatal || "Batal",
+
+        // data-confirm-tone="bahaya" = tombol konfirmasi merah (hapus, undi, keluar, tarik poin).
+        customClass:
+            form.dataset.confirmTone === "bahaya" ? kelasBahaya : kelasPopup,
 
         reverseButtons: true,
+        // Fokus awal di Batal, jadi Enter yang tidak sengaja tidak menjalankan aksinya.
         focusCancel: true,
     });
 
@@ -161,34 +203,72 @@ function showFlashMessages() {
 }
 
 /**
- * Initialize SweetAlert confirmation for delete forms.
+ * Konfirmasi untuk semua form bertanda data-swal-confirm. Memakai delegasi event di document, jadi form yang baru
+ * muncul belakangan (mis. isi popup yang dimuat lewat fetch) ikut terlindungi tanpa perlu dipasang ulang.
+ *
+ * Atribut (di <form>, atau di tombol kirimnya bila satu form punya beberapa aksi): data-swal-confirm,
+ * data-confirm-title, data-confirm-message, data-confirm-button, data-confirm-loading, data-confirm-icon
+ * (warning|question|info), data-confirm-tone (bahaya = tombol merah), data-confirm-batal.
  */
 function initDeleteConfirmation() {
-    document.querySelectorAll("form[data-swal-confirm]").forEach((form) => {
-        if (form.dataset.swalBound === "true") {
+    document.addEventListener("submit", async (event) => {
+        const form = event.target;
+
+        if (!(form instanceof HTMLFormElement)) {
             return;
         }
 
-        form.addEventListener("submit", async (event) => {
-            // Allow the second submit after confirmation.
-            if (form.dataset.swalConfirmed === "true") {
-                return;
-            }
+        // Teks konfirmasi boleh ada di form, atau di tombol kirimnya (form dengan beberapa tombol beraksi beda,
+        // mis. "Tarik poin" di sebelah "Tandai aman"); yang di tombol menang.
+        const pengirimKonfirmasi =
+            event.submitter instanceof HTMLElement &&
+            event.submitter.hasAttribute("data-swal-confirm")
+                ? event.submitter
+                : null;
+        const sumberKonfirmasi =
+            pengirimKonfirmasi ??
+            (form.hasAttribute("data-swal-confirm") ? form : null);
 
-            event.preventDefault();
+        if (!sumberKonfirmasi) {
+            return;
+        }
 
-            const confirmed = await window.confirmDelete(form);
+        // Kiriman kedua setelah dikonfirmasi lolos begitu saja.
+        if (form.dataset.swalConfirmed === "true") {
+            return;
+        }
 
-            if (!confirmed) {
-                return;
-            }
+        event.preventDefault();
 
-            form.dataset.swalConfirmed = "true";
+        // Sedang menunggu jawaban popup: tekan ganda diabaikan.
+        if (form.dataset.swalMenunggu === "true") {
+            return;
+        }
+        form.dataset.swalMenunggu = "true";
 
+        let confirmed = false;
+        try {
+            confirmed = await window.confirmDelete(sumberKonfirmasi);
+        } finally {
+            delete form.dataset.swalMenunggu;
+        }
+
+        if (!confirmed) {
+            return;
+        }
+
+        form.dataset.swalConfirmed = "true";
+
+        // requestSubmit() menjaga tombol yang menekan (name/value) ikut terkirim; cadangan: submit().
+        const pengirim =
+            event.submitter instanceof HTMLElement
+                ? event.submitter
+                : undefined;
+        try {
+            form.requestSubmit(pengirim);
+        } catch {
             form.submit();
-        });
-
-        form.dataset.swalBound = "true";
+        }
     });
 }
 

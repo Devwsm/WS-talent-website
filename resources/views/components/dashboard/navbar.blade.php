@@ -109,7 +109,11 @@
             <div class="w-px h-8 bg-white/10 mx-1 shrink-0"></div>
         </div>
 
-        <form action="{{ route('logout') }}" method="POST" class="contents">
+        <form action="{{ route('logout') }}" method="POST" class="contents" data-swal-confirm
+            data-confirm-icon="question" data-confirm-tone="bahaya" data-confirm-loading="Keluar..."
+            data-confirm-title="Keluar dari CMS?"
+            data-confirm-message="Kamu harus masuk lagi (dengan kode verifikasi) untuk membuka CMS."
+            data-confirm-button="Ya, keluar">
             @csrf
             <button type="submit" aria-label="Logout"
                 class="flex justify-center items-center h-12 w-12 rounded-xl shrink-0 text-xl text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer">
@@ -190,7 +194,11 @@
             </a>
         @endforeach
 
-        <form action="{{ route('logout') }}" method="POST" class="contents">
+        <form action="{{ route('logout') }}" method="POST" class="contents" data-swal-confirm
+            data-confirm-icon="question" data-confirm-tone="bahaya" data-confirm-loading="Keluar..."
+            data-confirm-title="Keluar dari CMS?"
+            data-confirm-message="Kamu harus masuk lagi (dengan kode verifikasi) untuk membuka CMS."
+            data-confirm-button="Ya, keluar">
             @csrf
             <button type="submit"
                 class="menu-link w-full flex flex-col items-center justify-center gap-2 rounded-xl border border-red-500/20 py-4 text-red-500 cursor-pointer">

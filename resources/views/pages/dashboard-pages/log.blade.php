@@ -6,13 +6,13 @@
         $kategoriLabel = config('log_admin.kategori');
         $namaArea = config('log_admin.area.' . $area);
         $kelasKategori = [
-            'akses' => 'border-red-400/30 bg-red-400/10 text-red-300',
-            'konten' => 'border-violet-300/30 bg-violet-300/10 text-violet-200',
-            'inner-circle' => 'border-pink-300/30 bg-pink-300/10 text-pink-200',
+            'akses' => 'border-red-400/50 bg-red-400/15 text-red-200',
+            'konten' => 'border-violet-300/50 bg-violet-300/15 text-violet-200',
+            'inner-circle' => 'border-sky-300/50 bg-sky-300/15 text-sky-200',
         ];
         $filterError = ['terbuka' => 'Terbuka', 'selesai' => 'Selesai', 'semua' => 'Semua'];
         $chipAktif = 'bg-white text-black border-white';
-        $chipBiasa = 'border-white/10 text-white/60 hover:bg-white/10 hover:text-white';
+        $chipBiasa = 'border-white/10 text-white/78 hover:bg-white/10 hover:text-white';
     @endphp
 
     <div class="relative w-full flex flex-col justify-center items-center overflow-hidden">
@@ -24,9 +24,9 @@
         <div class="relative z-10 w-full max-w-7xl mx-auto flex flex-col gap-6 px-5 md:px-10 pt-8 pb-28 text-white">
 
             <div>
-                <p class="text-xs font-semibold uppercase tracking-widest text-white/40 mb-1">{{ $namaArea }}</p>
+                <p class="text-xs font-semibold uppercase tracking-widest text-white/72 mb-1">{{ $namaArea }}</p>
                 <h1 class="text-2xl lg:text-3xl font-bold uppercase">Log</h1>
-                <p class="text-white/50 mt-1">
+                <p class="text-white/72 mt-1">
                     @if ($area === 'inner-circle')
                         Masalah yang terjadi di komunitas Inner Circle, dan perubahan yang dilakukan admin di CMS Inner
                         Circle.
@@ -64,14 +64,14 @@
             @if ($tab === 'error')
                 {{-- Status email peringatan --}}
                 @if ($emailPeringatan)
-                    <p class="text-xs text-white/40 flex items-start gap-2">
+                    <p class="text-xs text-white/72 flex items-start gap-2">
                         <i class="bi bi-envelope-check mt-0.5" aria-hidden="true"></i>
-                        <span>Masalah baru dikabari lewat email ke <b class="text-white/60">{{ $emailPeringatan }}</b>
+                        <span>Masalah baru dikabari lewat email ke <b class="text-white/78">{{ $emailPeringatan }}</b>
                             (satu email per jenis masalah per jam).</span>
                     </p>
                 @else
                     <div
-                        class="flex items-start gap-3 rounded-2xl border border-amber-300/20 bg-amber-300/5 px-4 py-3 text-sm text-amber-100/80">
+                        class="flex items-start gap-3 rounded-2xl border border-amber-300/40 bg-amber-300/10 px-4 py-3 text-sm text-amber-100">
                         <i class="bi bi-info-circle mt-0.5 shrink-0" aria-hidden="true"></i>
                         <p>Email peringatan belum aktif. Isi <code>LOG_ALERT_EMAIL</code> di <code>.env</code> server agar
                             masalah baru dikabari lewat email.</p>
@@ -82,10 +82,10 @@
                 @if (!empty($statusJadwal))
                     @php
                         $kelasTingkat = [
-                            'ok' => 'border-emerald-300/30 bg-emerald-300/10 text-emerald-200',
-                            'peringatan' => 'border-amber-300/30 bg-amber-300/10 text-amber-200',
-                            'gagal' => 'border-red-400/30 bg-red-400/10 text-red-300',
-                            'terjadwal' => 'border-sky-300/30 bg-sky-300/10 text-sky-200',
+                            'ok' => 'border-emerald-300/50 bg-emerald-300/15 text-emerald-200',
+                            'peringatan' => 'border-amber-300/50 bg-amber-300/15 text-amber-200',
+                            'gagal' => 'border-red-400/50 bg-red-400/15 text-red-200',
+                            'terjadwal' => 'border-sky-300/50 bg-sky-300/15 text-sky-200',
                         ];
                         $labelTingkat = [
                             'ok' => 'Normal',
@@ -96,7 +96,7 @@
                     @endphp
                     <section aria-label="Status jadwal otomatis"
                         class="rounded-3xl border border-white/10 bg-white/2 p-4 md:p-5">
-                        <p class="text-xs font-semibold uppercase tracking-widest text-white/40 mb-3">Jadwal otomatis</p>
+                        <p class="text-xs font-semibold uppercase tracking-widest text-white/72 mb-3">Jadwal otomatis</p>
                         <ul class="flex flex-col gap-3">
                             @foreach ($statusJadwal as $b)
                                 <li class="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
@@ -105,7 +105,7 @@
                                             class="rounded-full border px-2 py-0.5 text-[11px] font-semibold {{ $kelasTingkat[$b['tingkat']] ?? $kelasTingkat['peringatan'] }}">{{ $labelTingkat[$b['tingkat']] ?? 'Perlu dicek' }}</span>
                                         <p class="text-sm font-semibold">{{ $b['label'] }}</p>
                                     </div>
-                                    <p class="text-sm text-white/60 min-w-0 wrap-break-word">{{ $b['teks'] }}</p>
+                                    <p class="text-sm text-white/78 min-w-0 wrap-break-word">{{ $b['teks'] }}</p>
                                 </li>
                             @endforeach
                         </ul>
@@ -123,7 +123,7 @@
                                         class="inline-flex items-center gap-2 h-11 px-4 rounded-full border text-sm font-semibold whitespace-nowrap transition-colors {{ $dipilih ? $chipAktif : $chipBiasa }}">
                                         {{ $label }}
                                         <span
-                                            class="text-xs {{ $dipilih ? 'text-black/60' : 'text-white/40' }}">{{ $jumlahError[$kunci] }}</span>
+                                            class="text-xs {{ $dipilih ? 'text-black/60' : 'text-white/72' }}">{{ $jumlahError[$kunci] }}</span>
                                     </a>
                                 </li>
                             @endforeach
@@ -136,7 +136,7 @@
                             @csrf
                             @method('DELETE')
                             <button type="submit"
-                                class="h-11 px-4 rounded-full border border-white/15 text-white/60 text-sm font-semibold hover:bg-white/10 hover:text-white transition-colors">
+                                class="h-11 px-4 rounded-full border border-white/15 text-white/78 text-sm font-semibold hover:bg-white/10 hover:text-white transition-colors">
                                 <i class="bi bi-trash3" aria-hidden="true"></i> Hapus yang selesai
                             </button>
                         </form>
@@ -164,20 +164,20 @@
                                 $csp = str_starts_with((string) $e->kelas, 'CSP:');
                             @endphp
                             <li
-                                class="rounded-3xl border p-4 md:p-5 {{ $e->selesai ? 'border-white/10 bg-white/2' : 'border-red-400/30 bg-red-400/5' }}">
+                                class="rounded-3xl border p-4 md:p-5 {{ $e->selesai ? 'border-white/10 bg-white/2' : 'border-red-400/50 bg-red-400/8' }}">
                                 <div class="flex flex-col md:flex-row md:items-start gap-4">
                                     <div class="min-w-0 flex-1">
                                         <div class="flex flex-wrap items-center gap-2 mb-1">
                                             <p class="font-semibold">{{ $teks['judul'] }}</p>
                                             <span
-                                                class="rounded-full border border-white/15 px-2 py-0.5 text-[11px] font-semibold text-white/70">{{ number_format($e->jumlah, 0, ',', '.') }}x</span>
+                                                class="rounded-full border border-white/15 px-2 py-0.5 text-[11px] font-semibold text-white/85">{{ number_format($e->jumlah, 0, ',', '.') }}x</span>
                                             @if ($e->selesai)
                                                 <span
-                                                    class="rounded-full border border-emerald-300/30 bg-emerald-300/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-200">Selesai</span>
+                                                    class="rounded-full border border-emerald-300/50 bg-emerald-300/15 px-2 py-0.5 text-[11px] font-semibold text-emerald-200">Selesai</span>
                                             @endif
                                         </div>
-                                        <p class="text-sm text-white/70 wrap-break-word">{{ $teks['deskripsi'] }}</p>
-                                        <p class="text-xs text-white/40 mt-1">Terakhir
+                                        <p class="text-sm text-white/85 wrap-break-word">{{ $teks['deskripsi'] }}</p>
+                                        <p class="text-xs text-white/72 mt-1">Terakhir
                                             {{ $e->terakhir_pada->locale('id')->translatedFormat('j M Y, H.i') }}
                                             · pertama
                                             {{ $e->pertama_pada?->locale('id')->translatedFormat('j M Y') ?? '—' }}</p>
@@ -190,38 +190,38 @@
                                         <input type="hidden" name="aksi"
                                             value="{{ $e->selesai ? 'buka' : 'selesai' }}">
                                         <button type="submit"
-                                            class="h-11 px-5 rounded-full text-xs font-semibold transition-colors {{ $e->selesai ? 'border border-white/15 text-white/70 hover:bg-white/10' : 'bg-white text-black hover:bg-white/80' }}">
+                                            class="h-11 px-5 rounded-full text-xs font-semibold transition-colors {{ $e->selesai ? 'border border-white/15 text-white/85 hover:bg-white/10' : 'bg-white text-black hover:bg-white/80' }}">
                                             {{ $e->selesai ? 'Buka lagi' : 'Tandai selesai' }}
                                         </button>
                                     </form>
                                 </div>
 
-                                <details class="mt-3 text-xs text-white/50">
+                                <details class="mt-3 text-xs text-white/72">
                                     <summary class="cursor-pointer select-none py-2 hover:text-white/80">Detail teknis
                                         (untuk tim teknis)</summary>
                                     <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 pb-2">
-                                        <dt class="text-white/40">Jenis</dt>
+                                        <dt class="text-white/72">Jenis</dt>
                                         <dd class="break-all">{{ $e->kelas }}</dd>
-                                        <dt class="text-white/40">Alamat</dt>
+                                        <dt class="text-white/72">Alamat</dt>
                                         <dd class="break-all">{{ $e->metode }} {{ $e->url ?? '—' }}</dd>
-                                        <dt class="text-white/40">Pengguna</dt>
+                                        <dt class="text-white/72">Pengguna</dt>
                                         <dd>{{ $e->pengguna ?? 'tamu' }}</dd>
                                         @if (!$csp)
-                                            <dt class="text-white/40">Pesan</dt>
+                                            <dt class="text-white/72">Pesan</dt>
                                             <dd class="break-all">{{ \Illuminate\Support\Str::limit($e->pesan, 300) }}</dd>
                                         @endif
-                                        <dt class="text-white/40">Lokasi</dt>
+                                        <dt class="text-white/72">Lokasi</dt>
                                         <dd class="break-all">{{ $e->lokasi ?? '—' }}</dd>
                                     </dl>
                                     @if ($e->jejak)
-                                        <pre class="overflow-x-auto rounded-xl bg-black/40 p-3 text-[11px] leading-relaxed text-white/60">{{ $e->jejak }}</pre>
+                                        <pre class="overflow-x-auto rounded-xl bg-black/40 p-3 text-[11px] leading-relaxed text-white/78">{{ $e->jejak }}</pre>
                                     @endif
                                     @if ($csp)
-                                        <p class="mt-2 text-white/30">Laporan dari browser pengunjung
+                                        <p class="mt-2 text-white/72">Laporan dari browser pengunjung
                                             (Content-Security-Policy),
                                             tidak ada jejak di server.</p>
                                     @else
-                                        <p class="mt-2 text-white/30">Pesan lengkap dan jejak penuh ada di storage/logs di
+                                        <p class="mt-2 text-white/72">Pesan lengkap dan jejak penuh ada di storage/logs di
                                             server.</p>
                                     @endif
                                 </details>
@@ -243,14 +243,15 @@
                     @endif
                     <a href="{{ route($ruteLog, array_filter(['tab' => 'aktivitas', 'kategori' => $filterKategori === 'semua' ? null : $filterKategori, 'status' => $hanyaGagal ? null : 'gagal'])) }}"
                         @if ($hanyaGagal) aria-current="true" @endif
-                        class="inline-flex items-center gap-2 h-11 px-4 rounded-full border text-sm font-semibold whitespace-nowrap transition-colors {{ $hanyaGagal ? 'bg-red-400 text-black border-red-400' : 'border-red-400/30 text-red-300 hover:bg-red-400/10' }}">
+                        class="inline-flex items-center gap-2 h-11 px-4 rounded-full border text-sm font-semibold whitespace-nowrap transition-colors {{ $hanyaGagal ? 'bg-red-400 text-black border-red-400' : 'border-red-400/50 text-red-200 hover:bg-red-400/10' }}">
                         <i class="bi bi-exclamation-triangle" aria-hidden="true"></i> Hanya yang gagal
                     </a>
                 </div>
 
-                <p class="text-xs text-white/40 -mt-3">
-                    Yang dicatat: apa yang diubah, siapa, kapan, dan dari perangkat apa. Isi form dan kata sandi tidak
-                    disimpan.
+                <p class="text-xs text-white/72 -mt-3">
+                    Yang dicatat: apa yang diubah (untuk data biasa seperti tanggal, kuota, dan radius, ditulis nilai
+                    sebelum dan sesudahnya), siapa, kapan, dan dari perangkat apa. Kata sandi, kode, dan isi tulisan
+                    panjang tidak disimpan.
                     @if ($area === 'artis')
                         Alamat IP hanya dicatat untuk login yang gagal.
                     @endif
@@ -262,39 +263,56 @@
                         'message' => 'Belum ada aktivitas yang cocok.',
                     ])
                 @else
-                    <ul class="flex flex-col gap-2">
+                    <ul class="flex flex-col gap-3">
                         @foreach ($daftar as $a)
                             <li
-                                class="rounded-2xl border border-white/10 bg-white/3 px-4 py-3 flex flex-col md:flex-row md:items-center gap-1 md:gap-4">
-                                <p class="text-xs text-white/40 md:w-40 shrink-0">
-                                    {{ $a->created_at->locale('id')->translatedFormat('j M Y, H.i') }}</p>
+                                class="rounded-2xl border bg-white/3 px-4 py-4 flex flex-col md:flex-row md:items-start gap-3 md:gap-5 {{ $a->status === 'gagal' ? 'border-red-400/50' : 'border-white/10' }}">
+                                <div class="md:w-36 shrink-0 text-sm leading-snug">
+                                    <p class="font-semibold">{{ $a->created_at->locale('id')->translatedFormat('j M Y') }}
+                                    </p>
+                                    <p class="text-white/72">{{ $a->created_at->format('H.i') }} WIB</p>
+                                </div>
                                 <div class="min-w-0 flex-1">
-                                    <p class="text-sm font-semibold">{{ $a->aksi }}
+                                    <p class="text-base font-semibold wrap-break-word">{{ $a->aksi }}
                                         @if ($a->status === 'gagal')
                                             <span
-                                                class="ml-1 rounded-full border border-red-400/30 bg-red-400/10 px-2 py-0.5 text-[11px] font-semibold text-red-300">Gagal</span>
+                                                class="ml-1 rounded-full border border-red-400/50 bg-red-400/15 px-2 py-0.5 text-[11px] font-semibold text-red-200">Gagal</span>
                                         @endif
                                         @if ($a->jumlah > 1)
                                             <span
-                                                class="ml-1 rounded-full border border-white/15 px-2 py-0.5 text-[11px] font-semibold text-white/70">{{ $a->jumlah }}x</span>
+                                                class="ml-1 rounded-full border border-white/25 px-2 py-0.5 text-[11px] font-semibold text-white/85">{{ $a->jumlah }}x</span>
                                         @endif
                                     </p>
                                     @if ($a->keterangan)
-                                        <p class="text-xs text-white/50 wrap-break-word">{{ $a->keterangan }}</p>
+                                        <p class="mt-0.5 text-sm text-white/85 wrap-break-word">{{ $a->keterangan }}</p>
                                     @endif
-                                    <p class="text-xs text-white/40 mt-0.5">
-                                        {{ $a->pelaku ?? 'tidak dikenal' }}
+                                    @if ($a->rincian)
+                                        <ul class="mt-2 flex flex-col gap-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white/90"
+                                            aria-label="Rincian perubahan">
+                                            @foreach (preg_split('/\R/u', $a->rincian) as $r)
+                                                <li class="flex gap-2 wrap-break-word">
+                                                    <i class="bi bi-chevron-right text-xs mt-1 shrink-0 text-white/72"
+                                                        aria-hidden="true"></i>
+                                                    <span>{{ $r }}</span>
+                                                </li>
+                                            @endforeach
+                                        </ul>
+                                    @endif
+                                    <p class="mt-2 text-xs text-white/72 flex flex-wrap items-center gap-x-2 gap-y-1">
+                                        <span class="inline-flex items-center gap-1"><i class="bi bi-person"
+                                                aria-hidden="true"></i> {{ $a->pelaku ?? 'tidak dikenal' }}</span>
                                         @if ($a->perangkat)
-                                            · {{ $a->perangkat }}
+                                            <span class="inline-flex items-center gap-1"><i class="bi bi-phone"
+                                                    aria-hidden="true"></i> {{ $a->perangkat }}</span>
                                         @endif
                                         {{-- IP hanya untuk kondisi berisiko (login gagal) --}}
                                         @if ($a->ip && in_array($a->kategori, config('log_admin.kategori_berisiko'), true))
-                                            · IP {{ $a->ip }}
+                                            <span>IP {{ $a->ip }}</span>
                                         @endif
                                     </p>
                                 </div>
                                 <span
-                                    class="shrink-0 w-fit rounded-full border px-2.5 py-0.5 text-[11px] font-semibold {{ $kelasKategori[$a->kategori] ?? 'border-white/15 text-white/60' }}">{{ $kategoriLabel[$a->kategori] ?? $a->kategori }}</span>
+                                    class="shrink-0 w-fit rounded-full border px-2.5 py-1 text-[11px] font-semibold {{ $kelasKategori[$a->kategori] ?? 'border-white/25 text-white/80' }}">{{ $kategoriLabel[$a->kategori] ?? $a->kategori }}</span>
                             </li>
                         @endforeach
                     </ul>

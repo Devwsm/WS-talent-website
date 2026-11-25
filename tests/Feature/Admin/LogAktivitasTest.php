@@ -170,6 +170,63 @@ class LogAktivitasTest extends TestCase
         $this->admin()->get(route('log.index', ['tab' => 'aktivitas']))->assertOk()->assertSee('3x')->assertSee('IP 127.0.0.1');
     }
 
+    /** Penjaga: route tulis admin baru tidak boleh jatuh ke catatan polos "Perubahan di CMS" tanpa teks. */
+    public function test_semua_route_tulis_admin_punya_teks_log(): void
+    {
+        $abaikan = (array) config('log_admin.abaikan_rute');
+        $khusus = (array) config('log_admin.rute');
+        $tanpa = [];
+
+        foreach (app('router')->getRoutes() as $r) {
+            $nama = (string) $r->getName();
+            // Hanya route tulis di dalam /dashboard (CMS Artis dan CMS Inner Circle) yang dicatat middleware.
+            if ($nama === '' || ! str_starts_with($r->uri(), 'dashboard') || array_diff($r->methods(), ['GET', 'HEAD']) === []) {
+                continue;
+            }
+            if (\Illuminate\Support\Str::is($abaikan, $nama) || isset($khusus[$nama])) {
+                continue;
+            }
+            [$modul, $aksi] = array_pad(explode('.', $nama, 2), 2, '');
+            if (is_array(config('log_admin.modul.' . $modul)) && is_array(config('log_admin.aksi.' . $aksi))) {
+                continue;
+            }
+            $tanpa[] = $nama;
+        }
+
+        $this->assertSame([], $tanpa, 'Route tulis tanpa teks log (tambahkan di config/log_admin.php): ' . implode(', ', $tanpa));
+    }
+
+    public function test_sembunyikan_acara_dan_atur_acara_tercatat_rinci_tanpa_sandi(): void
+    {
+        $e = app(\App\Services\InnerCircle\AcaraService::class)->buat(['tanggal' => '2030-05-10', 'tipe' => 'club', 'kota' => 'Jakarta', 'venue' => 'Club Satu']);
+
+        $this->admin()->patch(route('ic.admin.acara.tampil', $e->kode))->assertRedirect();
+        $baris = log_aktivitas::query()->latest('id_log_aktivitas')->first();
+        $this->assertSame('Tampilan acara diubah', $baris->aksi);
+        $this->assertStringContainsString('disembunyikan dari daftar anggota', $baris->keterangan);
+
+        $this->admin()->put(route('ic.admin.acara.atur.simpan', $e->kode), [
+            'tanggal' => '2030-05-11',
+            'tipe' => 'club',
+            'venue' => 'Club Satu',
+            'kota' => 'Jakarta',
+            'kuota_gl' => 25,
+            'username_acara' => 'tamu-ws',
+            'sandi_acara' => 'RAHASIA-JANGAN-DICATAT',
+        ])->assertSessionHasNoErrors();
+
+        $baris = log_aktivitas::query()->where('rute', 'ic.admin.acara.atur.simpan')->firstOrFail();
+        $this->assertSame('Pengaturan acara disimpan', $baris->aksi);
+        $this->assertStringContainsString('Tanggal show: ', $baris->rincian);
+        $this->assertStringContainsString('10 Mei 2030 → ', $baris->rincian);
+        $this->assertStringContainsString('Kuota GL: kosong → 25', $baris->rincian);
+        $this->assertStringContainsString('Sandi acara: diganti', $baris->rincian);
+        $this->assertStringNotContainsString('RAHASIA-JANGAN-DICATAT', json_encode($baris->toArray()));
+
+        // Halaman Log menampilkan rincian itu.
+        $this->admin()->get(route('ic.admin.log.index', ['tab' => 'aktivitas']))->assertOk()->assertSee('Kuota GL: kosong → 25');
+    }
+
     public function test_ip_tidak_tampil_untuk_perubahan_konten(): void
     {
         log_aktivitas::create(['pelaku' => 'admin', 'kategori' => 'konten', 'aksi' => 'Album ditambahkan', 'ip' => '203.0.113.9', 'status' => 'berhasil', 'created_at' => now()]);

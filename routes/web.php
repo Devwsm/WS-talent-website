@@ -200,6 +200,8 @@ Route::prefix('/dashboard')->middleware(['cekLogin', 'catatAktivitas'])->group(f
         Route::put('/acara/{kode}/lokasi', [acaraHariHController::class, 'simpanLokasi'])->name('acara.lokasi')->middleware('throttle:admin-tulis');
         Route::delete('/acara/{kode}/lokasi', [acaraHariHController::class, 'hapusLokasi'])->name('acara.lokasi.hapus')->middleware('throttle:admin-tulis');
         Route::post('/acara/{kode}/lokasi/cari', [acaraHariHController::class, 'cariLokasi'])->name('acara.lokasi.cari')->middleware('throttle:admin-tulis');
+        // Saran alamat saat mengetik (autocomplete) di popup Atur acara; hanya membaca, jadi tidak dicatat sebagai aktivitas.
+        Route::get('/acara/{kode}/lokasi/saran', [acaraHariHController::class, 'saranLokasi'])->name('acara.lokasi.saran')->middleware('throttle:admin-saran-alamat');
         // Halaman Atur acara (Fase 3): pengaturan lengkap satu acara, peta lokasi, dan sandi acara (dilihat atas permintaan).
         Route::get('/acara/{kode}/atur', [acaraController::class, 'atur'])->name('acara.atur');
         Route::put('/acara/{kode}/atur', [acaraController::class, 'simpanAtur'])->name('acara.atur.simpan')->middleware('throttle:admin-tulis');

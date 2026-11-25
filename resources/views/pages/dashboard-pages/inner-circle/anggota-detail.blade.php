@@ -57,7 +57,11 @@
                         <p class="text-red-100/50 text-xs mt-0.5">Anggota tidak bisa masuk. Alasan ini hanya terlihat oleh
                             admin.</p>
                     </div>
-                    <form method="POST" action="{{ route('ic.admin.anggota.aktifkan', $anggota->id_member) }}">
+                    <form method="POST" action="{{ route('ic.admin.anggota.aktifkan', $anggota->id_member) }}"
+                        data-swal-confirm data-confirm-icon="question" data-confirm-loading="Mengaktifkan..."
+                        data-confirm-title="Aktifkan akun ini kembali?"
+                        data-confirm-message="Anggota bisa masuk dan memakai akunnya lagi."
+                        data-confirm-button="Ya, aktifkan">
                         @csrf @method('PATCH')
                         <button type="submit"
                             class="h-11 px-5 inline-flex items-center gap-2 rounded-lg bg-white text-black text-xs font-semibold uppercase tracking-widest hover:bg-white/80 transition-colors">

@@ -150,6 +150,8 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('admin-tulis', fn(Request $request) => Limit::perMinute(30)->by('admin-tulis:' . sha1((string) $request->session()->get('user', 'tamu') . '|' . $request->ip())));
 
         // Aksi berat/berbiaya di dashboard punya penghitung sendiri-sendiri supaya tidak saling mengunci.
+        // Saran alamat saat mengetik: banyak permintaan kecil (JS menunggu jeda mengetik dulu), dibatasi per admin.
+        RateLimiter::for('admin-saran-alamat', fn(Request $request) => Limit::perMinute(60)->by('admin-saran-alamat:' . sha1((string) $request->session()->get('user', 'tamu') . '|' . $request->ip())));
         RateLimiter::for('admin-bandsintown', fn(Request $request) => Limit::perMinute(3)->by('admin-bandsintown:' . sha1((string) $request->session()->get('user', 'tamu') . '|' . $request->ip())));
         RateLimiter::for('admin-email-tes', fn(Request $request) => Limit::perMinute(5)->by('admin-email-tes:' . sha1((string) $request->session()->get('user', 'tamu') . '|' . $request->ip())));
         RateLimiter::for('admin-perbaiki-token', fn(Request $request) => Limit::perMinute(5)->by('admin-perbaiki-token:' . sha1((string) $request->session()->get('user', 'tamu') . '|' . $request->ip())));

@@ -173,7 +173,11 @@
                                 <span
                                     class="shrink-0 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold {{ $dipilih->aktif ? 'border-emerald-300/30 bg-emerald-300/10 text-emerald-200' : 'border-white/15 text-white/50' }}">{{ $dipilih->aktif ? 'Aktif' : 'Disembunyikan' }}</span>
                                 <form method="POST" action="{{ route('ic.admin.hadiah.aktif', $dipilih->id_reward) }}"
-                                    class="shrink-0">
+                                    class="shrink-0" data-swal-confirm data-confirm-icon="question"
+                                    data-confirm-loading="Menyimpan..."
+                                    data-confirm-title="{{ $dipilih->aktif ? 'Sembunyikan hadiah ini?' : 'Aktifkan hadiah ini?' }}"
+                                    data-confirm-message="{{ $dipilih->aktif ? '“' . $dipilih->judul . '” tidak akan bisa ditukar anggota.' : '“' . $dipilih->judul . '” akan tampil dan bisa ditukar anggota.' }}"
+                                    data-confirm-button="{{ $dipilih->aktif ? 'Ya, sembunyikan' : 'Ya, aktifkan' }}">
                                     @csrf
                                     @method('PATCH')
                                     <input type="hidden" name="aktif" value="{{ $dipilih->aktif ? 0 : 1 }}">

@@ -177,7 +177,12 @@
                                     <div class="grid gap-4 lg:grid-cols-2">
                                         <form method="POST"
                                             action="{{ route('ic.admin.acara.pemeriksaan.setujui', $p->id_pemeriksaan) }}"
-                                            class="flex flex-col gap-3 rounded-2xl border border-white/10 p-4">
+                                            class="flex flex-col gap-3 rounded-2xl border border-white/10 p-4"
+                                            data-swal-confirm data-confirm-icon="question"
+                                            data-confirm-loading="Memberi poin..."
+                                            data-confirm-title="Setujui pengajuan ini?"
+                                            data-confirm-message="Anggota langsung mendapat +{{ ic_angka($p->poin_akan) }} poin check-in."
+                                            data-confirm-button="Ya, setujui">
                                             @csrf
                                             <p class="text-sm font-semibold">Setujui: +{{ ic_angka($p->poin_akan) }} poin
                                                 <span
@@ -197,7 +202,11 @@
                                         </form>
                                         <form method="POST"
                                             action="{{ route('ic.admin.acara.pemeriksaan.tolak', $p->id_pemeriksaan) }}"
-                                            class="flex flex-col gap-3 rounded-2xl border border-white/10 p-4">
+                                            class="flex flex-col gap-3 rounded-2xl border border-white/10 p-4"
+                                            data-swal-confirm data-confirm-tone="bahaya" data-confirm-loading="Menolak..."
+                                            data-confirm-title="Tolak pengajuan ini?"
+                                            data-confirm-message="Alasan penolakan akan terlihat oleh anggota."
+                                            data-confirm-button="Ya, tolak">
                                             @csrf
                                             <p class="text-sm font-semibold">Tolak</p>
                                             <label class="sr-only" for="alasan-tolak-{{ $p->id_pemeriksaan }}">Alasan
@@ -291,9 +300,13 @@
                                         @if ($n->anggota && $n->poin_id && $n->status !== 'ditindak')
                                             <button type="submit"
                                                 formaction="{{ route('ic.admin.acara.penanda.tarik', $n->id_penanda) }}"
-                                                onclick="return confirm('Tarik poin check-in ini dari anggota? Poin dikurangi lewat koreksi dan penanda ditandai sudah ditindak.')"
-                                                class="{{ $kelasTombol }}"><i class="bi bi-arrow-return-left"
-                                                    aria-hidden="true"></i> Tarik poin</button>
+                                                data-swal-confirm data-confirm-tone="bahaya"
+                                                data-confirm-loading="Menarik poin..."
+                                                data-confirm-title="Tarik poin check-in ini?"
+                                                data-confirm-message="Poin anggota dikurangi lewat koreksi dan penanda ditandai sudah ditindak."
+                                                data-confirm-button="Ya, tarik poin" class="{{ $kelasTombol }}"><i
+                                                    class="bi bi-arrow-return-left" aria-hidden="true"></i> Tarik
+                                                poin</button>
                                         @endif
                                         @if ($n->anggota)
                                             <a href="{{ route('ic.admin.anggota.detail', $n->anggota->id_member) }}"
