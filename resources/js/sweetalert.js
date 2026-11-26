@@ -30,6 +30,10 @@ const swal = Swal.mixin({
     color: warnaTeks,
     buttonsStyling: false,
 
+    // Penguncian scroll halaman (dan penjagaan lebar scrollbar) ditangani CSS di app.css; padding-right bawaan
+    // SweetAlert dimatikan supaya tidak dobel dan konten tidak bergeser.
+    scrollbarPadding: false,
+
     customClass: kelasPopup,
 });
 
