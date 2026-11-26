@@ -269,6 +269,25 @@ class AturAcaraTest extends TestCase
         $this->admin()->get(route('ic.admin.acara'))->assertOk()
             ->assertSee(route('ic.admin.acara.atur', $e->kode), false)
             ->assertSee('GL 12')
-            ->assertSee('belum ada lokasi');
+            ->assertSee('Belum ada titik lokasi');
+    }
+
+    public function test_badge_belum_ada_titik_lokasi_hanya_untuk_acara_yang_perlu_diatur(): void
+    {
+        $perlu = app(AcaraService::class)->buat(['tanggal' => now()->addDays(3)->format('Y-m-d'), 'tipe' => 'club', 'kota' => 'Jakarta', 'venue' => 'Perlu Titik']);
+        $sudah = app(AcaraService::class)->buat(['tanggal' => now()->addDays(4)->format('Y-m-d'), 'tipe' => 'club', 'kota' => 'Jakarta', 'venue' => 'Sudah Titik']);
+        $sudah->update(['lokasi_lat' => -6.2088, 'lokasi_lng' => 106.8456, 'lokasi_radius' => 150]);
+        $lewat = app(AcaraService::class)->buat(['tanggal' => now()->subDays(5)->format('Y-m-d'), 'tipe' => 'club', 'kota' => 'Jakarta', 'venue' => 'Sudah Lewat']);
+        $tanpaCheckin = app(AcaraService::class)->buat(['tanggal' => now()->addDays(5)->format('Y-m-d'), 'tipe' => 'club', 'kota' => 'Jakarta']);
+
+        $this->assertTrue($perlu->bisa_checkin);
+        $this->assertTrue($sudah->fresh()->lokasi_aktif);
+        $this->assertFalse($tanpaCheckin->bisa_checkin);
+
+        // Daftar Pengaturan dan daftar Hari H sama-sama menandai: tepat satu badge, hanya untuk acara yang perlu titik.
+        foreach (['ic.admin.acara' => ['semua' => 1], 'ic.admin.acara.harih' => ['semua' => 1]] as $rute => $query) {
+            $html = $this->admin()->get(route($rute, $query))->assertOk()->getContent();
+            $this->assertSame(1, substr_count($html, 'Belum ada titik lokasi'), "badge di {$rute}");
+        }
     }
 }

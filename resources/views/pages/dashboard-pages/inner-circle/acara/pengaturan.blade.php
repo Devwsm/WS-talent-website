@@ -170,9 +170,6 @@
                                             @if ($e->punya_gl)
                                                 · GL {{ $e->kuota_gl }}
                                             @endif
-                                            @if ($e->bisa_checkin && !$e->lokasi_aktif)
-                                                · belum ada lokasi
-                                            @endif
                                         </p>
                                         <x-dashboard.inner-circle.tanda-acara :acara="$e" tampil />
                                     </div>

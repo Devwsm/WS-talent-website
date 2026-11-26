@@ -1,8 +1,11 @@
 @props(['acara', 'tampil' => false])
-{{-- Tanda info satu acara di daftar CMS: check-in yang sedang dibuka, undian GL gratis, dan (bila $tampil) status
-     tampil/sembunyi di daftar anggota. Warna latar dan tulisan ditulis eksplisit (inline) karena tema CMS Inner Circle
+{{-- Tanda info satu acara di daftar CMS: belum ada titik lokasi, check-in yang sedang dibuka, undian GL gratis, dan
+     (bila $tampil) status tampil/sembunyi di daftar anggota. Warna latar dan tulisan ditulis eksplisit (inline) karena tema CMS Inner Circle
      mendefinisikan ulang warna "white" menjadi biru tua, sehingga text-white tidak terbaca di atas latar berwarna. --}}
 @php
+    // Acara yang bisa check-in tetapi belum punya titik lokasi tidak membuka check-in (aturan check-in baru), jadi admin
+    // perlu menentukan titiknya. Acara yang sudah lewat tidak ditandai: tidak ada lagi yang perlu diatur.
+    $tanpaLokasi = $acara->bisa_checkin && !$acara->lokasi_aktif && $acara->status_waktu !== 'lewat';
     $dibuka = $acara->checkin_dibuka;
     $gl = $acara->punya_gl;
     $diundi = $gl && $acara->status_undian === \App\Models\ic_event::UNDIAN_SELESAI;
@@ -10,8 +13,12 @@
     $kelas =
         'inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide leading-none';
 @endphp
-@if ($dibuka || $gl || $sembunyi)
+@if ($tanpaLokasi || $dibuka || $gl || $sembunyi)
     <span class="mt-1.5 flex flex-wrap items-center gap-1.5">
+        @if ($tanpaLokasi)
+            <span class="{{ $kelas }}" style="background:#b45309;color:#ffffff"><i class="bi bi-geo-alt-fill"
+                    aria-hidden="true"></i> Belum ada titik lokasi</span>
+        @endif
         @if ($dibuka)
             <span class="{{ $kelas }}" style="background:#0b6b3f;color:#ffffff"><i class="bi bi-broadcast"
                     aria-hidden="true"></i> Check-in dibuka</span>
