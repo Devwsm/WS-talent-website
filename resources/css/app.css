@@ -44,19 +44,22 @@ body {
 /* Kunci halaman di belakang popup. <dialog> modal native tidak mengunci scroll halaman, dan kunci bawaan SweetAlert
    membiarkan body tetap bisa digulir (overflow-y: scroll), jadi roda mouse atau sentuhan di latar menggulir halaman
    di belakang popup. Kunci dipasang di <html> (elemen yang menggulir dokumen); toast SweetAlert sengaja tidak
-   mengunci. scrollbar-gutter: stable menjaga lebar konten tetap saat scrollbar halaman hilang, supaya tidak
-   bergeser; posisi gulir tetap tersimpan dan kembali saat popup ditutup. */
+   mengunci. Posisi gulir halaman tetap tersimpan dan kembali saat popup ditutup.
+   overscroll-behavior: none (bukan contain): contain hanya memutus rantai scroll, tetapi efek memantul bawaan
+   browser sentuh tetap terjadi di dalam elemennya, sehingga popup ikut "bergeser" saat diseret. none mematikan
+   keduanya (dan juga tarik-untuk-muat-ulang di halaman yang sedang terkunci). */
 html:has(dialog[open]),
 html:has(body.swal2-shown:not(.swal2-toast-shown, .swal2-no-backdrop)) {
     overflow: hidden;
-    scrollbar-gutter: stable;
+    overscroll-behavior: none;
 }
 html:has(body.swal2-shown:not(.swal2-toast-shown, .swal2-no-backdrop))
     body.swal2-shown {
     overflow: visible !important;
 }
-dialog {
-    overscroll-behavior: contain;
+dialog,
+.swal2-container {
+    overscroll-behavior: none;
 }
 
 /* override global swiper */
