@@ -63,6 +63,7 @@ return [
     /* Login gagal: teks tetap. Username yang diketik TIDAK dicatat (kadang yang terketik justru kata sandinya). */
     'akses' => [
         'login_gagal' => ['Gagal masuk ke dashboard', 'Username atau kata sandi salah.'],
+        'login_dikunci' => ['Perangkat dikunci sementara', 'Terlalu banyak login gagal dari perangkat atau jaringan yang sama, jadi percobaan berikutnya ditolak untuk sementara.'],
         'otp_salah' => ['Kode verifikasi salah', 'Kode dari email salah dimasukkan.'],
         'otp_habis' => ['Kode verifikasi salah berkali-kali', 'Kode dibatalkan, admin harus masuk dari awal.'],
         'tanpa_2fa' => ['Masuk tanpa kode verifikasi', 'Email admin belum diisi, jadi kode verifikasi dilewati. Isi email admin agar login lebih aman.'],

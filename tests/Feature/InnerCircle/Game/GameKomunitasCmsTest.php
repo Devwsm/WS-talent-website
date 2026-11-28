@@ -58,6 +58,21 @@ class GameKomunitasCmsTest extends TestCase
         $this->assertNull($m->fresh()->galeri_dibaca_pada);
     }
 
+    public function test_tab_game_punya_hero_bergambar_dan_navigasi_tab_selalu_di_atas_banner(): void
+    {
+        $m = $this->anggota();
+
+        // Hero memakai aset game; teks aturan tetap lengkap (bisa dibaca penuh di kartu pendek).
+        $html = $this->actingAs($m, 'member')->get(route('ic.komunitas', ['tab' => 'game']))->assertOk()->getContent();
+        foreach (['ic-gk__hero', 'aset/game-mambo/cafe-beach.webp', 'aset/game-mambo/pineapple.webp', 'ic-gk__kartu--cara', 'ic-gk__kartu--aturan', 'ic-gk__kartu--poin'] as $teks) {
+            $this->assertStringContainsString($teks, $html);
+        }
+
+        // Di tab Galeri, navigasi tab tampil SEBELUM banner (posisinya sama di semua tab, tidak melompat).
+        $galeri = $this->actingAs($m, 'member')->get(route('ic.komunitas', ['tab' => 'galeri']))->assertOk()->getContent();
+        $this->assertLessThan(strpos($galeri, 'judul-banner'), strpos($galeri, 'ic-tab-daftar'));
+    }
+
     public function test_tombol_main_nonaktif_bila_jatah_habis(): void
     {
         config(['inner_circle.game.ronde_harian' => 1]);

@@ -1941,6 +1941,7 @@ a.ic-komentar-pintas {
     grid-auto-flow: column;
     grid-auto-columns: minmax(0, 1fr);
     gap: 6px;
+    margin: 18px 0 4px;
     padding: 6px;
     border-radius: 22px;
     background: #e3f2fb;
@@ -1950,17 +1951,39 @@ a.ic-komentar-pintas {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    min-height: 48px;
+    gap: 13px;
+    min-width: 0;
+    min-height: 50px;
+    padding: 6px 12px;
     border-radius: 18px;
     font-size: 14px;
     font-weight: 800;
+    line-height: 1.2;
+    text-align: center;
     color: #304a5f;
-    transition: background 0.2s;
+    transition:
+        background 0.2s,
+        color 0.2s;
+}
+
+.ic-tab__ikon {
+    position: relative;
+    display: inline-flex;
+    flex: 0 0 auto;
+}
+
+.ic-tab__label {
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
 
 .ic-tab:hover {
     background: rgba(255, 255, 255, 0.6);
+}
+
+.ic-tab:focus-visible {
+    outline: 2px solid var(--ic-navy);
+    outline-offset: 2px;
 }
 
 .ic-tab.is-aktif {
@@ -1968,16 +1991,26 @@ a.ic-komentar-pintas {
     color: #fff;
 }
 
-/* Lencana angka: hanya dirender bila ada isi yang belum dibaca (lihat komunitas.blade.php). */
+/* Lencana angka: hanya dirender bila ada isi yang belum dibaca (lihat komunitas.blade.php). Menempel di pojok ikon
+   (bukan di samping label), jadi lebar dan tinggi tab sama dengan atau tanpa lencana. */
 .ic-tab__lencana {
-    min-width: 22px;
-    padding: 2px 8px;
+    position: absolute;
+    top: -11px;
+    right: -14px;
+    min-width: 19px;
+    padding: 1px 6px;
     border-radius: 10px;
     background: var(--ic-lencana-latar);
     color: var(--ic-lencana-teks);
-    font-size: 11px;
-    line-height: 1.4;
+    box-shadow: 0 0 0 2px #e3f2fb;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1.5;
     text-align: center;
+}
+
+.ic-tab.is-aktif .ic-tab__lencana {
+    box-shadow: 0 0 0 2px var(--ic-navy);
 }
 
 .ic-intro-kenangan {
@@ -2483,39 +2516,52 @@ a.ic-komentar-pintas {
     .ic-filter__form {
         grid-template-columns: 1fr;
     }
+}
 
-    /* Tab Komunitas: di HP ikon di atas label supaya tiga tab muat satu baris. Ikon selalu sejajar di atas
-       (justify-content: flex-start) dan tinggi semua tab sama walau labelnya satu atau dua baris. */
-    .ic-tab {
-        flex-direction: column;
-        flex-wrap: nowrap;
-        justify-content: flex-start;
-        gap: 4px;
-        min-height: 66px;
-        padding: 9px 4px 8px;
-        font-size: 12px;
-        line-height: 1.2;
-        text-align: center;
-        text-wrap: balance;
-        overflow-wrap: anywhere;
-    }
-    .ic-tab .ic-ikon--mini {
-        flex: 0 0 auto;
-        width: 20px;
-        height: 20px;
-        vertical-align: baseline;
-    }
+/* Tab Komunitas di HP (sampai 600 px): ikon di atas label, label versi pendek ("Pengumuman", "Kenangan") supaya tiga
+   tab muat satu baris dan semuanya setinggi sama. Judul halaman diperkecil sedikit agar "Community." tidak patah. */
+@media (max-width: 600px) {
     .ic-tab-daftar {
         gap: 4px;
+        margin-top: 14px;
         padding: 4px;
         border-radius: 20px;
+    }
+    .ic-tab {
+        flex-direction: column;
+        justify-content: flex-start;
+        gap: 5px;
+        min-height: 64px;
+        padding: 10px 2px 8px;
+        font-size: 12px;
+        border-radius: 16px;
+    }
+    .ic-tab .ic-ikon--mini {
+        width: 20px;
+        height: 20px;
+        font-size: 18px;
+        vertical-align: baseline;
+    }
+    .ic-tab__ekstra {
+        display: none;
+    }
+    .ic-tab__lencana {
+        top: -7px;
+        right: -13px;
+    }
+    .ic-judul--komunitas {
+        font-size: clamp(38px, 12.5vw, 64px);
     }
 }
 @media (max-width: 360px) {
     .ic-tab {
-        padding: 8px 2px 7px;
         font-size: 11px;
     }
+}
+
+/* Kata terakhir judul dan titiknya tidak boleh terpisah baris. */
+.ic-judul__akhir {
+    white-space: nowrap;
 }
 
 /* ---------- Teks yang bisa diubah dari CMS ----------
@@ -3573,59 +3619,385 @@ a.ic-poster-kartu:hover .ic-poster-kartu__gambar {
     font-size: 14px;
 }
 
-/* ---------- Game (tab Game di Komunitas) ---------- */
-.ic-game-intro {
+/* ---------- Game (tab Game di Komunitas) ----------
+   Hero bergambar memakai aset Mambo Jambo (public/aset/game-mambo) dan palet arkade yang sama dengan halaman game.
+   Prefiks ic-gk-. Kartu aturan dipisah per topik supaya tiap daftar pendek dan langsung terbaca. */
+.ic-gk {
+    --gk-gelap: #0b303d;
+    --gk-teal: #123f4c;
+    --gk-biru: #0795ca;
+    --gk-oranye: #ff8e58;
+    --gk-kuning: #ffdb75;
+    display: grid;
+    gap: 16px;
+    margin-top: 18px;
+}
+
+.ic-gk__hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    overflow: hidden;
+    isolation: isolate;
+    border-radius: 30px;
+    background: linear-gradient(150deg, #0f4d60 0%, var(--gk-gelap) 100%);
+    box-shadow: 0 18px 40px rgba(4, 38, 84, 0.2);
+    color: #fff;
+}
+
+.ic-gk__isi {
+    position: relative;
+    z-index: 1;
     display: grid;
     gap: 14px;
     justify-items: start;
-    margin-top: 14px;
+    align-content: center;
+    min-width: 0;
+    padding: clamp(22px, 4vw, 40px);
 }
-.ic-game-intro__teks {
+
+.ic-gk__stiker {
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--gk-kuning);
+    color: #3a2300;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+}
+
+.ic-gk__eyebrow {
+    margin: 0 0 6px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2.4px;
+    text-transform: uppercase;
+    color: #8fe0f5;
+}
+
+.ic-gk__judul {
     margin: 0;
-    max-width: 62ch;
-    color: var(--ic-tinta);
+    font-family: var(--ic-font-judul);
+    font-style: italic;
+    font-weight: 700;
+    font-size: clamp(32px, 5.4vw, 56px);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
+    color: #fff;
+    overflow-wrap: anywhere;
 }
-.ic-game-status {
-    display: flex;
-    flex-wrap: wrap;
+
+.ic-gk__intro {
+    margin: 0;
+    max-width: 44ch;
+    font-size: 15px;
+    line-height: 1.5;
+    color: #d3eef3;
+    overflow-wrap: anywhere;
+}
+
+.ic-gk__status {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
+    width: 100%;
+    max-width: 440px;
     margin: 0;
     padding: 0;
     list-style: none;
 }
-.ic-game-status li {
-    padding: 6px 12px;
-    border-radius: 999px;
-    background: var(--ic-krem);
-    border: 1px solid var(--ic-garis-kartu);
-    color: var(--ic-judul);
-    font-size: 13px;
-}
-.ic-game-kolom {
+
+.ic-gk__status li {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
-    gap: 14px;
-    margin-top: 14px;
+    gap: 2px;
+    min-width: 0;
+    padding: 10px 6px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.1);
+    text-align: center;
 }
-.ic-game-kolom .ic-judul-bagian {
-    margin: 0 0 8px;
-    font-size: 1.1rem;
+
+.ic-gk__status b {
+    font-size: clamp(18px, 3vw, 22px);
+    line-height: 1.1;
+    color: var(--gk-kuning);
 }
-.ic-game-langkah,
-.ic-game-daftar {
-    display: grid;
-    gap: 8px;
+
+.ic-gk__status small {
+    font-size: 12px;
+    font-weight: 700;
+    color: #b9e0dd;
+}
+
+.ic-gk__status span {
+    font-size: 11px;
+    line-height: 1.25;
+    color: #b9e0dd;
+}
+
+/* Tombol utama: kuning arkade dengan "alas" tebal supaya terasa bisa ditekan, dan jadi titik fokus hero. */
+.ic-tombol.ic-gk__tombol {
+    min-height: 52px;
+    padding: 14px 28px;
+    background: var(--gk-kuning);
+    color: #3a2300;
+    font-size: 15px;
+    box-shadow: 0 5px 0 #c9962f;
+    transition:
+        transform 0.15s,
+        box-shadow 0.15s;
+}
+.ic-tombol.ic-gk__tombol:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 0 #c9962f;
+}
+.ic-tombol.ic-gk__tombol:active {
+    transform: translateY(4px);
+    box-shadow: 0 1px 0 #c9962f;
+}
+.ic-tombol.ic-gk__tombol:disabled {
+    box-shadow: none;
+}
+.ic-tombol.ic-gk__tombol:focus-visible {
+    outline: 3px solid #fff;
+    outline-offset: 3px;
+}
+
+.ic-gk__catatan {
     margin: 0;
-    padding-left: 22px;
-    color: var(--ic-tinta);
-    font-size: 14px;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--gk-kuning);
 }
-.ic-game-langkah li::marker {
-    color: var(--ic-aksen);
+
+/* Adegan pantai: latar pixel-art, logo, tokoh, dan nanas/botol yang jatuh. */
+.ic-gk__adegan {
+    position: relative;
+    min-height: 280px;
+    overflow: hidden;
+}
+.ic-gk__adegan img {
+    position: absolute;
+    height: auto;
+    image-rendering: pixelated;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+.ic-gk__latar {
+    inset: 0;
+    width: 100%;
+    height: 100% !important;
+    object-fit: cover;
+    object-position: center bottom;
+    /* Gambar memudar ke panel gelap di sisi teks (mask, bukan lapisan warna), jadi tidak ada garis sambungan. */
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 40%);
+    mask-image: linear-gradient(90deg, transparent 0%, #000 40%);
+}
+.ic-gk__logo {
+    top: 5%;
+    right: 6%;
+    z-index: 2;
+    width: 40%;
+    max-width: 190px;
+    image-rendering: auto !important;
+    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.3));
+}
+.ic-gk__tokoh {
+    bottom: 3%;
+    left: 50%;
+    z-index: 2;
+    width: 30%;
+    max-width: 118px;
+    transform: translateX(-50%);
+    filter: drop-shadow(0 6px 4px rgba(0, 0, 0, 0.3));
+}
+.ic-gk__jatuh {
+    top: 0;
+    z-index: 2;
+    width: 10%;
+    max-width: 38px;
+    opacity: 0;
+    animation: ic-gk-jatuh 3.6s linear infinite;
+}
+.ic-gk__jatuh--1 {
+    left: 34%;
+}
+.ic-gk__jatuh--2 {
+    left: 62%;
+    animation-delay: 1.2s;
+}
+.ic-gk__jatuh--3 {
+    left: 74%;
+    animation-delay: 2.3s;
+}
+@keyframes ic-gk-jatuh {
+    0% {
+        top: -6%;
+        opacity: 0;
+        transform: rotate(-8deg);
+    }
+    12% {
+        opacity: 1;
+    }
+    78% {
+        opacity: 1;
+    }
+    100% {
+        top: 66%;
+        opacity: 0;
+        transform: rotate(10deg);
+    }
+}
+
+/* Kartu aturan: garis warna di atas, ikon bergambar, daftar pendek bernomor/bertanda. */
+.ic-gk__aturan {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+    gap: 14px;
+}
+
+.ic-gk__kartu {
+    --gk-aksen: var(--gk-oranye);
+    position: relative;
+    display: grid;
+    align-content: start;
+    gap: 14px;
+    min-width: 0;
+    padding: 22px 18px 20px;
+    overflow: hidden;
+    border: 1px solid var(--ic-garis-kartu);
+    border-radius: 24px;
+    background: var(--ic-shell);
+}
+.ic-gk__kartu::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 5px;
+    background: var(--gk-aksen);
+}
+.ic-gk__kartu--aturan {
+    --gk-aksen: var(--gk-biru);
+}
+.ic-gk__kartu--poin {
+    --gk-aksen: #f5c45f;
+}
+
+.ic-gk__kartu-kepala {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.ic-gk__kartu-ikon {
+    display: grid;
+    flex: 0 0 auto;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--gk-aksen) 24%, #fff);
+    font-size: 20px;
+    color: var(--ic-judul);
+}
+.ic-gk__kartu-ikon img {
+    width: auto;
+    height: 28px;
+    image-rendering: pixelated;
+}
+.ic-gk__kartu h3 {
+    margin: 0;
+    font-family: var(--ic-font-judul);
+    font-size: 20px;
+    letter-spacing: -0.02em;
+    color: var(--ic-judul);
+}
+
+.ic-gk__daftar {
+    display: grid;
+    gap: 11px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: gk;
+}
+.ic-gk__daftar li {
+    display: grid;
+    grid-template-columns: 26px minmax(0, 1fr);
+    gap: 10px;
+    align-items: start;
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--ic-tinta);
+    overflow-wrap: anywhere;
+}
+.ic-gk__daftar li::before {
+    content: counter(gk);
+    counter-increment: gk;
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--gk-aksen);
+    color: #06222d;
+    font-size: 12px;
     font-weight: 800;
 }
-.ic-game-daftar li::marker {
-    color: var(--ic-aksen);
+.ic-gk__daftar--centang li::before {
+    content: "✓";
+}
+.ic-gk__daftar--bintang li::before {
+    content: "★";
+}
+
+@media (max-width: 780px) {
+    .ic-gk__hero {
+        grid-template-columns: minmax(0, 1fr);
+        border-radius: 26px;
+    }
+    /* Di HP adegan pindah ke atas teks dan pudar ke bawah. */
+    .ic-gk__adegan {
+        order: -1;
+        min-height: 0;
+        aspect-ratio: 16 / 9;
+    }
+    .ic-gk__latar {
+        -webkit-mask-image: linear-gradient(0deg, transparent 0%, #000 45%);
+        mask-image: linear-gradient(0deg, transparent 0%, #000 45%);
+    }
+    .ic-gk__tokoh {
+        width: 17%;
+    }
+    .ic-gk__logo {
+        width: 30%;
+    }
+    .ic-gk__isi {
+        padding: 20px 18px 24px;
+    }
+    .ic-gk__status {
+        max-width: none;
+    }
+    .ic-tombol.ic-gk__tombol {
+        width: 100%;
+    }
+}
+
+@media (max-width: 360px) {
+    .ic-gk__status span {
+        font-size: 10px;
+    }
+    .ic-gk__intro {
+        font-size: 14px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ic-gk__jatuh {
+        animation: none;
+        opacity: 0;
+    }
 }
 .ic-ajakan-game {
     margin-top: 18px;

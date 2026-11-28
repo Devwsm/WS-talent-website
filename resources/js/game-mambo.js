@@ -206,15 +206,13 @@ function jalankan(akar) {
         aturStatus("SIAP MAIN");
         if (!bisaMain) {
             aturOverlay({
-                info: "Verifikasi email dulu untuk main dan mengumpulkan poin.",
+                info: "Verifikasi email dulu untuk main dan dapat poin.",
                 tombol: "MULAI MAIN",
                 aktif: false,
             });
         } else if (rondeSisa <= 0) {
             aturOverlay({
-                info:
-                    info ||
-                    "Jatah ronde hari ini sudah habis. Kembali lagi besok ya!",
+                info: info || "Jatah hari ini sudah habis. Main lagi besok ya!",
                 tombol: "MULAI MAIN",
                 aktif: false,
             });
@@ -240,7 +238,7 @@ function jalankan(akar) {
         const isi = await jawab.json().catch(() => ({}));
         if (!jawab.ok) {
             const galat = new Error(
-                isi.pesan || "Terjadi kendala. Coba lagi sebentar lagi.",
+                isi.pesan || "Ada kendala. Coba lagi sebentar.",
             );
             galat.status = jawab.status;
             throw galat;
@@ -265,7 +263,7 @@ function jalankan(akar) {
                 keadaan = "galat";
                 aturOverlay({
                     judul: "SESI HABIS",
-                    info: "Muat ulang halaman lalu coba lagi.",
+                    info: "Muat ulang halaman, lalu coba lagi.",
                     tombol: "MUAT ULANG",
                 });
                 tombolMain.dataset.aksi = "muat";
@@ -319,7 +317,7 @@ function jalankan(akar) {
         keadaan = "menghitung";
         arena.dataset.state = "over";
         aturStatus("MENGHITUNG");
-        aturOverlay({ info: "Menghitung skor dan poinmu..." });
+        aturOverlay({ info: "Menghitung poinmu..." });
         try {
             const hasil = await kirimJson(d.urlSelesai, muatan);
             kirimanTertunda = null;
@@ -331,7 +329,7 @@ function jalankan(akar) {
                 keadaan = "galat";
                 aturOverlay({
                     judul: "KONEKSI TERPUTUS",
-                    info: "Skormu belum terkirim. Tekan untuk mencoba lagi.",
+                    info: "Skor belum terkirim. Coba kirim ulang.",
                     tombol: "KIRIM ULANG",
                 });
                 tombolMain.dataset.aksi = "kirim";
@@ -339,7 +337,7 @@ function jalankan(akar) {
                 keadaan = "galat";
                 aturOverlay({
                     judul: "SESI HABIS",
-                    info: "Muat ulang halaman lalu main lagi. Ronde ini tidak dihitung.",
+                    info: "Muat ulang halaman. Ronde ini tidak dihitung.",
                     tombol: "MUAT ULANG",
                 });
                 tombolMain.dataset.aksi = "muat";
@@ -376,27 +374,22 @@ function jalankan(akar) {
         const catatan = [];
         if (penyebab === "waktu")
             catatan.push(
-                `Waktu ronde habis (${Math.round(langkahMaks / K.LANGKAH_PER_DETIK / 60)} menit), skormu tetap dihitung.`,
+                `Waktu habis (${Math.round(langkahMaks / K.LANGKAH_PER_DETIK / 60)} menit). Skor tetap dihitung.`,
             );
         if (hasil.alasan_batas === "ronde") {
             catatan.push(
-                `Skor ${hasil.skor} setara ${hasil.poin_mentah} poin, tapi satu ronde maksimal ${poinMaksRonde} poin. Rekormu tetap tercatat ${hasil.rekor}.`,
+                `Skor ${hasil.skor} = ${hasil.poin_mentah} poin, tapi maksimal ${poinMaksRonde} per ronde. Rekor ${hasil.rekor} tetap tercatat.`,
             );
         } else if (hasil.alasan_batas === "harian") {
             catatan.push(
                 hasil.poin > 0
-                    ? `Batas poin game hari ini (${poinBatasHari}) tercapai, jadi poin ronde ini hanya ${hasil.poin}. Rekormu tetap tercatat.`
-                    : `Batas poin game hari ini (${poinBatasHari}) sudah tercapai, jadi ronde ini tidak menambah poin. Rekormu tetap tercatat.`,
+                    ? `Batas harian (${poinBatasHari} poin) tercapai, jadi poin ronde ini ${hasil.poin}.`
+                    : `Batas harian (${poinBatasHari} poin) sudah tercapai, ronde ini tanpa poin. Rekor tetap tercatat.`,
             );
         } else if (hasil.poin === 0) {
-            catatan.push(
-                "Skornya belum cukup untuk jadi poin. Coba lagi, pasti bisa!",
-            );
+            catatan.push("Skor belum cukup jadi poin. Coba lagi!");
         }
-        if (rondeSisa <= 0)
-            catatan.push(
-                "Jatah ronde hari ini sudah habis. Sampai ketemu besok!",
-            );
+        if (rondeSisa <= 0) catatan.push("Jatah hari ini habis. Sampai besok!");
         aturOverlay({
             judul: penyebab === "waktu" ? "WAKTU HABIS" : "GAME OVER",
             hasil: baris.join("\n"),
@@ -489,7 +482,7 @@ function jalankan(akar) {
         aturStatus("JEDA");
         aturOverlay({
             judul: "JEDA",
-            info: "Ronde berhenti sampai kamu lanjut.",
+            info: "Ronde dijeda.",
             tombol: "LANJUT",
         });
     }

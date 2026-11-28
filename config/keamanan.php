@@ -42,4 +42,19 @@ return [
             'frame-ancestors' => ["'self'"],
         ],
     ],
+
+    /*
+     * Login admin CMS: kunci sementara bertingkat per perangkat (lihat App\Services\LoginPembatas).
+     * Format tiap tingkat: jumlah login gagal => lama kunci dalam MENIT. Hitungan gagal berlaku `jendela_jam` jam.
+     *  - perangkat : cookie perangkat (paling tepat, ambang paling ketat)
+     *  - ip_ua     : IP + User-Agent (menutup bot tanpa cookie)
+     *  - ip        : IP saja (paling longgar, satu Wi-Fi bisa dipakai banyak orang)
+     * Ubah angkanya di sini, lalu jalankan `php artisan config:cache` lagi bila config sudah di-cache.
+     */
+    'login_admin' => [
+        'jendela_jam' => 72,
+        'perangkat' => [5 => 15, 8 => 60, 12 => 1440],
+        'ip_ua' => [12 => 15, 20 => 60, 30 => 1440],
+        'ip' => [40 => 15, 80 => 60, 150 => 1440],
+    ],
 ];

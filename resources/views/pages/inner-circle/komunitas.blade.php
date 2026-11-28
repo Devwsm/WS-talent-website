@@ -3,12 +3,50 @@
 @section('title', 'Our Community')
 
 @section('content')
-    <h1 class="ic-judul">Our Community<span>.</span></h1>
+    {{-- Kata terakhir + titik dibungkus satu unit tak terputus, supaya di layar 320 px titiknya tidak jatuh sendirian ke baris baru. --}}
+    <h1 class="ic-judul ic-judul--komunitas">Our <span class="ic-judul__akhir">Community<span>.</span></span></h1>
     <p class="ic-deskripsi">{{ ic_html('komunitas.deskripsi') }}</p>
 
     <x-inner-circle.panel-verifikasi />
 
-    {{-- Banner bagikan kenangan hanya untuk tab Pengumuman dan Galeri; tab Game langsung ke isinya. --}}
+    {{-- Navigasi tab selalu di posisi yang sama di semua tab (di atas banner), jadi tidak melompat saat pindah tab.
+         Label panjang punya versi pendek untuk layar kecil (.ic-tab__ekstra disembunyikan di HP). --}}
+    <nav class="ic-tab-daftar" aria-label="Bagian komunitas">
+        <a class="ic-tab {{ $tab === 'pengumuman' ? 'is-aktif' : '' }}"
+            href="{{ route('ic.komunitas', ['tab' => 'pengumuman']) }}"
+            @if ($tab === 'pengumuman') aria-current="page" @endif>
+            <span class="ic-tab__ikon">
+                <x-inner-circle.ikon nama="megaphone" kelas="ic-ikon--mini" />
+                @if ($jumlahPengumuman > 0)
+                    <span class="ic-tab__lencana">{{ $jumlahPengumuman > 99 ? '99+' : $jumlahPengumuman }}<span
+                            class="ic-sr-saja"> belum dibaca</span></span>
+                @endif
+            </span>
+            <span class="ic-tab__label">Pengumuman<span class="ic-tab__ekstra"> WS</span></span>
+        </a>
+        <a class="ic-tab {{ $tab === 'galeri' ? 'is-aktif' : '' }}" href="{{ route('ic.komunitas', ['tab' => 'galeri']) }}"
+            @if ($tab === 'galeri') aria-current="page" @endif>
+            <span class="ic-tab__ikon">
+                <x-inner-circle.ikon nama="camera" kelas="ic-ikon--mini" />
+                @if ($jumlahKenangan > 0)
+                    <span class="ic-tab__lencana">{{ $jumlahKenangan > 99 ? '99+' : $jumlahKenangan }}<span
+                            class="ic-sr-saja"> belum dibaca</span></span>
+                @endif
+            </span>
+            <span class="ic-tab__label"><span class="ic-tab__ekstra">Galeri </span>Kenangan</span>
+        </a>
+        @if ($gameAktif)
+            <a class="ic-tab {{ $tab === 'game' ? 'is-aktif' : '' }}" href="{{ route('ic.komunitas', ['tab' => 'game']) }}"
+                @if ($tab === 'game') aria-current="page" @endif>
+                <span class="ic-tab__ikon">
+                    <x-inner-circle.ikon nama="mirror-ball" kelas="ic-ikon--mini" />
+                </span>
+                <span class="ic-tab__label">Game</span>
+            </a>
+        @endif
+    </nav>
+
+    {{-- Banner bagikan kenangan hanya untuk tab Pengumuman dan Galeri; tab Game punya hero sendiri. --}}
     @if ($tab !== 'game')
         <section class="ic-banner" aria-labelledby="judul-banner">
             <div>
@@ -24,33 +62,6 @@
             </div>
         </section>
     @endif
-
-    <nav class="ic-tab-daftar" aria-label="Bagian komunitas">
-        <a class="ic-tab {{ $tab === 'pengumuman' ? 'is-aktif' : '' }}"
-            href="{{ route('ic.komunitas', ['tab' => 'pengumuman']) }}"
-            @if ($tab === 'pengumuman') aria-current="page" @endif>
-            <x-inner-circle.ikon nama="megaphone" kelas="ic-ikon--mini" /> Pengumuman WS
-            @if ($jumlahPengumuman > 0)
-                <span class="ic-tab__lencana">{{ $jumlahPengumuman > 99 ? '99+' : $jumlahPengumuman }}<span
-                        class="ic-sr-saja"> belum dibaca</span></span>
-            @endif
-        </a>
-        <a class="ic-tab {{ $tab === 'galeri' ? 'is-aktif' : '' }}" href="{{ route('ic.komunitas', ['tab' => 'galeri']) }}"
-            @if ($tab === 'galeri') aria-current="page" @endif>
-            <x-inner-circle.ikon nama="camera" kelas="ic-ikon--mini" /> Galeri Kenangan
-            @if ($jumlahKenangan > 0)
-                <span class="ic-tab__lencana">{{ $jumlahKenangan > 99 ? '99+' : $jumlahKenangan }}<span class="ic-sr-saja">
-                        belum dibaca</span></span>
-            @endif
-        </a>
-        @if ($gameAktif)
-            <a class="ic-tab {{ $tab === 'game' ? 'is-aktif' : '' }}"
-                href="{{ route('ic.komunitas', ['tab' => 'game']) }}"
-                @if ($tab === 'game') aria-current="page" @endif>
-                <x-inner-circle.ikon nama="mirror-ball" kelas="ic-ikon--mini" /> Game
-            </a>
-        @endif
-    </nav>
 
     @if ($tab === 'game')
         @include('pages.inner-circle.partials.komunitas-game')

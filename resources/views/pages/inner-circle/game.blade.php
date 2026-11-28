@@ -19,12 +19,10 @@
         data-rekor="{{ $ringkasan['rekor'] }}" data-langkah-maks="{{ config('inner_circle.game.langkah_maks') }}">
 
         <header class="gm-kepala">
-            <a class="ic-tautan" href="{{ route('ic.komunitas', ['tab' => 'game']) }}">← Cara main dan aturan</a>
+            <a class="ic-tautan" href="{{ route('ic.komunitas', ['tab' => 'game']) }}">← Cara main</a>
             <p class="ic-eyebrow">Game Inner Circle</p>
             <h1 class="ic-judul">Pineapple Catcher<span>.</span></h1>
-            <p class="gm-kepala__teks">Geser Whisnu untuk menangkap nanas di pantai Mambo Jambo Café, hindari botol bir,
-                lalu
-                tukar skormu jadi poin Inner Circle.</p>
+            <p class="gm-kepala__teks">Geser Whisnu, tangkap nanas, hindari botol bir. Skormu jadi poin Inner Circle.</p>
             <ul class="gm-chip" aria-label="Jatah main hari ini">
                 <li><i class="bi bi-controller" aria-hidden="true"></i> <span
                         data-gm-chip-ronde>{{ $ringkasan['ronde_sisa'] }}
@@ -83,33 +81,32 @@
                 <div class="gm-aturan">
                     <div><img src="{{ asset('aset/game-mambo/pineapple.webp') }}" width="21" height="26"
                             alt="" loading="lazy">
-                        <p><b>+10 skor per nanas</b><span>Arahkan mulut keranjang ke nanas.</span></p>
+                        <p><b>+10 skor per nanas</b><span>Tangkap sebanyak mungkin.</span></p>
                     </div>
                     <div><img src="{{ asset('aset/game-mambo/beer.webp') }}" width="19" height="29" alt=""
                             loading="lazy">
-                        <p><b>−10 skor per botol bir</b><span>Biarkan botol bir jatuh lewat.</span></p>
+                        <p><b>−10 skor per botol bir</b><span>Biarkan jatuh lewat.</span></p>
                     </div>
                     <div><span class="gm-hati" aria-hidden="true"></span>
-                        <p><b>Lima nyawa per ronde</b><span>Nanas kelima yang terlewat mengakhiri ronde. Kecepatan naik di
-                                250, 500, 750 skor, dan seterusnya.</span></p>
+                        <p><b>5 nyawa per ronde</b><span>Nanas lolos = −1 nyawa. Makin tinggi skor, makin cepat.</span></p>
                     </div>
                 </div>
 
                 <div class="gm-poin-info">
                     <h2 class="ic-judul-bagian">Soal poin</h2>
                     <ul>
-                        <li>{{ $ringkasan['skor_per_poin'] }} skor = 1 poin Inner Circle. Satu ronde maksimal
-                            {{ $ringkasan['poin_maks_ronde'] }} poin; skor yang lebih tinggi tetap jadi rekormu.</li>
-                        <li>Jatahmu {{ $ringkasan['ronde_batas'] }} ronde per hari (maksimal
-                            {{ $ringkasan['poin_batas_hari'] }} poin game per hari), satu ronde paling lama
-                            {{ $menitRonde }} menit.</li>
-                        <li>Jangan tutup atau muat ulang halaman saat bermain, ya. Ronde yang ditinggalkan tetap
-                            menghabiskan jatah.</li>
-                        <li>Skor dicek ulang oleh server supaya adil buat semua.</li>
+                        <li>{{ $ringkasan['skor_per_poin'] }} skor = 1 poin. Maksimal {{ $ringkasan['poin_maks_ronde'] }}
+                            poin per
+                            ronde.</li>
+                        <li>{{ $ringkasan['ronde_batas'] }} ronde per hari (maksimal
+                            {{ $ringkasan['poin_batas_hari'] }} poin), satu ronde paling lama {{ $menitRonde }} menit.
+                        </li>
+                        <li>Jangan tutup atau muat ulang halaman saat main.</li>
+                        <li>Skor dicek ulang server supaya adil.</li>
                     </ul>
                 </div>
 
-                <p class="gm-kontrol"><kbd>←</kbd><kbd>→</kbd> Geser mouse, sentuh layar, atau pakai tombol panah.</p>
+                <p class="gm-kontrol"><kbd>←</kbd><kbd>→</kbd> Geser mouse, sentuh layar, atau tombol panah.</p>
 
                 <button class="gm-lagu" type="button" data-gm-lagu><i class="bi bi-spotify" aria-hidden="true"></i> Putar
                     lagu Mambo Jambo</button>

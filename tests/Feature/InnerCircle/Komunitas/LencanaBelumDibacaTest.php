@@ -83,7 +83,9 @@ class LencanaBelumDibacaTest extends TestCase
         $this->assertTrue($m->fresh()->pengumuman_dibaca_pada->isToday());
 
         // Sudah dibaca: membuka lagi tidak memunculkan lencana pengumuman.
-        $this->actingAs($m, 'member')->get(route('ic.komunitas'))->assertSee('>2<span class="ic-sr-saja">', false);
+        $html = $this->actingAs($m, 'member')->get(route('ic.komunitas'))->getContent();
+        // Toleran terhadap pemformat Blade yang memecah baris di antara angka dan teks pembaca layar.
+        $this->assertMatchesRegularExpression('/>2<span\s+class="ic-sr-saja">/', $html);
 
         // Membuka galeri menghabiskan lencana galeri.
         $this->actingAs($m, 'member')->get(route('ic.komunitas', ['tab' => 'galeri']))->assertOk();

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\account;
 use App\Services\AdminOtpService;
 use App\Services\AktivitasService;
+use App\Services\LoginPembatas;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -19,8 +20,15 @@ class loginController extends Controller
         return view('pages.login');
     }
 
-    public function prosesLogin(Request $request, AdminOtpService $otp, AktivitasService $aktivitas)
+    public function prosesLogin(Request $request, AdminOtpService $otp, AktivitasService $aktivitas, LoginPembatas $pembatas)
     {
+        // Perangkat yang sedang dikunci (terlalu banyak gagal) ditolak lebih dulu, bahkan sebelum sandinya diperiksa.
+        if (($sisa = $pembatas->sisaDetik($request)) > 0) {
+            return back()
+                ->withErrors(['login' => 'Terlalu banyak percobaan masuk yang gagal. Coba lagi dalam ' . LoginPembatas::teksDurasi($sisa) . '.'])
+                ->onlyInput('username');
+        }
+
         $request->validate([
             'username' => 'required|string|max:255',
             'password' => 'required|string|min:6',
@@ -42,9 +50,21 @@ class loginController extends Controller
             // Username yang diketik TIDAK dicatat: kadang yang terketik di kolom itu justru kata sandinya.
             $aktivitas->catatAkses('login_gagal');
 
+            // Percobaan ini membuat perangkat melewati ambang: kunci sementara (dicatat sekali di Log, bukan tiap penolakan).
+            if ($kunci = $pembatas->catatGagal($request)) {
+                $aktivitas->catatAkses('login_dikunci');
+
+                return back()
+                    ->withErrors(['login' => 'Terlalu banyak percobaan masuk yang gagal. Coba lagi dalam ' . LoginPembatas::teksDurasi($kunci) . '.'])
+                    ->onlyInput('username');
+            }
+
             // Pesan sengaja dibuat generik — tidak bocorkan mana yang salah
             return back()->withErrors(['login' => 'Username atau password salah.'])->onlyInput('username');
         }
+
+        // Sandi benar: hitungan gagal perangkat ini dibersihkan (hitungan IP tetap).
+        $pembatas->bersihkan($request);
 
         // 2FA email (opsional, ADMIN_2FA_AKTIF). Sandi benar belum cukup: kode dikirim dulu ke email admin.
         if ($otp->aktif()) {
