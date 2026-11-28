@@ -236,6 +236,8 @@ Route::prefix('/dashboard')->middleware(['cekLogin', 'catatAktivitas'])->group(f
         Route::patch('/kenangan/{id}', [adminController::class, 'moderasiKenangan'])->whereNumber('id')->name('kenangan.moderasi')->middleware('throttle:admin-tulis');
 
         // Tab Konten: teks halaman anggota yang bisa diubah dari CMS (daftar kunci di config/ic_konten.php).
+        // Halaman CMS Game: aturan angka + teks tab Game (pengantar, cara main, aturan, poin, papan skor).
+        Route::get('/game', [kontenController::class, 'game'])->name('game');
         Route::get('/konten', [kontenController::class, 'index'])->name('konten');
         // Satu halaman per bagian (tab Konten tidak lagi satu halaman panjang). Daftar bagian: IcBagian.
         Route::get('/konten/bagian/{bagian}', [kontenController::class, 'bagian'])->where('bagian', '[a-z_-]+')->name('konten.bagian');

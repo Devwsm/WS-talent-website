@@ -178,8 +178,98 @@ class GameKomunitasCmsTest extends TestCase
         $this->post(route('ic.admin.konten.game.simpan'), $this->isian())->assertRedirect(route('login'));
     }
 
-    public function test_pratinjau_komunitas_memuat_tab_game_dan_teks_bisa_diubah(): void
+    public function test_halaman_cms_game_memuat_aturan_dan_semua_teks_tab_game_dengan_navbar_sendiri(): void
     {
-        $this->admin()->get(route('ic.admin.konten.bagian', 'komunitas'))->assertOk()->assertSee('Game: pengantar')->assertSee('Game: cara main');
+        $html = $this->admin()->get(route('ic.admin.game'))->assertOk()->assertSee('Aturan game')
+            ->assertSee('name="ronde_harian"', false)->assertSee('Bagian halaman Game')->getContent();
+
+        foreach (['pengantar', 'cara', 'aturan', 'poin', 'papan', 'papan-kosong'] as $modul) {
+            $this->assertStringContainsString('id="modul-game-' . $modul . '"', $html, $modul);
+            $this->assertStringContainsString('href="#modul-game-' . $modul . '"', $html, $modul);
+        }
+
+        // Teks Game tidak lagi di tab Konten Halaman Komunitas.
+        $this->admin()->get(route('ic.admin.konten.bagian', 'komunitas'))->assertOk()->assertDontSee('id="modul-komunitas-game"', false);
+        // Menu Game ada di navbar CMS Inner Circle.
+        $this->assertStringContainsString('href="' . route('ic.admin.game') . '"', $html);
+        $this->flushSession();
+        $this->get(route('ic.admin.game'))->assertRedirect(route('login'));
+    }
+
+    public function test_simpan_teks_game_kembali_ke_halaman_game_dan_tampil_di_tab_game(): void
+    {
+        $this->admin()->post(route('ic.admin.konten.simpan', 'game'), ['modul' => 'papan-kosong', 'k' => ['komunitas__game__papan__kosong__judul' => 'Sepi banget']])
+            ->assertRedirect(route('ic.admin.game') . '#modul-game-papan-kosong');
+
+        $this->actingAs($this->anggota(), 'member')->get(route('ic.komunitas', ['tab' => 'game']))->assertOk()->assertSee('Sepi banget');
+        // Simpan aturan angka juga kembali ke halaman Game.
+        $this->admin()->post(route('ic.admin.konten.game.simpan'), $this->isian(['ronde_harian' => 3]))->assertRedirect(route('ic.admin.game'));
+    }
+
+    // ---------- Papan skor ----------
+
+    private function ronde(member $m, int $skor, string $status = 'selesai'): void
+    {
+        ic_game::create(['member_id' => $m->id_member, 'kode' => bin2hex(random_bytes(16)), 'seed' => 1, 'tanggal' => now()->toDateString(), 'status' => $status, 'skor' => $skor]);
+    }
+
+    public function test_papan_skor_kosong_mengajak_jadi_yang_pertama(): void
+    {
+        $this->actingAs($this->anggota(), 'member')->get(route('ic.komunitas', ['tab' => 'game']))->assertOk()
+            ->assertSee('Papan skor')->assertSee('Ayo jadi yang pertama!')->assertDontSee('ic-gk__papan-daftar', false);
+    }
+
+    public function test_papan_skor_mengurutkan_rekor_dan_menandai_posisi_sendiri(): void
+    {
+        $saya = $this->anggota();
+        $juara = member::create(['nama' => 'Si Juara', 'email' => 'j@contoh.test', 'password' => 'rahasia123']);
+        $diblokir = member::create(['nama' => 'Akun Mati', 'email' => 'm@contoh.test', 'password' => 'rahasia123']);
+        $diblokir->forceFill(['diblokir_pada' => now()])->save();
+
+        $this->ronde($saya, 300);
+        $this->ronde($saya, 120);
+        $this->ronde($juara, 900);
+        $this->ronde($diblokir, 5000);
+        $this->ronde($juara, 9999, 'ditolak');
+
+        $html = $this->actingAs($saya, 'member')->get(route('ic.komunitas', ['tab' => 'game']))->assertOk()->getContent();
+
+        $this->assertStringNotContainsString('Akun Mati', $html);
+        $this->assertStringNotContainsString('9.999', $html);
+        $this->assertLessThan(strpos($html, 'Pemain Uji'), strpos($html, 'Si Juara'));
+        $this->assertStringContainsString('is-saya', $html);
+
+        $papan = app(\App\Services\InnerCircle\GameService::class)->papan($saya);
+        $this->assertSame([900, 300], array_column($papan['daftar'], 'skor'));
+        $this->assertSame([1, 2], array_column($papan['daftar'], 'peringkat'));
+        $this->assertSame(['peringkat' => 2, 'skor' => 300], $papan['saya']);
+    }
+
+    public function test_papan_skor_hanya_sepuluh_teratas_dan_posisi_di_luar_daftar_tetap_ditampilkan(): void
+    {
+        $saya = $this->anggota();
+        $this->ronde($saya, 10);
+        for ($i = 1; $i <= 11; $i++) {
+            $lain = member::create(['nama' => 'Pemain ' . $i, 'email' => "p$i@contoh.test", 'password' => 'rahasia123']);
+            $this->ronde($lain, 100 + $i * 10);
+        }
+
+        $papan = app(\App\Services\InnerCircle\GameService::class)->papan($saya);
+        $this->assertCount(10, $papan['daftar']);
+        $this->assertSame(12, $papan['saya']['peringkat']);
+
+        $this->actingAs($saya, 'member')->get(route('ic.komunitas', ['tab' => 'game']))->assertOk()
+            ->assertSee('Kamu di peringkat 12 dengan rekor 10. Gas terus!');
+    }
+
+    public function test_tab_game_menumpuk_keranjang_di_atas_tokoh_dan_pengumuman_punya_banner_sendiri(): void
+    {
+        $m = $this->anggota();
+        $html = $this->actingAs($m, 'member')->get(route('ic.komunitas', ['tab' => 'game']))->assertOk()->getContent();
+        $this->assertStringContainsString('aset/game-mambo/basket.webp', $html);
+        $this->assertStringContainsString('aset/game-mambo/dj-left.webp', $html);
+
+        $this->actingAs($m, 'member')->get(route('ic.komunitas'))->assertOk()
+            ->assertSee('ic-banner--kabar', false)->assertDontSee('Bagikan momen kamu');
     }
 }

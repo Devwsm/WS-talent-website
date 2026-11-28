@@ -305,6 +305,7 @@ class memberController extends Controller
         } elseif ($tab === 'game') {
             $data['ringkasanGame'] = $game->ringkasan($anggota);
             $data['teksGame'] = $pengaturanGame->untukTeks();
+            $data['papan'] = $game->papan($anggota);
         } else {
             $data['kenangan'] = $kenangan->galeri($anggota, $kategori === 'all' ? null : $kategori);
         }

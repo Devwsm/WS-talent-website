@@ -155,7 +155,7 @@ class IcPotongan
             $game['{' . $nama . '}'] = $nilai;
         }
 
-        return IcReplika::petaGanti($program, (array) config('ic_konten.tautan', [])) + ['{nama}' => self::NAMA_CONTOH] + $game;
+        return IcReplika::petaGanti($program, (array) config('ic_konten.tautan', [])) + ['{nama}' => self::NAMA_CONTOH, '{peringkat}' => '3', '{skor}' => '480'] + $game;
     }
 
     /** Buang semua penanda dari teks. */

@@ -50,9 +50,63 @@
                 height="26" alt="">
             <img class="ic-gk__jatuh ic-gk__jatuh--3" src="{{ $aset }}/beer.webp" width="19" height="29"
                 alt="">
-            <img class="ic-gk__tokoh" src="{{ $aset }}/dj-left.webp" width="100" height="147"
-                alt="">
+            {{-- Tokoh dan keranjang adalah dua gambar terpisah (seperti di kanvas game) dengan kotak yang sama, jadi harus
+                 ditumpuk; tanpa keranjang tokohnya terlihat memegang apa-apa. --}}
+            <span class="ic-gk__tokoh">
+                <img src="{{ $aset }}/dj-left.webp" width="100" height="147" alt="">
+                <img src="{{ $aset }}/basket.webp" width="100" height="147" alt="">
+            </span>
         </div>
+    </section>
+
+    @php
+        $daftarPapan = $papan['daftar'] ?? [];
+        $posisiSaya = $papan['saya'] ?? null;
+        $sayaDiDaftar = collect($daftarPapan)->contains('saya', true);
+    @endphp
+    {{-- Papan skor: 10 rekor tertinggi. Kosong = ajakan jadi yang pertama (teks bisa diubah di CMS menu Game). --}}
+    <section class="ic-gk__papan" aria-labelledby="judul-papan">
+        <div class="ic-gk__papan-kepala">
+            <span class="ic-gk__papan-ikon" aria-hidden="true"><i class="bi bi-trophy-fill"></i></span>
+            <div class="ic-gk__papan-judul">
+                <h3 id="judul-papan">{{ ic_teks('komunitas.game.papan.judul') }}</h3>
+                <p>{{ ic_teks('komunitas.game.papan.deskripsi') }}</p>
+            </div>
+            <span class="ic-pil">{{ ic_teks('komunitas.game.papan.pil') }}</span>
+        </div>
+
+        @if ($daftarPapan === [])
+            <div class="ic-gk__papan-kosong">
+                <span class="ic-gk__papan-kosong-gambar" aria-hidden="true">
+                    <img src="{{ $aset }}/pineapple.webp" width="21" height="26" alt=""
+                        loading="lazy">
+                </span>
+                <b>{{ ic_teks('komunitas.game.papan.kosong.judul') }}</b>
+                <p>{{ ic_teks('komunitas.game.papan.kosong.deskripsi') }}</p>
+            </div>
+        @else
+            <ol class="ic-gk__papan-daftar">
+                @foreach ($daftarPapan as $baris)
+                    <li class="ic-gk__papan-baris {{ $baris['saya'] ? 'is-saya' : '' }}">
+                        <span class="ic-gk__papan-no ic-gk__papan-no--{{ min($baris['peringkat'], 4) }}"><span
+                                class="ic-sr-saja">Peringkat </span>{{ $baris['peringkat'] }}</span>
+                        <x-inner-circle.avatar :member="$baris['member']" kelas="ic-avatar--mini" />
+                        <span class="ic-gk__papan-nama">{{ $baris['nama'] }}@if ($baris['saya'])
+                                <em>kamu</em>
+                            @endif
+                        </span>
+                        <b class="ic-gk__papan-skor">{{ ic_angka($baris['skor']) }}</b>
+                    </li>
+                @endforeach
+            </ol>
+            @if ($posisiSaya !== null && !$sayaDiDaftar)
+                <p class="ic-gk__papan-catatan">
+                    {{ ic_teks('komunitas.game.papan.saya', $teksGame + ['peringkat' => ic_angka($posisiSaya['peringkat']), 'skor' => ic_angka($posisiSaya['skor'])]) }}
+                </p>
+            @elseif ($posisiSaya === null)
+                <p class="ic-gk__papan-catatan">{{ ic_teks('komunitas.game.papan.belum') }}</p>
+            @endif
+        @endif
     </section>
 
     <div class="ic-gk__aturan">

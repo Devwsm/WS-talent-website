@@ -28,38 +28,64 @@
             @include('components/errors')
             @include('components/success')
 
-            {{-- Pindah bagian lewat navbar ini saja. Bagian dikelompokkan (halaman publik, halaman anggota, ...) dan tiap
-                 kelompok berisi chip mengalir yang turun baris (tidak digeser). Angka = isian yang sudah diubah. --}}
-            <nav aria-label="Bagian konten"
-                class="flex flex-col gap-4 rounded-3xl border border-white/10 bg-white/3 p-4 sm:p-5">
-                @foreach ($kelompokBagian as $kelompok)
-                    <div class="flex flex-col gap-2 lg:flex-row lg:items-start lg:gap-5">
-                        <p
-                            class="text-[11px] font-semibold uppercase tracking-widest text-white/50 lg:w-44 lg:shrink-0 lg:pt-3">
-                            {{ $kelompok['label'] }}</p>
-                        <div class="cms-chips">
-                            @foreach ($kelompok['bagian'] as $slug => $b)
-                                @php
-                                    $aktifBagian = $slug === $bagian['slug'];
-                                    $jumlahUbah = $diubahPerBagian[$slug] ?? 0;
-                                @endphp
-                                <a href="{{ \App\Services\InnerCircle\IcBagian::url($slug) }}"
-                                    @if ($aktifBagian) aria-current="page" @endif
-                                    class="cms-chip rounded-full border text-xs font-semibold transition-colors {{ $aktifBagian ? 'bg-white text-black border-white' : 'border-white/15 text-white/70 hover:bg-white/10 hover:text-white' }}">
-                                    <i class="bi {{ $b['ikon'] }} {{ $aktifBagian ? 'text-black/60' : 'text-white/50' }}"
-                                        aria-hidden="true"></i>
-                                    <span>{{ $b['label'] }}</span>
-                                    @if ($jumlahUbah > 0)
-                                        <span
-                                            class="rounded-full px-1.5 text-[11px] font-bold {{ $aktifBagian ? 'bg-black/10 text-black/70' : 'bg-white/10 text-white/60' }}"
-                                            title="{{ $jumlahUbah }} isian sudah diubah">{{ $jumlahUbah }}</span>
-                                    @endif
-                                </a>
-                            @endforeach
-                        </div>
+            {{-- Halaman Game punya navbar sendiri: lompat ke bagian di halaman ini (tidak berpindah halaman). --}}
+            @if ($bagian['slug'] === 'game')
+                <nav aria-label="Bagian halaman Game"
+                    class="flex flex-col gap-2 rounded-3xl border border-white/10 bg-white/3 p-4 sm:p-5">
+                    <div class="cms-chips">
+                        <a href="#aturan-game"
+                            class="cms-chip rounded-full border text-xs font-semibold transition-colors border-white/15 text-white/70 hover:bg-white/10 hover:text-white">
+                            <i class="bi bi-sliders text-white/50" aria-hidden="true"></i>
+                            <span>Aturan dan poin</span>
+                        </a>
+                        @foreach ($modul as $slugModul => $m)
+                            <a href="#modul-game-{{ $slugModul }}"
+                                class="cms-chip rounded-full border text-xs font-semibold transition-colors border-white/15 text-white/70 hover:bg-white/10 hover:text-white">
+                                <i class="bi {{ $m['ikon'] }} text-white/50" aria-hidden="true"></i>
+                                <span>{{ $m['label'] }}</span>
+                            </a>
+                        @endforeach
+                        <a href="{{ route('ic.komunitas', ['tab' => 'game']) }}" target="_blank" rel="noopener"
+                            class="cms-chip rounded-full border text-xs font-semibold transition-colors border-white/15 text-white/70 hover:bg-white/10 hover:text-white">
+                            <i class="bi bi-box-arrow-up-right text-white/50" aria-hidden="true"></i>
+                            <span>Lihat halaman anggota</span>
+                        </a>
                     </div>
-                @endforeach
-            </nav>
+                </nav>
+            @else
+                {{-- Pindah bagian lewat navbar ini saja. Bagian dikelompokkan (halaman publik, halaman anggota, ...) dan tiap
+                 kelompok berisi chip mengalir yang turun baris (tidak digeser). Angka = isian yang sudah diubah. --}}
+                <nav aria-label="Bagian konten"
+                    class="flex flex-col gap-4 rounded-3xl border border-white/10 bg-white/3 p-4 sm:p-5">
+                    @foreach ($kelompokBagian as $kelompok)
+                        <div class="flex flex-col gap-2 lg:flex-row lg:items-start lg:gap-5">
+                            <p
+                                class="text-[11px] font-semibold uppercase tracking-widest text-white/50 lg:w-44 lg:shrink-0 lg:pt-3">
+                                {{ $kelompok['label'] }}</p>
+                            <div class="cms-chips">
+                                @foreach ($kelompok['bagian'] as $slug => $b)
+                                    @php
+                                        $aktifBagian = $slug === $bagian['slug'];
+                                        $jumlahUbah = $diubahPerBagian[$slug] ?? 0;
+                                    @endphp
+                                    <a href="{{ \App\Services\InnerCircle\IcBagian::url($slug) }}"
+                                        @if ($aktifBagian) aria-current="page" @endif
+                                        class="cms-chip rounded-full border text-xs font-semibold transition-colors {{ $aktifBagian ? 'bg-white text-black border-white' : 'border-white/15 text-white/70 hover:bg-white/10 hover:text-white' }}">
+                                        <i class="bi {{ $b['ikon'] }} {{ $aktifBagian ? 'text-black/60' : 'text-white/50' }}"
+                                            aria-hidden="true"></i>
+                                        <span>{{ $b['label'] }}</span>
+                                        @if ($jumlahUbah > 0)
+                                            <span
+                                                class="rounded-full px-1.5 text-[11px] font-bold {{ $aktifBagian ? 'bg-black/10 text-black/70' : 'bg-white/10 text-white/60' }}"
+                                                title="{{ $jumlahUbah }} isian sudah diubah">{{ $jumlahUbah }}</span>
+                                        @endif
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endforeach
+                </nav>
+            @endif
 
             @if ($bagian['jenis'] === 'grup')
                 @php
@@ -74,6 +100,10 @@
                                 target="_blank" rel="noopener" class="{{ $kelasTombol }} shrink-0">
                                 <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i> Lihat halaman</a>
                         </div>
+                    @endif
+
+                    @if ($bagian['slug'] === 'game')
+                        @include('components.dashboard.inner-circle.aturan-game')
                     @endif
 
                     {{-- Satu modul = satu topik kecil: formulir di kiri, pratinjau replika bagian itu di kanan (di bawah formulir pada layar sempit). --}}
@@ -207,10 +237,6 @@
 
                     @case('aturan-checkin')
                         @include('components.dashboard.inner-circle.aturan-checkin')
-                    @break
-
-                    @case('game')
-                        @include('components.dashboard.inner-circle.aturan-game')
                     @break
 
                     @case('tampilan')

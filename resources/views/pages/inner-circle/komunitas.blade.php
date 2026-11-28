@@ -46,8 +46,24 @@
         @endif
     </nav>
 
-    {{-- Banner bagikan kenangan hanya untuk tab Pengumuman dan Galeri; tab Game punya hero sendiri. --}}
-    @if ($tab !== 'game')
+    {{-- Tiap tab punya banner sendiri: Pengumuman (kabar resmi, gelap dengan pengeras suara) dan Galeri (ajakan berbagi
+         kenangan, terang dengan bola disko). Tab Game punya hero sendiri di partial game. --}}
+    @if ($tab === 'pengumuman')
+        <section class="ic-banner ic-banner--kabar" aria-labelledby="judul-banner-kabar">
+            <div>
+                <span class="ic-banner__stiker">{{ ic_teks('komunitas.kabar.stiker') }}</span>
+                <h2 id="judul-banner-kabar">{{ ic_html('komunitas.kabar.judul') }}</h2>
+                <p>{{ ic_html('komunitas.kabar.deskripsi') }}</p>
+                <a class="ic-tombol ic-tombol--krem"
+                    href="{{ route('ic.checkin') }}">{{ ic_teks('komunitas.kabar.tombol') }}
+                    <i class="bi bi-arrow-up-right" aria-hidden="true"></i></a>
+            </div>
+            <div class="ic-banner__orbit" aria-hidden="true">
+                <span class="ic-banner__gelombang"></span>
+                <x-inner-circle.ikon nama="megaphone" kelas="ic-ikon--sampul" />
+            </div>
+        </section>
+    @elseif ($tab === 'galeri')
         <section class="ic-banner" aria-labelledby="judul-banner">
             <div>
                 <span class="ic-banner__stiker">{{ ic_teks('komunitas.banner.stiker') }}</span>

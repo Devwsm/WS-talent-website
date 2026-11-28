@@ -1935,35 +1935,81 @@ a.ic-komentar-pintas {
     transform: rotate(10deg);
 }
 
+/* Banner tab Pengumuman: gelap dengan pengeras suara dan gelombang suara, sengaja beda dari banner Galeri (terang, bola disko). */
+.ic-banner--kabar {
+    background: linear-gradient(150deg, #0b3a63 0%, #05467c 55%, #1b68a0 100%);
+}
+.ic-banner--kabar .ic-banner__stiker {
+    background: #ffd47a;
+    color: #3a2300;
+}
+.ic-banner--kabar h2 {
+    color: #fff;
+}
+.ic-banner--kabar p {
+    color: #cfe6f5;
+}
+.ic-banner--kabar .ic-banner__orbit {
+    position: relative;
+    background: linear-gradient(145deg, #ff9a6b 0%, #ff6f5e 100%);
+    transform: rotate(-8deg);
+}
+.ic-banner__gelombang {
+    position: absolute;
+    inset: -12px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 50px;
+    animation: ic-gelombang 2.6s ease-out infinite;
+}
+@keyframes ic-gelombang {
+    from {
+        opacity: 0.9;
+        transform: scale(0.88);
+    }
+    to {
+        opacity: 0;
+        transform: scale(1.3);
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .ic-banner__gelombang {
+        animation: none;
+        opacity: 0.4;
+    }
+}
+
 .ic-tab-daftar {
-    /* Satu baris, kolom sama lebar berapa pun jumlah tabnya (2 atau 3), tidak turun ke baris kedua. */
+    /* Satu baris, kolom sama lebar berapa pun jumlah tabnya (2 atau 3). Tiap tab adalah kartu sendiri dengan jarak
+       lega di antaranya (bukan satu kapsul berisi tab yang berdempetan). */
     display: grid;
     grid-auto-flow: column;
     grid-auto-columns: minmax(0, 1fr);
-    gap: 6px;
-    margin: 18px 0 4px;
-    padding: 6px;
-    border-radius: 22px;
-    background: #e3f2fb;
+    gap: 12px;
+    margin: 24px 0 8px;
 }
 
 .ic-tab {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 13px;
+    gap: 12px;
     min-width: 0;
-    min-height: 50px;
-    padding: 6px 12px;
-    border-radius: 18px;
+    min-height: 58px;
+    padding: 10px 16px;
+    border: 1px solid #cfe3f1;
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 2px 0 rgba(5, 70, 124, 0.07);
     font-size: 14px;
     font-weight: 800;
     line-height: 1.2;
     text-align: center;
-    color: #304a5f;
+    color: #1b3c57;
     transition:
         background 0.2s,
-        color 0.2s;
+        border-color 0.2s,
+        box-shadow 0.2s,
+        transform 0.2s;
 }
 
 .ic-tab__ikon {
@@ -1972,23 +2018,34 @@ a.ic-komentar-pintas {
     flex: 0 0 auto;
 }
 
+.ic-tab .ic-ikon--mini {
+    width: 22px;
+    height: 22px;
+    font-size: 20px;
+}
+
 .ic-tab__label {
     min-width: 0;
     overflow-wrap: anywhere;
 }
 
 .ic-tab:hover {
-    background: rgba(255, 255, 255, 0.6);
+    border-color: #9fcbe6;
+    background: #f3faff;
+    transform: translateY(-1px);
 }
 
 .ic-tab:focus-visible {
     outline: 2px solid var(--ic-navy);
-    outline-offset: 2px;
+    outline-offset: 3px;
 }
 
 .ic-tab.is-aktif {
+    border-color: var(--ic-navy);
     background: var(--ic-navy);
+    box-shadow: 0 10px 20px rgba(5, 70, 124, 0.25);
     color: #fff;
+    transform: none;
 }
 
 /* Lencana angka: hanya dirender bila ada isi yang belum dibaca (lihat komunitas.blade.php). Menempel di pojok ikon
@@ -1996,13 +2053,13 @@ a.ic-komentar-pintas {
 .ic-tab__lencana {
     position: absolute;
     top: -11px;
-    right: -14px;
+    right: -16px;
     min-width: 19px;
     padding: 1px 6px;
     border-radius: 10px;
     background: var(--ic-lencana-latar);
     color: var(--ic-lencana-teks);
-    box-shadow: 0 0 0 2px #e3f2fb;
+    box-shadow: 0 0 0 2px #fff;
     font-size: 10px;
     font-weight: 800;
     line-height: 1.5;
@@ -2519,35 +2576,33 @@ a.ic-komentar-pintas {
 }
 
 /* Tab Komunitas di HP (sampai 600 px): ikon di atas label, label versi pendek ("Pengumuman", "Kenangan") supaya tiga
-   tab muat satu baris dan semuanya setinggi sama. Judul halaman diperkecil sedikit agar "Community." tidak patah. */
+   kartu tab muat satu baris dengan jarak lega dan setinggi sama. Judul halaman diperkecil sedikit agar "Community."
+   tidak patah. */
 @media (max-width: 600px) {
     .ic-tab-daftar {
-        gap: 4px;
-        margin-top: 14px;
-        padding: 4px;
-        border-radius: 20px;
+        gap: 8px;
+        margin-top: 18px;
     }
     .ic-tab {
         flex-direction: column;
         justify-content: flex-start;
-        gap: 5px;
-        min-height: 64px;
-        padding: 10px 2px 8px;
+        gap: 6px;
+        min-height: 74px;
+        padding: 13px 2px 10px;
         font-size: 12px;
-        border-radius: 16px;
+        border-radius: 18px;
     }
     .ic-tab .ic-ikon--mini {
-        width: 20px;
-        height: 20px;
-        font-size: 18px;
-        vertical-align: baseline;
+        width: 26px;
+        height: 26px;
+        font-size: 22px;
     }
     .ic-tab__ekstra {
         display: none;
     }
     .ic-tab__lencana {
-        top: -7px;
-        right: -13px;
+        top: -8px;
+        right: -14px;
     }
     .ic-judul--komunitas {
         font-size: clamp(38px, 12.5vw, 64px);
@@ -3805,13 +3860,26 @@ a.ic-poster-kartu:hover .ic-poster-kartu__gambar {
     filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.3));
 }
 .ic-gk__tokoh {
+    position: absolute;
     bottom: 3%;
     left: 50%;
     z-index: 2;
+    display: block;
     width: 30%;
     max-width: 118px;
     transform: translateX(-50%);
     filter: drop-shadow(0 6px 4px rgba(0, 0, 0, 0.3));
+}
+.ic-gk__tokoh::before {
+    /* Menjaga rasio 100:147 karena kedua gambar (tokoh dan keranjang) menumpuk secara absolut. */
+    content: "";
+    display: block;
+    padding-top: 147%;
+}
+.ic-gk__tokoh img {
+    top: 0;
+    left: 0;
+    width: 100%;
 }
 .ic-gk__jatuh {
     top: 0;
@@ -3848,6 +3916,189 @@ a.ic-poster-kartu:hover .ic-poster-kartu__gambar {
         top: 66%;
         opacity: 0;
         transform: rotate(10deg);
+    }
+}
+
+/* Papan skor: 10 rekor tertinggi, atau ajakan "jadi yang pertama" bila belum ada yang main. */
+.ic-gk__papan {
+    position: relative;
+    display: grid;
+    gap: 14px;
+    min-width: 0;
+    padding: 22px 18px 18px;
+    overflow: hidden;
+    border: 1px solid var(--ic-garis-kartu);
+    border-radius: 26px;
+    background: var(--ic-shell);
+}
+.ic-gk__papan::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 5px;
+    background: linear-gradient(90deg, #ffd47a, #ff8e58);
+}
+.ic-gk__papan-kepala {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+}
+.ic-gk__papan-ikon {
+    display: grid;
+    flex: 0 0 auto;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 15px;
+    background: linear-gradient(145deg, #ffe39a, #ffc24a);
+    font-size: 22px;
+    color: #3a2300;
+}
+.ic-gk__papan-judul {
+    flex: 1 1 180px;
+    min-width: 0;
+}
+.ic-gk__papan-judul h3 {
+    margin: 0;
+    font-family: var(--ic-font-judul);
+    font-size: 22px;
+    letter-spacing: -0.02em;
+    color: var(--ic-judul);
+}
+.ic-gk__papan-judul p {
+    margin: 2px 0 0;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--ic-tinta);
+}
+.ic-gk__papan-daftar {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.ic-gk__papan-baris {
+    display: grid;
+    grid-template-columns: 32px 36px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px 8px 8px;
+    border: 1px solid transparent;
+    border-radius: 16px;
+    background: #f1f8fd;
+}
+.ic-gk__papan-baris.is-saya {
+    border-color: #f5c45f;
+    background: #fff6dc;
+}
+.ic-gk__papan-no {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #dcecf7;
+    font-size: 13px;
+    font-weight: 800;
+    color: #05467c;
+}
+.ic-gk__papan-no--1 {
+    background: #ffd47a;
+    color: #3a2300;
+}
+.ic-gk__papan-no--2 {
+    background: #dfe6ec;
+    color: #2c3a45;
+}
+.ic-gk__papan-no--3 {
+    background: #f2b987;
+    color: #4a2400;
+}
+.ic-gk__papan-nama {
+    min-width: 0;
+    overflow: hidden;
+    font-size: 14px;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--ic-judul);
+}
+.ic-gk__papan-nama em {
+    margin-left: 6px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--ic-navy);
+    font-size: 10px;
+    font-style: normal;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #fff;
+}
+.ic-gk__papan-skor {
+    font-size: 16px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ic-judul);
+}
+.ic-gk__papan-catatan {
+    margin: 0;
+    padding: 10px 14px;
+    border-radius: 14px;
+    background: #e8f4fc;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--ic-tinta);
+}
+.ic-gk__papan-kosong {
+    display: grid;
+    justify-items: center;
+    gap: 6px;
+    padding: 24px 14px;
+    border: 2px dashed #b7d6ea;
+    border-radius: 20px;
+    background: #f6fbff;
+    text-align: center;
+}
+.ic-gk__papan-kosong b {
+    font-family: var(--ic-font-judul);
+    font-size: 19px;
+    color: var(--ic-judul);
+}
+.ic-gk__papan-kosong p {
+    max-width: 36ch;
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--ic-tinta);
+}
+.ic-gk__papan-kosong-gambar {
+    display: grid;
+    place-items: center;
+    width: 58px;
+    height: 58px;
+    border-radius: 18px;
+    background: #ffe9c2;
+    animation: ic-gk-lompat 1.8s ease-in-out infinite;
+}
+.ic-gk__papan-kosong-gambar img {
+    width: auto;
+    height: 34px;
+    image-rendering: pixelated;
+}
+@keyframes ic-gk-lompat {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-6px);
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .ic-gk__papan-kosong-gambar {
+        animation: none;
     }
 }
 
@@ -3961,14 +4212,16 @@ a.ic-poster-kartu:hover .ic-poster-kartu__gambar {
     .ic-gk__adegan {
         order: -1;
         min-height: 0;
-        aspect-ratio: 16 / 9;
+        aspect-ratio: 4 / 3;
+        max-height: 340px;
+        width: 100%;
     }
     .ic-gk__latar {
         -webkit-mask-image: linear-gradient(0deg, transparent 0%, #000 45%);
         mask-image: linear-gradient(0deg, transparent 0%, #000 45%);
     }
     .ic-gk__tokoh {
-        width: 17%;
+        width: 26%;
     }
     .ic-gk__logo {
         width: 30%;

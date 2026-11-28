@@ -17,8 +17,8 @@ class IcBagian
     /** Urutan bagian di navbar atas (per kelompok). Grup teks yang belum terdaftar di sini ditaruh di paling akhir. */
     private const KELOMPOK = [
         'publik' => ['label' => 'Halaman publik', 'isi' => ['tentang', 'teaser', 'masuk']],
-        'anggota' => ['label' => 'Halaman anggota', 'isi' => ['beranda', 'checkin', 'hadiah', 'komunitas', 'profil']],
-        'pilihan' => ['label' => 'Pilihan dan aturan', 'isi' => ['tipe-acara', 'kategori-kenangan', 'aturan-checkin', 'game']],
+        'anggota' => ['label' => 'Halaman anggota', 'isi' => ['beranda', 'checkin', 'hadiah', 'komunitas', 'game', 'profil']],
+        'pilihan' => ['label' => 'Pilihan dan aturan', 'isi' => ['tipe-acara', 'kategori-kenangan', 'aturan-checkin']],
         'tampilan' => ['label' => 'Tampilan dan kebijakan', 'isi' => ['tampilan', 'privasi']],
     ];
 
@@ -26,7 +26,6 @@ class IcBagian
         'tipe-acara' => ['label' => 'Tipe acara', 'ikon' => 'bi-calendar-event', 'petunjuk' => 'Nama, ikon, dan warna kartu tiap tipe acara.'],
         'kategori-kenangan' => ['label' => 'Kategori kenangan', 'ikon' => 'bi-images', 'petunjuk' => 'Kategori yang dipilih anggota saat mengunggah kenangan.'],
         'aturan-checkin' => ['label' => 'Aturan check-in', 'ikon' => 'bi-sliders', 'petunjuk' => 'Jam jendela, radius, dan akurasi GPS bawaan untuk acara baru.'],
-        'game' => ['label' => 'Aturan game', 'ikon' => 'bi-controller', 'petunjuk' => 'Game aktif atau tidak, jatah ronde per hari, skor per poin, dan batas poin.'],
         'tampilan' => ['label' => 'Tampilan dan merek', 'ikon' => 'bi-palette', 'petunjuk' => 'Nama program, tiga warna, dan logo area anggota.'],
         'privasi' => ['label' => 'Kebijakan privasi', 'ikon' => 'bi-shield-check', 'petunjuk' => 'Isi halaman /privasi yang juga dipakai layar izin Google.'],
     ];
@@ -112,7 +111,10 @@ class IcBagian
     /** Alamat satu bagian, dengan jangkar (#...) bila perlu. */
     public static function url(string $slug, ?string $jangkar = null): string
     {
-        return route('ic.admin.konten.bagian', $slug) . ($jangkar !== null && $jangkar !== '' ? '#' . $jangkar : '');
+        // Game punya halaman CMS sendiri (menu Game), bukan lagi bagian di tab Konten.
+        $alamat = $slug === 'game' ? route('ic.admin.game') : route('ic.admin.konten.bagian', $slug);
+
+        return $alamat . ($jangkar !== null && $jangkar !== '' ? '#' . $jangkar : '');
     }
 
     /** Bagian tempat sebuah daftar berurutan (langkah, FAQ, poin teaser) berada. */

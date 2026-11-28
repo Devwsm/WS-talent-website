@@ -27,6 +27,12 @@ class kontenController extends Controller
         return $this->bagian((string) array_key_first(IcBagian::semua()), $konten, $daftar, $pilihan, $aturan, $game, $tampilan, $privasi, $potongan);
     }
 
+    /** Halaman CMS Game (menu Game): bagian `game` dengan tampilan sendiri. */
+    public function game(IcKonten $konten, IcDaftar $daftar, IcPilihan $pilihan, IcAturan $aturan, IcGame $game, IcTampilan $tampilan, IcPrivasi $privasi, IcPotongan $potongan): View
+    {
+        return $this->bagian('game', $konten, $daftar, $pilihan, $aturan, $game, $tampilan, $privasi, $potongan);
+    }
+
     /** Satu bagian: hanya formulir dan pratinjau topik itu, bukan seluruh tab. */
     public function bagian(string $bagian, IcKonten $konten, IcDaftar $daftar, IcPilihan $pilihan, IcAturan $aturan, IcGame $game, IcTampilan $tampilan, IcPrivasi $privasi, IcPotongan $potongan): View
     {

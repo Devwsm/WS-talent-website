@@ -55,6 +55,61 @@ class GameService
     }
 
     /**
+     * Papan skor: rekor skor satu ronde tertinggi per anggota (ronde sah saja, akun yang dinonaktifkan tidak tampil).
+     * Skor yang sama mendapat peringkat yang sama. `saya` berisi peringkat dan rekor anggota ini bila ia punya rekor,
+     * walau di luar `$batas` teratas.
+     *
+     * @return array{daftar: list<array{peringkat:int, nama:string, member:member, skor:int, saya:bool}>, saya: ?array{peringkat:int, skor:int}}
+     */
+    public function papan(member $anggota, int $batas = 10): array
+    {
+        $dasar = fn() => ic_game::query()
+            ->join('members', 'members.id_member', '=', 'ic_game.member_id')
+            ->whereNull('members.diblokir_pada')
+            ->where('ic_game.status', ic_game::SELESAI)
+            ->where('ic_game.skor', '>', 0)
+            ->groupBy('ic_game.member_id');
+
+        $baris = $dasar()
+            ->selectRaw('ic_game.member_id as id, MAX(ic_game.skor) as rekor')
+            ->orderByDesc('rekor')
+            ->orderBy('id')
+            ->limit(max(1, $batas))
+            ->get();
+
+        $anggotaPapan = member::query()->whereIn('id_member', $baris->pluck('id'))->get()->keyBy('id_member');
+
+        $daftar = [];
+        $peringkat = 0;
+        $skorSebelum = null;
+        foreach ($baris as $i => $b) {
+            $m = $anggotaPapan->get($b->id);
+            if ($m === null) {
+                continue;
+            }
+            $skor = (int) $b->rekor;
+            $peringkat = $skor === $skorSebelum ? $peringkat : $i + 1;
+            $skorSebelum = $skor;
+            $daftar[] = [
+                'peringkat' => $peringkat,
+                'nama' => trim((string) $m->nama) !== '' ? (string) $m->nama : 'Anggota',
+                'member' => $m,
+                'skor' => $skor,
+                'saya' => $m->getKey() === $anggota->getKey(),
+            ];
+        }
+
+        $saya = null;
+        $rekorSaya = $anggota->diblokir() ? 0 : $this->rekor($anggota->getKey());
+        if ($rekorSaya > 0) {
+            $lebihTinggi = $dasar()->select('ic_game.member_id')->havingRaw('MAX(ic_game.skor) > ?', [$rekorSaya])->get()->count();
+            $saya = ['peringkat' => $lebihTinggi + 1, 'skor' => $rekorSaya];
+        }
+
+        return ['daftar' => $daftar, 'saya' => $saya];
+    }
+
+    /**
      * Mulai ronde baru. Melempar GameGagal bila jatah harian habis atau akun dinonaktifkan.
      */
     public function mulai(member $anggota): ic_game

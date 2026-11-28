@@ -34,8 +34,10 @@
             <i class="bi bi-controller text-white/50" aria-hidden="true"></i> Aturan game
         </h2>
         <p class="text-xs text-white/40 mt-1">Mini game Mambo Jambo Pineapple Catcher. Perubahan berlaku untuk ronde
-            berikutnya, poin yang sudah diberikan tidak berubah. Teks halaman (cara main, peraturan, ajakan di Beranda)
-            diubah di <b>Halaman anggota &rsaquo; Halaman Komunitas</b> dan <b>Beranda anggota</b>.</p>
+            berikutnya, poin yang sudah diberikan tidak berubah. Teks tab Game (pengantar, cara main, aturan,
+            poin, papan skor) ada di bagian bawah halaman ini; ajakan di Beranda diubah di
+            <b>Halaman anggota &rsaquo; Beranda</b>.
+        </p>
     </div>
 
     <form method="POST" action="{{ route('ic.admin.konten.game.simpan') }}"

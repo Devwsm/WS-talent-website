@@ -57,12 +57,19 @@ class TeksLayarAnggotaTest extends TestCase
             ->assertSee('Setiap poin membuatmu lebih dekat dengan Whisnu Santika.')->assertDontSee('Buka merchandise eksklusif')
             ->assertSee('Klaim hadiahmu ↗')->assertSee('✦ Cara kerja hadiah');
 
+        // Tiap tab punya banner sendiri: Pengumuman memakai banner kabar, Galeri memakai ajakan berbagi kenangan.
         $this->actingAs($m, 'member')->get(route('ic.komunitas'))->assertOk()
             ->assertSee('Our Community')->assertDontSee('Komunitas kita')->assertDontSee('Lebih banyak musik')
             ->assertSee('We&#039;re DIVERSE, UNITE, EVOLVE', false)
+            ->assertSee('Biar kamu nggak ketinggalan kabar WS.')
+            ->assertSee('✦ INFO TERBARU ✦')->assertSee('Lihat acara')
+            ->assertDontSee('Bagikan momen kamu ke sesama WS Inner Circle yang lainnya.')
+            ->assertSee('Kabar terbaru ✳');
+
+        $this->actingAs($m, 'member')->get(route('ic.komunitas', ['tab' => 'galeri']))->assertOk()
             ->assertSee('Bagikan momen kamu ke sesama WS Inner Circle yang lainnya.')
             ->assertSee('Lebih dekat. Lebih Akrab.')
-            ->assertSee('✦ WS INNER CIRCLE ✦')->assertSee('Kabar terbaru ✳');
+            ->assertSee('✦ WS INNER CIRCLE ✦')->assertDontSee('Biar kamu nggak ketinggalan kabar WS.');
 
         $this->actingAs($m, 'member')->get(route('ic.komunitas', ['tab' => 'galeri']))->assertOk()
             ->assertSee('Galeri kenangan ♡')->assertSeeInOrder(['<b>Simpan momen terbaikmu.</b>', 'Bagikan'], false)
@@ -94,7 +101,7 @@ class TeksLayarAnggotaTest extends TestCase
             ->assertSee('Halo Ancha, apa kabar?')->assertSee('Lihat kabar')->assertSee('langkah lagi menuju hadiah.')
             ->assertDontSee('Hai, Ancha!');
         $this->actingAs($m, 'member')->get(route('ic.hadiah'))->assertSee('Kumpulkan poin, buka kejutan.');
-        $this->actingAs($m, 'member')->get(route('ic.komunitas'))->assertSee('Satu musik.<br>Satu keluarga.', false);
+        $this->actingAs($m, 'member')->get(route('ic.komunitas', ['tab' => 'galeri']))->assertSee('Satu musik.<br>Satu keluarga.', false);
         $this->actingAs($m, 'member')->get(route('ic.profil'))
             ->assertSee('Kosong. Lihat <a class="ic-tautan" href="' . route('ic.hadiah') . '">Hadiah</a> ya.', false);
     }

@@ -153,8 +153,13 @@ return [
             'ikon' => 'bi-type-h1',
             'kunci' => ['komunitas.deskripsi'],
         ],
+        'banner-pengumuman' => [
+            'label' => 'Banner Pengumuman',
+            'ikon' => 'bi-megaphone',
+            'kunci' => ['komunitas.kabar.stiker', 'komunitas.kabar.judul', 'komunitas.kabar.deskripsi', 'komunitas.kabar.tombol'],
+        ],
         'banner' => [
-            'label' => 'Banner',
+            'label' => 'Banner Galeri Kenangan',
             'ikon' => 'bi-image',
             'kunci' => ['komunitas.banner.stiker', 'komunitas.banner.judul', 'komunitas.banner.deskripsi', 'komunitas.banner.tombol'],
         ],
@@ -178,25 +183,39 @@ return [
             'ikon' => 'bi-images',
             'kunci' => ['komunitas.galeri.kosong.judul', 'komunitas.galeri.kosong.deskripsi'],
         ],
-        'game' => [
-            'label' => 'Game: pengantar',
+    ],
+
+    // Tab Game punya halaman CMS sendiri (menu Game): aturan angka di atas, lalu modul teks ini.
+    'game' => [
+        'pengantar' => [
+            'label' => 'Pengantar dan tombol',
             'ikon' => 'bi-controller',
             'kunci' => ['komunitas.game.eyebrow', 'komunitas.game.judul', 'komunitas.game.pil', 'komunitas.game.intro', 'komunitas.game.tombol', 'komunitas.game.verifikasi', 'komunitas.game.habis'],
         ],
-        'game-cara' => [
-            'label' => 'Game: cara main',
+        'cara' => [
+            'label' => 'Cara main',
             'ikon' => 'bi-joystick',
             'kunci' => ['komunitas.game.cara.judul', 'komunitas.game.cara.satu', 'komunitas.game.cara.dua', 'komunitas.game.cara.tiga', 'komunitas.game.cara.empat'],
         ],
-        'game-aturan' => [
-            'label' => 'Game: aturan main',
+        'aturan' => [
+            'label' => 'Aturan main',
             'ikon' => 'bi-shield-check',
             'kunci' => ['komunitas.game.aturan.judul', 'komunitas.game.aturan.satu', 'komunitas.game.aturan.dua', 'komunitas.game.aturan.tiga', 'komunitas.game.aturan.empat', 'komunitas.game.aturan.lima'],
         ],
-        'game-poin' => [
-            'label' => 'Game: soal poin',
+        'poin' => [
+            'label' => 'Soal poin',
             'ikon' => 'bi-stars',
             'kunci' => ['komunitas.game.poin.judul', 'komunitas.game.poin.satu', 'komunitas.game.poin.dua', 'komunitas.game.poin.tiga', 'komunitas.game.poin.empat'],
+        ],
+        'papan' => [
+            'label' => 'Papan skor',
+            'ikon' => 'bi-trophy',
+            'kunci' => ['komunitas.game.papan.judul', 'komunitas.game.papan.pil', 'komunitas.game.papan.deskripsi', 'komunitas.game.papan.saya', 'komunitas.game.papan.belum'],
+        ],
+        'papan-kosong' => [
+            'label' => 'Papan skor kosong',
+            'ikon' => 'bi-trophy',
+            'kunci' => ['komunitas.game.papan.kosong.judul', 'komunitas.game.papan.kosong.deskripsi'],
         ],
     ],
 

@@ -21,6 +21,14 @@
                 'lencana' => $kunci === 'klaim' ? (int) ($jumlahKlaimMenunggu ?? 0) : 0,
             ];
         }
+        // Game punya halaman CMS sendiri (aturan angka + semua teks tab Game). Seperti Log, bukan bagian tab_admin.
+        $navLinks[] = [
+            'route' => 'ic.admin.game',
+            'pola' => 'ic.admin.game*',
+            'icon' => 'bi-controller',
+            'label' => 'Game',
+            'lencana' => 0,
+        ];
         // Log CMS Inner Circle ada di ujung menu (bukan bagian tab_admin, supaya kartu pintasan di Dashboard tetap 9 tab).
         $navLinks[] = [
             'route' => 'ic.admin.log.index',

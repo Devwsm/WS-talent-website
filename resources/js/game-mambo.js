@@ -45,6 +45,11 @@ function jalankan(akar) {
     const muat = (nama) => {
         const gambar = new Image();
         gambar.decoding = "async";
+        // Gambar yang selesai dimuat setelah gambar terakhir (loop berhenti saat kanvas di luar layar, mis. HP yang
+        // arenanya di bawah) digambar ulang, supaya kanvas tidak tertinggal tanpa keranjang atau tokoh.
+        gambar.addEventListener("load", () => {
+            if (!rafId) gambarSemua();
+        });
         gambar.src = `${d.aset}/${nama}`;
         return gambar;
     };
