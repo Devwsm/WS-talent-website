@@ -218,6 +218,9 @@ class AppServiceProvider extends ServiceProvider
                 ->response(fn() => back()->with('ic_toast_galat', 'Terlalu sering mengajukan. Tunggu sebentar lalu coba lagi.'));
         });
 
+        // Game (mulai + selesai): per ANGGOTA. Jatah ronde harian dijaga GameService; ini hanya menahan banjir permintaan.
+        RateLimiter::for('ic-game', fn(Request $request) => Limit::perMinute(12)->by('game:' . (Auth::guard('member')->id() ?? $request->ip())));
+
         RateLimiter::for('ic-checkin', function (Request $request) {
             $id = Auth::guard('member')->id();
 

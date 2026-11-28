@@ -15,6 +15,8 @@ export default defineConfig({
                 "resources/js/atur-acara.js",
                 "resources/js/izin-perangkat.js",
                 "resources/js/kartu-gl-pdf.js",
+                "resources/css/game-mambo.css",
+                "resources/js/game-mambo.js",
             ],
             refresh: true,
         }),

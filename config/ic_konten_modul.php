@@ -94,6 +94,11 @@ return [
             'ikon' => 'bi-activity',
             'kunci' => ['beranda.aktivitas.judul', 'beranda.aktivitas.kosong'],
         ],
+        'game' => [
+            'label' => 'Ajakan main game',
+            'ikon' => 'bi-controller',
+            'kunci' => ['beranda.game.stiker', 'beranda.game.judul', 'beranda.game.deskripsi', 'beranda.game.tombol'],
+        ],
         'kartu' => [
             'label' => 'Kartu anggota',
             'ikon' => 'bi-person-vcard',
@@ -172,6 +177,26 @@ return [
             'label' => 'Galeri kosong',
             'ikon' => 'bi-images',
             'kunci' => ['komunitas.galeri.kosong.judul', 'komunitas.galeri.kosong.deskripsi'],
+        ],
+        'game' => [
+            'label' => 'Game: pengantar',
+            'ikon' => 'bi-controller',
+            'kunci' => ['komunitas.game.eyebrow', 'komunitas.game.judul', 'komunitas.game.pil', 'komunitas.game.intro', 'komunitas.game.tombol', 'komunitas.game.verifikasi', 'komunitas.game.habis'],
+        ],
+        'game-cara' => [
+            'label' => 'Game: cara main',
+            'ikon' => 'bi-joystick',
+            'kunci' => ['komunitas.game.cara.judul', 'komunitas.game.cara.satu', 'komunitas.game.cara.dua', 'komunitas.game.cara.tiga', 'komunitas.game.cara.empat'],
+        ],
+        'game-aturan' => [
+            'label' => 'Game: aturan main',
+            'ikon' => 'bi-shield-check',
+            'kunci' => ['komunitas.game.aturan.judul', 'komunitas.game.aturan.satu', 'komunitas.game.aturan.dua', 'komunitas.game.aturan.tiga', 'komunitas.game.aturan.empat', 'komunitas.game.aturan.lima'],
+        ],
+        'game-poin' => [
+            'label' => 'Game: soal poin',
+            'ikon' => 'bi-stars',
+            'kunci' => ['komunitas.game.poin.judul', 'komunitas.game.poin.satu', 'komunitas.game.poin.dua', 'komunitas.game.poin.tiga', 'komunitas.game.poin.empat'],
         ],
     ],
 

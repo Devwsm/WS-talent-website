@@ -1936,8 +1936,10 @@ a.ic-komentar-pintas {
 }
 
 .ic-tab-daftar {
+    /* Satu baris, kolom sama lebar berapa pun jumlah tabnya (2 atau 3), tidak turun ke baris kedua. */
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
     gap: 6px;
     padding: 6px;
     border-radius: 22px;
@@ -2482,19 +2484,37 @@ a.ic-komentar-pintas {
         grid-template-columns: 1fr;
     }
 
-    /* Tab Komunitas: label boleh turun baris, lencana tidak menimpa ikon. */
+    /* Tab Komunitas: di HP ikon di atas label supaya tiga tab muat satu baris. Ikon selalu sejajar di atas
+       (justify-content: flex-start) dan tinggi semua tab sama walau labelnya satu atau dua baris. */
     .ic-tab {
-        flex-wrap: wrap;
-        gap: 4px 6px;
-        padding: 8px 6px;
-        font-size: 13px;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        gap: 4px;
+        min-height: 66px;
+        padding: 9px 4px 8px;
+        font-size: 12px;
         line-height: 1.2;
         text-align: center;
+        text-wrap: balance;
+        overflow-wrap: anywhere;
+    }
+    .ic-tab .ic-ikon--mini {
+        flex: 0 0 auto;
+        width: 20px;
+        height: 20px;
+        vertical-align: baseline;
+    }
+    .ic-tab-daftar {
+        gap: 4px;
+        padding: 4px;
+        border-radius: 20px;
     }
 }
 @media (max-width: 360px) {
-    .ic-tab .ic-ikon--mini {
-        display: none;
+    .ic-tab {
+        padding: 8px 2px 7px;
+        font-size: 11px;
     }
 }
 
@@ -3551,4 +3571,147 @@ a.ic-poster-kartu:hover .ic-poster-kartu__gambar {
     gap: 12px;
     padding: 8px 0;
     font-size: 14px;
+}
+
+/* ---------- Game (tab Game di Komunitas) ---------- */
+.ic-game-intro {
+    display: grid;
+    gap: 14px;
+    justify-items: start;
+    margin-top: 14px;
+}
+.ic-game-intro__teks {
+    margin: 0;
+    max-width: 62ch;
+    color: var(--ic-tinta);
+}
+.ic-game-status {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.ic-game-status li {
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--ic-krem);
+    border: 1px solid var(--ic-garis-kartu);
+    color: var(--ic-judul);
+    font-size: 13px;
+}
+.ic-game-kolom {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+    gap: 14px;
+    margin-top: 14px;
+}
+.ic-game-kolom .ic-judul-bagian {
+    margin: 0 0 8px;
+    font-size: 1.1rem;
+}
+.ic-game-langkah,
+.ic-game-daftar {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding-left: 22px;
+    color: var(--ic-tinta);
+    font-size: 14px;
+}
+.ic-game-langkah li::marker {
+    color: var(--ic-aksen);
+    font-weight: 800;
+}
+.ic-game-daftar li::marker {
+    color: var(--ic-aksen);
+}
+.ic-ajakan-game {
+    margin-top: 18px;
+}
+.ic-ajakan-game__tautan {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border: 1px solid var(--ic-garis-kartu);
+    border-radius: 22px;
+    background: linear-gradient(
+        100deg,
+        #fff 0%,
+        var(--ic-krem) 55%,
+        #d9f0fb 100%
+    );
+    color: var(--ic-tinta);
+    text-decoration: none;
+    transition:
+        border-color 0.2s,
+        transform 0.2s;
+}
+.ic-ajakan-game__tautan:hover {
+    border-color: var(--ic-aksen);
+    transform: translateY(-1px);
+}
+.ic-ajakan-game__ikon {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background: var(--ic-emas);
+}
+.ic-ajakan-game__ikon img {
+    width: 21px;
+    height: 26px;
+    transform: scale(1.6);
+    image-rendering: pixelated;
+}
+.ic-ajakan-game__isi {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+    flex: 1 1 auto;
+}
+.ic-ajakan-game__label {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ic-eyebrow);
+}
+.ic-ajakan-game__judul {
+    font-size: 1.05rem;
+    line-height: 1.25;
+    color: var(--ic-judul);
+}
+.ic-ajakan-game__teks {
+    font-size: 13px;
+    color: var(--ic-redup);
+}
+.ic-ajakan-game__tombol {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    border-radius: 999px;
+    background: var(--ic-navy);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 800;
+}
+@media (max-width: 480px) {
+    .ic-ajakan-game__tautan {
+        flex-wrap: wrap;
+        gap: 10px 12px;
+    }
+    .ic-ajakan-game__isi {
+        flex-basis: calc(100% - 70px);
+    }
+    .ic-ajakan-game__tombol {
+        width: 100%;
+        justify-content: center;
+    }
 }

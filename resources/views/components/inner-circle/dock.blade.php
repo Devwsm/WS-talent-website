@@ -10,7 +10,13 @@
             'aktif' => 'bi-calendar-event-fill',
             'juga' => 'ic.acara.*',
         ],
-        ['route' => 'ic.komunitas', 'label' => 'Komunitas', 'ikon' => 'bi-heart', 'aktif' => 'bi-heart-fill'],
+        [
+            'route' => 'ic.komunitas',
+            'label' => 'Komunitas',
+            'ikon' => 'bi-heart',
+            'aktif' => 'bi-heart-fill',
+            'juga' => 'ic.game',
+        ],
     ];
     $profilAktif = request()->routeIs('ic.profil', 'ic.pengaduan*');
 @endphp

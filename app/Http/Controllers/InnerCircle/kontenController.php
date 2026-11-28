@@ -7,6 +7,7 @@ use App\Http\Requests\InnerCircle\simpanKontenRequest;
 use App\Models\ic_claim;
 use App\Models\ic_pilihan;
 use App\Services\InnerCircle\IcAturan;
+use App\Services\InnerCircle\IcGame;
 use App\Services\InnerCircle\IcBagian;
 use App\Services\InnerCircle\IcDaftar;
 use App\Services\InnerCircle\IcKonten;
@@ -21,13 +22,13 @@ use Illuminate\View\View;
 class kontenController extends Controller
 {
     /** `/konten` langsung membuka bagian pertama; pindah bagian lewat navbar atas (tanpa halaman pilihan). */
-    public function index(IcKonten $konten, IcDaftar $daftar, IcPilihan $pilihan, IcAturan $aturan, IcTampilan $tampilan, IcPrivasi $privasi, IcPotongan $potongan): View
+    public function index(IcKonten $konten, IcDaftar $daftar, IcPilihan $pilihan, IcAturan $aturan, IcGame $game, IcTampilan $tampilan, IcPrivasi $privasi, IcPotongan $potongan): View
     {
-        return $this->bagian((string) array_key_first(IcBagian::semua()), $konten, $daftar, $pilihan, $aturan, $tampilan, $privasi, $potongan);
+        return $this->bagian((string) array_key_first(IcBagian::semua()), $konten, $daftar, $pilihan, $aturan, $game, $tampilan, $privasi, $potongan);
     }
 
     /** Satu bagian: hanya formulir dan pratinjau topik itu, bukan seluruh tab. */
-    public function bagian(string $bagian, IcKonten $konten, IcDaftar $daftar, IcPilihan $pilihan, IcAturan $aturan, IcTampilan $tampilan, IcPrivasi $privasi, IcPotongan $potongan): View
+    public function bagian(string $bagian, IcKonten $konten, IcDaftar $daftar, IcPilihan $pilihan, IcAturan $aturan, IcGame $game, IcTampilan $tampilan, IcPrivasi $privasi, IcPotongan $potongan): View
     {
         $info = IcBagian::cari($bagian);
         abort_if($info === null, 404);
@@ -80,6 +81,9 @@ class kontenController extends Controller
             'aturan' => $aturan->efektif(),
             'aturanBawaan' => $aturan->bawaan(),
             'aturanRingkasan' => $aturan->ringkasan(),
+            'gameAturan' => $game->efektif(),
+            'gameBawaan' => $game->bawaan(),
+            'gameBatas' => $game->batas(),
             // Kebijakan privasi: isi awal editor = isi kustom, atau teks bawaan.
             'privasiKustom' => $privasi->sudahKustom(),
             'privasiHtml' => $privasi->isi() ?? $privasi->bawaanHtml(),

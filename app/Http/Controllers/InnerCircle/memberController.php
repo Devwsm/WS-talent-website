@@ -17,6 +17,8 @@ use App\Services\InnerCircle\CheckinService;
 use App\Services\InnerCircle\PemeriksaanService;
 use App\Support\SidikPerangkat;
 use App\Services\InnerCircle\ClaimService;
+use App\Services\InnerCircle\GameService;
+use App\Services\InnerCircle\IcGame;
 use App\Services\InnerCircle\KenanganService;
 use App\Services\InnerCircle\KlaimGagal;
 use App\Services\InnerCircle\UndianService;
@@ -266,17 +268,23 @@ class memberController extends Controller
      * Tab lewat ?tab=pengumuman|galeri, kategori galeri lewat ?kategori=festival|club|personal, halaman galeri
      * lewat ?page=. Pengumuman hanya yang aktif dan sudah tiba tanggal terbitnya; galeri hanya yang tayang.
      */
-    public function komunitas(Request $request, KenanganService $kenangan)
+    public function komunitas(Request $request, KenanganService $kenangan, GameService $game, IcGame $pengaturanGame)
     {
         $anggota = $this->anggota();
-        $tab = $this->teks($request, 'tab') === 'galeri' ? 'galeri' : 'pengumuman';
+        $gameAktif = $pengaturanGame->aktif();
+        $tabDiminta = $this->teks($request, 'tab');
+        $tab = match (true) {
+            $tabDiminta === 'galeri' => 'galeri',
+            $tabDiminta === 'game' && $gameAktif => 'game',
+            default => 'pengumuman',
+        };
 
         $kategori = $this->teks($request, 'kategori');
         $kategori = array_key_exists($kategori, ic_kategori_kenangan()) ? $kategori : 'all';
 
         // Lencana angka di tab: isi yang belum dibaca sejak tab itu terakhir dibuka. Tab yang sedang dibuka dianggap
         // dibaca sekarang, jadi lencananya hilang dan waktu bacanya diperbarui.
-        $belumDibaca = $this->belumDibaca($anggota, $tab);
+        $belumDibaca = $this->belumDibaca($anggota, $tab === 'game' ? '' : $tab);
 
         $data = [
             'member' => $anggota,
@@ -284,6 +292,7 @@ class memberController extends Controller
             'kategori' => $kategori,
             'jumlahPengumuman' => $belumDibaca['pengumuman'],
             'jumlahKenangan' => $belumDibaca['galeri'],
+            'gameAktif' => $gameAktif,
             'maksFotoMb' => config('inner_circle.foto_kenangan_maks_kb') / 1024,
         ];
 
@@ -293,6 +302,9 @@ class memberController extends Controller
             $data['pengumuman'] = ic_broadcast::query()->tayang()->where('unggulan', false)
                 ->orderByDesc('terbit_pada')->orderByDesc('id_broadcast')
                 ->limit((int) config('inner_circle.pengumuman_maks_anggota', 20))->get();
+        } elseif ($tab === 'game') {
+            $data['ringkasanGame'] = $game->ringkasan($anggota);
+            $data['teksGame'] = $pengaturanGame->untukTeks();
         } else {
             $data['kenangan'] = $kenangan->galeri($anggota, $kategori === 'all' ? null : $kategori);
         }
@@ -369,6 +381,11 @@ class memberController extends Controller
                 ->where('created_at', '>', $sejakGaleri)
                 ->count(),
         ];
+
+        // Tab lain (mis. Game) tidak punya lencana: tidak ada yang ditandai dibaca.
+        if ($tabDibuka === '') {
+            return $jumlah;
+        }
 
         $kolom = $tabDibuka === 'galeri' ? 'galeri_dibaca_pada' : 'pengumuman_dibaca_pada';
         $kunci = $tabDibuka === 'galeri' ? 'galeri' : 'pengumuman';

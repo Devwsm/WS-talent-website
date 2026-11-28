@@ -170,6 +170,38 @@ return [
     'foto_profil_sisi_maks' => 512,
 
     /*
+    | Mini game Mambo Jambo Pineapple Catcher (GameService). Skor dihitung SERVER dengan menjalankan ulang ronde, bukan
+    | dari angka kiriman browser.
+    | Nilai di bawah hanya BAWAAN: admin mengubahnya dari CMS Inner Circle (Konten > Pilihan dan aturan > Aturan game),
+    | tersimpan di `ic_pengaturan` (kunci `game.*`, lihat IcGame) tanpa perlu mengubah .env atau deploy.
+    | - aktif: game tampil (tab Game di Komunitas, kartu di Beranda) dan bisa dimainkan.
+    | - ronde_harian: jatah ronde per anggota per hari (zona waktu aplikasi). Ronde yang ditinggalkan tetap terhitung.
+    | - skor_per_poin: skor game untuk 1 poin Inner Circle. Bawaan 1 mengikuti prototype game (+10 skor per nanas = +10 poin).
+    | - poin_maks_ronde / poin_maks_harian: batas poin dari game per ronde dan per hari. Poin ini masuk dompet yang sama
+    |   dengan poin kehadiran (bisa ditukar hadiah), jadi jaga angkanya kecil dibanding poin check-in.
+    | - batas: rentang isian yang diterima CMS untuk keempat angka di atas.
+    | - langkah_maks: panjang maksimum ronde (60 langkah = 1 detik; 18000 = 5 menit). Dipakai browser juga
+    |   (data-langkah-maks), jadi biarkan kecuali memang perlu.
+    | - kedaluwarsa_menit: ronde yang tidak dikirim dalam waktu ini ditolak. log_maks_karakter: batas ukuran catatan input.
+    */
+    'game' => [
+        'aktif' => true,
+        'ronde_harian' => 5,
+        'skor_per_poin' => 1,
+        'poin_maks_ronde' => 200,
+        'poin_maks_harian' => 1000,
+        'batas' => [
+            'ronde_harian' => [1, 50],
+            'skor_per_poin' => [1, 1000],
+            'poin_maks_ronde' => [1, 100000],
+            'poin_maks_harian' => [1, 1000000],
+        ],
+        'langkah_maks' => 18000,
+        'kedaluwarsa_menit' => 20,
+        'log_maks_karakter' => 300000,
+    ],
+
+    /*
     | Ikon gambar ada di public/aset/inner-circle/ikon/{nama}.webp (Fluent Emoji 3D, MIT).
     | Kalau berkasnya belum ada, komponen <x-inner-circle.ikon> jatuh ke emoji di bawah ini.
     */

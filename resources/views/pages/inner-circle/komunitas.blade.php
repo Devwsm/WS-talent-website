@@ -8,19 +8,22 @@
 
     <x-inner-circle.panel-verifikasi />
 
-    <section class="ic-banner" aria-labelledby="judul-banner">
-        <div>
-            <span class="ic-banner__stiker">{{ ic_teks('komunitas.banner.stiker') }}</span>
-            <h2 id="judul-banner">{{ ic_html('komunitas.banner.judul') }}</h2>
-            <p>{{ ic_html('komunitas.banner.deskripsi') }}</p>
-            <button type="button" class="ic-tombol" data-ic-modal-buka="modal-kenangan"
-                @disabled($member->email_verified_at === null)>{{ ic_teks('komunitas.banner.tombol') }}
-                <i class="bi bi-arrow-up-right" aria-hidden="true"></i></button>
-        </div>
-        <div class="ic-banner__orbit" aria-hidden="true">
-            <x-inner-circle.ikon nama="mirror-ball" kelas="ic-ikon--sampul" />
-        </div>
-    </section>
+    {{-- Banner bagikan kenangan hanya untuk tab Pengumuman dan Galeri; tab Game langsung ke isinya. --}}
+    @if ($tab !== 'game')
+        <section class="ic-banner" aria-labelledby="judul-banner">
+            <div>
+                <span class="ic-banner__stiker">{{ ic_teks('komunitas.banner.stiker') }}</span>
+                <h2 id="judul-banner">{{ ic_html('komunitas.banner.judul') }}</h2>
+                <p>{{ ic_html('komunitas.banner.deskripsi') }}</p>
+                <button type="button" class="ic-tombol" data-ic-modal-buka="modal-kenangan"
+                    @disabled($member->email_verified_at === null)>{{ ic_teks('komunitas.banner.tombol') }}
+                    <i class="bi bi-arrow-up-right" aria-hidden="true"></i></button>
+            </div>
+            <div class="ic-banner__orbit" aria-hidden="true">
+                <x-inner-circle.ikon nama="mirror-ball" kelas="ic-ikon--sampul" />
+            </div>
+        </section>
+    @endif
 
     <nav class="ic-tab-daftar" aria-label="Bagian komunitas">
         <a class="ic-tab {{ $tab === 'pengumuman' ? 'is-aktif' : '' }}"
@@ -40,9 +43,18 @@
                         belum dibaca</span></span>
             @endif
         </a>
+        @if ($gameAktif)
+            <a class="ic-tab {{ $tab === 'game' ? 'is-aktif' : '' }}"
+                href="{{ route('ic.komunitas', ['tab' => 'game']) }}"
+                @if ($tab === 'game') aria-current="page" @endif>
+                <x-inner-circle.ikon nama="mirror-ball" kelas="ic-ikon--mini" /> Game
+            </a>
+        @endif
     </nav>
 
-    @if ($tab === 'pengumuman')
+    @if ($tab === 'game')
+        @include('pages.inner-circle.partials.komunitas-game')
+    @elseif ($tab === 'pengumuman')
         <div class="ic-bagian-kepala">
             <div>
                 <p class="ic-eyebrow">{{ ic_teks('komunitas.pengumuman.eyebrow') }}</p>
@@ -144,8 +156,8 @@
             <div class="ic-baris-2">
                 <div>
                     <label class="ic-label" for="kenangan-tempat">Acara / tempat</label>
-                    <input class="ic-input" id="kenangan-tempat" name="tempat" maxlength="65" value="{{ old('tempat') }}"
-                        placeholder="Di mana momen ini terjadi? Contoh: WS Showcase">
+                    <input class="ic-input" id="kenangan-tempat" name="tempat" maxlength="65"
+                        value="{{ old('tempat') }}" placeholder="Di mana momen ini terjadi? Contoh: WS Showcase">
                 </div>
                 <div>
                     <label class="ic-label" for="kenangan-kategori">Kategori</label>

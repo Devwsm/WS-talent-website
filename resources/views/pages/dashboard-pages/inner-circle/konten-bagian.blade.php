@@ -209,6 +209,10 @@
                         @include('components.dashboard.inner-circle.aturan-checkin')
                     @break
 
+                    @case('game')
+                        @include('components.dashboard.inner-circle.aturan-game')
+                    @break
+
                     @case('tampilan')
                         @include('components.dashboard.inner-circle.tampilan')
                     @break

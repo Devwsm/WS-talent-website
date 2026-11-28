@@ -150,7 +150,12 @@ class IcPotongan
      */
     public function peta(string $program): array
     {
-        return IcReplika::petaGanti($program, (array) config('ic_konten.tautan', [])) + ['{nama}' => self::NAMA_CONTOH];
+        $game = [];
+        foreach (app(IcGame::class)->untukTeks() as $nama => $nilai) {
+            $game['{' . $nama . '}'] = $nilai;
+        }
+
+        return IcReplika::petaGanti($program, (array) config('ic_konten.tautan', [])) + ['{nama}' => self::NAMA_CONTOH] + $game;
     }
 
     /** Buang semua penanda dari teks. */
@@ -349,6 +354,7 @@ class IcPotongan
             'checkin' => 'ic.checkin',
             'komunitas' => 'ic.komunitas',
             'galeri' => 'ic.komunitas',
+            'game' => 'ic.komunitas',
             'profil' => 'ic.profil',
         ][$halaman] ?? null;
 
@@ -371,6 +377,7 @@ class IcPotongan
                 'checkin' => app()->call([$kontrol, 'checkin'], ['request' => Request::create('/', 'GET')]),
                 'komunitas' => app()->call([$kontrol, 'komunitas'], ['request' => Request::create('/', 'GET', ['tab' => 'pengumuman'])]),
                 'galeri' => app()->call([$kontrol, 'komunitas'], ['request' => Request::create('/', 'GET', ['tab' => 'galeri'])]),
+                'game' => app()->call([$kontrol, 'komunitas'], ['request' => Request::create('/', 'GET', ['tab' => 'game'])]),
                 'profil' => app()->call([$kontrol, 'profil']),
                 default => throw new \InvalidArgumentException("Halaman pratinjau tidak dikenal: $halaman"),
             };

@@ -523,6 +523,16 @@ return [
             'ket' => 'Aturan bawaan check-in kembali ke nilai awal.',
             'gagal' => 'Aturan check-in gagal dikembalikan',
         ],
+        'ic.admin.konten.game.simpan' => [
+            'judul' => 'Aturan game diubah',
+            'ket' => 'Status game, jatah ronde, skor per poin, atau batas poin game diperbarui.',
+            'gagal' => 'Aturan game gagal diubah',
+        ],
+        'ic.admin.konten.game.bawaan' => [
+            'judul' => 'Aturan game dikembalikan ke awal',
+            'ket' => 'Aturan game kembali ke nilai awal (prototype).',
+            'gagal' => 'Aturan game gagal dikembalikan',
+        ],
         'ic.admin.konten.privasi.simpan' => [
             'judul' => 'Kebijakan privasi diubah',
             'ket' => 'Isi halaman Kebijakan Privasi diperbarui.',

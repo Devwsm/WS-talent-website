@@ -33,7 +33,8 @@ return [
             'img-src' => ["'self'", 'data:', 'blob:', 'https:'],
             'media-src' => ["'self'", 'blob:'],
             'connect-src' => ["'self'", 'https://*.bandsintown.com'],
-            'frame-src' => ["'self'", 'https://*.bandsintown.com'],
+            // open.spotify.com: pemutar lagu di halaman Game anggota (dimuat hanya setelah tombol "Putar lagu" ditekan).
+            'frame-src' => ["'self'", 'https://*.bandsintown.com', 'https://open.spotify.com'],
             'worker-src' => ["'self'", 'blob:'],
             'object-src' => ["'none'"],
             'base-uri' => ["'self'"],

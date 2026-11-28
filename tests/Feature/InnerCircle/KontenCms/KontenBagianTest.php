@@ -26,8 +26,8 @@ class KontenBagianTest extends TestCase
     {
         $bagian = IcBagian::semua();
 
-        // Grup teks + tipe, kategori, aturan, tampilan, privasi.
-        $this->assertCount(count(config('ic_konten.grup')) + 5, $bagian);
+        // Grup teks + tipe, kategori, aturan check-in, aturan game, tampilan, privasi.
+        $this->assertCount(count(config('ic_konten.grup')) + 6, $bagian);
 
         foreach (array_keys($bagian) as $slug) {
             $this->admin()->get(route('ic.admin.konten.bagian', $slug))->assertOk();

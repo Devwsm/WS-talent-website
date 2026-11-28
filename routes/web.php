@@ -14,12 +14,14 @@ use App\Http\Controllers\InnerCircle\akunController;
 use App\Http\Controllers\InnerCircle\emailAdminController;
 use App\Http\Controllers\InnerCircle\kontenController;
 use App\Http\Controllers\InnerCircle\kontenAturanController;
+use App\Http\Controllers\InnerCircle\kontenGameController;
 use App\Http\Controllers\InnerCircle\kontenDaftarController;
 use App\Http\Controllers\InnerCircle\kontenPilihanController;
 use App\Http\Controllers\InnerCircle\kontenPrivasiController;
 use App\Http\Controllers\InnerCircle\kontenTampilanController;
 use App\Http\Controllers\InnerCircle\authController;
 use App\Http\Controllers\InnerCircle\fotoProfilController;
+use App\Http\Controllers\InnerCircle\gameController;
 use App\Http\Controllers\InnerCircle\googleController;
 use App\Http\Controllers\InnerCircle\kenanganController;
 use App\Http\Controllers\InnerCircle\lupaSandiController;
@@ -135,6 +137,10 @@ Route::prefix('/innercircle')->middleware('icAktif')->name('ic.')->group(functio
         Route::delete('/kenangan/{id}', [kenanganController::class, 'hapus'])->whereNumber('id')->name('kenangan.hapus')->middleware('throttle:ic-hapus-kenangan');
         Route::get('/kenangan/{id}/penyuka', [kenanganController::class, 'penyuka'])->whereNumber('id')->name('kenangan.penyuka')->middleware('throttle:ic-suka');
         Route::post('/kenangan/{id}/suka', [kenanganController::class, 'suka'])->whereNumber('id')->name('kenangan.suka')->middleware(['icVerif', 'throttle:ic-suka']);
+        // Mini game Mambo Jambo Pineapple Catcher: halaman, mulai ronde, dan selesaikan ronde (skor dihitung server).
+        Route::get('/game', [gameController::class, 'index'])->name('game');
+        Route::post('/game/mulai', [gameController::class, 'mulai'])->name('game.mulai')->middleware(['icVerif', 'throttle:ic-game']);
+        Route::post('/game/selesai', [gameController::class, 'selesai'])->name('game.selesai')->middleware(['icVerif', 'throttle:ic-game']);
         Route::get('/profil', [memberController::class, 'profil'])->name('profil');
         Route::post('/profil/foto', [fotoProfilController::class, 'simpan'])->name('profil.foto')->middleware('throttle:ic-foto');
         Route::delete('/profil/foto', [fotoProfilController::class, 'hapus'])->name('profil.foto.hapus')->middleware('throttle:ic-foto');
@@ -251,6 +257,8 @@ Route::prefix('/dashboard')->middleware(['cekLogin', 'catatAktivitas'])->group(f
         // Aturan bawaan check-in (jendela, radius, akurasi): IcAturan.
         Route::post('/konten-aturan', [kontenAturanController::class, 'simpan'])->name('konten.aturan.simpan')->middleware('throttle:admin-tulis');
         Route::post('/konten-aturan/bawaan', [kontenAturanController::class, 'bawaan'])->name('konten.aturan.bawaan')->middleware('throttle:admin-tulis');
+        Route::post('/konten-game', [kontenGameController::class, 'simpan'])->name('konten.game.simpan')->middleware('throttle:admin-tulis');
+        Route::post('/konten-game/bawaan', [kontenGameController::class, 'bawaan'])->name('konten.game.bawaan')->middleware('throttle:admin-tulis');
 
         // Kebijakan privasi (/privasi): IcPrivasi.
         Route::post('/konten-privasi', [kontenPrivasiController::class, 'simpan'])->name('konten.privasi.simpan')->middleware('throttle:admin-tulis');

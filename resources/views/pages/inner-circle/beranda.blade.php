@@ -29,6 +29,26 @@
         </div>
     </div>
 
+    @if (app(\App\Services\InnerCircle\IcGame::class)->aktif())
+        {{-- Ajakan main game: kartu ringkas satu baris, tanpa kueri (batas poin dari pengaturan CMS). --}}
+        <section class="ic-ajakan-game" aria-labelledby="judul-game-beranda">
+            <a class="ic-ajakan-game__tautan" href="{{ route('ic.komunitas', ['tab' => 'game']) }}">
+                <span class="ic-ajakan-game__ikon" aria-hidden="true">
+                    <img src="{{ asset('aset/game-mambo/pineapple.webp') }}" width="21" height="26" alt=""
+                        loading="lazy" decoding="async">
+                </span>
+                <span class="ic-ajakan-game__isi">
+                    <span class="ic-ajakan-game__label">{{ ic_teks('beranda.game.stiker') }}</span>
+                    <b id="judul-game-beranda" class="ic-ajakan-game__judul">{{ ic_teks('beranda.game.judul') }}</b>
+                    <span
+                        class="ic-ajakan-game__teks">{{ ic_teks('beranda.game.deskripsi', app(\App\Services\InnerCircle\IcGame::class)->untukTeks()) }}</span>
+                </span>
+                <span class="ic-ajakan-game__tombol">{{ ic_teks('beranda.game.tombol') }} <i class="bi bi-arrow-right"
+                        aria-hidden="true"></i></span>
+            </a>
+        </section>
+    @endif
+
     @if ($glSaya->isNotEmpty())
         <div class="ic-bagian-kepala">
             <h2 class="ic-judul-bagian">GL gratis saya</h2>
